@@ -1,0 +1,13 @@
+# uploaded archives
+inbox/*
+!inbox/.gitkeep
+
+# extracted workdirs
+workdir/
+
+# env and secrets
+.env
+.env.*
+
+# logs
+*.log
