@@ -17,6 +17,7 @@ import {
 } from "@workspace/db";
 import { eq, isNull, and, gte, lte, inArray } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth";
+import { queryString } from "../lib/query";
 
 const router = Router();
 
@@ -71,12 +72,10 @@ async function buildFellingRecord(record: typeof fellingRecordsTable.$inferSelec
 
 router.get("/felling-records", requireAuth, async (req, res): Promise<void> => {
   const session = (req as unknown as { session: { userId: number; userRole: string } }).session;
-  const { userId: filterUserId, dateFrom, dateTo, regionId } = req.query as {
-    userId?: string;
-    dateFrom?: string;
-    dateTo?: string;
-    regionId?: string;
-  };
+  const filterUserId = queryString(req.query.userId);
+  const dateFrom = queryString(req.query.dateFrom);
+  const dateTo = queryString(req.query.dateTo);
+  const regionId = queryString(req.query.regionId);
 
   const conditions = [isNull(fellingRecordsTable.deletedAt)];
 
@@ -170,7 +169,7 @@ router.post("/felling-records", requireAuth, async (req, res): Promise<void> => 
 
 router.get("/felling-records/:id", requireAuth, async (req, res): Promise<void> => {
   const session = (req as unknown as { session: { userId: number; userRole: string } }).session;
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
 
   const [record] = await db.select().from(fellingRecordsTable).where(and(eq(fellingRecordsTable.id, id), isNull(fellingRecordsTable.deletedAt)));
   if (!record) { res.status(404).json({ error: "Záznam nenalezen" }); return; }
@@ -186,7 +185,7 @@ router.get("/felling-records/:id", requireAuth, async (req, res): Promise<void> 
 
 router.patch("/felling-records/:id", requireAuth, async (req, res): Promise<void> => {
   const session = (req as unknown as { session: { userId: number; userRole: string } }).session;
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
 
   const [existing] = await db.select().from(fellingRecordsTable).where(and(eq(fellingRecordsTable.id, id), isNull(fellingRecordsTable.deletedAt)));
   if (!existing) { res.status(404).json({ error: "Záznam nenalezen" }); return; }
@@ -272,7 +271,7 @@ router.patch("/felling-records/:id", requireAuth, async (req, res): Promise<void
 
 router.delete("/felling-records/:id", requireAuth, async (req, res): Promise<void> => {
   const session = (req as unknown as { session: { userId: number; userRole: string } }).session;
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
 
   const [existing] = await db.select().from(fellingRecordsTable).where(and(eq(fellingRecordsTable.id, id), isNull(fellingRecordsTable.deletedAt)));
   if (!existing) { res.status(404).json({ error: "Záznam nenalezen" }); return; }

@@ -11,8 +11,6 @@ services:
       POSTGRES_PASSWORD: ${PGPASSWORD:?PGPASSWORD je povinný}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${PGUSER:-postgres} -d ${PGDATABASE:-pracovni_zaznamy}"]
       interval: 10s
@@ -41,6 +39,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: tools
     container_name: pracovni-zaznamy-migrate
     depends_on:
       postgres:
@@ -54,10 +53,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: tools
     container_name: pracovni-zaznamy-seed
     depends_on:
       postgres:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     environment:
       DATABASE_URL: postgresql://${PGUSER:-postgres}:${PGPASSWORD}@postgres:5432/${PGDATABASE:-pracovni_zaznamy}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}

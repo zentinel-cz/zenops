@@ -1,9 +1,9 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { useGetMe, User } from "@workspace/api-client-react";
+import { useGetMe } from "@workspace/api-client-react";
 import { useLocation } from "wouter";
 
 interface AuthContextType {
-  user: User | null;
+  user: any;
   isLoading: boolean;
   isAuthenticated: boolean;
 }
@@ -16,12 +16,7 @@ const AuthContext = createContext<AuthContextType>({
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [, setLocation] = useLocation();
-  const { data: user, isLoading, error } = useGetMe({
-    query: {
-      retry: false,
-      refetchOnWindowFocus: false,
-    }
-  });
+  const { data: user, isLoading, error } = useGetMe();
 
   useEffect(() => {
     if (!isLoading && error) {

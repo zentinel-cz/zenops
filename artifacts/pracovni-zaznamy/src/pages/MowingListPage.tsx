@@ -25,7 +25,7 @@ export default function MowingListPage() {
     regionId: regionId ?? undefined,
   };
 
-  const { data: records, isLoading } = useListMowingRecords(params as Record<string, never>);
+  const { data: records, isLoading } = useListMowingRecords(params);
   const { data: regions } = useListRegions();
   const deleteMutation = useDeleteMowingRecord();
 
@@ -48,12 +48,12 @@ export default function MowingListPage() {
 
   const handleExcelExport = () => {
     if (!records?.length) return;
-    exportMowingExcel(records as never);
+    exportMowingExcel(records);
   };
 
   const handlePdfExport = async () => {
     if (!records?.length) return;
-    await exportMowingListPdf(records as never, filterDesc);
+    await exportMowingListPdf(records, filterDesc);
   };
 
   return (

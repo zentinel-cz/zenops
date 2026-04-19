@@ -16,6 +16,7 @@ import {
 } from "@workspace/db";
 import { eq, isNull, and, gte, lte, inArray } from "drizzle-orm";
 import { requireAuth } from "../middlewares/auth";
+import { queryString } from "../lib/query";
 
 const router = Router();
 
@@ -73,12 +74,10 @@ async function buildMowingRecord(record: typeof mowingRecordsTable.$inferSelect)
 
 router.get("/mowing-records", requireAuth, async (req, res): Promise<void> => {
   const session = (req as unknown as { session: { userId: number; userRole: string } }).session;
-  const { userId: filterUserId, dateFrom, dateTo, regionId } = req.query as {
-    userId?: string;
-    dateFrom?: string;
-    dateTo?: string;
-    regionId?: string;
-  };
+  const filterUserId = queryString(req.query.userId);
+  const dateFrom = queryString(req.query.dateFrom);
+  const dateTo = queryString(req.query.dateTo);
+  const regionId = queryString(req.query.regionId);
 
   const conditions = [isNull(mowingRecordsTable.deletedAt)];
 
@@ -173,7 +172,7 @@ router.post("/mowing-records", requireAuth, async (req, res): Promise<void> => {
 
 router.get("/mowing-records/:id", requireAuth, async (req, res): Promise<void> => {
   const session = (req as unknown as { session: { userId: number; userRole: string } }).session;
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
 
   const [record] = await db.select().from(mowingRecordsTable).where(and(eq(mowingRecordsTable.id, id), isNull(mowingRecordsTable.deletedAt)));
   if (!record) { res.status(404).json({ error: "Záznam nenalezen" }); return; }
@@ -188,7 +187,7 @@ router.get("/mowing-records/:id", requireAuth, async (req, res): Promise<void> =
 
 router.patch("/mowing-records/:id", requireAuth, async (req, res): Promise<void> => {
   const session = (req as unknown as { session: { userId: number; userRole: string } }).session;
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
 
   const [existing] = await db.select().from(mowingRecordsTable).where(and(eq(mowingRecordsTable.id, id), isNull(mowingRecordsTable.deletedAt)));
   if (!existing) { res.status(404).json({ error: "Záznam nenalezen" }); return; }
@@ -272,7 +271,7 @@ router.patch("/mowing-records/:id", requireAuth, async (req, res): Promise<void>
 
 router.delete("/mowing-records/:id", requireAuth, async (req, res): Promise<void> => {
   const session = (req as unknown as { session: { userId: number; userRole: string } }).session;
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
 
   const [existing] = await db.select().from(mowingRecordsTable).where(and(eq(mowingRecordsTable.id, id), isNull(mowingRecordsTable.deletedAt)));
   if (!existing) { res.status(404).json({ error: "Záznam nenalezen" }); return; }

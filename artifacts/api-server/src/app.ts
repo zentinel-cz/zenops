@@ -1,4 +1,6 @@
 import express, { type Express } from "express";
+import path from "path";
+import { fileURLToPath } from "url";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import session from "express-session";
@@ -6,6 +8,10 @@ import router from "./routes";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const frontendDist = path.resolve(__dirname, "../../pracovni-zaznamy/dist/public");
 
 app.use(
   pinoHttp({
@@ -52,5 +58,9 @@ app.use(
 );
 
 app.use("/api", router);
+app.use(express.static(frontendDist));
+app.get(/^(?!\/api(?:\/|$)).*/, (_req, res) => {
+  res.sendFile(path.join(frontendDist, "index.html"));
+});
 
 export default app;

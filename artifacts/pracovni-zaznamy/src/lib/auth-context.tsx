@@ -25,12 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  const { data: meData, isLoading: meLoading, error: meError } = useGetMe({
-    query: {
-      retry: false,
-      refetchOnWindowFocus: false,
-    },
-  });
+  const { data: meData, isLoading: meLoading, error: meError } = useGetMe();
 
   useEffect(() => {
     if (!meLoading) {
@@ -53,7 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await logoutMutation.mutateAsync({});
+    await logoutMutation.mutateAsync();
     setUser(null);
     navigate("/login");
   };

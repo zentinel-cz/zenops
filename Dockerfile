@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:20-bookworm-slim AS base
 RUN npm install -g pnpm@10
 WORKDIR /app
 
@@ -11,11 +11,14 @@ COPY lib/api-client-react/package.json lib/api-client-react/
 COPY scripts/package.json scripts/
 COPY artifacts/api-server/package.json artifacts/api-server/
 COPY artifacts/pracovni-zaznamy/package.json artifacts/pracovni-zaznamy/
+COPY artifacts/mockup-sandbox/package.json artifacts/mockup-sandbox/
 RUN pnpm install --frozen-lockfile
 
 FROM deps AS builder
 COPY . .
 RUN pnpm run build
+
+FROM builder AS tools
 
 FROM base AS production
 WORKDIR /app
@@ -28,6 +31,7 @@ COPY lib/api-client-react/package.json lib/api-client-react/
 COPY scripts/package.json scripts/
 COPY artifacts/api-server/package.json artifacts/api-server/
 COPY artifacts/pracovni-zaznamy/package.json artifacts/pracovni-zaznamy/
+COPY artifacts/mockup-sandbox/package.json artifacts/mockup-sandbox/
 
 ENV NODE_ENV=production
 RUN pnpm install --frozen-lockfile --prod

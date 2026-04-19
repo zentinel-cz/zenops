@@ -2,23 +2,16 @@ import { Router } from "express";
 import { db, auditLogsTable, usersTable } from "@workspace/db";
 import { and, gte, lte, eq, desc } from "drizzle-orm";
 import { requireAdmin } from "../middlewares/auth";
+import { queryString } from "../lib/query";
 
 const router = Router();
 
 router.get("/audit-logs", requireAdmin, async (req, res): Promise<void> => {
-  const {
-    tableName,
-    userId: filterUserId,
-    action: filterAction,
-    dateFrom,
-    dateTo,
-  } = req.query as {
-    tableName?: string;
-    userId?: string;
-    action?: string;
-    dateFrom?: string;
-    dateTo?: string;
-  };
+  const tableName = queryString(req.query.tableName);
+  const filterUserId = queryString(req.query.userId);
+  const filterAction = queryString(req.query.action);
+  const dateFrom = queryString(req.query.dateFrom);
+  const dateTo = queryString(req.query.dateTo);
 
   const conditions = [];
   if (tableName) conditions.push(eq(auditLogsTable.tableName, tableName));
@@ -55,7 +48,7 @@ router.get("/audit-logs", requireAdmin, async (req, res): Promise<void> => {
 });
 
 router.get("/audit-logs/:id", requireAdmin, async (req, res): Promise<void> => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const [log] = await db
     .select({
       id: auditLogsTable.id,

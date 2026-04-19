@@ -8,6 +8,7 @@ import {
   useListWeatherTypes,
 } from "@workspace/api-client-react";
 import { todayISO } from "@/lib/utils";
+import { itemString, itemNullableString } from "@/lib/ui-item";
 
 export interface FellingFormData {
   date: string;
@@ -150,8 +151,8 @@ export default function FellingForm({ initialData, onSubmit, onCancel, isLoading
     }
   };
 
-  const activeRegions = regions?.filter((r) => r.isActive && !r.deletedAt) ?? [];
-  const activeWeather = weatherTypes?.filter((w) => w.isActive && !w.deletedAt) ?? [];
+  const activeRegions = regions?.filter((r) => r.isActive !== false) ?? [];
+  const activeWeather = weatherTypes?.filter((w) => w.isActive !== false) ?? [];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
@@ -262,7 +263,7 @@ export default function FellingForm({ initialData, onSubmit, onCancel, isLoading
           selectedIds={workerIds}
           onToggle={(id) => setWorkerIds(toggleId(workerIds, id))}
           emptyMessage="Žádní pracovníci v číselníku"
-          getName={(w) => `${(w as { firstName: string; lastName: string }).firstName} ${(w as { firstName: string; lastName: string }).lastName}`}
+          getName={(w) => `${itemString(w, "firstName")} ${itemString(w, "lastName")}`.trim()}
         />
       </div>
 
@@ -274,8 +275,8 @@ export default function FellingForm({ initialData, onSubmit, onCancel, isLoading
           selectedIds={vehicleIds}
           onToggle={(id) => setVehicleIds(toggleId(vehicleIds, id))}
           emptyMessage="Žádná vozidla v číselníku"
-          getName={(v) => (v as { name: string }).name}
-          getBadge={(v) => (v as { licensePlate?: string | null }).licensePlate ?? null}
+          getName={(v) => itemString(v, "name") || itemString(v, "plateNumber")}
+          getBadge={(v) => itemNullableString(v, "licensePlate") ?? itemNullableString(v, "plateNumber")}
         />
       </div>
 
@@ -287,8 +288,8 @@ export default function FellingForm({ initialData, onSubmit, onCancel, isLoading
           selectedIds={machineIds}
           onToggle={(id) => setMachineIds(toggleId(machineIds, id))}
           emptyMessage="Žádné stroje v číselníku"
-          getName={(m) => (m as { name: string }).name}
-          getBadge={(m) => (m as { type: string }).type}
+          getName={(m) => itemString(m, "name")}
+          getBadge={(m) => itemString(m, "type") || null}
         />
       </div>
 
@@ -300,8 +301,8 @@ export default function FellingForm({ initialData, onSubmit, onCancel, isLoading
           selectedIds={accessoryIds}
           onToggle={(id) => setAccessoryIds(toggleId(accessoryIds, id))}
           emptyMessage="Žádné příslušenství v číselníku"
-          getName={(a) => (a as { name: string }).name}
-          getBadge={(a) => (a as { type?: string | null }).type ?? null}
+          getName={(a) => itemString(a, "name")}
+          getBadge={(a) => itemNullableString(a, "type")}
         />
       </div>
 

@@ -22,7 +22,7 @@ export default function FellingDetailPage() {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
 
-  const { data: record, isLoading } = useGetFellingRecord(id, { query: { enabled: !!id } });
+  const { data: record, isLoading } = useGetFellingRecord(id);
   const updateMutation = useUpdateFellingRecord();
   const deleteMutation = useDeleteFellingRecord();
 
@@ -30,7 +30,7 @@ export default function FellingDetailPage() {
 
   const handleSubmit = async (data: FellingFormData) => {
     try {
-      await updateMutation.mutateAsync({ id, data: data as never });
+      await updateMutation.mutateAsync({ id, data: data });
       queryClient.invalidateQueries({ queryKey: getGetFellingRecordQueryKey(id) });
       queryClient.invalidateQueries({ queryKey: getListFellingRecordsQueryKey() });
       toast.success("Záznam byl upraven");

@@ -42,7 +42,7 @@ export default function MowingDetailPage() {
   const [editing, setEditing] = useState(false);
   const { user } = useAuth();
 
-  const { data: record, isLoading } = useGetMowingRecord(id, { query: { enabled: !!id } });
+  const { data: record, isLoading } = useGetMowingRecord(id);
   const updateMutation = useUpdateMowingRecord();
   const deleteMutation = useDeleteMowingRecord();
 

@@ -3,6 +3,7 @@ import { db, accessoriesTable } from "@workspace/db";
 import { eq, isNull } from "drizzle-orm";
 import { requireAdmin } from "../middlewares/auth";
 import { logAudit } from "../lib/auditLog";
+import { queryString } from "../lib/query";
 
 const router = Router();
 
@@ -18,53 +19,72 @@ router.get("/accessories", requireAdmin, async (_req, res): Promise<void> => {
 router.post("/accessories", requireAdmin, async (req, res): Promise<void> => {
   const session = (req as unknown as { session: { userId: number } }).session;
   const { name, type, serialNumber, note, isActive } = req.body as {
-    name?: string; type?: string; serialNumber?: string; note?: string; isActive?: boolean;
+    name: string;
+    type?: string | null;
+    serialNumber?: string | null;
+    note?: string | null;
+    isActive?: boolean;
   };
 
-  if (!name) { res.status(400).json({ error: "Název je povinný" }); return; }
-
-  const [item] = await db
+  const [created] = await db
     .insert(accessoriesTable)
-    .values({ name, type, serialNumber, note, isActive: isActive ?? true })
+    .values({
+      name,
+      type: type ?? null,
+      serialNumber: serialNumber ?? null,
+      note: note ?? null,
+      isActive: typeof isActive === "boolean" ? isActive : true,
+    })
     .returning();
 
   await logAudit({
-    userId: session.userId, action: "create", tableName: "accessories", recordId: item.id,
-    description: `Vytvořeno příslušenství ${item.name}${item.type ? ` (${item.type})` : ""}`,
-    newData: { name: item.name, type: item.type, serialNumber: item.serialNumber },
+    userId: session.userId,
+    action: "create",
+    tableName: "accessories",
+    recordId: created.id,
+    description: `Vytvořeno příslušenství ${created.name}`,
+    newData: created,
   });
 
-  res.status(201).json(item);
+  res.status(201).json(created);
 });
 
-router.patch("/accessories/:id", requireAdmin, async (req, res): Promise<void> => {
+router.put("/accessories/:id", requireAdmin, async (req, res): Promise<void> => {
   const session = (req as unknown as { session: { userId: number } }).session;
-  const id = parseInt(req.params.id, 10);
-  if (isNaN(id)) { res.status(400).json({ error: "Neplatné ID" }); return; }
-
-  const [existing] = await db.select().from(accessoriesTable).where(eq(accessoriesTable.id, id)).limit(1);
-  if (!existing || existing.deletedAt) { res.status(404).json({ error: "Příslušenství nenalezeno" }); return; }
-
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const { name, type, serialNumber, note, isActive } = req.body as {
-    name?: string; type?: string; serialNumber?: string; note?: string; isActive?: boolean;
+    name: string;
+    type?: string | null;
+    serialNumber?: string | null;
+    note?: string | null;
+    isActive?: boolean;
   };
 
   const [updated] = await db
     .update(accessoriesTable)
     .set({
-      ...(name !== undefined && { name }),
-      ...(type !== undefined && { type }),
-      ...(serialNumber !== undefined && { serialNumber }),
-      ...(note !== undefined && { note }),
-      ...(isActive !== undefined && { isActive }),
+      name,
+      type: type ?? null,
+      serialNumber: serialNumber ?? null,
+      note: note ?? null,
+      isActive: typeof isActive === "boolean" ? isActive : true,
+      updatedAt: new Date(),
     })
     .where(eq(accessoriesTable.id, id))
     .returning();
 
+  if (!updated) {
+    res.status(404).json({ error: "Příslušenství nenalezeno" });
+    return;
+  }
+
   await logAudit({
-    userId: session.userId, action: "update", tableName: "accessories", recordId: id,
+    userId: session.userId,
+    action: "update",
+    tableName: "accessories",
+    recordId: updated.id,
     description: `Upraveno příslušenství ${updated.name}`,
-    oldData: existing as Record<string, unknown>, newData: updated as Record<string, unknown>,
+    newData: updated,
   });
 
   res.json(updated);
@@ -72,21 +92,29 @@ router.patch("/accessories/:id", requireAdmin, async (req, res): Promise<void> =
 
 router.delete("/accessories/:id", requireAdmin, async (req, res): Promise<void> => {
   const session = (req as unknown as { session: { userId: number } }).session;
-  const id = parseInt(req.params.id, 10);
-  if (isNaN(id)) { res.status(400).json({ error: "Neplatné ID" }); return; }
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
 
-  const [existing] = await db.select().from(accessoriesTable).where(eq(accessoriesTable.id, id)).limit(1);
-  if (!existing || existing.deletedAt) { res.status(404).json({ error: "Příslušenství nenalezeno" }); return; }
+  const [deleted] = await db
+    .update(accessoriesTable)
+    .set({ deletedAt: new Date() })
+    .where(eq(accessoriesTable.id, id))
+    .returning();
 
-  await db.update(accessoriesTable).set({ deletedAt: new Date() }).where(eq(accessoriesTable.id, id));
+  if (!deleted) {
+    res.status(404).json({ error: "Příslušenství nenalezeno" });
+    return;
+  }
 
   await logAudit({
-    userId: session.userId, action: "delete", tableName: "accessories", recordId: id,
-    description: `Smazáno příslušenství ${existing.name}`,
-    oldData: existing as Record<string, unknown>,
+    userId: session.userId,
+    action: "delete",
+    tableName: "accessories",
+    recordId: deleted.id,
+    description: `Smazáno příslušenství ${deleted.name}`,
+    oldData: deleted,
   });
 
-  res.json({ message: "Příslušenství smazáno" });
+  res.status(204).end();
 });
 
 export default router;

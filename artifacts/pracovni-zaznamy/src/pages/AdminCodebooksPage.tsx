@@ -209,7 +209,7 @@ function WorkersTab() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <p className="text-sm text-muted-foreground">{workers?.filter((w) => !w.deletedAt).length ?? 0} záznamů</p>
+        <p className="text-sm text-muted-foreground">{workers?.filter((w) => w.isActive !== false).length ?? 0} záznamů</p>
         <button onClick={() => { resetForm(); setShowAdd(true); }} className="px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm font-medium hover:opacity-90">
           + Přidat pracovníka
         </button>
@@ -243,7 +243,7 @@ function WorkersTab() {
       )}
 
       <CodebookTable
-        items={workers?.filter((w) => !w.deletedAt).map((w) => ({ id: w.id, name: `${w.firstName} ${w.lastName}`, subtitle: w.note ?? undefined, isActive: w.isActive })) ?? []}
+        items={workers?.filter((w) => w.isActive !== false).map((w) => ({ id: w.id, name: `${w.firstName} ${w.lastName}`, subtitle: w.note ?? undefined, isActive: w.isActive })) ?? []}
         isLoading={isLoading}
         onEdit={openEdit}
         onToggle={async (id, isActive) => { await updateMutation.mutateAsync({ id, data: { firstName: "", lastName: "", isActive: !isActive } as never }); await invalidate(); }}
@@ -329,7 +329,7 @@ function VehiclesTab() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <p className="text-sm text-muted-foreground">{vehicles?.filter((v) => !v.deletedAt).length ?? 0} záznamů</p>
+        <p className="text-sm text-muted-foreground">{vehicles?.filter((v) => v.isActive !== false).length ?? 0} záznamů</p>
         <button onClick={() => { resetForm(); setShowAdd(true); }} className="px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm font-medium hover:opacity-90">
           + Přidat auto
         </button>
@@ -363,7 +363,7 @@ function VehiclesTab() {
       )}
 
       <CodebookTable
-        items={vehicles?.filter((v) => !v.deletedAt).map((v) => ({ id: v.id, name: v.name, subtitle: [v.licensePlate, v.note].filter(Boolean).join(" • ") || undefined, isActive: v.isActive })) ?? []}
+        items={vehicles?.filter((v) => v.isActive !== false).map((v) => ({ id: v.id, name: v.name, subtitle: [v.licensePlate, v.note].filter(Boolean).join(" • ") || undefined, isActive: v.isActive })) ?? []}
         isLoading={isLoading}
         onEdit={openEdit}
         onToggle={async (id, isActive) => { await updateMutation.mutateAsync({ id, data: { name: "", isActive: !isActive } as never }); await invalidate(); }}
@@ -449,7 +449,7 @@ function MachinesTab() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <p className="text-sm text-muted-foreground">{machines?.filter((m) => !m.deletedAt).length ?? 0} záznamů</p>
+        <p className="text-sm text-muted-foreground">{machines?.filter((m) => m.isActive !== false).length ?? 0} záznamů</p>
         <button onClick={() => { resetForm(); setShowAdd(true); }} className="px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm font-medium hover:opacity-90">
           + Přidat stroj
         </button>
@@ -489,7 +489,7 @@ function MachinesTab() {
       )}
 
       <CodebookTable
-        items={machines?.filter((m) => !m.deletedAt).map((m) => ({ id: m.id, name: m.name, badge: m.type, subtitle: m.note ?? undefined, isActive: m.isActive })) ?? []}
+        items={machines?.filter((m) => m.isActive !== false).map((m) => ({ id: m.id, name: m.name, badge: m.type, subtitle: m.note ?? undefined, isActive: m.isActive })) ?? []}
         isLoading={isLoading}
         onEdit={openEdit}
         onToggle={async (id, isActive) => { await updateMutation.mutateAsync({ id, data: { name: "", type: "", isActive: !isActive } as never }); await invalidate(); }}
@@ -581,7 +581,7 @@ function AccessoriesTab() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <p className="text-sm text-muted-foreground">{accessories?.filter((a) => !a.deletedAt).length ?? 0} záznamů</p>
+        <p className="text-sm text-muted-foreground">{accessories?.filter((a) => a.isActive !== false).length ?? 0} záznamů</p>
         <button onClick={() => { resetForm(); setShowAdd(true); }} className="px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm font-medium hover:opacity-90">
           + Přidat příslušenství
         </button>
@@ -628,7 +628,7 @@ function AccessoriesTab() {
       )}
 
       <CodebookTable
-        items={accessories?.filter((a) => !a.deletedAt).map((a) => ({ id: a.id, name: a.name, badge: a.type ?? undefined, subtitle: [a.serialNumber, a.note].filter(Boolean).join(" • ") || undefined, isActive: a.isActive })) ?? []}
+        items={accessories?.filter((a) => a.isActive !== false).map((a) => ({ id: a.id, name: a.name, badge: a.type ?? undefined, subtitle: [a.serialNumber, a.note].filter(Boolean).join(" • ") || undefined, isActive: a.isActive })) ?? []}
         isLoading={isLoading}
         onEdit={openEdit}
         onToggle={async (id, isActive) => { await updateMutation.mutateAsync({ id, data: { name: "", isActive: !isActive } as never }); await invalidate(); }}
@@ -727,7 +727,7 @@ function RegionsTab() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <p className="text-sm text-muted-foreground">{regions?.filter((r) => !r.deletedAt).length ?? 0} záznamů</p>
+        <p className="text-sm text-muted-foreground">{regions?.filter((r) => r.isActive !== false).length ?? 0} záznamů</p>
         <button onClick={() => { resetForm(); setShowAdd(true); }} className="px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm font-medium hover:opacity-90">
           + Přidat kraj / revír
         </button>
@@ -761,7 +761,7 @@ function RegionsTab() {
       )}
 
       <CodebookTable
-        items={regions?.filter((r) => !r.deletedAt).map((r) => ({ id: r.id, name: r.name, badge: r.code ?? undefined, subtitle: r.note ?? undefined, isActive: r.isActive })) ?? []}
+        items={regions?.filter((r) => r.isActive !== false).map((r) => ({ id: r.id, name: r.name, badge: r.code ?? undefined, subtitle: r.note ?? undefined, isActive: r.isActive })) ?? []}
         isLoading={isLoading}
         onEdit={openEdit}
         onToggle={async (id, isActive) => { await updateMutation.mutateAsync({ id, data: { name: "", isActive: !isActive } as never }); await invalidate(); }}
@@ -847,7 +847,7 @@ function WeatherTab() {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <p className="text-sm text-muted-foreground">{types?.filter((t) => !t.deletedAt).length ?? 0} záznamů</p>
+        <p className="text-sm text-muted-foreground">{types?.filter((t) => t.isActive !== false).length ?? 0} záznamů</p>
         <button onClick={() => { resetForm(); setShowAdd(true); }} className="px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm font-medium hover:opacity-90">
           + Přidat typ počasí
         </button>
@@ -877,7 +877,7 @@ function WeatherTab() {
       )}
 
       <CodebookTable
-        items={types?.filter((t) => !t.deletedAt).map((t) => ({ id: t.id, name: t.name, badge: t.icon ?? undefined, isActive: t.isActive })) ?? []}
+        items={types?.filter((t) => t.isActive !== false).map((t) => ({ id: t.id, name: t.name, badge: t.icon ?? undefined, isActive: t.isActive })) ?? []}
         isLoading={isLoading}
         onEdit={openEdit}
         onToggle={async (id, isActive) => { await updateMutation.mutateAsync({ id, data: { name: "", isActive: !isActive } as never }); await invalidate(); }}

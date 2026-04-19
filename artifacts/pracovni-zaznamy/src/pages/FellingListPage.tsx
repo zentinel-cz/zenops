@@ -25,7 +25,7 @@ export default function FellingListPage() {
     regionId: regionId ?? undefined,
   };
 
-  const { data: records, isLoading } = useListFellingRecords(params as Record<string, never>);
+  const { data: records, isLoading } = useListFellingRecords(params);
   const { data: regions } = useListRegions();
   const deleteMutation = useDeleteFellingRecord();
 
@@ -46,12 +46,12 @@ export default function FellingListPage() {
 
   const handleExcelExport = () => {
     if (!records?.length) return;
-    exportFellingExcel(records as never);
+    exportFellingExcel(records);
   };
 
   const handlePdfExport = async () => {
     if (!records?.length) return;
-    await exportFellingListPdf(records as never, filterDesc);
+    await exportFellingListPdf(records, filterDesc);
   };
 
   return (

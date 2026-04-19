@@ -3,6 +3,7 @@ import { db, workersTable, vehiclesTable, machinesTable, regionsTable, weatherTy
 import { eq, isNull } from "drizzle-orm";
 import { requireAuth, requireAdmin } from "../middlewares/auth";
 import { logAudit } from "../lib/auditLog";
+import { queryString } from "../lib/query";
 
 const router = Router();
 
@@ -28,7 +29,7 @@ router.post("/workers", requireAdmin, async (req, res): Promise<void> => {
 
 router.patch("/workers/:id", requireAdmin, async (req, res): Promise<void> => {
   const session = getSession(req);
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const { firstName, lastName, note, isActive } = req.body as { firstName?: string; lastName?: string; note?: string; isActive?: boolean };
   const [before] = await db.select().from(workersTable).where(eq(workersTable.id, id));
   const updates: Record<string, unknown> = {};
@@ -44,7 +45,7 @@ router.patch("/workers/:id", requireAdmin, async (req, res): Promise<void> => {
 
 router.delete("/workers/:id", requireAdmin, async (req, res): Promise<void> => {
   const session = getSession(req);
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const [before] = await db.select().from(workersTable).where(eq(workersTable.id, id));
   const [w] = await db.update(workersTable).set({ deletedAt: new Date() }).where(eq(workersTable.id, id)).returning({ id: workersTable.id });
   if (!w) { res.status(404).json({ error: "Pracovník nenalezen" }); return; }
@@ -70,7 +71,7 @@ router.post("/vehicles", requireAdmin, async (req, res): Promise<void> => {
 
 router.patch("/vehicles/:id", requireAdmin, async (req, res): Promise<void> => {
   const session = getSession(req);
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const { name, licensePlate, note, isActive } = req.body as { name?: string; licensePlate?: string; note?: string; isActive?: boolean };
   const [before] = await db.select().from(vehiclesTable).where(eq(vehiclesTable.id, id));
   const updates: Record<string, unknown> = {};
@@ -86,7 +87,7 @@ router.patch("/vehicles/:id", requireAdmin, async (req, res): Promise<void> => {
 
 router.delete("/vehicles/:id", requireAdmin, async (req, res): Promise<void> => {
   const session = getSession(req);
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const [before] = await db.select().from(vehiclesTable).where(eq(vehiclesTable.id, id));
   const [v] = await db.update(vehiclesTable).set({ deletedAt: new Date() }).where(eq(vehiclesTable.id, id)).returning({ id: vehiclesTable.id });
   if (!v) { res.status(404).json({ error: "Vozidlo nenalezeno" }); return; }
@@ -112,7 +113,7 @@ router.post("/machines", requireAdmin, async (req, res): Promise<void> => {
 
 router.patch("/machines/:id", requireAdmin, async (req, res): Promise<void> => {
   const session = getSession(req);
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const { name, type, note, isActive } = req.body as { name?: string; type?: string; note?: string; isActive?: boolean };
   const [before] = await db.select().from(machinesTable).where(eq(machinesTable.id, id));
   const updates: Record<string, unknown> = {};
@@ -128,7 +129,7 @@ router.patch("/machines/:id", requireAdmin, async (req, res): Promise<void> => {
 
 router.delete("/machines/:id", requireAdmin, async (req, res): Promise<void> => {
   const session = getSession(req);
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const [before] = await db.select().from(machinesTable).where(eq(machinesTable.id, id));
   const [m] = await db.update(machinesTable).set({ deletedAt: new Date() }).where(eq(machinesTable.id, id)).returning({ id: machinesTable.id });
   if (!m) { res.status(404).json({ error: "Stroj nenalezen" }); return; }
@@ -154,7 +155,7 @@ router.post("/regions", requireAdmin, async (req, res): Promise<void> => {
 
 router.patch("/regions/:id", requireAdmin, async (req, res): Promise<void> => {
   const session = getSession(req);
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const { name, code, note, isActive } = req.body as { name?: string; code?: string; note?: string; isActive?: boolean };
   const [before] = await db.select().from(regionsTable).where(eq(regionsTable.id, id));
   const updates: Record<string, unknown> = {};
@@ -170,7 +171,7 @@ router.patch("/regions/:id", requireAdmin, async (req, res): Promise<void> => {
 
 router.delete("/regions/:id", requireAdmin, async (req, res): Promise<void> => {
   const session = getSession(req);
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const [before] = await db.select().from(regionsTable).where(eq(regionsTable.id, id));
   const [r] = await db.update(regionsTable).set({ deletedAt: new Date() }).where(eq(regionsTable.id, id)).returning({ id: regionsTable.id });
   if (!r) { res.status(404).json({ error: "Revír nenalezen" }); return; }
@@ -196,7 +197,7 @@ router.post("/weather-types", requireAdmin, async (req, res): Promise<void> => {
 
 router.patch("/weather-types/:id", requireAdmin, async (req, res): Promise<void> => {
   const session = getSession(req);
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const { name, icon, isActive } = req.body as { name?: string; icon?: string; isActive?: boolean };
   const [before] = await db.select().from(weatherTypesTable).where(eq(weatherTypesTable.id, id));
   const updates: Record<string, unknown> = {};
@@ -211,7 +212,7 @@ router.patch("/weather-types/:id", requireAdmin, async (req, res): Promise<void>
 
 router.delete("/weather-types/:id", requireAdmin, async (req, res): Promise<void> => {
   const session = getSession(req);
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const [before] = await db.select().from(weatherTypesTable).where(eq(weatherTypesTable.id, id));
   const [wt] = await db.update(weatherTypesTable).set({ deletedAt: new Date() }).where(eq(weatherTypesTable.id, id)).returning({ id: weatherTypesTable.id });
   if (!wt) { res.status(404).json({ error: "Typ počasí nenalezen" }); return; }
