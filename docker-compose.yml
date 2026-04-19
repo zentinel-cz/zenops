@@ -1,0 +1,69 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pracovni-zaznamy-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${PGDATABASE:-pracovni_zaznamy}
+      POSTGRES_USER: ${PGUSER:-postgres}
+      POSTGRES_PASSWORD: ${PGPASSWORD:?PGPASSWORD je povinný}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PGUSER:-postgres} -d ${PGDATABASE:-pracovni_zaznamy}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pracovni-zaznamy-app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 8080
+      DATABASE_URL: postgresql://${PGUSER:-postgres}:${PGPASSWORD}@postgres:5432/${PGDATABASE:-pracovni_zaznamy}
+      SESSION_SECRET: ${SESSION_SECRET:?SESSION_SECRET je povinný}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - "${APP_PORT:-3000}:8080"
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pracovni-zaznamy-migrate
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${PGUSER:-postgres}:${PGPASSWORD}@postgres:5432/${PGDATABASE:-pracovni_zaznamy}
+    command: ["pnpm", "--filter", "@workspace/db", "run", "push"]
+    restart: "no"
+
+  seed:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pracovni-zaznamy-seed
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${PGUSER:-postgres}:${PGPASSWORD}@postgres:5432/${PGDATABASE:-pracovni_zaznamy}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+    command: ["pnpm", "--filter", "@workspace/scripts", "run", "seed"]
+    restart: "no"
+
+volumes:
+  postgres_data:
+    name: pracovni-zaznamy-postgres-data
