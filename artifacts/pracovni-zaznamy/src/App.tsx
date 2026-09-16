@@ -18,6 +18,7 @@ import AdminUsersPage from "@/pages/AdminUsersPage";
 import AdminCodebooksPage from "@/pages/AdminCodebooksPage";
 import AdminAuditLogPage from "@/pages/AdminAuditLogPage";
 import NotFound from "@/pages/not-found";
+import FutureRolePage from "@/pages/FutureRolePage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -46,6 +47,10 @@ function AppRoutes() {
 
   if (location === "/login") {
     return <LoginPage />;
+  }
+
+  if (user && (user.role === "employee" || user.role === "manager")) {
+    return <FutureRolePage />;
   }
 
   return (

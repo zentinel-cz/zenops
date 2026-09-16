@@ -21,9 +21,9 @@ export default function MowingFormPage() {
   };
 
   return (
-    <div className="max-w-2xl">
-      <h1 className="text-xl font-bold text-foreground mb-5">Nový záznam sečení</h1>
-      <div className="bg-card border border-card-border rounded-xl p-5 shadow-sm">
+    <div className="zenops-app-width">
+      <h1 className="text-2xl font-bold text-foreground mb-5">Nový záznam sečení</h1>
+      <div className="zenops-form-shell rounded-[1.9rem] p-5 md:p-6 xl:p-7">
         <MowingForm
           onSubmit={handleSubmit}
           onCancel={() => navigate("/seceni")}

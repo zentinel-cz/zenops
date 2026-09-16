@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { db, workersTable, vehiclesTable, machinesTable, regionsTable, weatherTypesTable } from "@workspace/db";
-import { eq, isNull } from "drizzle-orm";
-import { requireAuth, requireAdmin } from "../middlewares/auth";
+import { db, usersTable, workersTable, contractorCompaniesTable, vehiclesTable, machinesTable, regionsTable, weatherTypesTable, mowingRecordsTable, mowingRecordMachinesTable } from "@workspace/db";
+import { and, desc, eq, isNull } from "drizzle-orm";
+import { requireOperationsAccess, requireAdmin } from "../middlewares/auth";
 import { logAudit } from "../lib/auditLog";
 import { queryString } from "../lib/query";
+import { normalizeMachineMthEntries, parseDbNumber } from "../lib/recordFields";
 
 const router = Router();
 
@@ -11,18 +12,65 @@ function getSession(req: unknown) {
   return (req as { session: { userId: number } }).session;
 }
 
+// ─── SUBDODAVATELSKÉ FIRMY ──────────────────────────────────────────────────
+
+router.get("/contractor-companies", requireOperationsAccess, async (_req, res): Promise<void> => {
+  const companies = await db.select().from(contractorCompaniesTable).where(isNull(contractorCompaniesTable.deletedAt)).orderBy(contractorCompaniesTable.name);
+  res.json(companies);
+});
+
+router.post("/contractor-companies", requireAdmin, async (req, res): Promise<void> => {
+  const session = getSession(req);
+  const { name, companyId, note, isActive } = req.body as { name?: string; companyId?: string | null; note?: string | null; isActive?: boolean };
+  if (!name?.trim()) { res.status(400).json({ error: "Název firmy je povinný" }); return; }
+  const [company] = await db.insert(contractorCompaniesTable).values({ name: name.trim(), companyId: companyId?.trim() || null, note: note?.trim() || null, isActive: isActive ?? true }).returning();
+  await logAudit({ userId: session.userId, action: "create", tableName: "contractor_companies", recordId: company.id, description: `Vytvořena subdodavatelská firma ${company.name}`, newData: company as Record<string, unknown> });
+  res.status(201).json(company);
+});
+
+router.patch("/contractor-companies/:id", requireAdmin, async (req, res): Promise<void> => {
+  const session = getSession(req);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
+  const { name, companyId, note, isActive } = req.body as { name?: string; companyId?: string | null; note?: string | null; isActive?: boolean };
+  const [before] = await db.select().from(contractorCompaniesTable).where(eq(contractorCompaniesTable.id, id));
+  if (!before) { res.status(404).json({ error: "Firma nenalezena" }); return; }
+  const updates: Record<string, unknown> = {};
+  if (name !== undefined) {
+    if (!name.trim()) { res.status(400).json({ error: "Název firmy je povinný" }); return; }
+    updates.name = name.trim();
+  }
+  if (companyId !== undefined) updates.companyId = companyId?.trim() || null;
+  if (note !== undefined) updates.note = note?.trim() || null;
+  if (isActive !== undefined) updates.isActive = isActive;
+  const [company] = await db.update(contractorCompaniesTable).set(updates).where(eq(contractorCompaniesTable.id, id)).returning();
+  await logAudit({ userId: session.userId, action: "update", tableName: "contractor_companies", recordId: id, description: `Upravena subdodavatelská firma ${company.name}`, oldData: before as Record<string, unknown>, newData: company as Record<string, unknown> });
+  res.json(company);
+});
+
+router.delete("/contractor-companies/:id", requireAdmin, async (req, res): Promise<void> => {
+  const session = getSession(req);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
+  const [before] = await db.select().from(contractorCompaniesTable).where(eq(contractorCompaniesTable.id, id));
+  if (!before) { res.status(404).json({ error: "Firma nenalezena" }); return; }
+  const linkedWorkers = await db.select({ id: workersTable.id }).from(workersTable).where(and(eq(workersTable.contractorCompanyId, id), isNull(workersTable.deletedAt)));
+  if (linkedWorkers.length > 0) { res.status(409).json({ error: "Firmu nelze smazat, dokud má přiřazené pracovníky" }); return; }
+  await db.update(contractorCompaniesTable).set({ deletedAt: new Date() }).where(eq(contractorCompaniesTable.id, id));
+  await logAudit({ userId: session.userId, action: "delete", tableName: "contractor_companies", recordId: id, description: `Smazána subdodavatelská firma ${before.name}`, oldData: before as Record<string, unknown> });
+  res.json({ message: "Firma smazána" });
+});
+
 // ─── WORKERS ──────────────────────────────────────────────────────────────────
 
-router.get("/workers", requireAuth, async (_req, res): Promise<void> => {
+router.get("/workers", requireOperationsAccess, async (_req, res): Promise<void> => {
   const workers = await db.select().from(workersTable).where(isNull(workersTable.deletedAt)).orderBy(workersTable.lastName);
   res.json(workers);
 });
 
 router.post("/workers", requireAdmin, async (req, res): Promise<void> => {
   const session = getSession(req);
-  const { firstName, lastName, note, isActive } = req.body as { firstName?: string; lastName?: string; note?: string; isActive?: boolean };
+  const { firstName, lastName, note, isActive, defaultBrushcutter, defaultSlopeMower, contractorCompanyId, defaultSubcontractor } = req.body as { firstName?: string; lastName?: string; note?: string; isActive?: boolean; defaultBrushcutter?: boolean; defaultSlopeMower?: boolean; contractorCompanyId?: number | null; defaultSubcontractor?: boolean };
   if (!firstName || !lastName) { res.status(400).json({ error: "Jméno a příjmení jsou povinné" }); return; }
-  const [w] = await db.insert(workersTable).values({ firstName, lastName, note, isActive: isActive ?? true }).returning();
+  const [w] = await db.insert(workersTable).values({ firstName, lastName, note, isActive: isActive ?? true, defaultBrushcutter: defaultBrushcutter ?? false, defaultSlopeMower: defaultSlopeMower ?? false, contractorCompanyId: contractorCompanyId ?? null, defaultSubcontractor: defaultSubcontractor ?? false }).returning();
   await logAudit({ userId: session.userId, action: "create", tableName: "workers", recordId: w.id, description: `Vytvořen pracovník ${w.firstName} ${w.lastName}`, newData: { firstName: w.firstName, lastName: w.lastName } });
   res.status(201).json(w);
 });
@@ -30,13 +78,17 @@ router.post("/workers", requireAdmin, async (req, res): Promise<void> => {
 router.patch("/workers/:id", requireAdmin, async (req, res): Promise<void> => {
   const session = getSession(req);
   const id = parseInt(queryString(req.params.id) ?? "", 10);
-  const { firstName, lastName, note, isActive } = req.body as { firstName?: string; lastName?: string; note?: string; isActive?: boolean };
+  const { firstName, lastName, note, isActive, defaultBrushcutter, defaultSlopeMower, contractorCompanyId, defaultSubcontractor } = req.body as { firstName?: string; lastName?: string; note?: string; isActive?: boolean; defaultBrushcutter?: boolean; defaultSlopeMower?: boolean; contractorCompanyId?: number | null; defaultSubcontractor?: boolean };
   const [before] = await db.select().from(workersTable).where(eq(workersTable.id, id));
   const updates: Record<string, unknown> = {};
   if (firstName != null) updates.firstName = firstName;
   if (lastName != null) updates.lastName = lastName;
   if (note !== undefined) updates.note = note;
   if (isActive != null) updates.isActive = isActive;
+  if (defaultBrushcutter != null) updates.defaultBrushcutter = defaultBrushcutter;
+  if (defaultSlopeMower != null) updates.defaultSlopeMower = defaultSlopeMower;
+  if (contractorCompanyId !== undefined) updates.contractorCompanyId = contractorCompanyId;
+  if (defaultSubcontractor != null) updates.defaultSubcontractor = defaultSubcontractor;
   const [w] = await db.update(workersTable).set(updates).where(eq(workersTable.id, id)).returning();
   if (!w) { res.status(404).json({ error: "Pracovník nenalezen" }); return; }
   await logAudit({ userId: session.userId, action: "update", tableName: "workers", recordId: id, description: `Upraven pracovník ${w.firstName} ${w.lastName}`, oldData: before as Record<string, unknown>, newData: w as Record<string, unknown> });
@@ -49,22 +101,23 @@ router.delete("/workers/:id", requireAdmin, async (req, res): Promise<void> => {
   const [before] = await db.select().from(workersTable).where(eq(workersTable.id, id));
   const [w] = await db.update(workersTable).set({ deletedAt: new Date() }).where(eq(workersTable.id, id)).returning({ id: workersTable.id });
   if (!w) { res.status(404).json({ error: "Pracovník nenalezen" }); return; }
+  await db.update(usersTable).set({ isActive: false }).where(eq(usersTable.workerId, id));
   await logAudit({ userId: session.userId, action: "delete", tableName: "workers", recordId: id, description: `Smazán pracovník ${before?.firstName ?? ""} ${before?.lastName ?? ""}`, oldData: before as Record<string, unknown> });
   res.json({ message: "Pracovník smazán" });
 });
 
 // ─── VEHICLES ─────────────────────────────────────────────────────────────────
 
-router.get("/vehicles", requireAuth, async (_req, res): Promise<void> => {
+router.get("/vehicles", requireOperationsAccess, async (_req, res): Promise<void> => {
   const vehicles = await db.select().from(vehiclesTable).where(isNull(vehiclesTable.deletedAt)).orderBy(vehiclesTable.name);
   res.json(vehicles);
 });
 
 router.post("/vehicles", requireAdmin, async (req, res): Promise<void> => {
   const session = getSession(req);
-  const { name, licensePlate, note, isActive } = req.body as { name?: string; licensePlate?: string; note?: string; isActive?: boolean };
+  const { name, licensePlate, note, isActive, defaultSlopeMower } = req.body as { name?: string; licensePlate?: string; note?: string; isActive?: boolean; defaultSlopeMower?: boolean };
   if (!name) { res.status(400).json({ error: "Název je povinný" }); return; }
-  const [v] = await db.insert(vehiclesTable).values({ name, licensePlate, note, isActive: isActive ?? true }).returning();
+  const [v] = await db.insert(vehiclesTable).values({ name, licensePlate, note, isActive: isActive ?? true, defaultSlopeMower: defaultSlopeMower ?? false }).returning();
   await logAudit({ userId: session.userId, action: "create", tableName: "vehicles", recordId: v.id, description: `Vytvořeno vozidlo ${v.name}${v.licensePlate ? ` (${v.licensePlate})` : ""}`, newData: { name: v.name, licensePlate: v.licensePlate } });
   res.status(201).json(v);
 });
@@ -72,13 +125,14 @@ router.post("/vehicles", requireAdmin, async (req, res): Promise<void> => {
 router.patch("/vehicles/:id", requireAdmin, async (req, res): Promise<void> => {
   const session = getSession(req);
   const id = parseInt(queryString(req.params.id) ?? "", 10);
-  const { name, licensePlate, note, isActive } = req.body as { name?: string; licensePlate?: string; note?: string; isActive?: boolean };
+  const { name, licensePlate, note, isActive, defaultSlopeMower } = req.body as { name?: string; licensePlate?: string; note?: string; isActive?: boolean; defaultSlopeMower?: boolean };
   const [before] = await db.select().from(vehiclesTable).where(eq(vehiclesTable.id, id));
   const updates: Record<string, unknown> = {};
   if (name != null) updates.name = name;
   if (licensePlate !== undefined) updates.licensePlate = licensePlate;
   if (note !== undefined) updates.note = note;
   if (isActive != null) updates.isActive = isActive;
+  if (defaultSlopeMower != null) updates.defaultSlopeMower = defaultSlopeMower;
   const [v] = await db.update(vehiclesTable).set(updates).where(eq(vehiclesTable.id, id)).returning();
   if (!v) { res.status(404).json({ error: "Vozidlo nenalezeno" }); return; }
   await logAudit({ userId: session.userId, action: "update", tableName: "vehicles", recordId: id, description: `Upraveno vozidlo ${v.name}`, oldData: before as Record<string, unknown>, newData: v as Record<string, unknown> });
@@ -97,16 +151,16 @@ router.delete("/vehicles/:id", requireAdmin, async (req, res): Promise<void> => 
 
 // ─── MACHINES ─────────────────────────────────────────────────────────────────
 
-router.get("/machines", requireAuth, async (_req, res): Promise<void> => {
+router.get("/machines", requireOperationsAccess, async (_req, res): Promise<void> => {
   const machines = await db.select().from(machinesTable).where(isNull(machinesTable.deletedAt)).orderBy(machinesTable.name);
   res.json(machines);
 });
 
 router.post("/machines", requireAdmin, async (req, res): Promise<void> => {
   const session = getSession(req);
-  const { name, type, note, isActive } = req.body as { name?: string; type?: string; note?: string; isActive?: boolean };
+  const { name, type, note, isActive, defaultAccessoryId, defaultOperatorId, mowingCategory } = req.body as { name?: string; type?: string; note?: string; isActive?: boolean; defaultAccessoryId?: number | null; defaultOperatorId?: number | null; mowingCategory?: string | null };
   if (!name || !type) { res.status(400).json({ error: "Název a typ jsou povinné" }); return; }
-  const [m] = await db.insert(machinesTable).values({ name, type, note, isActive: isActive ?? true }).returning();
+  const [m] = await db.insert(machinesTable).values({ name, type, note, isActive: isActive ?? true, defaultAccessoryId: defaultAccessoryId ?? null, defaultOperatorId: defaultOperatorId ?? null, mowingCategory: mowingCategory ?? null }).returning();
   await logAudit({ userId: session.userId, action: "create", tableName: "machines", recordId: m.id, description: `Vytvořen stroj ${m.name} (${m.type})`, newData: { name: m.name, type: m.type } });
   res.status(201).json(m);
 });
@@ -114,17 +168,40 @@ router.post("/machines", requireAdmin, async (req, res): Promise<void> => {
 router.patch("/machines/:id", requireAdmin, async (req, res): Promise<void> => {
   const session = getSession(req);
   const id = parseInt(queryString(req.params.id) ?? "", 10);
-  const { name, type, note, isActive } = req.body as { name?: string; type?: string; note?: string; isActive?: boolean };
+  const { name, type, note, isActive, defaultAccessoryId, defaultOperatorId, mowingCategory } = req.body as { name?: string; type?: string; note?: string; isActive?: boolean; defaultAccessoryId?: number | null; defaultOperatorId?: number | null; mowingCategory?: string | null };
   const [before] = await db.select().from(machinesTable).where(eq(machinesTable.id, id));
   const updates: Record<string, unknown> = {};
   if (name != null) updates.name = name;
   if (type != null) updates.type = type;
   if (note !== undefined) updates.note = note;
   if (isActive != null) updates.isActive = isActive;
+  if (defaultAccessoryId !== undefined) updates.defaultAccessoryId = defaultAccessoryId;
+  if (defaultOperatorId !== undefined) updates.defaultOperatorId = defaultOperatorId;
+  if (mowingCategory !== undefined) updates.mowingCategory = mowingCategory;
   const [m] = await db.update(machinesTable).set(updates).where(eq(machinesTable.id, id)).returning();
   if (!m) { res.status(404).json({ error: "Stroj nenalezen" }); return; }
   await logAudit({ userId: session.userId, action: "update", tableName: "machines", recordId: id, description: `Upraven stroj ${m.name}`, oldData: before as Record<string, unknown>, newData: m as Record<string, unknown> });
   res.json(m);
+});
+
+router.get("/machines/:id/last-mth", requireOperationsAccess, async (req, res): Promise<void> => {
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
+  if (!Number.isInteger(id)) { res.status(400).json({ error: "Neplatné ID stroje" }); return; }
+
+  const rows = await db
+    .select({ record: mowingRecordsTable })
+    .from(mowingRecordMachinesTable)
+    .innerJoin(mowingRecordsTable, eq(mowingRecordMachinesTable.mowingRecordId, mowingRecordsTable.id))
+    .where(and(eq(mowingRecordMachinesTable.machineId, id), isNull(mowingRecordsTable.deletedAt)))
+    .orderBy(desc(mowingRecordsTable.date), desc(mowingRecordsTable.id));
+
+  for (const { record } of rows) {
+    const entry = normalizeMachineMthEntries(record.machineMthEntries).find((item) => item.machineId === id);
+    const value = entry?.mthEnd ?? (rows.length === 1 ? parseDbNumber(record.mthEnd) : null);
+    if (value != null) { res.json({ machineId: id, mthEnd: value, recordDate: record.date }); return; }
+  }
+
+  res.json({ machineId: id, mthEnd: null, recordDate: null });
 });
 
 router.delete("/machines/:id", requireAdmin, async (req, res): Promise<void> => {
@@ -139,7 +216,7 @@ router.delete("/machines/:id", requireAdmin, async (req, res): Promise<void> => 
 
 // ─── REGIONS ──────────────────────────────────────────────────────────────────
 
-router.get("/regions", requireAuth, async (_req, res): Promise<void> => {
+router.get("/regions", requireOperationsAccess, async (_req, res): Promise<void> => {
   const regions = await db.select().from(regionsTable).where(isNull(regionsTable.deletedAt)).orderBy(regionsTable.name);
   res.json(regions);
 });
@@ -181,7 +258,7 @@ router.delete("/regions/:id", requireAdmin, async (req, res): Promise<void> => {
 
 // ─── WEATHER TYPES ────────────────────────────────────────────────────────────
 
-router.get("/weather-types", requireAuth, async (_req, res): Promise<void> => {
+router.get("/weather-types", requireOperationsAccess, async (_req, res): Promise<void> => {
   const wt = await db.select().from(weatherTypesTable).where(isNull(weatherTypesTable.deletedAt)).orderBy(weatherTypesTable.name);
   res.json(wt);
 });

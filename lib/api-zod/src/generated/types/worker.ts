@@ -12,6 +12,11 @@ export interface Worker {
   lastName: string;
   /** @nullable */
   note?: string | null;
+  defaultBrushcutter: boolean;
+  defaultSlopeMower: boolean;
+  /** @nullable */
+  contractorCompanyId?: number | null;
+  defaultSubcontractor: boolean;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

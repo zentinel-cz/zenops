@@ -29,16 +29,18 @@ export default function FellingFormPage() {
   };
 
   return (
-    <div className="max-w-2xl">
+    <div className="zenops-app-width">
       <div className="mb-5">
-        <h1 className="text-xl font-bold text-foreground">Nový záznam kácení</h1>
+        <h1 className="text-2xl font-bold text-foreground">Nový záznam kácení</h1>
         <p className="text-sm text-muted-foreground mt-1">Vyplňte údaje o dnešní práci v terénu</p>
       </div>
-      <FellingForm
-        onSubmit={handleSubmit}
-        onCancel={() => navigate("/kaceni")}
-        isLoading={createMutation.isPending}
-      />
+      <div className="zenops-form-shell rounded-[1.9rem] p-5 md:p-6 xl:p-7">
+        <FellingForm
+          onSubmit={handleSubmit}
+          onCancel={() => navigate("/kaceni")}
+          isLoading={createMutation.isPending}
+        />
+      </div>
     </div>
   );
 }

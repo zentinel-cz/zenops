@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { FELLING_WORK_TYPE_OPTIONS, MOWING_KIND_OPTIONS, MOWING_SECTION_OPTIONS, MOWING_WORK_TYPE_OPTIONS, getOptionLabel } from "@/lib/recordOptions";
 
 function formatDate(iso: string) {
   if (!iso) return "—";
@@ -23,6 +24,68 @@ const LIGHT_GREEN = [236, 245, 236] as [number, number, number];
 const GRAY_BORDER = [200, 210, 200] as [number, number, number];
 const TEXT_DARK = [30, 40, 30] as [number, number, number];
 const TEXT_MUTED = [100, 115, 100] as [number, number, number];
+
+function formatWorkerTimeEntries(entries?: Array<{
+  workerId: number;
+  startTime?: string | null;
+  endTime?: string | null;
+  shiftType?: "morning" | "evening" | "custom" | null;
+  worker?: { firstName: string; lastName: string } | null;
+}>) {
+  if (!entries?.length) return "—";
+  return entries
+    .map((entry) => {
+      const name = entry.worker ? `${entry.worker.firstName} ${entry.worker.lastName}` : `Pracovník #${entry.workerId}`;
+      const time = entry.startTime && entry.endTime ? `${entry.startTime} – ${entry.endTime}` : "bez času";
+      const shift = entry.shiftType === "morning" ? "ranní" : entry.shiftType === "evening" ? "odpolední" : entry.shiftType === "custom" ? "vlastní" : null;
+      return `${name} (${shift ? `${shift}, ` : ""}${time})`;
+    })
+    .join(", ");
+}
+
+function formatMachineMthEntries(entries?: Array<{
+  machineId: number;
+  startTime?: string | null;
+  endTime?: string | null;
+  mthStart?: number | string | null;
+  mthEnd?: number | string | null;
+  mthTotal?: number | string | null;
+  fuelConsumption?: number | string | null;
+  refueling?: number | string | null;
+  machine?: { name: string } | null;
+  accessory?: { name: string } | null;
+  operator?: { firstName: string; lastName: string } | null;
+}>) {
+  if (!entries?.length) return "—";
+  return entries
+    .map((entry) => {
+      const name = entry.machine?.name ?? `Stroj #${entry.machineId}`;
+      const accessory = entry.accessory?.name ?? "bez příslušenství";
+      const operator = entry.operator ? `${entry.operator.firstName} ${entry.operator.lastName}` : "bez obsluhy";
+      const time = entry.startTime && entry.endTime ? `${entry.startTime} – ${entry.endTime}` : "bez času";
+      const range = entry.mthStart != null && entry.mthEnd != null ? `${entry.mthStart} → ${entry.mthEnd}` : "bez rozsahu";
+      const total = entry.mthTotal != null ? `${entry.mthTotal} h` : "bez součtu";
+      const fuel = entry.fuelConsumption != null ? `${entry.fuelConsumption} l` : "—";
+      const refueling = entry.refueling != null ? `${entry.refueling} l` : "—";
+      return `${name} + ${accessory}, obsluha ${operator} (${time}, ${range}, ${total}, spotřeba ${fuel}, tankování ${refueling})`;
+    })
+    .join(", ");
+}
+
+function formatVehicleEntries(entries?: Array<{
+  vehicleId: number;
+  kmStart?: number | string | null;
+  kmEnd?: number | string | null;
+  kmTotal?: number | string | null;
+  refueling?: number | string | null;
+  vehicle?: { name: string; licensePlate?: string | null } | null;
+}>) {
+  if (!entries?.length) return "—";
+  return entries.map((entry, index) => {
+    const name = entry.vehicle ? `${entry.vehicle.name}${entry.vehicle.licensePlate ? ` (${entry.vehicle.licensePlate})` : ""}` : `Auto #${entry.vehicleId}`;
+    return `${index + 1}. ${name}: ${entry.kmStart ?? "?"} → ${entry.kmEnd ?? "?"} km, celkem ${entry.kmTotal ?? "?"} km, tankování ${entry.refueling ?? "?"} l`;
+  }).join("; ");
+}
 
 async function arrayBufferToBase64(buf: ArrayBuffer): Promise<string> {
   return new Promise((resolve) => {
@@ -112,19 +175,31 @@ export async function exportFellingPdf(record: {
   id: number;
   date: string;
   region: { name: string; code?: string | null };
+  workType?: string | null;
   location?: string | null;
   user: { fullName: string };
   startTime?: string | null;
   endTime?: string | null;
   weatherType?: { name: string } | null;
+  weatherTypes?: { name: string }[];
   temperature?: number | null;
   workers: { firstName: string; lastName: string }[];
+  manualWorkers?: { firstName: string; lastName: string }[];
+  machineWorkers?: { firstName: string; lastName: string }[];
+  workerTimeEntries?: { workerId: number; startTime?: string | null; endTime?: string | null; worker?: { firstName: string; lastName: string } | null }[];
   vehicles: { name: string; licensePlate?: string | null }[];
   machines: { name: string }[];
+  machineMthEntries?: { machineId: number; startTime?: string | null; endTime?: string | null; mthStart?: number | string | null; mthEnd?: number | string | null; mthTotal?: number | string | null; fuelConsumption?: number | string | null; refueling?: number | string | null; machine?: { name: string } | null }[];
   accessories: { name: string }[];
   mth?: number | string | null;
   fuelConsumption?: number | string | null;
   refueling?: number | string | null;
+  assignedAverage?: string | null;
+  vehicleKmStart?: number | string | null;
+  vehicleKmEnd?: number | string | null;
+  vehicleKmTotal?: number | string | null;
+  vehicleRefueling?: number | string | null;
+  trafficMarking?: string | null;
   note?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -138,6 +213,7 @@ export async function exportFellingPdf(record: {
   let y = 28;
 
   y = addSection(doc, y, "Základní informace", [
+    ["Typ práce", getOptionLabel(FELLING_WORK_TYPE_OPTIONS, record.workType) ?? "—"],
     ["Datum", formatDate(record.date)],
     ["Kraj / Revír", record.region.name + (record.region.code ? ` (${record.region.code})` : "")],
     ["Místo", record.location ?? "—"],
@@ -148,14 +224,21 @@ export async function exportFellingPdf(record: {
     ["Pracovní doba", record.startTime && record.endTime
       ? `${record.startTime} – ${record.endTime}`
       : record.startTime ? `od ${record.startTime}` : "—"],
-    ["Počasí", record.weatherType?.name ?? "—"],
+    ["Počasí", record.weatherTypes?.length ? record.weatherTypes.map((item) => item.name).join(", ") : record.weatherType?.name ?? "—"],
     ["Teplota", record.temperature != null ? `${record.temperature} °C` : "—"],
   ]);
 
   y = addSection(doc, y, "Obsluha / Pracovníci", [
-    ["Pracovníci", record.workers.length
-      ? record.workers.map((w) => `${w.firstName} ${w.lastName}`).join(", ")
+    ["Ruční obsluha", record.manualWorkers?.length
+      ? record.manualWorkers.map((w) => `${w.firstName} ${w.lastName}`).join(", ")
+      : record.workers.length
+        ? record.workers.map((w) => `${w.firstName} ${w.lastName}`).join(", ")
+        : "—"],
+    ["Strojní obsluha", record.machineWorkers?.length
+      ? record.machineWorkers.map((w) => `${w.firstName} ${w.lastName}`).join(", ")
       : "—"],
+    ["Časy pracovníků", formatWorkerTimeEntries(record.workerTimeEntries)],
+    ["Přiřazený průměr", record.assignedAverage ?? "—"],
   ]);
 
   y = addSection(doc, y, "Technika", [
@@ -163,14 +246,23 @@ export async function exportFellingPdf(record: {
       ? record.vehicles.map((v) => v.name + (v.licensePlate ? ` (${v.licensePlate})` : "")).join(", ")
       : "—"],
     ["Stroje", record.machines.length ? record.machines.map((m) => m.name).join(", ") : "—"],
+    ["MTH po strojích", formatMachineMthEntries(record.machineMthEntries)],
     ["Příslušenství", record.accessories.length ? record.accessories.map((a) => a.name).join(", ") : "—"],
   ]);
 
   y = addSection(doc, y, "Provozní hodnoty", [
-    ["MTH", record.mth != null ? `${record.mth} mth` : "—"],
-    ["Spotřeba", record.fuelConsumption != null ? `${record.fuelConsumption} l` : "—"],
-    ["Tankování", record.refueling != null ? `${record.refueling} l` : "—"],
+    ["Celkové MTH", record.mth != null ? `${record.mth} mth` : "—"],
+    ["Spotřeba stroje", record.fuelConsumption != null ? `${record.fuelConsumption} l` : "—"],
+    ["Tankování stroje", record.refueling != null ? `${record.refueling} l` : "—"],
+    ["Počáteční km", record.vehicleKmStart != null ? `${record.vehicleKmStart}` : "—"],
+    ["Koncové km", record.vehicleKmEnd != null ? `${record.vehicleKmEnd}` : "—"],
+    ["Celkem km", record.vehicleKmTotal != null ? `${record.vehicleKmTotal} km` : "—"],
+    ["Tankování vozidla", record.vehicleRefueling != null ? `${record.vehicleRefueling} l` : "—"],
   ]);
+
+  if (record.trafficMarking) {
+    y = addSection(doc, y, "Dopravní značení", [["DIO", record.trafficMarking]]);
+  }
 
   if (record.note) {
     y = addSection(doc, y, "Poznámka", [["Poznámka", record.note]]);
@@ -190,20 +282,43 @@ export async function exportMowingPdf(record: {
   id: number;
   date: string;
   region: { name: string };
+  workType?: string | null;
+  mowingSection?: string | null;
+  mowingKind?: string | null;
+  manualMowingKind?: string | null;
+  contractorCompanyId?: number | null;
+  contractorCompany?: { name: string; companyId?: string | null } | null;
   location?: string | null;
   user: { fullName: string };
   startTime?: string | null;
   endTime?: string | null;
   weatherType?: { name: string } | null;
+  weatherTypes?: { name: string }[];
+  temperature?: number | null;
   vehicle?: { name: string; licensePlate?: string | null } | null;
+  vehicleEntries?: { vehicleId: number; kmStart?: number | null; kmEnd?: number | null; kmTotal?: number | null; refueling?: number | null; vehicle?: { name: string; licensePlate?: string | null } | null }[];
   workers: { firstName: string; lastName: string }[];
+  manualWorkers?: { firstName: string; lastName: string }[];
+  machineWorkers?: { firstName: string; lastName: string }[];
+  workerTimeEntries?: { workerId: number; startTime?: string | null; endTime?: string | null; shiftType?: "morning" | "evening" | "custom" | null; worker?: { firstName: string; lastName: string } | null }[];
   machines: { name: string }[];
+  machineMthEntries?: { machineId: number; startTime?: string | null; endTime?: string | null; mthStart?: number | null; mthEnd?: number | null; mthTotal?: number | null; fuelConsumption?: number | null; refueling?: number | null; machine?: { name: string } | null }[];
   accessories: { name: string }[];
   mthStart?: number | null;
   mthEnd?: number | null;
   mthTotal?: number | null;
   fuelConsumption?: number | null;
   refueling?: number | null;
+  assignedAverage?: string | null;
+  dayHours?: number | null;
+  nightHours?: number | null;
+  laborHours?: number | null;
+  vehicleKmStart?: number | null;
+  vehicleKmEnd?: number | null;
+  vehicleKmTotal?: number | null;
+  vehicleRefueling?: number | null;
+  brushcutterRefueling?: number | null;
+  trafficMarking?: string | null;
   note?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -212,11 +327,16 @@ export async function exportMowingPdf(record: {
   await loadFonts(doc);
 
   const subtitle = `${formatDate(record.date)} — ${record.region.name}`;
-  addHeader(doc, "Záznam sečení", subtitle);
+  addHeader(doc, "Denní záznam sečení", subtitle);
 
   let y = 28;
 
   y = addSection(doc, y, "Základní informace", [
+    ["Typ práce", getOptionLabel(MOWING_WORK_TYPE_OPTIONS, record.workType) ?? "—"],
+    ["Sekce", getOptionLabel(MOWING_SECTION_OPTIONS, record.mowingSection) ?? "—"],
+    ["Druh sečení", getOptionLabel(MOWING_KIND_OPTIONS, record.mowingKind) ?? "—"],
+    ["Varianta ručního sečení", record.manualMowingKind === "core" ? "Kmenoví zaměstnanci – křovinořezy" : record.manualMowingKind === "slope" ? "Svahové sekačky" : record.manualMowingKind === "subcontractor" ? "Subdodavatel" : "—"],
+    ["Subdodavatelská firma", record.contractorCompany ? `${record.contractorCompany.name}${record.contractorCompany.companyId ? ` (IČO ${record.contractorCompany.companyId})` : ""}` : "—"],
     ["Datum", formatDate(record.date)],
     ["Kraj / Revír", record.region.name],
     ["Místo", record.location ?? "—"],
@@ -227,30 +347,37 @@ export async function exportMowingPdf(record: {
     ["Pracovní doba", record.startTime && record.endTime
       ? `${record.startTime} – ${record.endTime}`
       : record.startTime ?? record.endTime ?? "—"],
-    ["Počasí", record.weatherType?.name ?? "—"],
+    ["Počasí", record.weatherTypes?.length ? record.weatherTypes.map((item) => item.name).join(", ") : record.weatherType?.name ?? "—"],
+    ["Teplota", record.temperature != null ? `${record.temperature} °C` : "—"],
   ]);
 
   y = addSection(doc, y, "Obsluha / Pracovníci", [
-    ["Pracovníci", record.workers.length
-      ? record.workers.map((w) => `${w.firstName} ${w.lastName}`).join(", ")
+    ["Strojní obsluha", record.machineWorkers?.length
+      ? record.machineWorkers.map((w) => `${w.firstName} ${w.lastName}`).join(", ")
       : "—"],
+    ["Časy pracovníků", formatWorkerTimeEntries(record.workerTimeEntries)],
+    ["Přiřazený průměr", record.assignedAverage ?? "—"],
     ["Stroj / Traktor", record.machines.length ? record.machines.map((m) => m.name).join(", ") : "—"],
     ["Příslušenství", record.accessories.length ? record.accessories.map((a) => a.name).join(", ") : "—"],
   ]);
 
-  y = addSection(doc, y, "Motohodiny (MTH)", [
-    ["Počáteční MTH", record.mthStart != null ? `${record.mthStart}` : "—"],
-    ["Koncové MTH", record.mthEnd != null ? `${record.mthEnd}` : "—"],
+  y = addSection(doc, y, record.manualMowingKind === "slope" ? "Svahové sekačky a provoz" : "Traktory a provoz", [
+    ["Základní sestavy", formatMachineMthEntries(record.machineMthEntries)],
     ["Celkové MTH", record.mthTotal != null ? `${record.mthTotal} hod` : "—"],
   ]);
 
   y = addSection(doc, y, "Provozní hodnoty", [
-    ["Auto / Vozidlo", record.vehicle
-      ? `${record.vehicle.name}${record.vehicle.licensePlate ? ` (${record.vehicle.licensePlate})` : ""}`
-      : "—"],
-    ["Spotřeba", record.fuelConsumption != null ? `${record.fuelConsumption} l` : "—"],
-    ["Tankování", record.refueling != null ? `${record.refueling} l` : "—"],
+    ["Jízdy aut", formatVehicleEntries(record.vehicleEntries)],
+    ["Celkem km", record.vehicleKmTotal != null ? `${record.vehicleKmTotal} km` : "—"],
+    ["Tankování aut celkem", record.vehicleRefueling != null ? `${record.vehicleRefueling} l` : "—"],
+    ["Spotřeba stroje", record.fuelConsumption != null ? `${record.fuelConsumption} l` : "—"],
+    ["Tankování stroje", record.refueling != null ? `${record.refueling} l` : "—"],
+    ["Tankování křovinořezů", record.brushcutterRefueling != null ? `${record.brushcutterRefueling} l` : "—"],
   ]);
+
+  if (record.trafficMarking) {
+    y = addSection(doc, y, "Dopravní značení", [["DIO", record.trafficMarking]]);
+  }
 
   if (record.note) {
     y = addSection(doc, y, "Poznámka / Porucha", [["Poznámka", record.note]]);
@@ -279,6 +406,7 @@ export async function exportFellingListPdf(
     workers: { firstName: string; lastName: string }[];
     vehicles: { name: string }[];
     machines: { name: string }[];
+    machineMthEntries?: { machineId: number; startTime?: string | null; endTime?: string | null; mthTotal?: number | string | null; fuelConsumption?: number | string | null; refueling?: number | string | null; machine?: { name: string } | null }[];
     mth?: number | string | null;
     fuelConsumption?: number | string | null;
   }[],
@@ -306,14 +434,14 @@ export async function exportFellingListPdf(
     r.weatherType?.name ?? "—",
     r.workers.map((w) => `${w.firstName} ${w.lastName}`).join(", ") || "—",
     r.vehicles.map((v) => v.name).join(", ") || "—",
-    r.machines.map((m) => m.name).join(", ") || "—",
+    formatMachineMthEntries(r.machineMthEntries),
     r.mth != null ? `${r.mth}` : "—",
     r.fuelConsumption != null ? `${r.fuelConsumption} l` : "—",
   ]);
 
   autoTable(doc, {
     startY: 24,
-    head: [["Datum", "Revír", "Místo", "Autor", "Doba", "Počasí", "Pracovníci", "Vozidla", "Stroje", "MTH", "Spotřeba"]],
+    head: [["Datum", "Revír", "Místo", "Autor", "Doba", "Počasí", "Pracovníci", "Vozidla", "MTH po strojích", "MTH celkem", "Spotřeba"]],
     body: tableData,
     styles: { fontSize: 7.5, cellPadding: 2, textColor: TEXT_DARK, font: "Roboto" },
     headStyles: { fillColor: GREEN, textColor: [255, 255, 255], fontStyle: "bold", fontSize: 8, font: "Roboto" },
@@ -357,8 +485,8 @@ export async function exportMowingListPdf(
     workers: { firstName: string; lastName: string }[];
     machines: { name: string }[];
     vehicle?: { name: string } | null;
-    mthStart?: number | null;
-    mthEnd?: number | null;
+    vehicleEntries?: { vehicleId: number; kmStart?: number | null; kmEnd?: number | null; kmTotal?: number | null; refueling?: number | null; vehicle?: { name: string; licensePlate?: string | null } | null }[];
+    machineMthEntries?: { machineId: number; startTime?: string | null; endTime?: string | null; mthStart?: number | null; mthEnd?: number | null; mthTotal?: number | null; fuelConsumption?: number | null; refueling?: number | null; machine?: { name: string } | null }[];
     mthTotal?: number | null;
     fuelConsumption?: number | null;
   }[],
@@ -385,17 +513,15 @@ export async function exportMowingListPdf(
     r.startTime && r.endTime ? `${r.startTime}–${r.endTime}` : r.startTime ?? "—",
     r.weatherType?.name ?? "—",
     r.workers.map((w) => `${w.firstName} ${w.lastName}`).join(", ") || "—",
-    r.machines.map((m) => m.name).join(", ") || "—",
-    r.vehicle?.name ?? "—",
-    r.mthStart != null ? `${r.mthStart}` : "—",
-    r.mthEnd != null ? `${r.mthEnd}` : "—",
+    formatMachineMthEntries(r.machineMthEntries),
+    formatVehicleEntries(r.vehicleEntries),
     r.mthTotal != null ? `${r.mthTotal}` : "—",
     r.fuelConsumption != null ? `${r.fuelConsumption} l` : "—",
   ]);
 
   autoTable(doc, {
     startY: 24,
-    head: [["Datum", "Revír", "Místo", "Autor", "Doba", "Počasí", "Pracovníci", "Stroje", "Vozidlo", "MTH zač.", "MTH konc.", "MTH cel.", "Spotřeba"]],
+    head: [["Datum", "Revír", "Místo", "Autor", "Doba", "Počasí", "Pracovníci", "MTH po strojích", "Jízdy aut", "MTH cel.", "Spotřeba"]],
     body: tableData,
     styles: { fontSize: 7, cellPadding: 2, textColor: TEXT_DARK, font: "Roboto" },
     headStyles: { fillColor: GREEN, textColor: [255, 255, 255], fontStyle: "bold", fontSize: 7.5, font: "Roboto" },
@@ -408,12 +534,10 @@ export async function exportMowingListPdf(
       4: { cellWidth: 16 },
       5: { cellWidth: 16 },
       6: { cellWidth: 34 },
-      7: { cellWidth: 26 },
+      7: { cellWidth: 36 },
       8: { cellWidth: 22 },
       9: { cellWidth: 15 },
       10: { cellWidth: 15 },
-      11: { cellWidth: 15 },
-      12: { cellWidth: 15 },
     },
     didDrawPage: () => {
       const pageHeight = doc.internal.pageSize.height;

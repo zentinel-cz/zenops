@@ -7,6 +7,7 @@ export const vehiclesTable = pgTable("vehicles", {
   name: text("name").notNull(),
   licensePlate: text("license_plate"),
   note: text("note"),
+  defaultSlopeMower: boolean("default_slope_mower").notNull().default(false),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),

@@ -41,6 +41,13 @@ testem.log
 .DS_Store
 Thumbs.db
 
+# local configuration and production-only working files
+.env
+.env.*
+!.env.example
+/.backup-*
+/recordEntries.ts
+
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
 

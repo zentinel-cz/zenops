@@ -7,17 +7,21 @@
  */
 import type { Accessory } from "./accessory";
 import type { Machine } from "./machine";
+import type { MachineMthEntry } from "./machineMthEntry";
 import type { Region } from "./region";
 import type { User } from "./user";
 import type { Vehicle } from "./vehicle";
 import type { WeatherType } from "./weatherType";
 import type { Worker } from "./worker";
+import type { WorkerTimeEntry } from "./workerTimeEntry";
 
 export interface FellingRecord {
   id: number;
   date: string;
   userId: number;
   regionId: number;
+  /** @nullable */
+  workType?: string | null;
   /** @nullable */
   location?: string | null;
   /** @nullable */
@@ -26,6 +30,7 @@ export interface FellingRecord {
   endTime?: string | null;
   /** @nullable */
   weatherTypeId?: number | null;
+  weatherTypeIds?: number[];
   /** @nullable */
   temperature?: number | null;
   /** @nullable */
@@ -35,9 +40,25 @@ export interface FellingRecord {
   /** @nullable */
   refueling?: number | null;
   workerIds: number[];
+  manualWorkerIds: number[];
+  machineWorkerIds: number[];
+  workerTimeEntries: WorkerTimeEntry[];
   vehicleIds: number[];
   machineIds: number[];
+  machineMthEntries: MachineMthEntry[];
   accessoryIds: number[];
+  /** @nullable */
+  assignedAverage?: string | null;
+  /** @nullable */
+  vehicleKmStart?: number | null;
+  /** @nullable */
+  vehicleKmEnd?: number | null;
+  /** @nullable */
+  vehicleKmTotal?: number | null;
+  /** @nullable */
+  vehicleRefueling?: number | null;
+  /** @nullable */
+  trafficMarking?: string | null;
   /** @nullable */
   note?: string | null;
   createdAt: string;
@@ -45,7 +66,10 @@ export interface FellingRecord {
   user: User;
   region: Region;
   weatherType?: WeatherType | null;
+  weatherTypes: WeatherType[];
   workers: Worker[];
+  manualWorkers: Worker[];
+  machineWorkers: Worker[];
   vehicles: Vehicle[];
   machines: Machine[];
   accessories: Accessory[];

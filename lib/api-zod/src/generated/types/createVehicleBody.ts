@@ -12,5 +12,6 @@ export interface CreateVehicleBody {
   licensePlate?: string | null;
   /** @nullable */
   note?: string | null;
+  defaultSlopeMower?: boolean;
   isActive: boolean;
 }

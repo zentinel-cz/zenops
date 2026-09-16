@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/auth-context";
 import { formatDate } from "@/lib/utils";
 import { exportFellingExcel } from "@/lib/exportExcel";
 import { exportFellingListPdf } from "@/lib/exportPdf";
+import { FELLING_WORK_TYPE_OPTIONS, getOptionLabel } from "@/lib/recordOptions";
 
 export default function FellingListPage() {
   const { user } = useAuth();
@@ -171,6 +172,9 @@ export default function FellingListPage() {
                       {r.location && (
                         <span className="text-xs text-muted-foreground">• {r.location}</span>
                       )}
+                      {r.workType && (
+                        <span className="text-xs text-primary">• {getOptionLabel(FELLING_WORK_TYPE_OPTIONS, r.workType)}</span>
+                      )}
                     </div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
                       {user?.role === "admin" && (
@@ -188,7 +192,7 @@ export default function FellingListPage() {
                       {r.machines.length > 0 && (
                         <span>🚜 {r.machines.length} {r.machines.length === 1 ? "stroj" : "stroje/strojů"}</span>
                       )}
-                      {r.mth != null && <span>MTH: {r.mth}</span>}
+                      {r.mth != null && <span>MTH celkem: {r.mth}</span>}
                       {r.weatherType && <span>☀️ {r.weatherType.name}</span>}
                     </div>
                   </div>

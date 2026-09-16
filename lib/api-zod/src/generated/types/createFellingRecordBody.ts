@@ -5,10 +5,14 @@
  * API pro evidenci denních pracovních záznamů - Kácení a Sečení
  * OpenAPI spec version: 0.1.0
  */
+import type { MachineMthEntry } from "./machineMthEntry";
+import type { WorkerTimeEntry } from "./workerTimeEntry";
 
 export interface CreateFellingRecordBody {
   date: string;
   regionId: number;
+  /** @nullable */
+  workType?: string | null;
   /** @nullable */
   location?: string | null;
   /** @nullable */
@@ -17,6 +21,7 @@ export interface CreateFellingRecordBody {
   endTime?: string | null;
   /** @nullable */
   weatherTypeId?: number | null;
+  weatherTypeIds?: number[];
   /** @nullable */
   temperature?: number | null;
   /** @nullable */
@@ -26,9 +31,25 @@ export interface CreateFellingRecordBody {
   /** @nullable */
   refueling?: number | null;
   workerIds: number[];
+  manualWorkerIds: number[];
+  machineWorkerIds: number[];
+  workerTimeEntries: WorkerTimeEntry[];
   vehicleIds: number[];
   machineIds: number[];
+  machineMthEntries: MachineMthEntry[];
   accessoryIds: number[];
+  /** @nullable */
+  assignedAverage?: string | null;
+  /** @nullable */
+  vehicleKmStart?: number | null;
+  /** @nullable */
+  vehicleKmEnd?: number | null;
+  /** @nullable */
+  vehicleKmTotal?: number | null;
+  /** @nullable */
+  vehicleRefueling?: number | null;
+  /** @nullable */
+  trafficMarking?: string | null;
   /** @nullable */
   note?: string | null;
 }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   useListWorkers, useCreateWorker, useUpdateWorker, useDeleteWorker, getListWorkersQueryKey,
+  useListContractorCompanies, useCreateContractorCompany, useUpdateContractorCompany, useDeleteContractorCompany, getListContractorCompaniesQueryKey,
   useListVehicles, useCreateVehicle, useUpdateVehicle, useDeleteVehicle, getListVehiclesQueryKey,
   useListMachines, useCreateMachine, useUpdateMachine, useDeleteMachine, getListMachinesQueryKey,
   useListAccessories, useCreateAccessory, useUpdateAccessory, useDeleteAccessory, getListAccessoriesQueryKey,
@@ -9,10 +10,11 @@ import {
   useListWeatherTypes, useCreateWeatherType, useUpdateWeatherType, useDeleteWeatherType, getListWeatherTypesQueryKey,
 } from "@workspace/api-client-react";
 
-type Tab = "pracovnici" | "auta" | "stroje" | "prislusenstvi" | "kraje" | "pocasi";
+type Tab = "pracovnici" | "subdodavatele" | "auta" | "stroje" | "prislusenstvi" | "kraje" | "pocasi";
 
 const tabs: { key: Tab; label: string; icon: string }[] = [
   { key: "pracovnici", label: "Pracovníci", icon: "👷" },
+  { key: "subdodavatele", label: "Subdodavatelé", icon: "🏢" },
   { key: "auta", label: "Auta", icon: "🚗" },
   { key: "stroje", label: "Stroje", icon: "🚜" },
   { key: "prislusenstvi", label: "Příslušenství", icon: "🔧" },
@@ -49,6 +51,7 @@ export default function AdminCodebooksPage() {
 
       <div>
         {tab === "pracovnici" && <WorkersTab />}
+        {tab === "subdodavatele" && <ContractorCompaniesTab />}
         {tab === "auta" && <VehiclesTab />}
         {tab === "stroje" && <MachinesTab />}
         {tab === "prislusenstvi" && <AccessoriesTab />}
@@ -57,6 +60,36 @@ export default function AdminCodebooksPage() {
       </div>
     </div>
   );
+}
+
+function ContractorCompaniesTab() {
+  const queryClient = useQueryClient();
+  const { data: companies, isLoading } = useListContractorCompanies();
+  const createMutation = useCreateContractorCompany();
+  const updateMutation = useUpdateContractorCompany();
+  const deleteMutation = useDeleteContractorCompany();
+  const [showAdd, setShowAdd] = useState(false);
+  const [editId, setEditId] = useState<number | null>(null);
+  const [form, setForm] = useState({ name: "", companyId: "", note: "", isActive: true });
+  const [error, setError] = useState("");
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: getListContractorCompaniesQueryKey() });
+  const reset = () => { setForm({ name: "", companyId: "", note: "", isActive: true }); setError(""); };
+  const openEdit = (id: number) => { const company = companies?.find((item) => item.id === id); if (!company) return; setForm({ name: company.name, companyId: company.companyId ?? "", note: company.note ?? "", isActive: company.isActive }); setEditId(id); };
+  const save = async (event: React.FormEvent, id?: number) => {
+    event.preventDefault(); setError("");
+    if (!form.name.trim()) { setError("Název firmy je povinný"); return; }
+    try {
+      const data = { name: form.name.trim(), companyId: form.companyId.trim() || null, note: form.note.trim() || null, isActive: form.isActive };
+      if (id) await updateMutation.mutateAsync({ id, data }); else await createMutation.mutateAsync({ data });
+      await invalidate(); reset(); setShowAdd(false); setEditId(null);
+    } catch { setError("Firmu se nepodařilo uložit"); }
+  };
+  const fields = <><div><label className={labelClass}>Název firmy *</label><input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className={inputClass} required /></div><div><label className={labelClass}>IČO</label><input value={form.companyId} onChange={(e) => setForm({ ...form, companyId: e.target.value })} className={inputClass} /></div><div><label className={labelClass}>Poznámka</label><input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} className={inputClass} /></div><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} />Aktivní</label></>;
+  return <div className="space-y-4"><div className="flex justify-between items-center"><p className="text-sm text-muted-foreground">{companies?.length ?? 0} firem</p><button onClick={() => { reset(); setShowAdd(true); }} className="px-3 py-1.5 bg-primary text-primary-foreground rounded text-sm font-medium">+ Přidat firmu</button></div>
+    {showAdd && <div className="bg-card border border-primary/30 rounded-lg p-4"><h3 className="font-semibold mb-3">Nová subdodavatelská firma</h3>{error && <p className="text-destructive text-xs mb-2">{error}</p>}<form onSubmit={(e) => void save(e)} className="grid sm:grid-cols-2 gap-3">{fields}<div className="sm:col-span-2 flex gap-2"><button className="px-4 py-2 bg-primary text-primary-foreground rounded text-sm">Uložit</button><button type="button" onClick={() => { setShowAdd(false); reset(); }} className="px-4 py-2 border rounded text-sm">Zrušit</button></div></form></div>}
+    <CodebookTable items={companies?.map((company) => ({ id: company.id, name: company.name, subtitle: [company.companyId ? `IČO ${company.companyId}` : "", company.note].filter(Boolean).join(" • ") || undefined, isActive: company.isActive })) ?? []} isLoading={isLoading} onEdit={openEdit} onToggle={async (id, isActive) => { const company = companies?.find((item) => item.id === id); if (!company) return; await updateMutation.mutateAsync({ id, data: { name: company.name, companyId: company.companyId, note: company.note, isActive: !isActive } }); await invalidate(); }} onDelete={async (id) => { try { await deleteMutation.mutateAsync({ id }); await invalidate(); } catch { alert("Firmu nelze smazat, pokud má přiřazené pracovníky."); } }} emptyMessage="Žádné subdodavatelské firmy." />
+    {editId !== null && <EditModal title="Upravit subdodavatelskou firmu" onClose={() => { setEditId(null); reset(); }}>{error && <p className="text-destructive text-xs mb-2">{error}</p>}<form onSubmit={(e) => void save(e, editId)} className="space-y-3">{fields}<div className="flex gap-2"><button className="flex-1 py-2 bg-primary text-primary-foreground rounded text-sm">Uložit změny</button><button type="button" onClick={() => { setEditId(null); reset(); }} className="px-4 py-2 border rounded text-sm">Zrušit</button></div></form></EditModal>}
+  </div>;
 }
 
 interface EditModalProps {
@@ -169,12 +202,13 @@ function CodebookTable({ items, isLoading, onEdit, onToggle, onDelete, emptyMess
 function WorkersTab() {
   const queryClient = useQueryClient();
   const { data: workers, isLoading } = useListWorkers();
+  const { data: contractorCompanies } = useListContractorCompanies();
   const createMutation = useCreateWorker();
   const updateMutation = useUpdateWorker();
   const deleteMutation = useDeleteWorker();
   const [showAdd, setShowAdd] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
-  const [form, setForm] = useState({ firstName: "", lastName: "", note: "", isActive: true });
+  const [form, setForm] = useState({ firstName: "", lastName: "", note: "", isActive: true, defaultBrushcutter: false, defaultSlopeMower: false, contractorCompanyId: null as number | null, defaultSubcontractor: false });
   const [error, setError] = useState("");
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: getListWorkersQueryKey() });
@@ -182,17 +216,17 @@ function WorkersTab() {
   const openEdit = (id: number) => {
     const w = workers?.find((x) => x.id === id);
     if (!w) return;
-    setForm({ firstName: w.firstName, lastName: w.lastName, note: w.note ?? "", isActive: w.isActive });
+    setForm({ firstName: w.firstName, lastName: w.lastName, note: w.note ?? "", isActive: w.isActive, defaultBrushcutter: w.defaultBrushcutter, defaultSlopeMower: w.defaultSlopeMower, contractorCompanyId: w.contractorCompanyId ?? null, defaultSubcontractor: w.defaultSubcontractor });
     setEditId(id);
   };
 
-  const resetForm = () => { setForm({ firstName: "", lastName: "", note: "", isActive: true }); setError(""); };
+  const resetForm = () => { setForm({ firstName: "", lastName: "", note: "", isActive: true, defaultBrushcutter: false, defaultSlopeMower: false, contractorCompanyId: null, defaultSubcontractor: false }); setError(""); };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault(); setError("");
     if (!form.firstName.trim() || !form.lastName.trim()) { setError("Jméno a příjmení jsou povinné"); return; }
     try {
-      await createMutation.mutateAsync({ data: { firstName: form.firstName.trim(), lastName: form.lastName.trim(), note: form.note.trim() || undefined, isActive: form.isActive } });
+      await createMutation.mutateAsync({ data: { firstName: form.firstName.trim(), lastName: form.lastName.trim(), note: form.note.trim() || undefined, isActive: form.isActive, defaultBrushcutter: form.contractorCompanyId ? false : form.defaultBrushcutter, defaultSlopeMower: form.contractorCompanyId ? false : form.defaultSlopeMower, contractorCompanyId: form.contractorCompanyId, defaultSubcontractor: Boolean(form.contractorCompanyId && form.defaultSubcontractor) } });
       await invalidate(); resetForm(); setShowAdd(false);
     } catch { setError("Chyba při ukládání"); }
   };
@@ -201,7 +235,7 @@ function WorkersTab() {
     e.preventDefault(); setError("");
     if (!editId || !form.firstName.trim() || !form.lastName.trim()) { setError("Jméno a příjmení jsou povinné"); return; }
     try {
-      await updateMutation.mutateAsync({ id: editId, data: { firstName: form.firstName.trim(), lastName: form.lastName.trim(), note: form.note.trim() || undefined, isActive: form.isActive } as never });
+      await updateMutation.mutateAsync({ id: editId, data: { firstName: form.firstName.trim(), lastName: form.lastName.trim(), note: form.note.trim() || undefined, isActive: form.isActive, defaultBrushcutter: form.contractorCompanyId ? false : form.defaultBrushcutter, defaultSlopeMower: form.contractorCompanyId ? false : form.defaultSlopeMower, contractorCompanyId: form.contractorCompanyId, defaultSubcontractor: Boolean(form.contractorCompanyId && form.defaultSubcontractor) } as never });
       await invalidate(); setEditId(null); resetForm();
     } catch { setError("Chyba při ukládání"); }
   };
@@ -232,6 +266,8 @@ function WorkersTab() {
               <label className={labelClass}>Poznámka</label>
               <input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} className={inputClass} placeholder="Volitelná poznámka" />
             </div>
+            <div className="sm:col-span-2"><label className={labelClass}>Zařazení pracovníka</label><select value={form.contractorCompanyId ?? ""} onChange={(e) => setForm({ ...form, contractorCompanyId: e.target.value ? Number(e.target.value) : null, defaultSubcontractor: false })} className={inputClass}><option value="">Kmenový zaměstnanec</option>{(contractorCompanies ?? []).filter((company) => company.isActive).map((company) => <option key={company.id} value={company.id}>Subdodavatel: {company.name}</option>)}</select></div>
+            {!form.contractorCompanyId ? <><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.defaultBrushcutter} onChange={(e) => setForm({ ...form, defaultBrushcutter: e.target.checked })} />Výchozí pro křovinořezy</label><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.defaultSlopeMower} onChange={(e) => setForm({ ...form, defaultSlopeMower: e.target.checked })} />Výchozí pro svahové sekačky</label></> : <label className="sm:col-span-2 flex items-center gap-2 text-sm"><input type="checkbox" checked={form.defaultSubcontractor} onChange={(e) => setForm({ ...form, defaultSubcontractor: e.target.checked })} />Výchozí pracovník této firmy</label>}
             <div className="sm:col-span-2 flex gap-2">
               <button type="submit" disabled={createMutation.isPending} className="px-4 py-2 bg-primary text-primary-foreground rounded text-sm font-medium hover:opacity-90 disabled:opacity-60">
                 {createMutation.isPending ? "Ukládám..." : "Uložit"}
@@ -243,10 +279,10 @@ function WorkersTab() {
       )}
 
       <CodebookTable
-        items={workers?.filter((w) => w.isActive !== false).map((w) => ({ id: w.id, name: `${w.firstName} ${w.lastName}`, subtitle: w.note ?? undefined, isActive: w.isActive })) ?? []}
+        items={workers?.filter((w) => w.isActive !== false).map((w) => ({ id: w.id, name: `${w.firstName} ${w.lastName}`, subtitle: [w.contractorCompanyId ? `Firma: ${contractorCompanies?.find((company) => company.id === w.contractorCompanyId)?.name ?? "neznámá"}` : "Kmenový zaměstnanec", w.note, w.defaultBrushcutter ? "Křovinořezy" : "", w.defaultSlopeMower ? "Svahové sekačky" : "", w.defaultSubcontractor ? "Výchozí pro firmu" : ""].filter(Boolean).join(" • ") || undefined, isActive: w.isActive })) ?? []}
         isLoading={isLoading}
         onEdit={openEdit}
-        onToggle={async (id, isActive) => { await updateMutation.mutateAsync({ id, data: { firstName: "", lastName: "", isActive: !isActive } as never }); await invalidate(); }}
+        onToggle={async (id, isActive) => { const worker = workers?.find((item) => item.id === id); if (!worker) return; await updateMutation.mutateAsync({ id, data: { firstName: worker.firstName, lastName: worker.lastName, isActive: !isActive } as never }); await invalidate(); }}
         onDelete={async (id) => { await deleteMutation.mutateAsync({ id }); await invalidate(); }}
         emptyMessage="Žádní pracovníci. Přidejte prvního."
       />
@@ -269,10 +305,12 @@ function WorkersTab() {
               <label className={labelClass}>Poznámka</label>
               <input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} className={inputClass} />
             </div>
+            <div><label className={labelClass}>Zařazení pracovníka</label><select value={form.contractorCompanyId ?? ""} onChange={(e) => setForm({ ...form, contractorCompanyId: e.target.value ? Number(e.target.value) : null, defaultSubcontractor: false })} className={inputClass}><option value="">Kmenový zaměstnanec</option>{(contractorCompanies ?? []).filter((company) => company.isActive).map((company) => <option key={company.id} value={company.id}>Subdodavatel: {company.name}</option>)}</select></div>
             <div className="flex items-center gap-2">
               <input type="checkbox" id="worker-active" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} className="rounded" />
               <label htmlFor="worker-active" className="text-sm text-foreground">Aktivní</label>
             </div>
+            {!form.contractorCompanyId ? <><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.defaultBrushcutter} onChange={(e) => setForm({ ...form, defaultBrushcutter: e.target.checked })} />Výchozí pro křovinořezy</label><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.defaultSlopeMower} onChange={(e) => setForm({ ...form, defaultSlopeMower: e.target.checked })} />Výchozí pro svahové sekačky</label></> : <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.defaultSubcontractor} onChange={(e) => setForm({ ...form, defaultSubcontractor: e.target.checked })} />Výchozí pracovník této firmy</label>}
             <div className="flex gap-2 pt-1">
               <button type="submit" disabled={updateMutation.isPending} className="flex-1 py-2 bg-primary text-primary-foreground rounded text-sm font-medium hover:opacity-90 disabled:opacity-60">
                 {updateMutation.isPending ? "Ukládám..." : "Uložit změny"}
@@ -294,7 +332,7 @@ function VehiclesTab() {
   const deleteMutation = useDeleteVehicle();
   const [showAdd, setShowAdd] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
-  const [form, setForm] = useState({ name: "", licensePlate: "", note: "", isActive: true });
+  const [form, setForm] = useState({ name: "", licensePlate: "", note: "", isActive: true, defaultSlopeMower: false });
   const [error, setError] = useState("");
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: getListVehiclesQueryKey() });
@@ -302,17 +340,17 @@ function VehiclesTab() {
   const openEdit = (id: number) => {
     const v = vehicles?.find((x) => x.id === id);
     if (!v) return;
-    setForm({ name: v.name, licensePlate: v.licensePlate ?? "", note: v.note ?? "", isActive: v.isActive });
+    setForm({ name: v.name, licensePlate: v.licensePlate ?? "", note: v.note ?? "", isActive: v.isActive, defaultSlopeMower: v.defaultSlopeMower });
     setEditId(id);
   };
 
-  const resetForm = () => { setForm({ name: "", licensePlate: "", note: "", isActive: true }); setError(""); };
+  const resetForm = () => { setForm({ name: "", licensePlate: "", note: "", isActive: true, defaultSlopeMower: false }); setError(""); };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault(); setError("");
     if (!form.name.trim()) { setError("Název je povinný"); return; }
     try {
-      await createMutation.mutateAsync({ data: { name: form.name.trim(), licensePlate: form.licensePlate.trim() || undefined, note: form.note.trim() || undefined, isActive: form.isActive } });
+      await createMutation.mutateAsync({ data: { name: form.name.trim(), licensePlate: form.licensePlate.trim() || undefined, note: form.note.trim() || undefined, isActive: form.isActive, defaultSlopeMower: form.defaultSlopeMower } });
       await invalidate(); resetForm(); setShowAdd(false);
     } catch { setError("Chyba při ukládání"); }
   };
@@ -321,7 +359,7 @@ function VehiclesTab() {
     e.preventDefault(); setError("");
     if (!editId || !form.name.trim()) { setError("Název je povinný"); return; }
     try {
-      await updateMutation.mutateAsync({ id: editId, data: { name: form.name.trim(), licensePlate: form.licensePlate.trim() || undefined, note: form.note.trim() || undefined, isActive: form.isActive } as never });
+      await updateMutation.mutateAsync({ id: editId, data: { name: form.name.trim(), licensePlate: form.licensePlate.trim() || undefined, note: form.note.trim() || undefined, isActive: form.isActive, defaultSlopeMower: form.defaultSlopeMower } as never });
       await invalidate(); setEditId(null); resetForm();
     } catch { setError("Chyba při ukládání"); }
   };
@@ -352,6 +390,7 @@ function VehiclesTab() {
               <label className={labelClass}>Poznámka</label>
               <input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} className={inputClass} placeholder="Volitelně" />
             </div>
+            <label className="sm:col-span-2 flex items-center gap-2 text-sm"><input type="checkbox" checked={form.defaultSlopeMower} onChange={(e) => setForm({ ...form, defaultSlopeMower: e.target.checked })} />Výchozí auto pro svahové sekačky</label>
             <div className="sm:col-span-2 flex gap-2">
               <button type="submit" disabled={createMutation.isPending} className="px-4 py-2 bg-primary text-primary-foreground rounded text-sm font-medium hover:opacity-90 disabled:opacity-60">
                 {createMutation.isPending ? "Ukládám..." : "Uložit"}
@@ -363,7 +402,7 @@ function VehiclesTab() {
       )}
 
       <CodebookTable
-        items={vehicles?.filter((v) => v.isActive !== false).map((v) => ({ id: v.id, name: v.name, subtitle: [v.licensePlate, v.note].filter(Boolean).join(" • ") || undefined, isActive: v.isActive })) ?? []}
+        items={vehicles?.filter((v) => v.isActive !== false).map((v) => ({ id: v.id, name: v.name, subtitle: [v.licensePlate, v.note, v.defaultSlopeMower ? "Výchozí pro svahové sekačky" : ""].filter(Boolean).join(" • ") || undefined, isActive: v.isActive })) ?? []}
         isLoading={isLoading}
         onEdit={openEdit}
         onToggle={async (id, isActive) => { await updateMutation.mutateAsync({ id, data: { name: "", isActive: !isActive } as never }); await invalidate(); }}
@@ -393,6 +432,7 @@ function VehiclesTab() {
               <input type="checkbox" id="vehicle-active" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} className="rounded" />
               <label htmlFor="vehicle-active" className="text-sm text-foreground">Aktivní</label>
             </div>
+            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.defaultSlopeMower} onChange={(e) => setForm({ ...form, defaultSlopeMower: e.target.checked })} />Výchozí auto pro svahové sekačky</label>
             <div className="flex gap-2 pt-1">
               <button type="submit" disabled={updateMutation.isPending} className="flex-1 py-2 bg-primary text-primary-foreground rounded text-sm font-medium hover:opacity-90 disabled:opacity-60">
                 {updateMutation.isPending ? "Ukládám..." : "Uložit změny"}
@@ -409,12 +449,14 @@ function VehiclesTab() {
 function MachinesTab() {
   const queryClient = useQueryClient();
   const { data: machines, isLoading } = useListMachines();
+  const { data: accessories } = useListAccessories();
+  const { data: workers } = useListWorkers();
   const createMutation = useCreateMachine();
   const updateMutation = useUpdateMachine();
   const deleteMutation = useDeleteMachine();
   const [showAdd, setShowAdd] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
-  const [form, setForm] = useState({ name: "", type: "", note: "", isActive: true });
+  const [form, setForm] = useState({ name: "", type: "", mowingCategory: "", note: "", isActive: true, defaultAccessoryId: null as number | null, defaultOperatorId: null as number | null });
   const [error, setError] = useState("");
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: getListMachinesQueryKey() });
@@ -422,17 +464,17 @@ function MachinesTab() {
   const openEdit = (id: number) => {
     const m = machines?.find((x) => x.id === id);
     if (!m) return;
-    setForm({ name: m.name, type: m.type, note: m.note ?? "", isActive: m.isActive });
+    setForm({ name: m.name, type: m.type, mowingCategory: m.mowingCategory ?? "", note: m.note ?? "", isActive: m.isActive, defaultAccessoryId: m.defaultAccessoryId ?? null, defaultOperatorId: m.defaultOperatorId ?? null });
     setEditId(id);
   };
 
-  const resetForm = () => { setForm({ name: "", type: "", note: "", isActive: true }); setError(""); };
+  const resetForm = () => { setForm({ name: "", type: "", mowingCategory: "", note: "", isActive: true, defaultAccessoryId: null, defaultOperatorId: null }); setError(""); };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault(); setError("");
     if (!form.name.trim() || !form.type.trim()) { setError("Název a typ jsou povinné"); return; }
     try {
-      await createMutation.mutateAsync({ data: { name: form.name.trim(), type: form.type.trim(), note: form.note.trim() || undefined, isActive: form.isActive } });
+      await createMutation.mutateAsync({ data: { name: form.name.trim(), type: form.type.trim(), mowingCategory: form.mowingCategory || null, note: form.note.trim() || undefined, isActive: form.isActive, defaultAccessoryId: form.defaultAccessoryId, defaultOperatorId: form.defaultOperatorId } });
       await invalidate(); resetForm(); setShowAdd(false);
     } catch { setError("Chyba při ukládání"); }
   };
@@ -441,7 +483,7 @@ function MachinesTab() {
     e.preventDefault(); setError("");
     if (!editId || !form.name.trim() || !form.type.trim()) { setError("Název a typ jsou povinné"); return; }
     try {
-      await updateMutation.mutateAsync({ id: editId, data: { name: form.name.trim(), type: form.type.trim(), note: form.note.trim() || undefined, isActive: form.isActive } as never });
+      await updateMutation.mutateAsync({ id: editId, data: { name: form.name.trim(), type: form.type.trim(), mowingCategory: form.mowingCategory || null, note: form.note.trim() || undefined, isActive: form.isActive, defaultAccessoryId: form.defaultAccessoryId, defaultOperatorId: form.defaultOperatorId } as never });
       await invalidate(); setEditId(null); resetForm();
     } catch { setError("Chyba při ukládání"); }
   };
@@ -470,13 +512,29 @@ function MachinesTab() {
                 <option value="">-- Vyberte typ --</option>
                 <option value="kácení">Kácení</option>
                 <option value="sečení">Sečení</option>
+                <option value="svahové sečení">Svahové sečení</option>
                 <option value="transport">Transport</option>
                 <option value="ostatní">Ostatní</option>
               </select>
             </div>
+            <div><label className={labelClass}>Zařazení pro ruční sečení</label><select value={form.mowingCategory} onChange={(e) => setForm({ ...form, mowingCategory: e.target.value })} className={inputClass}><option value="">Běžný stroj</option><option value="slope_mower">Svahová sekačka</option></select></div>
             <div>
               <label className={labelClass}>Poznámka</label>
               <input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} className={inputClass} placeholder="Volitelně" />
+            </div>
+            <div>
+              <label className={labelClass}>Výchozí příslušenství</label>
+              <select value={form.defaultAccessoryId ?? ""} onChange={(e) => setForm({ ...form, defaultAccessoryId: e.target.value ? Number(e.target.value) : null })} className={inputClass}>
+                <option value="">-- Bez výchozího příslušenství --</option>
+                {(accessories ?? []).filter((item) => item.isActive !== false).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={labelClass}>Výchozí obsluha</label>
+              <select value={form.defaultOperatorId ?? ""} onChange={(e) => setForm({ ...form, defaultOperatorId: e.target.value ? Number(e.target.value) : null })} className={inputClass}>
+                <option value="">-- Bez výchozí obsluhy --</option>
+                {(workers ?? []).filter((item) => item.isActive !== false).map((item) => <option key={item.id} value={item.id}>{item.firstName} {item.lastName}</option>)}
+              </select>
             </div>
             <div className="sm:col-span-2 flex gap-2">
               <button type="submit" disabled={createMutation.isPending} className="px-4 py-2 bg-primary text-primary-foreground rounded text-sm font-medium hover:opacity-90 disabled:opacity-60">
@@ -489,7 +547,7 @@ function MachinesTab() {
       )}
 
       <CodebookTable
-        items={machines?.filter((m) => m.isActive !== false).map((m) => ({ id: m.id, name: m.name, badge: m.type, subtitle: m.note ?? undefined, isActive: m.isActive })) ?? []}
+        items={machines?.filter((m) => m.isActive !== false).map((m) => ({ id: m.id, name: m.name, badge: m.mowingCategory === "slope_mower" ? "Svahová sekačka" : m.type, subtitle: m.note ?? undefined, isActive: m.isActive })) ?? []}
         isLoading={isLoading}
         onEdit={openEdit}
         onToggle={async (id, isActive) => { await updateMutation.mutateAsync({ id, data: { name: "", type: "", isActive: !isActive } as never }); await invalidate(); }}
@@ -512,6 +570,7 @@ function MachinesTab() {
                   <option value="">-- Vyberte --</option>
                   <option value="kácení">Kácení</option>
                   <option value="sečení">Sečení</option>
+                  <option value="svahové sečení">Svahové sečení</option>
                   <option value="transport">Transport</option>
                   <option value="ostatní">Ostatní</option>
                 </select>
@@ -520,6 +579,21 @@ function MachinesTab() {
                 <label className={labelClass}>Poznámka</label>
                 <input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} className={inputClass} />
               </div>
+            </div>
+            <div><label className={labelClass}>Zařazení pro ruční sečení</label><select value={form.mowingCategory} onChange={(e) => setForm({ ...form, mowingCategory: e.target.value })} className={inputClass}><option value="">Běžný stroj</option><option value="slope_mower">Svahová sekačka</option></select></div>
+            <div>
+              <label className={labelClass}>Výchozí příslušenství</label>
+              <select value={form.defaultAccessoryId ?? ""} onChange={(e) => setForm({ ...form, defaultAccessoryId: e.target.value ? Number(e.target.value) : null })} className={inputClass}>
+                <option value="">-- Bez výchozího příslušenství --</option>
+                {(accessories ?? []).filter((item) => item.isActive !== false).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={labelClass}>Výchozí obsluha</label>
+              <select value={form.defaultOperatorId ?? ""} onChange={(e) => setForm({ ...form, defaultOperatorId: e.target.value ? Number(e.target.value) : null })} className={inputClass}>
+                <option value="">-- Bez výchozí obsluhy --</option>
+                {(workers ?? []).filter((item) => item.isActive !== false).map((item) => <option key={item.id} value={item.id}>{item.firstName} {item.lastName}</option>)}
+              </select>
             </div>
             <div className="flex items-center gap-2">
               <input type="checkbox" id="machine-active" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} className="rounded" />

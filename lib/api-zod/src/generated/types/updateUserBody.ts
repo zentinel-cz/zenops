@@ -13,6 +13,8 @@ export interface UpdateUserBody {
   /** @nullable */
   role?: UpdateUserBodyRole;
   /** @nullable */
+  workerId?: number | null;
+  /** @nullable */
   isActive?: boolean | null;
   /** @nullable */
   password?: string | null;

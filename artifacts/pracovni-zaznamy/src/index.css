@@ -131,6 +131,7 @@
   --app-font-sans: 'Inter', sans-serif;
   --app-font-serif: Georgia, serif;
   --app-font-mono: 'JetBrains Mono', monospace;
+  --app-font-display: 'Space Grotesk', 'Inter', sans-serif;
   --radius: 0.375rem;
 
   --shadow-2xs: 0px 1px 2px rgba(0,0,0,0.05);
@@ -200,5 +201,72 @@
   /* Mobile-friendly touch targets */
   input, select, textarea {
     font-size: 16px; /* prevents iOS zoom */
+  }
+}
+
+@layer utilities {
+  .zenops-app-width {
+    width: 100%;
+    max-width: 1720px;
+  }
+
+  .zenops-form-shell {
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(247, 251, 255, 0.82));
+    box-shadow:
+      0 24px 50px rgba(11, 36, 56, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .font-display {
+    font-family: var(--app-font-display);
+    letter-spacing: -0.03em;
+  }
+
+  .zenops-shell {
+    background:
+      radial-gradient(circle at top left, rgba(0, 153, 204, 0.18), transparent 32%),
+      radial-gradient(circle at 85% 12%, rgba(28, 87, 121, 0.16), transparent 28%),
+      linear-gradient(180deg, rgba(250, 252, 255, 0.98), rgba(239, 245, 251, 1));
+  }
+
+  .zenops-grid {
+    background-image:
+      linear-gradient(rgba(14, 35, 52, 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(14, 35, 52, 0.05) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  .zenops-glass {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .zenops-panel {
+    box-shadow:
+      0 18px 42px rgba(11, 36, 56, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  }
+
+  .zenops-orb {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(10px);
+    pointer-events: none;
+  }
+
+  .zenops-orb-cyan {
+    background: radial-gradient(circle, rgba(0, 153, 204, 0.34) 0%, rgba(0, 153, 204, 0.08) 45%, transparent 78%);
+  }
+
+  .zenops-orb-ice {
+    background: radial-gradient(circle, rgba(132, 217, 255, 0.30) 0%, rgba(132, 217, 255, 0.08) 46%, transparent 80%);
+  }
+
+  .zenops-orb-navy {
+    background: radial-gradient(circle, rgba(12, 34, 56, 0.22) 0%, rgba(12, 34, 56, 0.04) 50%, transparent 80%);
   }
 }

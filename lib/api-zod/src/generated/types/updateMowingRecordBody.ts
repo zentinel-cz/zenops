@@ -5,12 +5,25 @@
  * API pro evidenci denních pracovních záznamů - Kácení a Sečení
  * OpenAPI spec version: 0.1.0
  */
+import type { MachineMthEntry } from "./machineMthEntry";
+import type { VehicleEntry } from "./vehicleEntry";
+import type { WorkerTimeEntry } from "./workerTimeEntry";
 
 export interface UpdateMowingRecordBody {
   /** @nullable */
   date?: string | null;
   /** @nullable */
   regionId?: number | null;
+  /** @nullable */
+  workType?: string | null;
+  /** @nullable */
+  mowingSection?: string | null;
+  /** @nullable */
+  mowingKind?: string | null;
+  /** @nullable */
+  manualMowingKind?: string | null;
+  /** @nullable */
+  contractorCompanyId?: number | null;
   /** @nullable */
   location?: string | null;
   /** @nullable */
@@ -20,7 +33,13 @@ export interface UpdateMowingRecordBody {
   /** @nullable */
   weatherTypeId?: number | null;
   /** @nullable */
+  weatherTypeIds?: number[] | null;
+  /** @nullable */
+  temperature?: number | null;
+  /** @nullable */
   vehicleId?: number | null;
+  /** @nullable */
+  vehicleEntries?: VehicleEntry[] | null;
   /** @nullable */
   mthStart?: number | null;
   /** @nullable */
@@ -34,9 +53,37 @@ export interface UpdateMowingRecordBody {
   /** @nullable */
   workerIds?: number[] | null;
   /** @nullable */
+  manualWorkerIds?: number[] | null;
+  /** @nullable */
+  machineWorkerIds?: number[] | null;
+  /** @nullable */
+  workerTimeEntries?: WorkerTimeEntry[] | null;
+  /** @nullable */
   machineIds?: number[] | null;
   /** @nullable */
+  machineMthEntries?: MachineMthEntry[] | null;
+  /** @nullable */
   accessoryIds?: number[] | null;
+  /** @nullable */
+  assignedAverage?: string | null;
+  /** @nullable */
+  dayHours?: number | null;
+  /** @nullable */
+  nightHours?: number | null;
+  /** @nullable */
+  laborHours?: number | null;
+  /** @nullable */
+  vehicleKmStart?: number | null;
+  /** @nullable */
+  vehicleKmEnd?: number | null;
+  /** @nullable */
+  vehicleKmTotal?: number | null;
+  /** @nullable */
+  vehicleRefueling?: number | null;
+  /** @nullable */
+  brushcutterRefueling?: number | null;
+  /** @nullable */
+  trafficMarking?: string | null;
   /** @nullable */
   note?: string | null;
 }

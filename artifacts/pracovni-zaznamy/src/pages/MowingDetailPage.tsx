@@ -12,6 +12,7 @@ import { formatDate } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
 import MowingForm, { type MowingFormData } from "@/components/MowingForm";
 import { exportMowingPdf } from "@/lib/exportPdf";
+import { getOptionLabel, MOWING_KIND_OPTIONS, MOWING_SECTION_OPTIONS, MOWING_WORK_TYPE_OPTIONS } from "@/lib/recordOptions";
 import { toast } from "sonner";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -74,6 +75,28 @@ export default function MowingDetailPage() {
   if (!record) return <div className="text-muted-foreground">Záznam nenalezen.</div>;
 
   const canEdit = user?.role === "admin" || record.userId === user?.id;
+  const timeRange = record.startTime && record.endTime ? `${record.startTime} – ${record.endTime}` : record.startTime ?? record.endTime ?? null;
+  const workerTimeSummary = record.workerTimeEntries?.map((entry) => {
+    const name = entry.worker ? `${entry.worker.firstName} ${entry.worker.lastName}` : `Pracovník #${entry.workerId}`;
+    const time = entry.startTime && entry.endTime ? `${entry.startTime} – ${entry.endTime}` : "bez času";
+    return `${name} (${time})`;
+  }).join(", ");
+  const machineMthSummary = record.machineMthEntries?.map((entry) => {
+    const name = entry.machine?.name ?? `Stroj #${entry.machineId}`;
+    const accessory = entry.accessory?.name ?? "bez příslušenství";
+    const operator = entry.operator ? `${entry.operator.firstName} ${entry.operator.lastName}` : "bez obsluhy";
+    const time = entry.startTime && entry.endTime ? `${entry.startTime} – ${entry.endTime}` : "bez času";
+    const range = entry.mthStart != null && entry.mthEnd != null ? `${entry.mthStart} → ${entry.mthEnd}` : "bez rozsahu";
+    const total = entry.mthTotal != null ? `${entry.mthTotal} h` : "bez součtu";
+    const fuel = entry.fuelConsumption != null ? `${entry.fuelConsumption} l` : "—";
+    const refueling = entry.refueling != null ? `${entry.refueling} l` : "—";
+    return `${name} + ${accessory} — obsluha ${operator}; ${time}, MTH ${range} (${total}), spotřeba ${fuel}, tankování ${refueling}`;
+  }).join("\n");
+  const vehicleSummary = record.vehicleEntries?.map((entry, index) => {
+    const name = entry.vehicle ? `${entry.vehicle.name}${entry.vehicle.licensePlate ? ` (${entry.vehicle.licensePlate})` : ""}` : `Auto #${entry.vehicleId}`;
+    const range = entry.kmStart != null && entry.kmEnd != null ? `${entry.kmStart} → ${entry.kmEnd} km` : "bez rozsahu km";
+    return `${index + 1}. ${name}: ${range}, celkem ${entry.kmTotal ?? "—"} km, tankování ${entry.refueling ?? "—"} l`;
+  }).join("\n");
 
   if (editing) {
     return (
@@ -84,19 +107,41 @@ export default function MowingDetailPage() {
             initialData={{
               date: record.date,
               regionId: record.regionId,
+              workType: record.workType ?? null,
+              mowingSection: record.mowingSection ?? null,
+              mowingKind: record.mowingKind ?? null,
+              manualMowingKind: record.manualMowingKind ?? null,
+              contractorCompanyId: record.contractorCompanyId ?? null,
               location: record.location ?? null,
               startTime: record.startTime ?? null,
               endTime: record.endTime ?? null,
               weatherTypeId: record.weatherTypeId ?? null,
+              weatherTypeIds: record.weatherTypeIds ?? [],
+              temperature: record.temperature ?? null,
               vehicleId: record.vehicleId ?? null,
+              vehicleEntries: record.vehicleEntries ?? [],
               mthStart: record.mthStart ?? null,
               mthEnd: record.mthEnd ?? null,
               mthTotal: record.mthTotal ?? null,
               fuelConsumption: record.fuelConsumption ?? null,
               refueling: record.refueling ?? null,
               workerIds: record.workerIds,
+              manualWorkerIds: record.manualWorkerIds ?? [],
+              machineWorkerIds: record.machineWorkerIds ?? [],
+              workerTimeEntries: record.workerTimeEntries ?? [],
               machineIds: record.machineIds,
+              machineMthEntries: record.machineMthEntries ?? [],
               accessoryIds: record.accessoryIds,
+              assignedAverage: record.assignedAverage ?? null,
+              dayHours: record.dayHours ?? null,
+              nightHours: record.nightHours ?? null,
+              laborHours: record.laborHours ?? null,
+              vehicleKmStart: record.vehicleKmStart ?? null,
+              vehicleKmEnd: record.vehicleKmEnd ?? null,
+              vehicleKmTotal: record.vehicleKmTotal ?? null,
+              vehicleRefueling: record.vehicleRefueling ?? null,
+              brushcutterRefueling: record.brushcutterRefueling ?? null,
+              trafficMarking: record.trafficMarking ?? null,
               note: record.note ?? null,
             }}
             onSubmit={handleSubmit}
@@ -108,17 +153,11 @@ export default function MowingDetailPage() {
     );
   }
 
-  const timeRange =
-    record.startTime && record.endTime
-      ? `${record.startTime} – ${record.endTime}`
-      : record.startTime ?? record.endTime ?? null;
-
   return (
     <div className="max-w-2xl space-y-5">
-      {/* Hlavička */}
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Záznam sečení</h1>
+          <h1 className="text-xl font-bold text-foreground">Denní záznam sečení</h1>
           <p className="text-sm text-muted-foreground mt-0.5">{formatDate(record.date)}</p>
         </div>
         <div className="flex gap-2 shrink-0 flex-wrap">
@@ -126,23 +165,14 @@ export default function MowingDetailPage() {
             onClick={() => { exportMowingPdf(record).catch(console.error); }}
             className="flex items-center gap-1.5 px-3 py-1.5 bg-secondary text-secondary-foreground border border-border rounded-lg text-sm font-medium hover:bg-secondary/80 transition-colors"
           >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
             Export PDF
           </button>
           {canEdit && (
             <>
-              <button
-                onClick={() => setEditing(true)}
-                className="px-3 py-1.5 bg-secondary text-secondary-foreground border border-border rounded-lg text-sm font-medium hover:bg-secondary/80 transition-colors"
-              >
+              <button onClick={() => setEditing(true)} className="px-3 py-1.5 bg-secondary text-secondary-foreground border border-border rounded-lg text-sm font-medium hover:bg-secondary/80 transition-colors">
                 Upravit
               </button>
-              <button
-                onClick={handleDelete}
-                className="px-3 py-1.5 bg-destructive text-destructive-foreground rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
-              >
+              <button onClick={handleDelete} className="px-3 py-1.5 bg-destructive text-destructive-foreground rounded-lg text-sm font-medium hover:opacity-90 transition-opacity">
                 Smazat
               </button>
             </>
@@ -150,71 +180,51 @@ export default function MowingDetailPage() {
         </div>
       </div>
 
-      {/* Základní informace */}
-      <Section title="Základní informace">
+      <Section title="Typ a evidence">
+        <Row label="Typ práce" value={getOptionLabel(MOWING_WORK_TYPE_OPTIONS, record.workType)} />
+        <Row label="Sekce" value={getOptionLabel(MOWING_SECTION_OPTIONS, record.mowingSection)} />
+        <Row label="Druh sečení" value={getOptionLabel(MOWING_KIND_OPTIONS, record.mowingKind)} />
+        {record.mowingKind === "rucni" && <Row label="Varianta ručního sečení" value={record.manualMowingKind === "core" ? "Kmenoví zaměstnanci – křovinořezy" : record.manualMowingKind === "slope" ? "Svahové sekačky" : record.manualMowingKind === "subcontractor" ? "Subdodavatel" : null} />}
+        {record.manualMowingKind === "subcontractor" && <Row label="Subdodavatelská firma" value={record.contractorCompany?.name} />}
         <Row label="Datum" value={formatDate(record.date)} />
         <Row label="Kraj / Revír" value={record.region.name} />
         <Row label="Místo" value={record.location} />
         <Row label="Pracovník (záznam)" value={record.user.fullName} />
       </Section>
 
-      {/* Pracovní doba a počasí */}
       <Section title="Pracovní doba & Počasí">
-        <Row label="Pracovní doba" value={timeRange} />
-        <Row label="Počasí" value={record.weatherType?.name} />
+        <Row label="Čas" value={timeRange} />
+        <Row label="Počasí" value={record.weatherTypes?.length ? record.weatherTypes.map((item) => item.name).join(", ") : record.weatherType?.name} />
+        <Row label="Teplota" value={record.temperature != null ? `${record.temperature} °C` : null} />
       </Section>
 
-      {/* Obsazení */}
       <Section title="Obsluha / Pracovníci">
-        <Row
-          label="Pracovníci"
-          value={
-            record.workers.length
-              ? record.workers.map((w) => `${w.firstName} ${w.lastName}`).join(", ")
-              : null
-          }
-        />
-        <Row
-          label="Stroj / Traktor"
-          value={record.machines.length ? record.machines.map((m) => m.name).join(", ") : null}
-        />
-        {record.accessories.length > 0 && (
-          <Row label="Příslušenství" value={record.accessories.map((a) => a.name).join(", ")} />
-        )}
+        <Row label="Strojní obsluha" value={record.machineWorkers?.length ? record.machineWorkers.map((w) => `${w.firstName} ${w.lastName}`).join(", ") : null} />
+        <Row label="Časy pracovníků" value={workerTimeSummary} />
+        <Row label="Přiřazený průměr" value={record.assignedAverage} />
+        <Row label="Stroj / Traktor" value={record.machines.length ? record.machines.map((m) => m.name).join(", ") : null} />
+        <Row label="Příslušenství" value={record.accessories.length ? record.accessories.map((a) => a.name).join(", ") : null} />
       </Section>
 
-      {/* MTH */}
-      <Section title="Motohodiny (MTH)">
-        <Row label="Počáteční MTH" value={record.mthStart != null ? `${record.mthStart}` : null} />
-        <Row label="Koncové MTH" value={record.mthEnd != null ? `${record.mthEnd}` : null} />
-        <Row
-          label="Celkové MTH"
-          value={
-            record.mthTotal != null ? (
-              <span className="font-semibold text-primary">{record.mthTotal} hod</span>
-            ) : null
-          }
-        />
+      {(record.mowingKind === "strojni" || record.manualMowingKind === "slope") && <Section title={record.manualMowingKind === "slope" ? "Svahové sekačky a provoz" : "Traktory a provoz"}>
+        <Row label="Základní sestavy" value={<span className="whitespace-pre-line">{machineMthSummary}</span>} />
+        <Row label="Celkové MTH" value={record.mthTotal != null ? <span className="font-semibold text-primary">{record.mthTotal} hod</span> : null} />
+        <Row label="Spotřeba stroje" value={record.fuelConsumption != null ? `${record.fuelConsumption} l` : null} />
+        <Row label="Tankování stroje" value={record.refueling != null ? `${record.refueling} l` : null} />
+      </Section>}
+
+      {record.manualMowingKind === "core" && <Section title="Křovinořezy"><Row label="Tankování" value={record.brushcutterRefueling != null ? `${record.brushcutterRefueling} l` : null} /></Section>}
+
+      <Section title="Auto denního záznamu">
+        <Row label="Jízdy aut" value={<span className="whitespace-pre-line">{vehicleSummary}</span>} />
+        <Row label="Celkem km" value={record.vehicleKmTotal != null ? `${record.vehicleKmTotal} km` : null} />
+        <Row label="Tankování celkem" value={record.vehicleRefueling != null ? `${record.vehicleRefueling} l` : null} />
       </Section>
 
-      {/* Provozní hodnoty */}
-      <Section title="Provozní hodnoty">
-        <Row
-          label="Auto / Vozidlo"
-          value={
-            record.vehicle
-              ? `${record.vehicle.name}${record.vehicle.licensePlate ? ` (${record.vehicle.licensePlate})` : ""}`
-              : null
-          }
-        />
-        <Row
-          label="Spotřeba"
-          value={record.fuelConsumption != null ? `${record.fuelConsumption} l` : null}
-        />
-        <Row label="Tankování" value={record.refueling != null ? `${record.refueling} l` : null} />
+      <Section title="Dopravní značení">
+        <Row label="DIO" value={record.trafficMarking} />
       </Section>
 
-      {/* Poznámka */}
       {record.note && (
         <Section title="Poznámka / Porucha">
           <div className="px-4 py-3">
@@ -223,10 +233,7 @@ export default function MowingDetailPage() {
         </Section>
       )}
 
-      <button
-        onClick={() => navigate("/seceni")}
-        className="text-sm text-primary hover:underline"
-      >
+      <button onClick={() => navigate("/seceni")} className="text-sm text-primary hover:underline">
         ← Zpět na seznam
       </button>
     </div>

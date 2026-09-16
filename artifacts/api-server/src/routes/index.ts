@@ -8,6 +8,7 @@ import fellingRecordsRouter from "./fellingRecords";
 import mowingRecordsRouter from "./mowingRecords";
 import dashboardRouter from "./dashboard";
 import auditLogsRouter from "./auditLogs";
+import teamDailyRecordsRouter from "./teamDailyRecords";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(fellingRecordsRouter);
 router.use(mowingRecordsRouter);
 router.use(dashboardRouter);
 router.use(auditLogsRouter);
+router.use(teamDailyRecordsRouter);
 
 export default router;

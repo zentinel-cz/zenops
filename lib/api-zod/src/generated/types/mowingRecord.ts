@@ -6,18 +6,32 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { Accessory } from "./accessory";
+import type { ContractorCompany } from "./contractorCompany";
 import type { Machine } from "./machine";
+import type { MachineMthEntry } from "./machineMthEntry";
 import type { Region } from "./region";
 import type { User } from "./user";
 import type { Vehicle } from "./vehicle";
+import type { VehicleEntry } from "./vehicleEntry";
 import type { WeatherType } from "./weatherType";
 import type { Worker } from "./worker";
+import type { WorkerTimeEntry } from "./workerTimeEntry";
 
 export interface MowingRecord {
   id: number;
   date: string;
   userId: number;
   regionId: number;
+  /** @nullable */
+  workType?: string | null;
+  /** @nullable */
+  mowingSection?: string | null;
+  /** @nullable */
+  mowingKind?: string | null;
+  /** @nullable */
+  manualMowingKind?: string | null;
+  /** @nullable */
+  contractorCompanyId?: number | null;
   /** @nullable */
   location?: string | null;
   /** @nullable */
@@ -26,8 +40,12 @@ export interface MowingRecord {
   endTime?: string | null;
   /** @nullable */
   weatherTypeId?: number | null;
+  weatherTypeIds?: number[];
+  /** @nullable */
+  temperature?: number | null;
   /** @nullable */
   vehicleId?: number | null;
+  vehicleEntries: VehicleEntry[];
   /** @nullable */
   mthStart?: number | null;
   /** @nullable */
@@ -39,8 +57,32 @@ export interface MowingRecord {
   /** @nullable */
   refueling?: number | null;
   workerIds: number[];
+  manualWorkerIds: number[];
+  machineWorkerIds: number[];
+  workerTimeEntries: WorkerTimeEntry[];
   machineIds: number[];
+  machineMthEntries: MachineMthEntry[];
   accessoryIds: number[];
+  /** @nullable */
+  assignedAverage?: string | null;
+  /** @nullable */
+  dayHours?: number | null;
+  /** @nullable */
+  nightHours?: number | null;
+  /** @nullable */
+  laborHours?: number | null;
+  /** @nullable */
+  vehicleKmStart?: number | null;
+  /** @nullable */
+  vehicleKmEnd?: number | null;
+  /** @nullable */
+  vehicleKmTotal?: number | null;
+  /** @nullable */
+  vehicleRefueling?: number | null;
+  /** @nullable */
+  brushcutterRefueling?: number | null;
+  /** @nullable */
+  trafficMarking?: string | null;
   /** @nullable */
   note?: string | null;
   createdAt: string;
@@ -48,8 +90,12 @@ export interface MowingRecord {
   user: User;
   region: Region;
   weatherType?: WeatherType | null;
+  weatherTypes: WeatherType[];
   vehicle?: Vehicle | null;
   workers: Worker[];
+  manualWorkers: Worker[];
+  machineWorkers: Worker[];
+  contractorCompany?: ContractorCompany | null;
   machines: Machine[];
   accessories: Accessory[];
 }

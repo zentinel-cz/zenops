@@ -1,11 +1,11 @@
 import { Router } from "express";
 import { db, fellingRecordsTable, mowingRecordsTable, workersTable, usersTable, regionsTable } from "@workspace/db";
 import { isNull, count, sum, and, gte, lte, eq } from "drizzle-orm";
-import { requireAuth } from "../middlewares/auth";
+import { requireOperationsAccess } from "../middlewares/auth";
 
 const router = Router();
 
-router.get("/dashboard/stats", requireAuth, async (req, res): Promise<void> => {
+router.get("/dashboard/stats", requireOperationsAccess, async (req, res): Promise<void> => {
   const session = (req as unknown as { session: { userId: number; userRole: string } }).session;
 
   const fellingWhere = session.userRole === "admin"
@@ -61,7 +61,7 @@ router.get("/dashboard/stats", requireAuth, async (req, res): Promise<void> => {
   });
 });
 
-router.get("/dashboard/recent-records", requireAuth, async (req, res): Promise<void> => {
+router.get("/dashboard/recent-records", requireOperationsAccess, async (req, res): Promise<void> => {
   const session = (req as unknown as { session: { userId: number; userRole: string } }).session;
 
   const fellingWhere = session.userRole === "admin"

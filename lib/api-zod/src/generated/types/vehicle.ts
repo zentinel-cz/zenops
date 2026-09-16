@@ -13,6 +13,7 @@ export interface Vehicle {
   licensePlate?: string | null;
   /** @nullable */
   note?: string | null;
+  defaultSlopeMower: boolean;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

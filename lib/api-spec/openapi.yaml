@@ -272,6 +272,80 @@ paths:
               schema:
                 $ref: "#/components/schemas/MessageResponse"
 
+  /contractor-companies:
+    get:
+      operationId: listContractorCompanies
+      tags: [contractor-companies]
+      summary: Seznam subdodavatelských firem
+      responses:
+        "200":
+          description: Seznam firem
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ContractorCompany"
+    post:
+      operationId: createContractorCompany
+      tags: [contractor-companies]
+      summary: Vytvořit subdodavatelskou firmu
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateContractorCompanyBody"
+      responses:
+        "201":
+          description: Firma vytvořena
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractorCompany"
+
+  /contractor-companies/{id}:
+    patch:
+      operationId: updateContractorCompany
+      tags: [contractor-companies]
+      summary: Upravit subdodavatelskou firmu
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateContractorCompanyBody"
+      responses:
+        "200":
+          description: Firma upravena
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContractorCompany"
+    delete:
+      operationId: deleteContractorCompany
+      tags: [contractor-companies]
+      summary: Smazat subdodavatelskou firmu
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Firma smazána
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
   /vehicles:
     get:
       operationId: listVehicles
@@ -419,6 +493,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MessageResponse"
+
+  /machines/{id}/last-mth:
+    get:
+      operationId: getMachineLastMth
+      tags: [machines]
+      summary: Poslední koncový stav MTH stroje
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Poslední stav MTH
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MachineLastMth"
 
   /accessories:
     get:
@@ -1010,7 +1103,9 @@ components:
           type: string
         role:
           type: string
-          enum: [admin, user]
+          enum: [admin, user, employee, manager]
+        workerId:
+          type: ["integer", "null"]
         isActive:
           type: boolean
         createdAt:
@@ -1037,7 +1132,9 @@ components:
           type: string
         role:
           type: string
-          enum: [admin, user]
+          enum: [admin, user, employee, manager]
+        workerId:
+          type: ["integer", "null"]
       required:
         - username
         - password
@@ -1051,7 +1148,9 @@ components:
           type: ["string", "null"]
         role:
           type: ["string", "null"]
-          enum: [admin, user, null]
+          enum: [admin, user, employee, manager, null]
+        workerId:
+          type: ["integer", "null"]
         isActive:
           type: ["boolean", "null"]
         password:
@@ -1068,6 +1167,14 @@ components:
           type: string
         note:
           type: ["string", "null"]
+        defaultBrushcutter:
+          type: boolean
+        defaultSlopeMower:
+          type: boolean
+        contractorCompanyId:
+          type: ["integer", "null"]
+        defaultSubcontractor:
+          type: boolean
         isActive:
           type: boolean
         createdAt:
@@ -1078,6 +1185,9 @@ components:
         - id
         - firstName
         - lastName
+        - defaultBrushcutter
+        - defaultSlopeMower
+        - defaultSubcontractor
         - isActive
         - createdAt
         - updatedAt
@@ -1091,12 +1201,52 @@ components:
           type: string
         note:
           type: ["string", "null"]
+        defaultBrushcutter:
+          type: boolean
+        defaultSlopeMower:
+          type: boolean
+        contractorCompanyId:
+          type: ["integer", "null"]
+        defaultSubcontractor:
+          type: boolean
         isActive:
           type: boolean
       required:
         - firstName
         - lastName
         - isActive
+
+    ContractorCompany:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        companyId:
+          type: ["string", "null"]
+        note:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, name, isActive, createdAt, updatedAt]
+
+    CreateContractorCompanyBody:
+      type: object
+      properties:
+        name:
+          type: string
+        companyId:
+          type: ["string", "null"]
+        note:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+      required: [name, isActive]
 
     Vehicle:
       type: object
@@ -1109,6 +1259,8 @@ components:
           type: ["string", "null"]
         note:
           type: ["string", "null"]
+        defaultSlopeMower:
+          type: boolean
         isActive:
           type: boolean
         createdAt:
@@ -1118,6 +1270,7 @@ components:
       required:
         - id
         - name
+        - defaultSlopeMower
         - isActive
         - createdAt
         - updatedAt
@@ -1131,6 +1284,8 @@ components:
           type: ["string", "null"]
         note:
           type: ["string", "null"]
+        defaultSlopeMower:
+          type: boolean
         isActive:
           type: boolean
       required:
@@ -1189,6 +1344,12 @@ components:
           type: string
         type:
           type: string
+        mowingCategory:
+          type: ["string", "null"]
+        defaultAccessoryId:
+          type: ["integer", "null"]
+        defaultOperatorId:
+          type: ["integer", "null"]
         note:
           type: ["string", "null"]
         isActive:
@@ -1212,6 +1373,12 @@ components:
           type: string
         type:
           type: string
+        mowingCategory:
+          type: ["string", "null"]
+        defaultAccessoryId:
+          type: ["integer", "null"]
+        defaultOperatorId:
+          type: ["integer", "null"]
         note:
           type: ["string", "null"]
         isActive:
@@ -1220,6 +1387,20 @@ components:
         - name
         - type
         - isActive
+
+    MachineLastMth:
+      type: object
+      properties:
+        machineId:
+          type: integer
+        mthEnd:
+          type: ["number", "null"]
+        recordDate:
+          type: ["string", "null"]
+      required:
+        - machineId
+        - mthEnd
+        - recordDate
 
     Region:
       type: object
@@ -1295,6 +1476,102 @@ components:
         - name
         - isActive
 
+    WorkerTimeEntry:
+      type: object
+      properties:
+        workerId:
+          type: integer
+        category:
+          type: string
+          enum: [manual, machine]
+        shiftType:
+          type: ["string", "null"]
+          enum: [morning, evening, custom, null]
+        startTime:
+          type: ["string", "null"]
+        endTime:
+          type: ["string", "null"]
+        worker:
+          anyOf:
+            - $ref: "#/components/schemas/Worker"
+            - type: "null"
+      required:
+        - workerId
+        - category
+        - startTime
+        - endTime
+
+    MachineMthEntry:
+      type: object
+      properties:
+        machineId:
+          type: integer
+        accessoryId:
+          type: ["integer", "null"]
+        operatorId:
+          type: ["integer", "null"]
+        startTime:
+          type: ["string", "null"]
+        endTime:
+          type: ["string", "null"]
+        mthStart:
+          type: ["number", "null"]
+        mthEnd:
+          type: ["number", "null"]
+        mthTotal:
+          type: ["number", "null"]
+        fuelConsumption:
+          type: ["number", "null"]
+        refueling:
+          type: ["number", "null"]
+        machine:
+          anyOf:
+            - $ref: "#/components/schemas/Machine"
+            - type: "null"
+        accessory:
+          anyOf:
+            - $ref: "#/components/schemas/Accessory"
+            - type: "null"
+        operator:
+          anyOf:
+            - $ref: "#/components/schemas/Worker"
+            - type: "null"
+      required:
+        - machineId
+        - accessoryId
+        - operatorId
+        - startTime
+        - endTime
+        - mthStart
+        - mthEnd
+        - mthTotal
+        - fuelConsumption
+        - refueling
+
+    VehicleEntry:
+      type: object
+      properties:
+        vehicleId:
+          type: integer
+        kmStart:
+          type: ["number", "null"]
+        kmEnd:
+          type: ["number", "null"]
+        kmTotal:
+          type: ["number", "null"]
+        refueling:
+          type: ["number", "null"]
+        vehicle:
+          anyOf:
+            - $ref: "#/components/schemas/Vehicle"
+            - type: "null"
+      required:
+        - vehicleId
+        - kmStart
+        - kmEnd
+        - kmTotal
+        - refueling
+
     FellingRecord:
       type: object
       properties:
@@ -1306,6 +1583,8 @@ components:
           type: integer
         regionId:
           type: integer
+        workType:
+          type: ["string", "null"]
         location:
           type: ["string", "null"]
         startTime:
@@ -1314,6 +1593,10 @@ components:
           type: ["string", "null"]
         weatherTypeId:
           type: ["integer", "null"]
+        weatherTypeIds:
+          type: array
+          items:
+            type: integer
         temperature:
           type: ["integer", "null"]
         mth:
@@ -1326,6 +1609,18 @@ components:
           type: array
           items:
             type: integer
+        manualWorkerIds:
+          type: array
+          items:
+            type: integer
+        machineWorkerIds:
+          type: array
+          items:
+            type: integer
+        workerTimeEntries:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkerTimeEntry"
         vehicleIds:
           type: array
           items:
@@ -1334,10 +1629,26 @@ components:
           type: array
           items:
             type: integer
+        machineMthEntries:
+          type: array
+          items:
+            $ref: "#/components/schemas/MachineMthEntry"
         accessoryIds:
           type: array
           items:
             type: integer
+        assignedAverage:
+          type: ["string", "null"]
+        vehicleKmStart:
+          type: ["number", "null"]
+        vehicleKmEnd:
+          type: ["number", "null"]
+        vehicleKmTotal:
+          type: ["number", "null"]
+        vehicleRefueling:
+          type: ["number", "null"]
+        trafficMarking:
+          type: ["string", "null"]
         note:
           type: ["string", "null"]
         createdAt:
@@ -1352,7 +1663,19 @@ components:
           anyOf:
             - $ref: "#/components/schemas/WeatherType"
             - type: "null"
+        weatherTypes:
+          type: array
+          items:
+            $ref: "#/components/schemas/WeatherType"
         workers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Worker"
+        manualWorkers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Worker"
+        machineWorkers:
           type: array
           items:
             $ref: "#/components/schemas/Worker"
@@ -1374,14 +1697,21 @@ components:
         - userId
         - regionId
         - workerIds
+        - manualWorkerIds
+        - machineWorkerIds
+        - workerTimeEntries
         - vehicleIds
         - machineIds
+        - machineMthEntries
         - accessoryIds
         - createdAt
         - updatedAt
         - user
         - region
+        - weatherTypes
         - workers
+        - manualWorkers
+        - machineWorkers
         - vehicles
         - machines
         - accessories
@@ -1393,6 +1723,8 @@ components:
           type: string
         regionId:
           type: integer
+        workType:
+          type: ["string", "null"]
         location:
           type: ["string", "null"]
         startTime:
@@ -1401,6 +1733,10 @@ components:
           type: ["string", "null"]
         weatherTypeId:
           type: ["integer", "null"]
+        weatherTypeIds:
+          type: array
+          items:
+            type: integer
         temperature:
           type: ["integer", "null"]
         mth:
@@ -1413,6 +1749,18 @@ components:
           type: array
           items:
             type: integer
+        manualWorkerIds:
+          type: array
+          items:
+            type: integer
+        machineWorkerIds:
+          type: array
+          items:
+            type: integer
+        workerTimeEntries:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkerTimeEntry"
         vehicleIds:
           type: array
           items:
@@ -1421,18 +1769,38 @@ components:
           type: array
           items:
             type: integer
+        machineMthEntries:
+          type: array
+          items:
+            $ref: "#/components/schemas/MachineMthEntry"
         accessoryIds:
           type: array
           items:
             type: integer
+        assignedAverage:
+          type: ["string", "null"]
+        vehicleKmStart:
+          type: ["number", "null"]
+        vehicleKmEnd:
+          type: ["number", "null"]
+        vehicleKmTotal:
+          type: ["number", "null"]
+        vehicleRefueling:
+          type: ["number", "null"]
+        trafficMarking:
+          type: ["string", "null"]
         note:
           type: ["string", "null"]
       required:
         - date
         - regionId
         - workerIds
+        - manualWorkerIds
+        - machineWorkerIds
+        - workerTimeEntries
         - vehicleIds
         - machineIds
+        - machineMthEntries
         - accessoryIds
 
     UpdateFellingRecordBody:
@@ -1442,6 +1810,8 @@ components:
           type: ["string", "null"]
         regionId:
           type: ["integer", "null"]
+        workType:
+          type: ["string", "null"]
         location:
           type: ["string", "null"]
         startTime:
@@ -1450,6 +1820,10 @@ components:
           type: ["string", "null"]
         weatherTypeId:
           type: ["integer", "null"]
+        weatherTypeIds:
+          type: ["array", "null"]
+          items:
+            type: integer
         temperature:
           type: ["integer", "null"]
         mth:
@@ -1462,6 +1836,18 @@ components:
           type: ["array", "null"]
           items:
             type: integer
+        manualWorkerIds:
+          type: ["array", "null"]
+          items:
+            type: integer
+        machineWorkerIds:
+          type: ["array", "null"]
+          items:
+            type: integer
+        workerTimeEntries:
+          type: ["array", "null"]
+          items:
+            $ref: "#/components/schemas/WorkerTimeEntry"
         vehicleIds:
           type: ["array", "null"]
           items:
@@ -1470,10 +1856,26 @@ components:
           type: ["array", "null"]
           items:
             type: integer
+        machineMthEntries:
+          type: ["array", "null"]
+          items:
+            $ref: "#/components/schemas/MachineMthEntry"
         accessoryIds:
           type: ["array", "null"]
           items:
             type: integer
+        assignedAverage:
+          type: ["string", "null"]
+        vehicleKmStart:
+          type: ["number", "null"]
+        vehicleKmEnd:
+          type: ["number", "null"]
+        vehicleKmTotal:
+          type: ["number", "null"]
+        vehicleRefueling:
+          type: ["number", "null"]
+        trafficMarking:
+          type: ["string", "null"]
         note:
           type: ["string", "null"]
 
@@ -1488,6 +1890,16 @@ components:
           type: integer
         regionId:
           type: integer
+        workType:
+          type: ["string", "null"]
+        mowingSection:
+          type: ["string", "null"]
+        mowingKind:
+          type: ["string", "null"]
+        manualMowingKind:
+          type: ["string", "null"]
+        contractorCompanyId:
+          type: ["integer", "null"]
         location:
           type: ["string", "null"]
         startTime:
@@ -1496,8 +1908,18 @@ components:
           type: ["string", "null"]
         weatherTypeId:
           type: ["integer", "null"]
+        weatherTypeIds:
+          type: array
+          items:
+            type: integer
+        temperature:
+          type: ["integer", "null"]
         vehicleId:
           type: ["integer", "null"]
+        vehicleEntries:
+          type: array
+          items:
+            $ref: "#/components/schemas/VehicleEntry"
         mthStart:
           type: ["number", "null"]
         mthEnd:
@@ -1512,14 +1934,50 @@ components:
           type: array
           items:
             type: integer
+        manualWorkerIds:
+          type: array
+          items:
+            type: integer
+        machineWorkerIds:
+          type: array
+          items:
+            type: integer
+        workerTimeEntries:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkerTimeEntry"
         machineIds:
           type: array
           items:
             type: integer
+        machineMthEntries:
+          type: array
+          items:
+            $ref: "#/components/schemas/MachineMthEntry"
         accessoryIds:
           type: array
           items:
             type: integer
+        assignedAverage:
+          type: ["string", "null"]
+        dayHours:
+          type: ["number", "null"]
+        nightHours:
+          type: ["number", "null"]
+        laborHours:
+          type: ["number", "null"]
+        vehicleKmStart:
+          type: ["number", "null"]
+        vehicleKmEnd:
+          type: ["number", "null"]
+        vehicleKmTotal:
+          type: ["number", "null"]
+        vehicleRefueling:
+          type: ["number", "null"]
+        brushcutterRefueling:
+          type: ["number", "null"]
+        trafficMarking:
+          type: ["string", "null"]
         note:
           type: ["string", "null"]
         createdAt:
@@ -1534,6 +1992,10 @@ components:
           anyOf:
             - $ref: "#/components/schemas/WeatherType"
             - type: "null"
+        weatherTypes:
+          type: array
+          items:
+            $ref: "#/components/schemas/WeatherType"
         vehicle:
           anyOf:
             - $ref: "#/components/schemas/Vehicle"
@@ -1542,6 +2004,18 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Worker"
+        manualWorkers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Worker"
+        machineWorkers:
+          type: array
+          items:
+            $ref: "#/components/schemas/Worker"
+        contractorCompany:
+          anyOf:
+            - $ref: "#/components/schemas/ContractorCompany"
+            - type: "null"
         machines:
           type: array
           items:
@@ -1556,13 +2030,21 @@ components:
         - userId
         - regionId
         - workerIds
+        - manualWorkerIds
+        - machineWorkerIds
+        - workerTimeEntries
         - machineIds
+        - machineMthEntries
         - accessoryIds
+        - vehicleEntries
         - createdAt
         - updatedAt
         - user
         - region
+        - weatherTypes
         - workers
+        - manualWorkers
+        - machineWorkers
         - machines
         - accessories
 
@@ -1573,6 +2055,16 @@ components:
           type: string
         regionId:
           type: integer
+        workType:
+          type: ["string", "null"]
+        mowingSection:
+          type: ["string", "null"]
+        mowingKind:
+          type: ["string", "null"]
+        manualMowingKind:
+          type: ["string", "null"]
+        contractorCompanyId:
+          type: ["integer", "null"]
         location:
           type: ["string", "null"]
         startTime:
@@ -1581,8 +2073,18 @@ components:
           type: ["string", "null"]
         weatherTypeId:
           type: ["integer", "null"]
+        weatherTypeIds:
+          type: array
+          items:
+            type: integer
+        temperature:
+          type: ["integer", "null"]
         vehicleId:
           type: ["integer", "null"]
+        vehicleEntries:
+          type: array
+          items:
+            $ref: "#/components/schemas/VehicleEntry"
         mthStart:
           type: ["number", "null"]
         mthEnd:
@@ -1597,22 +2099,63 @@ components:
           type: array
           items:
             type: integer
+        manualWorkerIds:
+          type: array
+          items:
+            type: integer
+        machineWorkerIds:
+          type: array
+          items:
+            type: integer
+        workerTimeEntries:
+          type: array
+          items:
+            $ref: "#/components/schemas/WorkerTimeEntry"
         machineIds:
           type: array
           items:
             type: integer
+        machineMthEntries:
+          type: array
+          items:
+            $ref: "#/components/schemas/MachineMthEntry"
         accessoryIds:
           type: array
           items:
             type: integer
+        assignedAverage:
+          type: ["string", "null"]
+        dayHours:
+          type: ["number", "null"]
+        nightHours:
+          type: ["number", "null"]
+        laborHours:
+          type: ["number", "null"]
+        vehicleKmStart:
+          type: ["number", "null"]
+        vehicleKmEnd:
+          type: ["number", "null"]
+        vehicleKmTotal:
+          type: ["number", "null"]
+        vehicleRefueling:
+          type: ["number", "null"]
+        brushcutterRefueling:
+          type: ["number", "null"]
+        trafficMarking:
+          type: ["string", "null"]
         note:
           type: ["string", "null"]
       required:
         - date
         - regionId
         - workerIds
+        - manualWorkerIds
+        - machineWorkerIds
+        - workerTimeEntries
         - machineIds
+        - machineMthEntries
         - accessoryIds
+        - vehicleEntries
 
     UpdateMowingRecordBody:
       type: object
@@ -1621,6 +2164,16 @@ components:
           type: ["string", "null"]
         regionId:
           type: ["integer", "null"]
+        workType:
+          type: ["string", "null"]
+        mowingSection:
+          type: ["string", "null"]
+        mowingKind:
+          type: ["string", "null"]
+        manualMowingKind:
+          type: ["string", "null"]
+        contractorCompanyId:
+          type: ["integer", "null"]
         location:
           type: ["string", "null"]
         startTime:
@@ -1629,8 +2182,18 @@ components:
           type: ["string", "null"]
         weatherTypeId:
           type: ["integer", "null"]
+        weatherTypeIds:
+          type: ["array", "null"]
+          items:
+            type: integer
+        temperature:
+          type: ["integer", "null"]
         vehicleId:
           type: ["integer", "null"]
+        vehicleEntries:
+          type: ["array", "null"]
+          items:
+            $ref: "#/components/schemas/VehicleEntry"
         mthStart:
           type: ["number", "null"]
         mthEnd:
@@ -1645,14 +2208,50 @@ components:
           type: ["array", "null"]
           items:
             type: integer
+        manualWorkerIds:
+          type: ["array", "null"]
+          items:
+            type: integer
+        machineWorkerIds:
+          type: ["array", "null"]
+          items:
+            type: integer
+        workerTimeEntries:
+          type: ["array", "null"]
+          items:
+            $ref: "#/components/schemas/WorkerTimeEntry"
         machineIds:
           type: ["array", "null"]
           items:
             type: integer
+        machineMthEntries:
+          type: ["array", "null"]
+          items:
+            $ref: "#/components/schemas/MachineMthEntry"
         accessoryIds:
           type: ["array", "null"]
           items:
             type: integer
+        assignedAverage:
+          type: ["string", "null"]
+        dayHours:
+          type: ["number", "null"]
+        nightHours:
+          type: ["number", "null"]
+        laborHours:
+          type: ["number", "null"]
+        vehicleKmStart:
+          type: ["number", "null"]
+        vehicleKmEnd:
+          type: ["number", "null"]
+        vehicleKmTotal:
+          type: ["number", "null"]
+        vehicleRefueling:
+          type: ["number", "null"]
+        brushcutterRefueling:
+          type: ["number", "null"]
+        trafficMarking:
+          type: ["string", "null"]
         note:
           type: ["string", "null"]
 

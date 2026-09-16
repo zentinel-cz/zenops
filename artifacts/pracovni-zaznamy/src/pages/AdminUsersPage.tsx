@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useListUsers, useCreateUser, useUpdateUser, useDeleteUser, getListUsersQueryKey } from "@workspace/api-client-react";
+import { useListUsers, useCreateUser, useUpdateUser, useDeleteUser, getListUsersQueryKey, getListWorkersQueryKey, useListWorkers } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatDateTime } from "@/lib/utils";
 
@@ -7,13 +7,15 @@ interface UserForm {
   username: string;
   password: string;
   fullName: string;
-  role: "admin" | "user";
+  role: "admin" | "user" | "employee" | "manager";
+  workerId: number | null;
   isActive: boolean;
 }
 
 interface EditUserForm {
   fullName: string;
-  role: "admin" | "user";
+  role: "admin" | "user" | "employee" | "manager";
+  workerId: number | null;
   isActive: boolean;
   password: string;
 }
@@ -42,28 +44,35 @@ const labelClass = "block text-sm font-medium text-foreground mb-1";
 export default function AdminUsersPage() {
   const queryClient = useQueryClient();
   const { data: users, isLoading } = useListUsers();
+  const { data: workers } = useListWorkers();
   const createMutation = useCreateUser();
   const updateMutation = useUpdateUser();
   const deleteMutation = useDeleteUser();
 
   const [showAdd, setShowAdd] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
-  const [form, setForm] = useState<UserForm>({ username: "", password: "", fullName: "", role: "user", isActive: true });
-  const [editForm, setEditForm] = useState<EditUserForm>({ fullName: "", role: "user", isActive: true, password: "" });
+  const [form, setForm] = useState<UserForm>({ username: "", password: "", fullName: "", role: "employee", workerId: null, isActive: true });
+  const [editForm, setEditForm] = useState<EditUserForm>({ fullName: "", role: "employee", workerId: null, isActive: true, password: "" });
   const [error, setError] = useState("");
   const [editError, setEditError] = useState("");
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: getListUsersQueryKey() });
+  const invalidate = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: getListUsersQueryKey() }),
+      queryClient.invalidateQueries({ queryKey: getListWorkersQueryKey() }),
+    ]);
+  };
+  const availableWorkers = (workers ?? []).filter((worker) => worker.isActive && (!(users ?? []).some((user) => user.workerId === worker.id) || users?.find((user) => user.id === editId)?.workerId === worker.id));
 
   const resetForm = () => {
-    setForm({ username: "", password: "", fullName: "", role: "user", isActive: true });
+    setForm({ username: "", password: "", fullName: "", role: "employee", workerId: null, isActive: true });
     setError("");
   };
 
   const openEdit = (id: number) => {
     const u = users?.find((x) => x.id === id);
     if (!u) return;
-    setEditForm({ fullName: u.fullName, role: u.role as "admin" | "user", isActive: u.isActive, password: "" });
+    setEditForm({ fullName: u.fullName, role: u.role as UserForm["role"], workerId: u.workerId ?? null, isActive: u.isActive, password: "" });
     setEditId(id);
     setEditError("");
   };
@@ -80,7 +89,7 @@ export default function AdminUsersPage() {
       return;
     }
     try {
-      await createMutation.mutateAsync({ data: { username: form.username.trim(), password: form.password, fullName: form.fullName.trim(), role: form.role } });
+      await createMutation.mutateAsync({ data: { username: form.username.trim(), password: form.password, fullName: form.fullName.trim(), role: form.role, workerId: form.workerId } });
       await invalidate();
       resetForm();
       setShowAdd(false);
@@ -98,6 +107,7 @@ export default function AdminUsersPage() {
       const data: Record<string, unknown> = {
         fullName: editForm.fullName.trim(),
         role: editForm.role,
+        workerId: editForm.workerId,
         isActive: editForm.isActive,
       };
       if (editForm.password) data.password = editForm.password;
@@ -115,7 +125,7 @@ export default function AdminUsersPage() {
     await invalidate();
   };
 
-  const roleLabel = (role: string) => role === "admin" ? "Admin" : "Uživatel";
+  const roleLabel = (role: string) => role === "admin" ? "Admin" : role === "manager" ? "Vedoucí" : role === "employee" ? "Zaměstnanec" : "Uživatel";
   const roleBadgeClass = (role: string) =>
     role === "admin"
       ? "bg-primary/10 text-primary border border-primary/20"
@@ -177,11 +187,14 @@ export default function AdminUsersPage() {
             </div>
             <div>
               <label className={labelClass}>Role *</label>
-              <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as "admin" | "user" })} className={inputClass}>
-                <option value="user">Uživatel</option>
+              <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as UserForm["role"], workerId: ["employee", "manager"].includes(e.target.value) ? form.workerId : null })} className={inputClass}>
+                <option value="employee">Zaměstnanec</option>
+                <option value="manager">Vedoucí</option>
+                <option value="user">Provozní uživatel</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
+            {["employee", "manager"].includes(form.role) && <div className="sm:col-span-2"><label className={labelClass}>Zaměstnanec / pracovní profil</label><select value={form.workerId ?? ""} onChange={(e) => { const workerId = e.target.value ? Number(e.target.value) : null; const worker = workers?.find((item) => item.id === workerId); setForm({ ...form, workerId, fullName: worker ? `${worker.firstName} ${worker.lastName}` : form.fullName }); }} className={inputClass}><option value="">Vytvořit automaticky z celého jména</option>{availableWorkers.map((worker) => <option key={worker.id} value={worker.id}>Propojit existujícího: {worker.firstName} {worker.lastName}</option>)}</select><p className="mt-1 text-xs text-muted-foreground">Nový zaměstnanec se automaticky uloží také mezi pracovníky a ihned bude dostupný v denních záznamech.</p></div>}
             <div className="sm:col-span-2 flex items-center gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} className="rounded" />
@@ -260,11 +273,14 @@ export default function AdminUsersPage() {
             </div>
             <div>
               <label className={labelClass}>Role</label>
-              <select value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value as "admin" | "user" })} className={inputClass}>
-                <option value="user">Uživatel</option>
+              <select value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value as UserForm["role"], workerId: ["employee", "manager"].includes(e.target.value) ? editForm.workerId : null })} className={inputClass}>
+                <option value="employee">Zaměstnanec</option>
+                <option value="manager">Vedoucí</option>
+                <option value="user">Provozní uživatel</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
+            {["employee", "manager"].includes(editForm.role) && <div><label className={labelClass}>Zaměstnanec / pracovní profil</label><select value={editForm.workerId ?? ""} onChange={(e) => { const workerId = e.target.value ? Number(e.target.value) : null; const worker = workers?.find((item) => item.id === workerId); setEditForm({ ...editForm, workerId, fullName: worker ? `${worker.firstName} ${worker.lastName}` : editForm.fullName }); }} className={inputClass}><option value="">Vytvořit automaticky z celého jména</option>{availableWorkers.map((worker) => <option key={worker.id} value={worker.id}>Propojit existujícího: {worker.firstName} {worker.lastName}</option>)}</select></div>}
             <div>
               <label className={labelClass}>Nové heslo (nechat prázdné = beze změny)</label>
               <input

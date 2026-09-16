@@ -27,6 +27,8 @@ export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 export const UserRole = {
   admin: "admin",
   user: "user",
+  employee: "employee",
+  manager: "manager",
 } as const;
 
 export interface User {
@@ -34,6 +36,8 @@ export interface User {
   username: string;
   fullName: string;
   role: UserRole;
+  /** @nullable */
+  workerId?: number | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -50,6 +54,8 @@ export type CreateUserBodyRole =
 export const CreateUserBodyRole = {
   admin: "admin",
   user: "user",
+  employee: "employee",
+  manager: "manager",
 } as const;
 
 export interface CreateUserBody {
@@ -57,6 +63,8 @@ export interface CreateUserBody {
   password: string;
   fullName: string;
   role: CreateUserBodyRole;
+  /** @nullable */
+  workerId?: number | null;
 }
 
 /**
@@ -69,6 +77,8 @@ export type UpdateUserBodyRole =
 export const UpdateUserBodyRole = {
   admin: "admin",
   user: "user",
+  employee: "employee",
+  manager: "manager",
 } as const;
 
 export interface UpdateUserBody {
@@ -76,6 +86,8 @@ export interface UpdateUserBody {
   fullName?: string | null;
   /** @nullable */
   role?: UpdateUserBodyRole;
+  /** @nullable */
+  workerId?: number | null;
   /** @nullable */
   isActive?: boolean | null;
   /** @nullable */
@@ -88,6 +100,11 @@ export interface Worker {
   lastName: string;
   /** @nullable */
   note?: string | null;
+  defaultBrushcutter: boolean;
+  defaultSlopeMower: boolean;
+  /** @nullable */
+  contractorCompanyId?: number | null;
+  defaultSubcontractor: boolean;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -96,6 +113,32 @@ export interface Worker {
 export interface CreateWorkerBody {
   firstName: string;
   lastName: string;
+  /** @nullable */
+  note?: string | null;
+  defaultBrushcutter?: boolean;
+  defaultSlopeMower?: boolean;
+  /** @nullable */
+  contractorCompanyId?: number | null;
+  defaultSubcontractor?: boolean;
+  isActive: boolean;
+}
+
+export interface ContractorCompany {
+  id: number;
+  name: string;
+  /** @nullable */
+  companyId?: string | null;
+  /** @nullable */
+  note?: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateContractorCompanyBody {
+  name: string;
+  /** @nullable */
+  companyId?: string | null;
   /** @nullable */
   note?: string | null;
   isActive: boolean;
@@ -108,6 +151,7 @@ export interface Vehicle {
   licensePlate?: string | null;
   /** @nullable */
   note?: string | null;
+  defaultSlopeMower: boolean;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -119,6 +163,7 @@ export interface CreateVehicleBody {
   licensePlate?: string | null;
   /** @nullable */
   note?: string | null;
+  defaultSlopeMower?: boolean;
   isActive: boolean;
 }
 
@@ -152,6 +197,12 @@ export interface Machine {
   name: string;
   type: string;
   /** @nullable */
+  mowingCategory?: string | null;
+  /** @nullable */
+  defaultAccessoryId?: number | null;
+  /** @nullable */
+  defaultOperatorId?: number | null;
+  /** @nullable */
   note?: string | null;
   isActive: boolean;
   createdAt: string;
@@ -162,8 +213,22 @@ export interface CreateMachineBody {
   name: string;
   type: string;
   /** @nullable */
+  mowingCategory?: string | null;
+  /** @nullable */
+  defaultAccessoryId?: number | null;
+  /** @nullable */
+  defaultOperatorId?: number | null;
+  /** @nullable */
   note?: string | null;
   isActive: boolean;
+}
+
+export interface MachineLastMth {
+  machineId: number;
+  /** @nullable */
+  mthEnd: number | null;
+  /** @nullable */
+  recordDate: string | null;
 }
 
 export interface Region {
@@ -204,11 +269,84 @@ export interface CreateWeatherTypeBody {
   isActive: boolean;
 }
 
+export type WorkerTimeEntryCategory =
+  (typeof WorkerTimeEntryCategory)[keyof typeof WorkerTimeEntryCategory];
+
+export const WorkerTimeEntryCategory = {
+  manual: "manual",
+  machine: "machine",
+} as const;
+
+/**
+ * @nullable
+ */
+export type WorkerTimeEntryShiftType =
+  | (typeof WorkerTimeEntryShiftType)[keyof typeof WorkerTimeEntryShiftType]
+  | null;
+
+export const WorkerTimeEntryShiftType = {
+  morning: "morning",
+  evening: "evening",
+  custom: "custom",
+} as const;
+
+export interface WorkerTimeEntry {
+  workerId: number;
+  category: WorkerTimeEntryCategory;
+  /** @nullable */
+  shiftType?: WorkerTimeEntryShiftType;
+  /** @nullable */
+  startTime: string | null;
+  /** @nullable */
+  endTime: string | null;
+  worker?: Worker | null;
+}
+
+export interface MachineMthEntry {
+  machineId: number;
+  /** @nullable */
+  accessoryId: number | null;
+  /** @nullable */
+  operatorId: number | null;
+  /** @nullable */
+  startTime: string | null;
+  /** @nullable */
+  endTime: string | null;
+  /** @nullable */
+  mthStart: number | null;
+  /** @nullable */
+  mthEnd: number | null;
+  /** @nullable */
+  mthTotal: number | null;
+  /** @nullable */
+  fuelConsumption: number | null;
+  /** @nullable */
+  refueling: number | null;
+  machine?: Machine | null;
+  accessory?: Accessory | null;
+  operator?: Worker | null;
+}
+
+export interface VehicleEntry {
+  vehicleId: number;
+  /** @nullable */
+  kmStart: number | null;
+  /** @nullable */
+  kmEnd: number | null;
+  /** @nullable */
+  kmTotal: number | null;
+  /** @nullable */
+  refueling: number | null;
+  vehicle?: Vehicle | null;
+}
+
 export interface FellingRecord {
   id: number;
   date: string;
   userId: number;
   regionId: number;
+  /** @nullable */
+  workType?: string | null;
   /** @nullable */
   location?: string | null;
   /** @nullable */
@@ -217,6 +355,7 @@ export interface FellingRecord {
   endTime?: string | null;
   /** @nullable */
   weatherTypeId?: number | null;
+  weatherTypeIds?: number[];
   /** @nullable */
   temperature?: number | null;
   /** @nullable */
@@ -226,9 +365,25 @@ export interface FellingRecord {
   /** @nullable */
   refueling?: number | null;
   workerIds: number[];
+  manualWorkerIds: number[];
+  machineWorkerIds: number[];
+  workerTimeEntries: WorkerTimeEntry[];
   vehicleIds: number[];
   machineIds: number[];
+  machineMthEntries: MachineMthEntry[];
   accessoryIds: number[];
+  /** @nullable */
+  assignedAverage?: string | null;
+  /** @nullable */
+  vehicleKmStart?: number | null;
+  /** @nullable */
+  vehicleKmEnd?: number | null;
+  /** @nullable */
+  vehicleKmTotal?: number | null;
+  /** @nullable */
+  vehicleRefueling?: number | null;
+  /** @nullable */
+  trafficMarking?: string | null;
   /** @nullable */
   note?: string | null;
   createdAt: string;
@@ -236,7 +391,10 @@ export interface FellingRecord {
   user: User;
   region: Region;
   weatherType?: WeatherType | null;
+  weatherTypes: WeatherType[];
   workers: Worker[];
+  manualWorkers: Worker[];
+  machineWorkers: Worker[];
   vehicles: Vehicle[];
   machines: Machine[];
   accessories: Accessory[];
@@ -246,6 +404,8 @@ export interface CreateFellingRecordBody {
   date: string;
   regionId: number;
   /** @nullable */
+  workType?: string | null;
+  /** @nullable */
   location?: string | null;
   /** @nullable */
   startTime?: string | null;
@@ -253,6 +413,7 @@ export interface CreateFellingRecordBody {
   endTime?: string | null;
   /** @nullable */
   weatherTypeId?: number | null;
+  weatherTypeIds?: number[];
   /** @nullable */
   temperature?: number | null;
   /** @nullable */
@@ -262,9 +423,25 @@ export interface CreateFellingRecordBody {
   /** @nullable */
   refueling?: number | null;
   workerIds: number[];
+  manualWorkerIds: number[];
+  machineWorkerIds: number[];
+  workerTimeEntries: WorkerTimeEntry[];
   vehicleIds: number[];
   machineIds: number[];
+  machineMthEntries: MachineMthEntry[];
   accessoryIds: number[];
+  /** @nullable */
+  assignedAverage?: string | null;
+  /** @nullable */
+  vehicleKmStart?: number | null;
+  /** @nullable */
+  vehicleKmEnd?: number | null;
+  /** @nullable */
+  vehicleKmTotal?: number | null;
+  /** @nullable */
+  vehicleRefueling?: number | null;
+  /** @nullable */
+  trafficMarking?: string | null;
   /** @nullable */
   note?: string | null;
 }
@@ -275,6 +452,8 @@ export interface UpdateFellingRecordBody {
   /** @nullable */
   regionId?: number | null;
   /** @nullable */
+  workType?: string | null;
+  /** @nullable */
   location?: string | null;
   /** @nullable */
   startTime?: string | null;
@@ -282,6 +461,8 @@ export interface UpdateFellingRecordBody {
   endTime?: string | null;
   /** @nullable */
   weatherTypeId?: number | null;
+  /** @nullable */
+  weatherTypeIds?: number[] | null;
   /** @nullable */
   temperature?: number | null;
   /** @nullable */
@@ -293,11 +474,31 @@ export interface UpdateFellingRecordBody {
   /** @nullable */
   workerIds?: number[] | null;
   /** @nullable */
+  manualWorkerIds?: number[] | null;
+  /** @nullable */
+  machineWorkerIds?: number[] | null;
+  /** @nullable */
+  workerTimeEntries?: WorkerTimeEntry[] | null;
+  /** @nullable */
   vehicleIds?: number[] | null;
   /** @nullable */
   machineIds?: number[] | null;
   /** @nullable */
+  machineMthEntries?: MachineMthEntry[] | null;
+  /** @nullable */
   accessoryIds?: number[] | null;
+  /** @nullable */
+  assignedAverage?: string | null;
+  /** @nullable */
+  vehicleKmStart?: number | null;
+  /** @nullable */
+  vehicleKmEnd?: number | null;
+  /** @nullable */
+  vehicleKmTotal?: number | null;
+  /** @nullable */
+  vehicleRefueling?: number | null;
+  /** @nullable */
+  trafficMarking?: string | null;
   /** @nullable */
   note?: string | null;
 }
@@ -308,6 +509,16 @@ export interface MowingRecord {
   userId: number;
   regionId: number;
   /** @nullable */
+  workType?: string | null;
+  /** @nullable */
+  mowingSection?: string | null;
+  /** @nullable */
+  mowingKind?: string | null;
+  /** @nullable */
+  manualMowingKind?: string | null;
+  /** @nullable */
+  contractorCompanyId?: number | null;
+  /** @nullable */
   location?: string | null;
   /** @nullable */
   startTime?: string | null;
@@ -315,8 +526,12 @@ export interface MowingRecord {
   endTime?: string | null;
   /** @nullable */
   weatherTypeId?: number | null;
+  weatherTypeIds?: number[];
+  /** @nullable */
+  temperature?: number | null;
   /** @nullable */
   vehicleId?: number | null;
+  vehicleEntries: VehicleEntry[];
   /** @nullable */
   mthStart?: number | null;
   /** @nullable */
@@ -328,8 +543,32 @@ export interface MowingRecord {
   /** @nullable */
   refueling?: number | null;
   workerIds: number[];
+  manualWorkerIds: number[];
+  machineWorkerIds: number[];
+  workerTimeEntries: WorkerTimeEntry[];
   machineIds: number[];
+  machineMthEntries: MachineMthEntry[];
   accessoryIds: number[];
+  /** @nullable */
+  assignedAverage?: string | null;
+  /** @nullable */
+  dayHours?: number | null;
+  /** @nullable */
+  nightHours?: number | null;
+  /** @nullable */
+  laborHours?: number | null;
+  /** @nullable */
+  vehicleKmStart?: number | null;
+  /** @nullable */
+  vehicleKmEnd?: number | null;
+  /** @nullable */
+  vehicleKmTotal?: number | null;
+  /** @nullable */
+  vehicleRefueling?: number | null;
+  /** @nullable */
+  brushcutterRefueling?: number | null;
+  /** @nullable */
+  trafficMarking?: string | null;
   /** @nullable */
   note?: string | null;
   createdAt: string;
@@ -337,8 +576,12 @@ export interface MowingRecord {
   user: User;
   region: Region;
   weatherType?: WeatherType | null;
+  weatherTypes: WeatherType[];
   vehicle?: Vehicle | null;
   workers: Worker[];
+  manualWorkers: Worker[];
+  machineWorkers: Worker[];
+  contractorCompany?: ContractorCompany | null;
   machines: Machine[];
   accessories: Accessory[];
 }
@@ -347,6 +590,16 @@ export interface CreateMowingRecordBody {
   date: string;
   regionId: number;
   /** @nullable */
+  workType?: string | null;
+  /** @nullable */
+  mowingSection?: string | null;
+  /** @nullable */
+  mowingKind?: string | null;
+  /** @nullable */
+  manualMowingKind?: string | null;
+  /** @nullable */
+  contractorCompanyId?: number | null;
+  /** @nullable */
   location?: string | null;
   /** @nullable */
   startTime?: string | null;
@@ -354,8 +607,12 @@ export interface CreateMowingRecordBody {
   endTime?: string | null;
   /** @nullable */
   weatherTypeId?: number | null;
+  weatherTypeIds?: number[];
+  /** @nullable */
+  temperature?: number | null;
   /** @nullable */
   vehicleId?: number | null;
+  vehicleEntries: VehicleEntry[];
   /** @nullable */
   mthStart?: number | null;
   /** @nullable */
@@ -367,8 +624,32 @@ export interface CreateMowingRecordBody {
   /** @nullable */
   refueling?: number | null;
   workerIds: number[];
+  manualWorkerIds: number[];
+  machineWorkerIds: number[];
+  workerTimeEntries: WorkerTimeEntry[];
   machineIds: number[];
+  machineMthEntries: MachineMthEntry[];
   accessoryIds: number[];
+  /** @nullable */
+  assignedAverage?: string | null;
+  /** @nullable */
+  dayHours?: number | null;
+  /** @nullable */
+  nightHours?: number | null;
+  /** @nullable */
+  laborHours?: number | null;
+  /** @nullable */
+  vehicleKmStart?: number | null;
+  /** @nullable */
+  vehicleKmEnd?: number | null;
+  /** @nullable */
+  vehicleKmTotal?: number | null;
+  /** @nullable */
+  vehicleRefueling?: number | null;
+  /** @nullable */
+  brushcutterRefueling?: number | null;
+  /** @nullable */
+  trafficMarking?: string | null;
   /** @nullable */
   note?: string | null;
 }
@@ -379,6 +660,16 @@ export interface UpdateMowingRecordBody {
   /** @nullable */
   regionId?: number | null;
   /** @nullable */
+  workType?: string | null;
+  /** @nullable */
+  mowingSection?: string | null;
+  /** @nullable */
+  mowingKind?: string | null;
+  /** @nullable */
+  manualMowingKind?: string | null;
+  /** @nullable */
+  contractorCompanyId?: number | null;
+  /** @nullable */
   location?: string | null;
   /** @nullable */
   startTime?: string | null;
@@ -387,7 +678,13 @@ export interface UpdateMowingRecordBody {
   /** @nullable */
   weatherTypeId?: number | null;
   /** @nullable */
+  weatherTypeIds?: number[] | null;
+  /** @nullable */
+  temperature?: number | null;
+  /** @nullable */
   vehicleId?: number | null;
+  /** @nullable */
+  vehicleEntries?: VehicleEntry[] | null;
   /** @nullable */
   mthStart?: number | null;
   /** @nullable */
@@ -401,9 +698,37 @@ export interface UpdateMowingRecordBody {
   /** @nullable */
   workerIds?: number[] | null;
   /** @nullable */
+  manualWorkerIds?: number[] | null;
+  /** @nullable */
+  machineWorkerIds?: number[] | null;
+  /** @nullable */
+  workerTimeEntries?: WorkerTimeEntry[] | null;
+  /** @nullable */
   machineIds?: number[] | null;
   /** @nullable */
+  machineMthEntries?: MachineMthEntry[] | null;
+  /** @nullable */
   accessoryIds?: number[] | null;
+  /** @nullable */
+  assignedAverage?: string | null;
+  /** @nullable */
+  dayHours?: number | null;
+  /** @nullable */
+  nightHours?: number | null;
+  /** @nullable */
+  laborHours?: number | null;
+  /** @nullable */
+  vehicleKmStart?: number | null;
+  /** @nullable */
+  vehicleKmEnd?: number | null;
+  /** @nullable */
+  vehicleKmTotal?: number | null;
+  /** @nullable */
+  vehicleRefueling?: number | null;
+  /** @nullable */
+  brushcutterRefueling?: number | null;
+  /** @nullable */
+  trafficMarking?: string | null;
   /** @nullable */
   note?: string | null;
 }

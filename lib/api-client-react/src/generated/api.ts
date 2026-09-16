@@ -20,7 +20,9 @@ import type {
   Accessory,
   AuditLogEntry,
   AuthResponse,
+  ContractorCompany,
   CreateAccessoryBody,
+  CreateContractorCompanyBody,
   CreateFellingRecordBody,
   CreateMachineBody,
   CreateMowingRecordBody,
@@ -38,6 +40,7 @@ import type {
   ListMowingRecordsParams,
   LoginBody,
   Machine,
+  MachineLastMth,
   MessageResponse,
   MowingRecord,
   RecentRecords,
@@ -1095,6 +1098,341 @@ export const useDeleteWorker = <
 };
 
 /**
+ * @summary Seznam subdodavatelských firem
+ */
+export const getListContractorCompaniesUrl = () => {
+  return `/api/contractor-companies`;
+};
+
+export const listContractorCompanies = async (
+  options?: RequestInit,
+): Promise<ContractorCompany[]> => {
+  return customFetch<ContractorCompany[]>(getListContractorCompaniesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListContractorCompaniesQueryKey = () => {
+  return [`/api/contractor-companies`] as const;
+};
+
+export const getListContractorCompaniesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listContractorCompanies>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listContractorCompanies>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListContractorCompaniesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listContractorCompanies>>
+  > = ({ signal }) => listContractorCompanies({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listContractorCompanies>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListContractorCompaniesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listContractorCompanies>>
+>;
+export type ListContractorCompaniesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Seznam subdodavatelských firem
+ */
+
+export function useListContractorCompanies<
+  TData = Awaited<ReturnType<typeof listContractorCompanies>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listContractorCompanies>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListContractorCompaniesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Vytvořit subdodavatelskou firmu
+ */
+export const getCreateContractorCompanyUrl = () => {
+  return `/api/contractor-companies`;
+};
+
+export const createContractorCompany = async (
+  createContractorCompanyBody: CreateContractorCompanyBody,
+  options?: RequestInit,
+): Promise<ContractorCompany> => {
+  return customFetch<ContractorCompany>(getCreateContractorCompanyUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createContractorCompanyBody),
+  });
+};
+
+export const getCreateContractorCompanyMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createContractorCompany>>,
+    TError,
+    { data: BodyType<CreateContractorCompanyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createContractorCompany>>,
+  TError,
+  { data: BodyType<CreateContractorCompanyBody> },
+  TContext
+> => {
+  const mutationKey = ["createContractorCompany"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createContractorCompany>>,
+    { data: BodyType<CreateContractorCompanyBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createContractorCompany(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateContractorCompanyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createContractorCompany>>
+>;
+export type CreateContractorCompanyMutationBody =
+  BodyType<CreateContractorCompanyBody>;
+export type CreateContractorCompanyMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Vytvořit subdodavatelskou firmu
+ */
+export const useCreateContractorCompany = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createContractorCompany>>,
+    TError,
+    { data: BodyType<CreateContractorCompanyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createContractorCompany>>,
+  TError,
+  { data: BodyType<CreateContractorCompanyBody> },
+  TContext
+> => {
+  return useMutation(getCreateContractorCompanyMutationOptions(options));
+};
+
+/**
+ * @summary Upravit subdodavatelskou firmu
+ */
+export const getUpdateContractorCompanyUrl = (id: number) => {
+  return `/api/contractor-companies/${id}`;
+};
+
+export const updateContractorCompany = async (
+  id: number,
+  createContractorCompanyBody: CreateContractorCompanyBody,
+  options?: RequestInit,
+): Promise<ContractorCompany> => {
+  return customFetch<ContractorCompany>(getUpdateContractorCompanyUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createContractorCompanyBody),
+  });
+};
+
+export const getUpdateContractorCompanyMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateContractorCompany>>,
+    TError,
+    { id: number; data: BodyType<CreateContractorCompanyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateContractorCompany>>,
+  TError,
+  { id: number; data: BodyType<CreateContractorCompanyBody> },
+  TContext
+> => {
+  const mutationKey = ["updateContractorCompany"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateContractorCompany>>,
+    { id: number; data: BodyType<CreateContractorCompanyBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateContractorCompany(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateContractorCompanyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateContractorCompany>>
+>;
+export type UpdateContractorCompanyMutationBody =
+  BodyType<CreateContractorCompanyBody>;
+export type UpdateContractorCompanyMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Upravit subdodavatelskou firmu
+ */
+export const useUpdateContractorCompany = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateContractorCompany>>,
+    TError,
+    { id: number; data: BodyType<CreateContractorCompanyBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateContractorCompany>>,
+  TError,
+  { id: number; data: BodyType<CreateContractorCompanyBody> },
+  TContext
+> => {
+  return useMutation(getUpdateContractorCompanyMutationOptions(options));
+};
+
+/**
+ * @summary Smazat subdodavatelskou firmu
+ */
+export const getDeleteContractorCompanyUrl = (id: number) => {
+  return `/api/contractor-companies/${id}`;
+};
+
+export const deleteContractorCompany = async (
+  id: number,
+  options?: RequestInit,
+): Promise<MessageResponse> => {
+  return customFetch<MessageResponse>(getDeleteContractorCompanyUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteContractorCompanyMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteContractorCompany>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteContractorCompany>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["deleteContractorCompany"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteContractorCompany>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteContractorCompany(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteContractorCompanyMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteContractorCompany>>
+>;
+
+export type DeleteContractorCompanyMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Smazat subdodavatelskou firmu
+ */
+export const useDeleteContractorCompany = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteContractorCompany>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteContractorCompany>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getDeleteContractorCompanyMutationOptions(options));
+};
+
+/**
  * @summary Seznam vozidel
  */
 export const getListVehiclesUrl = () => {
@@ -1757,6 +2095,93 @@ export const useDeleteMachine = <
 > => {
   return useMutation(getDeleteMachineMutationOptions(options));
 };
+
+/**
+ * @summary Poslední koncový stav MTH stroje
+ */
+export const getGetMachineLastMthUrl = (id: number) => {
+  return `/api/machines/${id}/last-mth`;
+};
+
+export const getMachineLastMth = async (
+  id: number,
+  options?: RequestInit,
+): Promise<MachineLastMth> => {
+  return customFetch<MachineLastMth>(getGetMachineLastMthUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetMachineLastMthQueryKey = (id: number) => {
+  return [`/api/machines/${id}/last-mth`] as const;
+};
+
+export const getGetMachineLastMthQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMachineLastMth>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getMachineLastMth>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMachineLastMthQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getMachineLastMth>>
+  > = ({ signal }) => getMachineLastMth(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMachineLastMth>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetMachineLastMthQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMachineLastMth>>
+>;
+export type GetMachineLastMthQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Poslední koncový stav MTH stroje
+ */
+
+export function useGetMachineLastMth<
+  TData = Awaited<ReturnType<typeof getMachineLastMth>>,
+  TError = ErrorType<unknown>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getMachineLastMth>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetMachineLastMthQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 /**
  * @summary Seznam příslušenství

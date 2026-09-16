@@ -17,6 +17,60 @@ function formatDateTime(iso: string) {
   return `${day}/${month}/${year} ${hours}:${minutes}`;
 }
 
+function formatWorkerTimeEntries(entries?: Array<{
+  workerId: number;
+  startTime?: string | null;
+  endTime?: string | null;
+  shiftType?: "morning" | "evening" | "custom" | null;
+  worker?: { firstName: string; lastName: string } | null;
+}>) {
+  if (!entries?.length) return "";
+  return entries.map((entry) => {
+    const name = entry.worker ? `${entry.worker.firstName} ${entry.worker.lastName}` : `Pracovník #${entry.workerId}`;
+    const time = entry.startTime && entry.endTime ? `${entry.startTime}-${entry.endTime}` : "bez času";
+    const shift = entry.shiftType === "morning" ? "ranní" : entry.shiftType === "evening" ? "odpolední" : entry.shiftType === "custom" ? "vlastní" : null;
+    return `${name} (${shift ? `${shift}, ` : ""}${time})`;
+  }).join(", ");
+}
+
+function formatMachineMthEntries(entries?: Array<{
+  machineId: number;
+  startTime?: string | null;
+  endTime?: string | null;
+  mthStart?: number | string | null;
+  mthEnd?: number | string | null;
+  mthTotal?: number | string | null;
+  fuelConsumption?: number | string | null;
+  refueling?: number | string | null;
+  machine?: { name: string } | null;
+  accessory?: { name: string } | null;
+  operator?: { firstName: string; lastName: string } | null;
+}>) {
+  if (!entries?.length) return "";
+  return entries.map((entry) => {
+    const name = entry.machine?.name ?? `Stroj #${entry.machineId}`;
+    const accessory = entry.accessory?.name ?? "bez příslušenství";
+    const operator = entry.operator ? `${entry.operator.firstName} ${entry.operator.lastName}` : "bez obsluhy";
+    const time = entry.startTime && entry.endTime ? `${entry.startTime}-${entry.endTime}` : "bez času";
+    return `${name} + ${accessory}, obsluha ${operator}: ${time}, ${entry.mthStart ?? "?"} -> ${entry.mthEnd ?? "?"} = ${entry.mthTotal ?? "?"}, spotřeba ${entry.fuelConsumption ?? "?"}, tankování ${entry.refueling ?? "?"}`;
+  }).join(", ");
+}
+
+function formatVehicleEntries(entries?: Array<{
+  vehicleId: number;
+  kmStart?: number | string | null;
+  kmEnd?: number | string | null;
+  kmTotal?: number | string | null;
+  refueling?: number | string | null;
+  vehicle?: { name: string; licensePlate?: string | null } | null;
+}>) {
+  if (!entries?.length) return "";
+  return entries.map((entry, index) => {
+    const name = entry.vehicle ? `${entry.vehicle.name}${entry.vehicle.licensePlate ? ` (${entry.vehicle.licensePlate})` : ""}` : `Auto #${entry.vehicleId}`;
+    return `${index + 1}. ${name}: ${entry.kmStart ?? "?"} -> ${entry.kmEnd ?? "?"} km, celkem ${entry.kmTotal ?? "?"} km, tankování ${entry.refueling ?? "?"} l`;
+  }).join("; ");
+}
+
 export function exportFellingExcel(
   records: {
     id: number;
@@ -26,11 +80,15 @@ export function exportFellingExcel(
     user: { fullName: string };
     startTime?: string | null;
     endTime?: string | null;
+    manualMowingKind?: string | null;
+    contractorCompany?: { name: string; companyId?: string | null } | null;
     weatherType?: { name: string } | null;
     temperature?: number | null;
     workers: { firstName: string; lastName: string }[];
+    workerTimeEntries?: { workerId: number; startTime?: string | null; endTime?: string | null; shiftType?: "morning" | "evening" | "custom" | null; worker?: { firstName: string; lastName: string } | null }[];
     vehicles: { name: string; licensePlate?: string | null }[];
     machines: { name: string }[];
+    machineMthEntries?: { machineId: number; startTime?: string | null; endTime?: string | null; mthStart?: number | string | null; mthEnd?: number | string | null; mthTotal?: number | string | null; fuelConsumption?: number | string | null; refueling?: number | string | null; machine?: { name: string } | null }[];
     accessories: { name: string }[];
     mth?: number | string | null;
     fuelConsumption?: number | string | null;
@@ -52,10 +110,11 @@ export function exportFellingExcel(
     "Počasí",
     "Teplota (°C)",
     "Pracovníci",
+    "Časy pracovníků",
     "Vozidla",
-    "Stroje",
+    "MTH po strojích",
     "Příslušenství",
-    "MTH",
+    "MTH celkem",
     "Spotřeba (l)",
     "Tankování (l)",
     "Poznámka",
@@ -76,7 +135,8 @@ export function exportFellingExcel(
     r.temperature != null ? Number(r.temperature) : "",
     r.workers.map((w) => `${w.firstName} ${w.lastName}`).join(", "),
     r.vehicles.map((v) => v.name + (v.licensePlate ? ` (${v.licensePlate})` : "")).join(", "),
-    r.machines.map((m) => m.name).join(", "),
+    formatWorkerTimeEntries(r.workerTimeEntries),
+    formatMachineMthEntries(r.machineMthEntries),
     r.accessories.map((a) => a.name).join(", "),
     r.mth != null ? Number(r.mth) : "",
     r.fuelConsumption != null ? Number(r.fuelConsumption) : "",
@@ -91,8 +151,8 @@ export function exportFellingExcel(
   ws["!cols"] = [
     { wch: 6 }, { wch: 12 }, { wch: 22 }, { wch: 12 }, { wch: 18 },
     { wch: 20 }, { wch: 8 }, { wch: 8 }, { wch: 14 }, { wch: 12 },
-    { wch: 30 }, { wch: 24 }, { wch: 24 }, { wch: 20 },
-    { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 30 },
+    { wch: 30 }, { wch: 32 }, { wch: 24 }, { wch: 32 },
+    { wch: 20 }, { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 30 },
     { wch: 18 }, { wch: 18 },
   ];
 
@@ -112,16 +172,20 @@ export function exportMowingExcel(
     user: { fullName: string };
     startTime?: string | null;
     endTime?: string | null;
+    manualMowingKind?: string | null;
+    contractorCompany?: { name: string; companyId?: string | null } | null;
     weatherType?: { name: string } | null;
     vehicle?: { name: string; licensePlate?: string | null } | null;
+    vehicleEntries?: { vehicleId: number; kmStart?: number | null; kmEnd?: number | null; kmTotal?: number | null; refueling?: number | null; vehicle?: { name: string; licensePlate?: string | null } | null }[];
     workers: { firstName: string; lastName: string }[];
+    workerTimeEntries?: { workerId: number; startTime?: string | null; endTime?: string | null; shiftType?: "morning" | "evening" | "custom" | null; worker?: { firstName: string; lastName: string } | null }[];
     machines: { name: string }[];
+    machineMthEntries?: { machineId: number; startTime?: string | null; endTime?: string | null; mthStart?: number | null; mthEnd?: number | null; mthTotal?: number | null; fuelConsumption?: number | null; refueling?: number | null; machine?: { name: string } | null }[];
     accessories: { name: string }[];
-    mthStart?: number | null;
-    mthEnd?: number | null;
     mthTotal?: number | null;
     fuelConsumption?: number | null;
     refueling?: number | null;
+    brushcutterRefueling?: number | null;
     note?: string | null;
     createdAt: string;
     updatedAt: string;
@@ -136,16 +200,17 @@ export function exportMowingExcel(
     "Čas od",
     "Čas do",
     "Počasí",
-    "Auto / Vozidlo",
-    "SPZ",
+    "Varianta ručního sečení",
+    "Subdodavatelská firma",
+    "Jízdy aut",
     "Pracovníci",
-    "Stroje / Traktory",
+    "Časy pracovníků",
+    "MTH po strojích",
     "Příslušenství",
-    "MTH počáteční",
-    "MTH koncové",
     "MTH celkem",
     "Spotřeba (l)",
     "Tankování (l)",
+    "Tankování křovinořezů (l)",
     "Poznámka / Porucha",
     "Vytvořeno",
     "Upraveno",
@@ -160,16 +225,17 @@ export function exportMowingExcel(
     r.startTime ?? "",
     r.endTime ?? "",
     r.weatherType?.name ?? "",
-    r.vehicle?.name ?? "",
-    r.vehicle?.licensePlate ?? "",
+    r.manualMowingKind === "core" ? "Kmenoví zaměstnanci – křovinořezy" : r.manualMowingKind === "slope" ? "Svahové sekačky" : r.manualMowingKind === "subcontractor" ? "Subdodavatel" : "",
+    r.contractorCompany ? `${r.contractorCompany.name}${r.contractorCompany.companyId ? ` (IČO ${r.contractorCompany.companyId})` : ""}` : "",
+    formatVehicleEntries(r.vehicleEntries),
     r.workers.map((w) => `${w.firstName} ${w.lastName}`).join(", "),
-    r.machines.map((m) => m.name).join(", "),
+    formatWorkerTimeEntries(r.workerTimeEntries),
+    formatMachineMthEntries(r.machineMthEntries),
     r.accessories.map((a) => a.name).join(", "),
-    r.mthStart != null ? Number(r.mthStart) : "",
-    r.mthEnd != null ? Number(r.mthEnd) : "",
     r.mthTotal != null ? Number(r.mthTotal) : "",
     r.fuelConsumption != null ? Number(r.fuelConsumption) : "",
     r.refueling != null ? Number(r.refueling) : "",
+    r.brushcutterRefueling != null ? Number(r.brushcutterRefueling) : "",
     r.note ?? "",
     formatDateTime(r.createdAt),
     formatDateTime(r.updatedAt),
@@ -180,8 +246,8 @@ export function exportMowingExcel(
   ws["!cols"] = [
     { wch: 6 }, { wch: 12 }, { wch: 22 }, { wch: 18 }, { wch: 20 },
     { wch: 8 }, { wch: 8 }, { wch: 14 }, { wch: 20 }, { wch: 12 },
-    { wch: 30 }, { wch: 24 }, { wch: 20 },
-    { wch: 14 }, { wch: 14 }, { wch: 14 },
+    { wch: 30 }, { wch: 32 }, { wch: 32 }, { wch: 20 },
+    { wch: 14 },
     { wch: 12 }, { wch: 12 }, { wch: 30 },
     { wch: 18 }, { wch: 18 },
   ];

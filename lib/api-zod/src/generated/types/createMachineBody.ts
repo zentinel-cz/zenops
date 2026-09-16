@@ -10,6 +10,12 @@ export interface CreateMachineBody {
   name: string;
   type: string;
   /** @nullable */
+  mowingCategory?: string | null;
+  /** @nullable */
+  defaultAccessoryId?: number | null;
+  /** @nullable */
+  defaultOperatorId?: number | null;
+  /** @nullable */
   note?: string | null;
   isActive: boolean;
 }

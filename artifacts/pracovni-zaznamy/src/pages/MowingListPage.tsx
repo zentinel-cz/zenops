@@ -11,6 +11,7 @@ import { formatDate } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
 import { exportMowingExcel } from "@/lib/exportExcel";
 import { exportMowingListPdf } from "@/lib/exportPdf";
+import { MOWING_WORK_TYPE_OPTIONS, getOptionLabel } from "@/lib/recordOptions";
 
 export default function MowingListPage() {
   const [dateFrom, setDateFrom] = useState("");
@@ -173,8 +174,9 @@ export default function MowingListPage() {
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {r.user.fullName}
+                      {r.workType ? ` • ${getOptionLabel(MOWING_WORK_TYPE_OPTIONS, r.workType)}` : ""}
                       {r.machines.length ? ` • ${r.machines.map((m) => m.name).join(", ")}` : ""}
-                      {r.mthTotal != null ? ` • ${r.mthTotal} MTH` : ""}
+                      {r.mthTotal != null ? ` • ${r.mthTotal} MTH celkem` : ""}
                       {r.workers.length ? ` • ${r.workers.length} prac.` : ""}
                     </p>
                   </div>

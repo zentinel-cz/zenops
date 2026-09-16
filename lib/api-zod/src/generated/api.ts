@@ -27,7 +27,8 @@ export const LoginResponse = zod.object({
     id: zod.number(),
     username: zod.string(),
     fullName: zod.string(),
-    role: zod.enum(["admin", "user"]),
+    role: zod.enum(["admin", "user", "employee", "manager"]),
+    workerId: zod.number().nullish(),
     isActive: zod.boolean(),
     createdAt: zod.string(),
     updatedAt: zod.string(),
@@ -49,7 +50,8 @@ export const GetMeResponse = zod.object({
   id: zod.number(),
   username: zod.string(),
   fullName: zod.string(),
-  role: zod.enum(["admin", "user"]),
+  role: zod.enum(["admin", "user", "employee", "manager"]),
+  workerId: zod.number().nullish(),
   isActive: zod.boolean(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -62,7 +64,8 @@ export const ListUsersResponseItem = zod.object({
   id: zod.number(),
   username: zod.string(),
   fullName: zod.string(),
-  role: zod.enum(["admin", "user"]),
+  role: zod.enum(["admin", "user", "employee", "manager"]),
+  workerId: zod.number().nullish(),
   isActive: zod.boolean(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -76,7 +79,8 @@ export const CreateUserBody = zod.object({
   username: zod.string(),
   password: zod.string(),
   fullName: zod.string(),
-  role: zod.enum(["admin", "user"]),
+  role: zod.enum(["admin", "user", "employee", "manager"]),
+  workerId: zod.number().nullish(),
 });
 
 /**
@@ -90,7 +94,8 @@ export const GetUserResponse = zod.object({
   id: zod.number(),
   username: zod.string(),
   fullName: zod.string(),
-  role: zod.enum(["admin", "user"]),
+  role: zod.enum(["admin", "user", "employee", "manager"]),
+  workerId: zod.number().nullish(),
   isActive: zod.boolean(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -106,8 +111,15 @@ export const UpdateUserParams = zod.object({
 export const UpdateUserBody = zod.object({
   fullName: zod.string().nullish(),
   role: zod
-    .union([zod.literal("admin"), zod.literal("user"), zod.literal(null)])
+    .union([
+      zod.literal("admin"),
+      zod.literal("user"),
+      zod.literal("employee"),
+      zod.literal("manager"),
+      zod.literal(null),
+    ])
     .nullish(),
+  workerId: zod.number().nullish(),
   isActive: zod.boolean().nullish(),
   password: zod.string().nullish(),
 });
@@ -116,7 +128,8 @@ export const UpdateUserResponse = zod.object({
   id: zod.number(),
   username: zod.string(),
   fullName: zod.string(),
-  role: zod.enum(["admin", "user"]),
+  role: zod.enum(["admin", "user", "employee", "manager"]),
+  workerId: zod.number().nullish(),
   isActive: zod.boolean(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -141,6 +154,10 @@ export const ListWorkersResponseItem = zod.object({
   firstName: zod.string(),
   lastName: zod.string(),
   note: zod.string().nullish(),
+  defaultBrushcutter: zod.boolean(),
+  defaultSlopeMower: zod.boolean(),
+  contractorCompanyId: zod.number().nullish(),
+  defaultSubcontractor: zod.boolean(),
   isActive: zod.boolean(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -154,6 +171,10 @@ export const CreateWorkerBody = zod.object({
   firstName: zod.string(),
   lastName: zod.string(),
   note: zod.string().nullish(),
+  defaultBrushcutter: zod.boolean().optional(),
+  defaultSlopeMower: zod.boolean().optional(),
+  contractorCompanyId: zod.number().nullish(),
+  defaultSubcontractor: zod.boolean().optional(),
   isActive: zod.boolean(),
 });
 
@@ -168,6 +189,10 @@ export const UpdateWorkerBody = zod.object({
   firstName: zod.string(),
   lastName: zod.string(),
   note: zod.string().nullish(),
+  defaultBrushcutter: zod.boolean().optional(),
+  defaultSlopeMower: zod.boolean().optional(),
+  contractorCompanyId: zod.number().nullish(),
+  defaultSubcontractor: zod.boolean().optional(),
   isActive: zod.boolean(),
 });
 
@@ -176,6 +201,10 @@ export const UpdateWorkerResponse = zod.object({
   firstName: zod.string(),
   lastName: zod.string(),
   note: zod.string().nullish(),
+  defaultBrushcutter: zod.boolean(),
+  defaultSlopeMower: zod.boolean(),
+  contractorCompanyId: zod.number().nullish(),
+  defaultSubcontractor: zod.boolean(),
   isActive: zod.boolean(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -193,6 +222,67 @@ export const DeleteWorkerResponse = zod.object({
 });
 
 /**
+ * @summary Seznam subdodavatelských firem
+ */
+export const ListContractorCompaniesResponseItem = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  companyId: zod.string().nullish(),
+  note: zod.string().nullish(),
+  isActive: zod.boolean(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListContractorCompaniesResponse = zod.array(
+  ListContractorCompaniesResponseItem,
+);
+
+/**
+ * @summary Vytvořit subdodavatelskou firmu
+ */
+export const CreateContractorCompanyBody = zod.object({
+  name: zod.string(),
+  companyId: zod.string().nullish(),
+  note: zod.string().nullish(),
+  isActive: zod.boolean(),
+});
+
+/**
+ * @summary Upravit subdodavatelskou firmu
+ */
+export const UpdateContractorCompanyParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateContractorCompanyBody = zod.object({
+  name: zod.string(),
+  companyId: zod.string().nullish(),
+  note: zod.string().nullish(),
+  isActive: zod.boolean(),
+});
+
+export const UpdateContractorCompanyResponse = zod.object({
+  id: zod.number(),
+  name: zod.string(),
+  companyId: zod.string().nullish(),
+  note: zod.string().nullish(),
+  isActive: zod.boolean(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+
+/**
+ * @summary Smazat subdodavatelskou firmu
+ */
+export const DeleteContractorCompanyParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const DeleteContractorCompanyResponse = zod.object({
+  message: zod.string(),
+});
+
+/**
  * @summary Seznam vozidel
  */
 export const ListVehiclesResponseItem = zod.object({
@@ -200,6 +290,7 @@ export const ListVehiclesResponseItem = zod.object({
   name: zod.string(),
   licensePlate: zod.string().nullish(),
   note: zod.string().nullish(),
+  defaultSlopeMower: zod.boolean(),
   isActive: zod.boolean(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -213,6 +304,7 @@ export const CreateVehicleBody = zod.object({
   name: zod.string(),
   licensePlate: zod.string().nullish(),
   note: zod.string().nullish(),
+  defaultSlopeMower: zod.boolean().optional(),
   isActive: zod.boolean(),
 });
 
@@ -227,6 +319,7 @@ export const UpdateVehicleBody = zod.object({
   name: zod.string(),
   licensePlate: zod.string().nullish(),
   note: zod.string().nullish(),
+  defaultSlopeMower: zod.boolean().optional(),
   isActive: zod.boolean(),
 });
 
@@ -235,6 +328,7 @@ export const UpdateVehicleResponse = zod.object({
   name: zod.string(),
   licensePlate: zod.string().nullish(),
   note: zod.string().nullish(),
+  defaultSlopeMower: zod.boolean(),
   isActive: zod.boolean(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -258,6 +352,9 @@ export const ListMachinesResponseItem = zod.object({
   id: zod.number(),
   name: zod.string(),
   type: zod.string(),
+  mowingCategory: zod.string().nullish(),
+  defaultAccessoryId: zod.number().nullish(),
+  defaultOperatorId: zod.number().nullish(),
   note: zod.string().nullish(),
   isActive: zod.boolean(),
   createdAt: zod.string(),
@@ -271,6 +368,9 @@ export const ListMachinesResponse = zod.array(ListMachinesResponseItem);
 export const CreateMachineBody = zod.object({
   name: zod.string(),
   type: zod.string(),
+  mowingCategory: zod.string().nullish(),
+  defaultAccessoryId: zod.number().nullish(),
+  defaultOperatorId: zod.number().nullish(),
   note: zod.string().nullish(),
   isActive: zod.boolean(),
 });
@@ -285,6 +385,9 @@ export const UpdateMachineParams = zod.object({
 export const UpdateMachineBody = zod.object({
   name: zod.string(),
   type: zod.string(),
+  mowingCategory: zod.string().nullish(),
+  defaultAccessoryId: zod.number().nullish(),
+  defaultOperatorId: zod.number().nullish(),
   note: zod.string().nullish(),
   isActive: zod.boolean(),
 });
@@ -293,6 +396,9 @@ export const UpdateMachineResponse = zod.object({
   id: zod.number(),
   name: zod.string(),
   type: zod.string(),
+  mowingCategory: zod.string().nullish(),
+  defaultAccessoryId: zod.number().nullish(),
+  defaultOperatorId: zod.number().nullish(),
   note: zod.string().nullish(),
   isActive: zod.boolean(),
   createdAt: zod.string(),
@@ -308,6 +414,19 @@ export const DeleteMachineParams = zod.object({
 
 export const DeleteMachineResponse = zod.object({
   message: zod.string(),
+});
+
+/**
+ * @summary Poslední koncový stav MTH stroje
+ */
+export const GetMachineLastMthParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetMachineLastMthResponse = zod.object({
+  machineId: zod.number(),
+  mthEnd: zod.number().nullable(),
+  recordDate: zod.string().nullable(),
 });
 
 /**
@@ -502,18 +621,126 @@ export const ListFellingRecordsResponseItem = zod.object({
   date: zod.string(),
   userId: zod.number(),
   regionId: zod.number(),
+  workType: zod.string().nullish(),
   location: zod.string().nullish(),
   startTime: zod.string().nullish(),
   endTime: zod.string().nullish(),
   weatherTypeId: zod.number().nullish(),
+  weatherTypeIds: zod.array(zod.number()).optional(),
   temperature: zod.number().nullish(),
   mth: zod.number().nullish(),
   fuelConsumption: zod.number().nullish(),
   refueling: zod.number().nullish(),
   workerIds: zod.array(zod.number()),
+  manualWorkerIds: zod.array(zod.number()),
+  machineWorkerIds: zod.array(zod.number()),
+  workerTimeEntries: zod.array(
+    zod.object({
+      workerId: zod.number(),
+      category: zod.enum(["manual", "machine"]),
+      shiftType: zod
+        .union([
+          zod.literal("morning"),
+          zod.literal("evening"),
+          zod.literal("custom"),
+          zod.literal(null),
+        ])
+        .nullish(),
+      startTime: zod.string().nullable(),
+      endTime: zod.string().nullable(),
+      worker: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            firstName: zod.string(),
+            lastName: zod.string(),
+            note: zod.string().nullish(),
+            defaultBrushcutter: zod.boolean(),
+            defaultSlopeMower: zod.boolean(),
+            contractorCompanyId: zod.number().nullish(),
+            defaultSubcontractor: zod.boolean(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
   vehicleIds: zod.array(zod.number()),
   machineIds: zod.array(zod.number()),
+  machineMthEntries: zod.array(
+    zod.object({
+      machineId: zod.number(),
+      accessoryId: zod.number().nullable(),
+      operatorId: zod.number().nullable(),
+      startTime: zod.string().nullable(),
+      endTime: zod.string().nullable(),
+      mthStart: zod.number().nullable(),
+      mthEnd: zod.number().nullable(),
+      mthTotal: zod.number().nullable(),
+      fuelConsumption: zod.number().nullable(),
+      refueling: zod.number().nullable(),
+      machine: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            type: zod.string(),
+            mowingCategory: zod.string().nullish(),
+            defaultAccessoryId: zod.number().nullish(),
+            defaultOperatorId: zod.number().nullish(),
+            note: zod.string().nullish(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+      accessory: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            type: zod.string().nullish(),
+            serialNumber: zod.string().nullish(),
+            note: zod.string().nullish(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+      operator: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            firstName: zod.string(),
+            lastName: zod.string(),
+            note: zod.string().nullish(),
+            defaultBrushcutter: zod.boolean(),
+            defaultSlopeMower: zod.boolean(),
+            contractorCompanyId: zod.number().nullish(),
+            defaultSubcontractor: zod.boolean(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
   accessoryIds: zod.array(zod.number()),
+  assignedAverage: zod.string().nullish(),
+  vehicleKmStart: zod.number().nullish(),
+  vehicleKmEnd: zod.number().nullish(),
+  vehicleKmTotal: zod.number().nullish(),
+  vehicleRefueling: zod.number().nullish(),
+  trafficMarking: zod.string().nullish(),
   note: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -521,7 +748,8 @@ export const ListFellingRecordsResponseItem = zod.object({
     id: zod.number(),
     username: zod.string(),
     fullName: zod.string(),
-    role: zod.enum(["admin", "user"]),
+    role: zod.enum(["admin", "user", "employee", "manager"]),
+    workerId: zod.number().nullish(),
     isActive: zod.boolean(),
     createdAt: zod.string(),
     updatedAt: zod.string(),
@@ -548,12 +776,56 @@ export const ListFellingRecordsResponseItem = zod.object({
       zod.null(),
     ])
     .optional(),
+  weatherTypes: zod.array(
+    zod.object({
+      id: zod.number(),
+      name: zod.string(),
+      icon: zod.string().nullish(),
+      isActive: zod.boolean(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
   workers: zod.array(
     zod.object({
       id: zod.number(),
       firstName: zod.string(),
       lastName: zod.string(),
       note: zod.string().nullish(),
+      defaultBrushcutter: zod.boolean(),
+      defaultSlopeMower: zod.boolean(),
+      contractorCompanyId: zod.number().nullish(),
+      defaultSubcontractor: zod.boolean(),
+      isActive: zod.boolean(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  manualWorkers: zod.array(
+    zod.object({
+      id: zod.number(),
+      firstName: zod.string(),
+      lastName: zod.string(),
+      note: zod.string().nullish(),
+      defaultBrushcutter: zod.boolean(),
+      defaultSlopeMower: zod.boolean(),
+      contractorCompanyId: zod.number().nullish(),
+      defaultSubcontractor: zod.boolean(),
+      isActive: zod.boolean(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  machineWorkers: zod.array(
+    zod.object({
+      id: zod.number(),
+      firstName: zod.string(),
+      lastName: zod.string(),
+      note: zod.string().nullish(),
+      defaultBrushcutter: zod.boolean(),
+      defaultSlopeMower: zod.boolean(),
+      contractorCompanyId: zod.number().nullish(),
+      defaultSubcontractor: zod.boolean(),
       isActive: zod.boolean(),
       createdAt: zod.string(),
       updatedAt: zod.string(),
@@ -565,6 +837,7 @@ export const ListFellingRecordsResponseItem = zod.object({
       name: zod.string(),
       licensePlate: zod.string().nullish(),
       note: zod.string().nullish(),
+      defaultSlopeMower: zod.boolean(),
       isActive: zod.boolean(),
       createdAt: zod.string(),
       updatedAt: zod.string(),
@@ -575,6 +848,9 @@ export const ListFellingRecordsResponseItem = zod.object({
       id: zod.number(),
       name: zod.string(),
       type: zod.string(),
+      mowingCategory: zod.string().nullish(),
+      defaultAccessoryId: zod.number().nullish(),
+      defaultOperatorId: zod.number().nullish(),
       note: zod.string().nullish(),
       isActive: zod.boolean(),
       createdAt: zod.string(),
@@ -604,18 +880,126 @@ export const ListFellingRecordsResponse = zod.array(
 export const CreateFellingRecordBody = zod.object({
   date: zod.string(),
   regionId: zod.number(),
+  workType: zod.string().nullish(),
   location: zod.string().nullish(),
   startTime: zod.string().nullish(),
   endTime: zod.string().nullish(),
   weatherTypeId: zod.number().nullish(),
+  weatherTypeIds: zod.array(zod.number()).optional(),
   temperature: zod.number().nullish(),
   mth: zod.number().nullish(),
   fuelConsumption: zod.number().nullish(),
   refueling: zod.number().nullish(),
   workerIds: zod.array(zod.number()),
+  manualWorkerIds: zod.array(zod.number()),
+  machineWorkerIds: zod.array(zod.number()),
+  workerTimeEntries: zod.array(
+    zod.object({
+      workerId: zod.number(),
+      category: zod.enum(["manual", "machine"]),
+      shiftType: zod
+        .union([
+          zod.literal("morning"),
+          zod.literal("evening"),
+          zod.literal("custom"),
+          zod.literal(null),
+        ])
+        .nullish(),
+      startTime: zod.string().nullable(),
+      endTime: zod.string().nullable(),
+      worker: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            firstName: zod.string(),
+            lastName: zod.string(),
+            note: zod.string().nullish(),
+            defaultBrushcutter: zod.boolean(),
+            defaultSlopeMower: zod.boolean(),
+            contractorCompanyId: zod.number().nullish(),
+            defaultSubcontractor: zod.boolean(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
   vehicleIds: zod.array(zod.number()),
   machineIds: zod.array(zod.number()),
+  machineMthEntries: zod.array(
+    zod.object({
+      machineId: zod.number(),
+      accessoryId: zod.number().nullable(),
+      operatorId: zod.number().nullable(),
+      startTime: zod.string().nullable(),
+      endTime: zod.string().nullable(),
+      mthStart: zod.number().nullable(),
+      mthEnd: zod.number().nullable(),
+      mthTotal: zod.number().nullable(),
+      fuelConsumption: zod.number().nullable(),
+      refueling: zod.number().nullable(),
+      machine: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            type: zod.string(),
+            mowingCategory: zod.string().nullish(),
+            defaultAccessoryId: zod.number().nullish(),
+            defaultOperatorId: zod.number().nullish(),
+            note: zod.string().nullish(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+      accessory: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            type: zod.string().nullish(),
+            serialNumber: zod.string().nullish(),
+            note: zod.string().nullish(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+      operator: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            firstName: zod.string(),
+            lastName: zod.string(),
+            note: zod.string().nullish(),
+            defaultBrushcutter: zod.boolean(),
+            defaultSlopeMower: zod.boolean(),
+            contractorCompanyId: zod.number().nullish(),
+            defaultSubcontractor: zod.boolean(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
   accessoryIds: zod.array(zod.number()),
+  assignedAverage: zod.string().nullish(),
+  vehicleKmStart: zod.number().nullish(),
+  vehicleKmEnd: zod.number().nullish(),
+  vehicleKmTotal: zod.number().nullish(),
+  vehicleRefueling: zod.number().nullish(),
+  trafficMarking: zod.string().nullish(),
   note: zod.string().nullish(),
 });
 
@@ -631,18 +1015,126 @@ export const GetFellingRecordResponse = zod.object({
   date: zod.string(),
   userId: zod.number(),
   regionId: zod.number(),
+  workType: zod.string().nullish(),
   location: zod.string().nullish(),
   startTime: zod.string().nullish(),
   endTime: zod.string().nullish(),
   weatherTypeId: zod.number().nullish(),
+  weatherTypeIds: zod.array(zod.number()).optional(),
   temperature: zod.number().nullish(),
   mth: zod.number().nullish(),
   fuelConsumption: zod.number().nullish(),
   refueling: zod.number().nullish(),
   workerIds: zod.array(zod.number()),
+  manualWorkerIds: zod.array(zod.number()),
+  machineWorkerIds: zod.array(zod.number()),
+  workerTimeEntries: zod.array(
+    zod.object({
+      workerId: zod.number(),
+      category: zod.enum(["manual", "machine"]),
+      shiftType: zod
+        .union([
+          zod.literal("morning"),
+          zod.literal("evening"),
+          zod.literal("custom"),
+          zod.literal(null),
+        ])
+        .nullish(),
+      startTime: zod.string().nullable(),
+      endTime: zod.string().nullable(),
+      worker: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            firstName: zod.string(),
+            lastName: zod.string(),
+            note: zod.string().nullish(),
+            defaultBrushcutter: zod.boolean(),
+            defaultSlopeMower: zod.boolean(),
+            contractorCompanyId: zod.number().nullish(),
+            defaultSubcontractor: zod.boolean(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
   vehicleIds: zod.array(zod.number()),
   machineIds: zod.array(zod.number()),
+  machineMthEntries: zod.array(
+    zod.object({
+      machineId: zod.number(),
+      accessoryId: zod.number().nullable(),
+      operatorId: zod.number().nullable(),
+      startTime: zod.string().nullable(),
+      endTime: zod.string().nullable(),
+      mthStart: zod.number().nullable(),
+      mthEnd: zod.number().nullable(),
+      mthTotal: zod.number().nullable(),
+      fuelConsumption: zod.number().nullable(),
+      refueling: zod.number().nullable(),
+      machine: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            type: zod.string(),
+            mowingCategory: zod.string().nullish(),
+            defaultAccessoryId: zod.number().nullish(),
+            defaultOperatorId: zod.number().nullish(),
+            note: zod.string().nullish(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+      accessory: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            type: zod.string().nullish(),
+            serialNumber: zod.string().nullish(),
+            note: zod.string().nullish(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+      operator: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            firstName: zod.string(),
+            lastName: zod.string(),
+            note: zod.string().nullish(),
+            defaultBrushcutter: zod.boolean(),
+            defaultSlopeMower: zod.boolean(),
+            contractorCompanyId: zod.number().nullish(),
+            defaultSubcontractor: zod.boolean(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
   accessoryIds: zod.array(zod.number()),
+  assignedAverage: zod.string().nullish(),
+  vehicleKmStart: zod.number().nullish(),
+  vehicleKmEnd: zod.number().nullish(),
+  vehicleKmTotal: zod.number().nullish(),
+  vehicleRefueling: zod.number().nullish(),
+  trafficMarking: zod.string().nullish(),
   note: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -650,7 +1142,8 @@ export const GetFellingRecordResponse = zod.object({
     id: zod.number(),
     username: zod.string(),
     fullName: zod.string(),
-    role: zod.enum(["admin", "user"]),
+    role: zod.enum(["admin", "user", "employee", "manager"]),
+    workerId: zod.number().nullish(),
     isActive: zod.boolean(),
     createdAt: zod.string(),
     updatedAt: zod.string(),
@@ -677,12 +1170,56 @@ export const GetFellingRecordResponse = zod.object({
       zod.null(),
     ])
     .optional(),
+  weatherTypes: zod.array(
+    zod.object({
+      id: zod.number(),
+      name: zod.string(),
+      icon: zod.string().nullish(),
+      isActive: zod.boolean(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
   workers: zod.array(
     zod.object({
       id: zod.number(),
       firstName: zod.string(),
       lastName: zod.string(),
       note: zod.string().nullish(),
+      defaultBrushcutter: zod.boolean(),
+      defaultSlopeMower: zod.boolean(),
+      contractorCompanyId: zod.number().nullish(),
+      defaultSubcontractor: zod.boolean(),
+      isActive: zod.boolean(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  manualWorkers: zod.array(
+    zod.object({
+      id: zod.number(),
+      firstName: zod.string(),
+      lastName: zod.string(),
+      note: zod.string().nullish(),
+      defaultBrushcutter: zod.boolean(),
+      defaultSlopeMower: zod.boolean(),
+      contractorCompanyId: zod.number().nullish(),
+      defaultSubcontractor: zod.boolean(),
+      isActive: zod.boolean(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  machineWorkers: zod.array(
+    zod.object({
+      id: zod.number(),
+      firstName: zod.string(),
+      lastName: zod.string(),
+      note: zod.string().nullish(),
+      defaultBrushcutter: zod.boolean(),
+      defaultSlopeMower: zod.boolean(),
+      contractorCompanyId: zod.number().nullish(),
+      defaultSubcontractor: zod.boolean(),
       isActive: zod.boolean(),
       createdAt: zod.string(),
       updatedAt: zod.string(),
@@ -694,6 +1231,7 @@ export const GetFellingRecordResponse = zod.object({
       name: zod.string(),
       licensePlate: zod.string().nullish(),
       note: zod.string().nullish(),
+      defaultSlopeMower: zod.boolean(),
       isActive: zod.boolean(),
       createdAt: zod.string(),
       updatedAt: zod.string(),
@@ -704,6 +1242,9 @@ export const GetFellingRecordResponse = zod.object({
       id: zod.number(),
       name: zod.string(),
       type: zod.string(),
+      mowingCategory: zod.string().nullish(),
+      defaultAccessoryId: zod.number().nullish(),
+      defaultOperatorId: zod.number().nullish(),
       note: zod.string().nullish(),
       isActive: zod.boolean(),
       createdAt: zod.string(),
@@ -734,18 +1275,130 @@ export const UpdateFellingRecordParams = zod.object({
 export const UpdateFellingRecordBody = zod.object({
   date: zod.string().nullish(),
   regionId: zod.number().nullish(),
+  workType: zod.string().nullish(),
   location: zod.string().nullish(),
   startTime: zod.string().nullish(),
   endTime: zod.string().nullish(),
   weatherTypeId: zod.number().nullish(),
+  weatherTypeIds: zod.array(zod.number()).nullish(),
   temperature: zod.number().nullish(),
   mth: zod.number().nullish(),
   fuelConsumption: zod.number().nullish(),
   refueling: zod.number().nullish(),
   workerIds: zod.array(zod.number()).nullish(),
+  manualWorkerIds: zod.array(zod.number()).nullish(),
+  machineWorkerIds: zod.array(zod.number()).nullish(),
+  workerTimeEntries: zod
+    .array(
+      zod.object({
+        workerId: zod.number(),
+        category: zod.enum(["manual", "machine"]),
+        shiftType: zod
+          .union([
+            zod.literal("morning"),
+            zod.literal("evening"),
+            zod.literal("custom"),
+            zod.literal(null),
+          ])
+          .nullish(),
+        startTime: zod.string().nullable(),
+        endTime: zod.string().nullable(),
+        worker: zod
+          .union([
+            zod.object({
+              id: zod.number(),
+              firstName: zod.string(),
+              lastName: zod.string(),
+              note: zod.string().nullish(),
+              defaultBrushcutter: zod.boolean(),
+              defaultSlopeMower: zod.boolean(),
+              contractorCompanyId: zod.number().nullish(),
+              defaultSubcontractor: zod.boolean(),
+              isActive: zod.boolean(),
+              createdAt: zod.string(),
+              updatedAt: zod.string(),
+            }),
+            zod.null(),
+          ])
+          .optional(),
+      }),
+    )
+    .nullish(),
   vehicleIds: zod.array(zod.number()).nullish(),
   machineIds: zod.array(zod.number()).nullish(),
+  machineMthEntries: zod
+    .array(
+      zod.object({
+        machineId: zod.number(),
+        accessoryId: zod.number().nullable(),
+        operatorId: zod.number().nullable(),
+        startTime: zod.string().nullable(),
+        endTime: zod.string().nullable(),
+        mthStart: zod.number().nullable(),
+        mthEnd: zod.number().nullable(),
+        mthTotal: zod.number().nullable(),
+        fuelConsumption: zod.number().nullable(),
+        refueling: zod.number().nullable(),
+        machine: zod
+          .union([
+            zod.object({
+              id: zod.number(),
+              name: zod.string(),
+              type: zod.string(),
+              mowingCategory: zod.string().nullish(),
+              defaultAccessoryId: zod.number().nullish(),
+              defaultOperatorId: zod.number().nullish(),
+              note: zod.string().nullish(),
+              isActive: zod.boolean(),
+              createdAt: zod.string(),
+              updatedAt: zod.string(),
+            }),
+            zod.null(),
+          ])
+          .optional(),
+        accessory: zod
+          .union([
+            zod.object({
+              id: zod.number(),
+              name: zod.string(),
+              type: zod.string().nullish(),
+              serialNumber: zod.string().nullish(),
+              note: zod.string().nullish(),
+              isActive: zod.boolean(),
+              createdAt: zod.string(),
+              updatedAt: zod.string(),
+            }),
+            zod.null(),
+          ])
+          .optional(),
+        operator: zod
+          .union([
+            zod.object({
+              id: zod.number(),
+              firstName: zod.string(),
+              lastName: zod.string(),
+              note: zod.string().nullish(),
+              defaultBrushcutter: zod.boolean(),
+              defaultSlopeMower: zod.boolean(),
+              contractorCompanyId: zod.number().nullish(),
+              defaultSubcontractor: zod.boolean(),
+              isActive: zod.boolean(),
+              createdAt: zod.string(),
+              updatedAt: zod.string(),
+            }),
+            zod.null(),
+          ])
+          .optional(),
+      }),
+    )
+    .nullish(),
   accessoryIds: zod.array(zod.number()).nullish(),
+  assignedAverage: zod.string().nullish(),
+  vehicleKmStart: zod.number().nullish(),
+  vehicleKmEnd: zod.number().nullish(),
+  vehicleKmTotal: zod.number().nullish(),
+  vehicleRefueling: zod.number().nullish(),
+  trafficMarking: zod.string().nullish(),
   note: zod.string().nullish(),
 });
 
@@ -754,18 +1407,126 @@ export const UpdateFellingRecordResponse = zod.object({
   date: zod.string(),
   userId: zod.number(),
   regionId: zod.number(),
+  workType: zod.string().nullish(),
   location: zod.string().nullish(),
   startTime: zod.string().nullish(),
   endTime: zod.string().nullish(),
   weatherTypeId: zod.number().nullish(),
+  weatherTypeIds: zod.array(zod.number()).optional(),
   temperature: zod.number().nullish(),
   mth: zod.number().nullish(),
   fuelConsumption: zod.number().nullish(),
   refueling: zod.number().nullish(),
   workerIds: zod.array(zod.number()),
+  manualWorkerIds: zod.array(zod.number()),
+  machineWorkerIds: zod.array(zod.number()),
+  workerTimeEntries: zod.array(
+    zod.object({
+      workerId: zod.number(),
+      category: zod.enum(["manual", "machine"]),
+      shiftType: zod
+        .union([
+          zod.literal("morning"),
+          zod.literal("evening"),
+          zod.literal("custom"),
+          zod.literal(null),
+        ])
+        .nullish(),
+      startTime: zod.string().nullable(),
+      endTime: zod.string().nullable(),
+      worker: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            firstName: zod.string(),
+            lastName: zod.string(),
+            note: zod.string().nullish(),
+            defaultBrushcutter: zod.boolean(),
+            defaultSlopeMower: zod.boolean(),
+            contractorCompanyId: zod.number().nullish(),
+            defaultSubcontractor: zod.boolean(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
   vehicleIds: zod.array(zod.number()),
   machineIds: zod.array(zod.number()),
+  machineMthEntries: zod.array(
+    zod.object({
+      machineId: zod.number(),
+      accessoryId: zod.number().nullable(),
+      operatorId: zod.number().nullable(),
+      startTime: zod.string().nullable(),
+      endTime: zod.string().nullable(),
+      mthStart: zod.number().nullable(),
+      mthEnd: zod.number().nullable(),
+      mthTotal: zod.number().nullable(),
+      fuelConsumption: zod.number().nullable(),
+      refueling: zod.number().nullable(),
+      machine: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            type: zod.string(),
+            mowingCategory: zod.string().nullish(),
+            defaultAccessoryId: zod.number().nullish(),
+            defaultOperatorId: zod.number().nullish(),
+            note: zod.string().nullish(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+      accessory: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            type: zod.string().nullish(),
+            serialNumber: zod.string().nullish(),
+            note: zod.string().nullish(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+      operator: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            firstName: zod.string(),
+            lastName: zod.string(),
+            note: zod.string().nullish(),
+            defaultBrushcutter: zod.boolean(),
+            defaultSlopeMower: zod.boolean(),
+            contractorCompanyId: zod.number().nullish(),
+            defaultSubcontractor: zod.boolean(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
   accessoryIds: zod.array(zod.number()),
+  assignedAverage: zod.string().nullish(),
+  vehicleKmStart: zod.number().nullish(),
+  vehicleKmEnd: zod.number().nullish(),
+  vehicleKmTotal: zod.number().nullish(),
+  vehicleRefueling: zod.number().nullish(),
+  trafficMarking: zod.string().nullish(),
   note: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -773,7 +1534,8 @@ export const UpdateFellingRecordResponse = zod.object({
     id: zod.number(),
     username: zod.string(),
     fullName: zod.string(),
-    role: zod.enum(["admin", "user"]),
+    role: zod.enum(["admin", "user", "employee", "manager"]),
+    workerId: zod.number().nullish(),
     isActive: zod.boolean(),
     createdAt: zod.string(),
     updatedAt: zod.string(),
@@ -800,12 +1562,56 @@ export const UpdateFellingRecordResponse = zod.object({
       zod.null(),
     ])
     .optional(),
+  weatherTypes: zod.array(
+    zod.object({
+      id: zod.number(),
+      name: zod.string(),
+      icon: zod.string().nullish(),
+      isActive: zod.boolean(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
   workers: zod.array(
     zod.object({
       id: zod.number(),
       firstName: zod.string(),
       lastName: zod.string(),
       note: zod.string().nullish(),
+      defaultBrushcutter: zod.boolean(),
+      defaultSlopeMower: zod.boolean(),
+      contractorCompanyId: zod.number().nullish(),
+      defaultSubcontractor: zod.boolean(),
+      isActive: zod.boolean(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  manualWorkers: zod.array(
+    zod.object({
+      id: zod.number(),
+      firstName: zod.string(),
+      lastName: zod.string(),
+      note: zod.string().nullish(),
+      defaultBrushcutter: zod.boolean(),
+      defaultSlopeMower: zod.boolean(),
+      contractorCompanyId: zod.number().nullish(),
+      defaultSubcontractor: zod.boolean(),
+      isActive: zod.boolean(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  machineWorkers: zod.array(
+    zod.object({
+      id: zod.number(),
+      firstName: zod.string(),
+      lastName: zod.string(),
+      note: zod.string().nullish(),
+      defaultBrushcutter: zod.boolean(),
+      defaultSlopeMower: zod.boolean(),
+      contractorCompanyId: zod.number().nullish(),
+      defaultSubcontractor: zod.boolean(),
       isActive: zod.boolean(),
       createdAt: zod.string(),
       updatedAt: zod.string(),
@@ -817,6 +1623,7 @@ export const UpdateFellingRecordResponse = zod.object({
       name: zod.string(),
       licensePlate: zod.string().nullish(),
       note: zod.string().nullish(),
+      defaultSlopeMower: zod.boolean(),
       isActive: zod.boolean(),
       createdAt: zod.string(),
       updatedAt: zod.string(),
@@ -827,6 +1634,9 @@ export const UpdateFellingRecordResponse = zod.object({
       id: zod.number(),
       name: zod.string(),
       type: zod.string(),
+      mowingCategory: zod.string().nullish(),
+      defaultAccessoryId: zod.number().nullish(),
+      defaultOperatorId: zod.number().nullish(),
       note: zod.string().nullish(),
       isActive: zod.boolean(),
       createdAt: zod.string(),
@@ -873,19 +1683,160 @@ export const ListMowingRecordsResponseItem = zod.object({
   date: zod.string(),
   userId: zod.number(),
   regionId: zod.number(),
+  workType: zod.string().nullish(),
+  mowingSection: zod.string().nullish(),
+  mowingKind: zod.string().nullish(),
+  manualMowingKind: zod.string().nullish(),
+  contractorCompanyId: zod.number().nullish(),
   location: zod.string().nullish(),
   startTime: zod.string().nullish(),
   endTime: zod.string().nullish(),
   weatherTypeId: zod.number().nullish(),
+  weatherTypeIds: zod.array(zod.number()).optional(),
+  temperature: zod.number().nullish(),
   vehicleId: zod.number().nullish(),
+  vehicleEntries: zod.array(
+    zod.object({
+      vehicleId: zod.number(),
+      kmStart: zod.number().nullable(),
+      kmEnd: zod.number().nullable(),
+      kmTotal: zod.number().nullable(),
+      refueling: zod.number().nullable(),
+      vehicle: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            licensePlate: zod.string().nullish(),
+            note: zod.string().nullish(),
+            defaultSlopeMower: zod.boolean(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
   mthStart: zod.number().nullish(),
   mthEnd: zod.number().nullish(),
   mthTotal: zod.number().nullish(),
   fuelConsumption: zod.number().nullish(),
   refueling: zod.number().nullish(),
   workerIds: zod.array(zod.number()),
+  manualWorkerIds: zod.array(zod.number()),
+  machineWorkerIds: zod.array(zod.number()),
+  workerTimeEntries: zod.array(
+    zod.object({
+      workerId: zod.number(),
+      category: zod.enum(["manual", "machine"]),
+      shiftType: zod
+        .union([
+          zod.literal("morning"),
+          zod.literal("evening"),
+          zod.literal("custom"),
+          zod.literal(null),
+        ])
+        .nullish(),
+      startTime: zod.string().nullable(),
+      endTime: zod.string().nullable(),
+      worker: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            firstName: zod.string(),
+            lastName: zod.string(),
+            note: zod.string().nullish(),
+            defaultBrushcutter: zod.boolean(),
+            defaultSlopeMower: zod.boolean(),
+            contractorCompanyId: zod.number().nullish(),
+            defaultSubcontractor: zod.boolean(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
   machineIds: zod.array(zod.number()),
+  machineMthEntries: zod.array(
+    zod.object({
+      machineId: zod.number(),
+      accessoryId: zod.number().nullable(),
+      operatorId: zod.number().nullable(),
+      startTime: zod.string().nullable(),
+      endTime: zod.string().nullable(),
+      mthStart: zod.number().nullable(),
+      mthEnd: zod.number().nullable(),
+      mthTotal: zod.number().nullable(),
+      fuelConsumption: zod.number().nullable(),
+      refueling: zod.number().nullable(),
+      machine: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            type: zod.string(),
+            mowingCategory: zod.string().nullish(),
+            defaultAccessoryId: zod.number().nullish(),
+            defaultOperatorId: zod.number().nullish(),
+            note: zod.string().nullish(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+      accessory: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            type: zod.string().nullish(),
+            serialNumber: zod.string().nullish(),
+            note: zod.string().nullish(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+      operator: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            firstName: zod.string(),
+            lastName: zod.string(),
+            note: zod.string().nullish(),
+            defaultBrushcutter: zod.boolean(),
+            defaultSlopeMower: zod.boolean(),
+            contractorCompanyId: zod.number().nullish(),
+            defaultSubcontractor: zod.boolean(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
   accessoryIds: zod.array(zod.number()),
+  assignedAverage: zod.string().nullish(),
+  dayHours: zod.number().nullish(),
+  nightHours: zod.number().nullish(),
+  laborHours: zod.number().nullish(),
+  vehicleKmStart: zod.number().nullish(),
+  vehicleKmEnd: zod.number().nullish(),
+  vehicleKmTotal: zod.number().nullish(),
+  vehicleRefueling: zod.number().nullish(),
+  brushcutterRefueling: zod.number().nullish(),
+  trafficMarking: zod.string().nullish(),
   note: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -893,7 +1844,8 @@ export const ListMowingRecordsResponseItem = zod.object({
     id: zod.number(),
     username: zod.string(),
     fullName: zod.string(),
-    role: zod.enum(["admin", "user"]),
+    role: zod.enum(["admin", "user", "employee", "manager"]),
+    workerId: zod.number().nullish(),
     isActive: zod.boolean(),
     createdAt: zod.string(),
     updatedAt: zod.string(),
@@ -920,6 +1872,16 @@ export const ListMowingRecordsResponseItem = zod.object({
       zod.null(),
     ])
     .optional(),
+  weatherTypes: zod.array(
+    zod.object({
+      id: zod.number(),
+      name: zod.string(),
+      icon: zod.string().nullish(),
+      isActive: zod.boolean(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
   vehicle: zod
     .union([
       zod.object({
@@ -927,6 +1889,7 @@ export const ListMowingRecordsResponseItem = zod.object({
         name: zod.string(),
         licensePlate: zod.string().nullish(),
         note: zod.string().nullish(),
+        defaultSlopeMower: zod.boolean(),
         isActive: zod.boolean(),
         createdAt: zod.string(),
         updatedAt: zod.string(),
@@ -940,16 +1903,67 @@ export const ListMowingRecordsResponseItem = zod.object({
       firstName: zod.string(),
       lastName: zod.string(),
       note: zod.string().nullish(),
+      defaultBrushcutter: zod.boolean(),
+      defaultSlopeMower: zod.boolean(),
+      contractorCompanyId: zod.number().nullish(),
+      defaultSubcontractor: zod.boolean(),
       isActive: zod.boolean(),
       createdAt: zod.string(),
       updatedAt: zod.string(),
     }),
   ),
+  manualWorkers: zod.array(
+    zod.object({
+      id: zod.number(),
+      firstName: zod.string(),
+      lastName: zod.string(),
+      note: zod.string().nullish(),
+      defaultBrushcutter: zod.boolean(),
+      defaultSlopeMower: zod.boolean(),
+      contractorCompanyId: zod.number().nullish(),
+      defaultSubcontractor: zod.boolean(),
+      isActive: zod.boolean(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  machineWorkers: zod.array(
+    zod.object({
+      id: zod.number(),
+      firstName: zod.string(),
+      lastName: zod.string(),
+      note: zod.string().nullish(),
+      defaultBrushcutter: zod.boolean(),
+      defaultSlopeMower: zod.boolean(),
+      contractorCompanyId: zod.number().nullish(),
+      defaultSubcontractor: zod.boolean(),
+      isActive: zod.boolean(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  contractorCompany: zod
+    .union([
+      zod.object({
+        id: zod.number(),
+        name: zod.string(),
+        companyId: zod.string().nullish(),
+        note: zod.string().nullish(),
+        isActive: zod.boolean(),
+        createdAt: zod.string(),
+        updatedAt: zod.string(),
+      }),
+      zod.null(),
+    ])
+    .optional(),
   machines: zod.array(
     zod.object({
       id: zod.number(),
       name: zod.string(),
       type: zod.string(),
+      mowingCategory: zod.string().nullish(),
+      defaultAccessoryId: zod.number().nullish(),
+      defaultOperatorId: zod.number().nullish(),
       note: zod.string().nullish(),
       isActive: zod.boolean(),
       createdAt: zod.string(),
@@ -979,19 +1993,160 @@ export const ListMowingRecordsResponse = zod.array(
 export const CreateMowingRecordBody = zod.object({
   date: zod.string(),
   regionId: zod.number(),
+  workType: zod.string().nullish(),
+  mowingSection: zod.string().nullish(),
+  mowingKind: zod.string().nullish(),
+  manualMowingKind: zod.string().nullish(),
+  contractorCompanyId: zod.number().nullish(),
   location: zod.string().nullish(),
   startTime: zod.string().nullish(),
   endTime: zod.string().nullish(),
   weatherTypeId: zod.number().nullish(),
+  weatherTypeIds: zod.array(zod.number()).optional(),
+  temperature: zod.number().nullish(),
   vehicleId: zod.number().nullish(),
+  vehicleEntries: zod.array(
+    zod.object({
+      vehicleId: zod.number(),
+      kmStart: zod.number().nullable(),
+      kmEnd: zod.number().nullable(),
+      kmTotal: zod.number().nullable(),
+      refueling: zod.number().nullable(),
+      vehicle: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            licensePlate: zod.string().nullish(),
+            note: zod.string().nullish(),
+            defaultSlopeMower: zod.boolean(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
   mthStart: zod.number().nullish(),
   mthEnd: zod.number().nullish(),
   mthTotal: zod.number().nullish(),
   fuelConsumption: zod.number().nullish(),
   refueling: zod.number().nullish(),
   workerIds: zod.array(zod.number()),
+  manualWorkerIds: zod.array(zod.number()),
+  machineWorkerIds: zod.array(zod.number()),
+  workerTimeEntries: zod.array(
+    zod.object({
+      workerId: zod.number(),
+      category: zod.enum(["manual", "machine"]),
+      shiftType: zod
+        .union([
+          zod.literal("morning"),
+          zod.literal("evening"),
+          zod.literal("custom"),
+          zod.literal(null),
+        ])
+        .nullish(),
+      startTime: zod.string().nullable(),
+      endTime: zod.string().nullable(),
+      worker: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            firstName: zod.string(),
+            lastName: zod.string(),
+            note: zod.string().nullish(),
+            defaultBrushcutter: zod.boolean(),
+            defaultSlopeMower: zod.boolean(),
+            contractorCompanyId: zod.number().nullish(),
+            defaultSubcontractor: zod.boolean(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
   machineIds: zod.array(zod.number()),
+  machineMthEntries: zod.array(
+    zod.object({
+      machineId: zod.number(),
+      accessoryId: zod.number().nullable(),
+      operatorId: zod.number().nullable(),
+      startTime: zod.string().nullable(),
+      endTime: zod.string().nullable(),
+      mthStart: zod.number().nullable(),
+      mthEnd: zod.number().nullable(),
+      mthTotal: zod.number().nullable(),
+      fuelConsumption: zod.number().nullable(),
+      refueling: zod.number().nullable(),
+      machine: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            type: zod.string(),
+            mowingCategory: zod.string().nullish(),
+            defaultAccessoryId: zod.number().nullish(),
+            defaultOperatorId: zod.number().nullish(),
+            note: zod.string().nullish(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+      accessory: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            type: zod.string().nullish(),
+            serialNumber: zod.string().nullish(),
+            note: zod.string().nullish(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+      operator: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            firstName: zod.string(),
+            lastName: zod.string(),
+            note: zod.string().nullish(),
+            defaultBrushcutter: zod.boolean(),
+            defaultSlopeMower: zod.boolean(),
+            contractorCompanyId: zod.number().nullish(),
+            defaultSubcontractor: zod.boolean(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
   accessoryIds: zod.array(zod.number()),
+  assignedAverage: zod.string().nullish(),
+  dayHours: zod.number().nullish(),
+  nightHours: zod.number().nullish(),
+  laborHours: zod.number().nullish(),
+  vehicleKmStart: zod.number().nullish(),
+  vehicleKmEnd: zod.number().nullish(),
+  vehicleKmTotal: zod.number().nullish(),
+  vehicleRefueling: zod.number().nullish(),
+  brushcutterRefueling: zod.number().nullish(),
+  trafficMarking: zod.string().nullish(),
   note: zod.string().nullish(),
 });
 
@@ -1007,19 +2162,160 @@ export const GetMowingRecordResponse = zod.object({
   date: zod.string(),
   userId: zod.number(),
   regionId: zod.number(),
+  workType: zod.string().nullish(),
+  mowingSection: zod.string().nullish(),
+  mowingKind: zod.string().nullish(),
+  manualMowingKind: zod.string().nullish(),
+  contractorCompanyId: zod.number().nullish(),
   location: zod.string().nullish(),
   startTime: zod.string().nullish(),
   endTime: zod.string().nullish(),
   weatherTypeId: zod.number().nullish(),
+  weatherTypeIds: zod.array(zod.number()).optional(),
+  temperature: zod.number().nullish(),
   vehicleId: zod.number().nullish(),
+  vehicleEntries: zod.array(
+    zod.object({
+      vehicleId: zod.number(),
+      kmStart: zod.number().nullable(),
+      kmEnd: zod.number().nullable(),
+      kmTotal: zod.number().nullable(),
+      refueling: zod.number().nullable(),
+      vehicle: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            licensePlate: zod.string().nullish(),
+            note: zod.string().nullish(),
+            defaultSlopeMower: zod.boolean(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
   mthStart: zod.number().nullish(),
   mthEnd: zod.number().nullish(),
   mthTotal: zod.number().nullish(),
   fuelConsumption: zod.number().nullish(),
   refueling: zod.number().nullish(),
   workerIds: zod.array(zod.number()),
+  manualWorkerIds: zod.array(zod.number()),
+  machineWorkerIds: zod.array(zod.number()),
+  workerTimeEntries: zod.array(
+    zod.object({
+      workerId: zod.number(),
+      category: zod.enum(["manual", "machine"]),
+      shiftType: zod
+        .union([
+          zod.literal("morning"),
+          zod.literal("evening"),
+          zod.literal("custom"),
+          zod.literal(null),
+        ])
+        .nullish(),
+      startTime: zod.string().nullable(),
+      endTime: zod.string().nullable(),
+      worker: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            firstName: zod.string(),
+            lastName: zod.string(),
+            note: zod.string().nullish(),
+            defaultBrushcutter: zod.boolean(),
+            defaultSlopeMower: zod.boolean(),
+            contractorCompanyId: zod.number().nullish(),
+            defaultSubcontractor: zod.boolean(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
   machineIds: zod.array(zod.number()),
+  machineMthEntries: zod.array(
+    zod.object({
+      machineId: zod.number(),
+      accessoryId: zod.number().nullable(),
+      operatorId: zod.number().nullable(),
+      startTime: zod.string().nullable(),
+      endTime: zod.string().nullable(),
+      mthStart: zod.number().nullable(),
+      mthEnd: zod.number().nullable(),
+      mthTotal: zod.number().nullable(),
+      fuelConsumption: zod.number().nullable(),
+      refueling: zod.number().nullable(),
+      machine: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            type: zod.string(),
+            mowingCategory: zod.string().nullish(),
+            defaultAccessoryId: zod.number().nullish(),
+            defaultOperatorId: zod.number().nullish(),
+            note: zod.string().nullish(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+      accessory: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            type: zod.string().nullish(),
+            serialNumber: zod.string().nullish(),
+            note: zod.string().nullish(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+      operator: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            firstName: zod.string(),
+            lastName: zod.string(),
+            note: zod.string().nullish(),
+            defaultBrushcutter: zod.boolean(),
+            defaultSlopeMower: zod.boolean(),
+            contractorCompanyId: zod.number().nullish(),
+            defaultSubcontractor: zod.boolean(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
   accessoryIds: zod.array(zod.number()),
+  assignedAverage: zod.string().nullish(),
+  dayHours: zod.number().nullish(),
+  nightHours: zod.number().nullish(),
+  laborHours: zod.number().nullish(),
+  vehicleKmStart: zod.number().nullish(),
+  vehicleKmEnd: zod.number().nullish(),
+  vehicleKmTotal: zod.number().nullish(),
+  vehicleRefueling: zod.number().nullish(),
+  brushcutterRefueling: zod.number().nullish(),
+  trafficMarking: zod.string().nullish(),
   note: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -1027,7 +2323,8 @@ export const GetMowingRecordResponse = zod.object({
     id: zod.number(),
     username: zod.string(),
     fullName: zod.string(),
-    role: zod.enum(["admin", "user"]),
+    role: zod.enum(["admin", "user", "employee", "manager"]),
+    workerId: zod.number().nullish(),
     isActive: zod.boolean(),
     createdAt: zod.string(),
     updatedAt: zod.string(),
@@ -1054,6 +2351,16 @@ export const GetMowingRecordResponse = zod.object({
       zod.null(),
     ])
     .optional(),
+  weatherTypes: zod.array(
+    zod.object({
+      id: zod.number(),
+      name: zod.string(),
+      icon: zod.string().nullish(),
+      isActive: zod.boolean(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
   vehicle: zod
     .union([
       zod.object({
@@ -1061,6 +2368,7 @@ export const GetMowingRecordResponse = zod.object({
         name: zod.string(),
         licensePlate: zod.string().nullish(),
         note: zod.string().nullish(),
+        defaultSlopeMower: zod.boolean(),
         isActive: zod.boolean(),
         createdAt: zod.string(),
         updatedAt: zod.string(),
@@ -1074,16 +2382,67 @@ export const GetMowingRecordResponse = zod.object({
       firstName: zod.string(),
       lastName: zod.string(),
       note: zod.string().nullish(),
+      defaultBrushcutter: zod.boolean(),
+      defaultSlopeMower: zod.boolean(),
+      contractorCompanyId: zod.number().nullish(),
+      defaultSubcontractor: zod.boolean(),
       isActive: zod.boolean(),
       createdAt: zod.string(),
       updatedAt: zod.string(),
     }),
   ),
+  manualWorkers: zod.array(
+    zod.object({
+      id: zod.number(),
+      firstName: zod.string(),
+      lastName: zod.string(),
+      note: zod.string().nullish(),
+      defaultBrushcutter: zod.boolean(),
+      defaultSlopeMower: zod.boolean(),
+      contractorCompanyId: zod.number().nullish(),
+      defaultSubcontractor: zod.boolean(),
+      isActive: zod.boolean(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  machineWorkers: zod.array(
+    zod.object({
+      id: zod.number(),
+      firstName: zod.string(),
+      lastName: zod.string(),
+      note: zod.string().nullish(),
+      defaultBrushcutter: zod.boolean(),
+      defaultSlopeMower: zod.boolean(),
+      contractorCompanyId: zod.number().nullish(),
+      defaultSubcontractor: zod.boolean(),
+      isActive: zod.boolean(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  contractorCompany: zod
+    .union([
+      zod.object({
+        id: zod.number(),
+        name: zod.string(),
+        companyId: zod.string().nullish(),
+        note: zod.string().nullish(),
+        isActive: zod.boolean(),
+        createdAt: zod.string(),
+        updatedAt: zod.string(),
+      }),
+      zod.null(),
+    ])
+    .optional(),
   machines: zod.array(
     zod.object({
       id: zod.number(),
       name: zod.string(),
       type: zod.string(),
+      mowingCategory: zod.string().nullish(),
+      defaultAccessoryId: zod.number().nullish(),
+      defaultOperatorId: zod.number().nullish(),
       note: zod.string().nullish(),
       isActive: zod.boolean(),
       createdAt: zod.string(),
@@ -1114,19 +2473,166 @@ export const UpdateMowingRecordParams = zod.object({
 export const UpdateMowingRecordBody = zod.object({
   date: zod.string().nullish(),
   regionId: zod.number().nullish(),
+  workType: zod.string().nullish(),
+  mowingSection: zod.string().nullish(),
+  mowingKind: zod.string().nullish(),
+  manualMowingKind: zod.string().nullish(),
+  contractorCompanyId: zod.number().nullish(),
   location: zod.string().nullish(),
   startTime: zod.string().nullish(),
   endTime: zod.string().nullish(),
   weatherTypeId: zod.number().nullish(),
+  weatherTypeIds: zod.array(zod.number()).nullish(),
+  temperature: zod.number().nullish(),
   vehicleId: zod.number().nullish(),
+  vehicleEntries: zod
+    .array(
+      zod.object({
+        vehicleId: zod.number(),
+        kmStart: zod.number().nullable(),
+        kmEnd: zod.number().nullable(),
+        kmTotal: zod.number().nullable(),
+        refueling: zod.number().nullable(),
+        vehicle: zod
+          .union([
+            zod.object({
+              id: zod.number(),
+              name: zod.string(),
+              licensePlate: zod.string().nullish(),
+              note: zod.string().nullish(),
+              defaultSlopeMower: zod.boolean(),
+              isActive: zod.boolean(),
+              createdAt: zod.string(),
+              updatedAt: zod.string(),
+            }),
+            zod.null(),
+          ])
+          .optional(),
+      }),
+    )
+    .nullish(),
   mthStart: zod.number().nullish(),
   mthEnd: zod.number().nullish(),
   mthTotal: zod.number().nullish(),
   fuelConsumption: zod.number().nullish(),
   refueling: zod.number().nullish(),
   workerIds: zod.array(zod.number()).nullish(),
+  manualWorkerIds: zod.array(zod.number()).nullish(),
+  machineWorkerIds: zod.array(zod.number()).nullish(),
+  workerTimeEntries: zod
+    .array(
+      zod.object({
+        workerId: zod.number(),
+        category: zod.enum(["manual", "machine"]),
+        shiftType: zod
+          .union([
+            zod.literal("morning"),
+            zod.literal("evening"),
+            zod.literal("custom"),
+            zod.literal(null),
+          ])
+          .nullish(),
+        startTime: zod.string().nullable(),
+        endTime: zod.string().nullable(),
+        worker: zod
+          .union([
+            zod.object({
+              id: zod.number(),
+              firstName: zod.string(),
+              lastName: zod.string(),
+              note: zod.string().nullish(),
+              defaultBrushcutter: zod.boolean(),
+              defaultSlopeMower: zod.boolean(),
+              contractorCompanyId: zod.number().nullish(),
+              defaultSubcontractor: zod.boolean(),
+              isActive: zod.boolean(),
+              createdAt: zod.string(),
+              updatedAt: zod.string(),
+            }),
+            zod.null(),
+          ])
+          .optional(),
+      }),
+    )
+    .nullish(),
   machineIds: zod.array(zod.number()).nullish(),
+  machineMthEntries: zod
+    .array(
+      zod.object({
+        machineId: zod.number(),
+        accessoryId: zod.number().nullable(),
+        operatorId: zod.number().nullable(),
+        startTime: zod.string().nullable(),
+        endTime: zod.string().nullable(),
+        mthStart: zod.number().nullable(),
+        mthEnd: zod.number().nullable(),
+        mthTotal: zod.number().nullable(),
+        fuelConsumption: zod.number().nullable(),
+        refueling: zod.number().nullable(),
+        machine: zod
+          .union([
+            zod.object({
+              id: zod.number(),
+              name: zod.string(),
+              type: zod.string(),
+              mowingCategory: zod.string().nullish(),
+              defaultAccessoryId: zod.number().nullish(),
+              defaultOperatorId: zod.number().nullish(),
+              note: zod.string().nullish(),
+              isActive: zod.boolean(),
+              createdAt: zod.string(),
+              updatedAt: zod.string(),
+            }),
+            zod.null(),
+          ])
+          .optional(),
+        accessory: zod
+          .union([
+            zod.object({
+              id: zod.number(),
+              name: zod.string(),
+              type: zod.string().nullish(),
+              serialNumber: zod.string().nullish(),
+              note: zod.string().nullish(),
+              isActive: zod.boolean(),
+              createdAt: zod.string(),
+              updatedAt: zod.string(),
+            }),
+            zod.null(),
+          ])
+          .optional(),
+        operator: zod
+          .union([
+            zod.object({
+              id: zod.number(),
+              firstName: zod.string(),
+              lastName: zod.string(),
+              note: zod.string().nullish(),
+              defaultBrushcutter: zod.boolean(),
+              defaultSlopeMower: zod.boolean(),
+              contractorCompanyId: zod.number().nullish(),
+              defaultSubcontractor: zod.boolean(),
+              isActive: zod.boolean(),
+              createdAt: zod.string(),
+              updatedAt: zod.string(),
+            }),
+            zod.null(),
+          ])
+          .optional(),
+      }),
+    )
+    .nullish(),
   accessoryIds: zod.array(zod.number()).nullish(),
+  assignedAverage: zod.string().nullish(),
+  dayHours: zod.number().nullish(),
+  nightHours: zod.number().nullish(),
+  laborHours: zod.number().nullish(),
+  vehicleKmStart: zod.number().nullish(),
+  vehicleKmEnd: zod.number().nullish(),
+  vehicleKmTotal: zod.number().nullish(),
+  vehicleRefueling: zod.number().nullish(),
+  brushcutterRefueling: zod.number().nullish(),
+  trafficMarking: zod.string().nullish(),
   note: zod.string().nullish(),
 });
 
@@ -1135,19 +2641,160 @@ export const UpdateMowingRecordResponse = zod.object({
   date: zod.string(),
   userId: zod.number(),
   regionId: zod.number(),
+  workType: zod.string().nullish(),
+  mowingSection: zod.string().nullish(),
+  mowingKind: zod.string().nullish(),
+  manualMowingKind: zod.string().nullish(),
+  contractorCompanyId: zod.number().nullish(),
   location: zod.string().nullish(),
   startTime: zod.string().nullish(),
   endTime: zod.string().nullish(),
   weatherTypeId: zod.number().nullish(),
+  weatherTypeIds: zod.array(zod.number()).optional(),
+  temperature: zod.number().nullish(),
   vehicleId: zod.number().nullish(),
+  vehicleEntries: zod.array(
+    zod.object({
+      vehicleId: zod.number(),
+      kmStart: zod.number().nullable(),
+      kmEnd: zod.number().nullable(),
+      kmTotal: zod.number().nullable(),
+      refueling: zod.number().nullable(),
+      vehicle: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            licensePlate: zod.string().nullish(),
+            note: zod.string().nullish(),
+            defaultSlopeMower: zod.boolean(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
   mthStart: zod.number().nullish(),
   mthEnd: zod.number().nullish(),
   mthTotal: zod.number().nullish(),
   fuelConsumption: zod.number().nullish(),
   refueling: zod.number().nullish(),
   workerIds: zod.array(zod.number()),
+  manualWorkerIds: zod.array(zod.number()),
+  machineWorkerIds: zod.array(zod.number()),
+  workerTimeEntries: zod.array(
+    zod.object({
+      workerId: zod.number(),
+      category: zod.enum(["manual", "machine"]),
+      shiftType: zod
+        .union([
+          zod.literal("morning"),
+          zod.literal("evening"),
+          zod.literal("custom"),
+          zod.literal(null),
+        ])
+        .nullish(),
+      startTime: zod.string().nullable(),
+      endTime: zod.string().nullable(),
+      worker: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            firstName: zod.string(),
+            lastName: zod.string(),
+            note: zod.string().nullish(),
+            defaultBrushcutter: zod.boolean(),
+            defaultSlopeMower: zod.boolean(),
+            contractorCompanyId: zod.number().nullish(),
+            defaultSubcontractor: zod.boolean(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
   machineIds: zod.array(zod.number()),
+  machineMthEntries: zod.array(
+    zod.object({
+      machineId: zod.number(),
+      accessoryId: zod.number().nullable(),
+      operatorId: zod.number().nullable(),
+      startTime: zod.string().nullable(),
+      endTime: zod.string().nullable(),
+      mthStart: zod.number().nullable(),
+      mthEnd: zod.number().nullable(),
+      mthTotal: zod.number().nullable(),
+      fuelConsumption: zod.number().nullable(),
+      refueling: zod.number().nullable(),
+      machine: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            type: zod.string(),
+            mowingCategory: zod.string().nullish(),
+            defaultAccessoryId: zod.number().nullish(),
+            defaultOperatorId: zod.number().nullish(),
+            note: zod.string().nullish(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+      accessory: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            name: zod.string(),
+            type: zod.string().nullish(),
+            serialNumber: zod.string().nullish(),
+            note: zod.string().nullish(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+      operator: zod
+        .union([
+          zod.object({
+            id: zod.number(),
+            firstName: zod.string(),
+            lastName: zod.string(),
+            note: zod.string().nullish(),
+            defaultBrushcutter: zod.boolean(),
+            defaultSlopeMower: zod.boolean(),
+            contractorCompanyId: zod.number().nullish(),
+            defaultSubcontractor: zod.boolean(),
+            isActive: zod.boolean(),
+            createdAt: zod.string(),
+            updatedAt: zod.string(),
+          }),
+          zod.null(),
+        ])
+        .optional(),
+    }),
+  ),
   accessoryIds: zod.array(zod.number()),
+  assignedAverage: zod.string().nullish(),
+  dayHours: zod.number().nullish(),
+  nightHours: zod.number().nullish(),
+  laborHours: zod.number().nullish(),
+  vehicleKmStart: zod.number().nullish(),
+  vehicleKmEnd: zod.number().nullish(),
+  vehicleKmTotal: zod.number().nullish(),
+  vehicleRefueling: zod.number().nullish(),
+  brushcutterRefueling: zod.number().nullish(),
+  trafficMarking: zod.string().nullish(),
   note: zod.string().nullish(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -1155,7 +2802,8 @@ export const UpdateMowingRecordResponse = zod.object({
     id: zod.number(),
     username: zod.string(),
     fullName: zod.string(),
-    role: zod.enum(["admin", "user"]),
+    role: zod.enum(["admin", "user", "employee", "manager"]),
+    workerId: zod.number().nullish(),
     isActive: zod.boolean(),
     createdAt: zod.string(),
     updatedAt: zod.string(),
@@ -1182,6 +2830,16 @@ export const UpdateMowingRecordResponse = zod.object({
       zod.null(),
     ])
     .optional(),
+  weatherTypes: zod.array(
+    zod.object({
+      id: zod.number(),
+      name: zod.string(),
+      icon: zod.string().nullish(),
+      isActive: zod.boolean(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
   vehicle: zod
     .union([
       zod.object({
@@ -1189,6 +2847,7 @@ export const UpdateMowingRecordResponse = zod.object({
         name: zod.string(),
         licensePlate: zod.string().nullish(),
         note: zod.string().nullish(),
+        defaultSlopeMower: zod.boolean(),
         isActive: zod.boolean(),
         createdAt: zod.string(),
         updatedAt: zod.string(),
@@ -1202,16 +2861,67 @@ export const UpdateMowingRecordResponse = zod.object({
       firstName: zod.string(),
       lastName: zod.string(),
       note: zod.string().nullish(),
+      defaultBrushcutter: zod.boolean(),
+      defaultSlopeMower: zod.boolean(),
+      contractorCompanyId: zod.number().nullish(),
+      defaultSubcontractor: zod.boolean(),
       isActive: zod.boolean(),
       createdAt: zod.string(),
       updatedAt: zod.string(),
     }),
   ),
+  manualWorkers: zod.array(
+    zod.object({
+      id: zod.number(),
+      firstName: zod.string(),
+      lastName: zod.string(),
+      note: zod.string().nullish(),
+      defaultBrushcutter: zod.boolean(),
+      defaultSlopeMower: zod.boolean(),
+      contractorCompanyId: zod.number().nullish(),
+      defaultSubcontractor: zod.boolean(),
+      isActive: zod.boolean(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  machineWorkers: zod.array(
+    zod.object({
+      id: zod.number(),
+      firstName: zod.string(),
+      lastName: zod.string(),
+      note: zod.string().nullish(),
+      defaultBrushcutter: zod.boolean(),
+      defaultSlopeMower: zod.boolean(),
+      contractorCompanyId: zod.number().nullish(),
+      defaultSubcontractor: zod.boolean(),
+      isActive: zod.boolean(),
+      createdAt: zod.string(),
+      updatedAt: zod.string(),
+    }),
+  ),
+  contractorCompany: zod
+    .union([
+      zod.object({
+        id: zod.number(),
+        name: zod.string(),
+        companyId: zod.string().nullish(),
+        note: zod.string().nullish(),
+        isActive: zod.boolean(),
+        createdAt: zod.string(),
+        updatedAt: zod.string(),
+      }),
+      zod.null(),
+    ])
+    .optional(),
   machines: zod.array(
     zod.object({
       id: zod.number(),
       name: zod.string(),
       type: zod.string(),
+      mowingCategory: zod.string().nullish(),
+      defaultAccessoryId: zod.number().nullish(),
+      defaultOperatorId: zod.number().nullish(),
       note: zod.string().nullish(),
       isActive: zod.boolean(),
       createdAt: zod.string(),

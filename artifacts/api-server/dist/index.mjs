@@ -164,7 +164,7 @@ var require_common = __commonJS({
     function setup(env) {
       createDebug.debug = createDebug;
       createDebug.default = createDebug;
-      createDebug.coerce = coerce2;
+      createDebug.coerce = coerce;
       createDebug.disable = disable;
       createDebug.enable = enable;
       createDebug.enabled = enabled;
@@ -319,7 +319,7 @@ var require_common = __commonJS({
         }
         return false;
       }
-      function coerce2(val) {
+      function coerce(val) {
         if (val instanceof Error) {
           return val.stack || val.message;
         }
@@ -509,14 +509,14 @@ var require_browser = __commonJS({
 var require_node = __commonJS({
   "../../node_modules/.pnpm/debug@4.4.3/node_modules/debug/src/node.js"(exports, module) {
     var tty = __require("tty");
-    var util2 = __require("util");
+    var util = __require("util");
     exports.init = init;
     exports.log = log;
     exports.formatArgs = formatArgs;
     exports.save = save;
     exports.load = load;
     exports.useColors = useColors;
-    exports.destroy = util2.deprecate(
+    exports.destroy = util.deprecate(
       () => {
       },
       "Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`."
@@ -647,7 +647,7 @@ var require_node = __commonJS({
       return (/* @__PURE__ */ new Date()).toISOString() + " ";
     }
     function log(...args) {
-      return process.stderr.write(util2.formatWithOptions(exports.inspectOpts, ...args) + "\n");
+      return process.stderr.write(util.formatWithOptions(exports.inspectOpts, ...args) + "\n");
     }
     function save(namespaces) {
       if (namespaces) {
@@ -670,11 +670,11 @@ var require_node = __commonJS({
     var { formatters } = module.exports;
     formatters.o = function(v) {
       this.inspectOpts.colors = this.useColors;
-      return util2.inspect(v, this.inspectOpts).split("\n").map((str) => str.trim()).join(" ");
+      return util.inspect(v, this.inspectOpts).split("\n").map((str) => str.trim()).join(" ");
     };
     formatters.O = function(v) {
       this.inspectOpts.colors = this.useColors;
-      return util2.inspect(v, this.inspectOpts);
+      return util.inspect(v, this.inspectOpts);
     };
   }
 });
@@ -1194,13 +1194,13 @@ var require_inherits_browser = __commonJS({
 var require_inherits = __commonJS({
   "../../node_modules/.pnpm/inherits@2.0.4/node_modules/inherits/inherits.js"(exports, module) {
     try {
-      util2 = __require("util");
-      if (typeof util2.inherits !== "function") throw "";
-      module.exports = util2.inherits;
+      util = __require("util");
+      if (typeof util.inherits !== "function") throw "";
+      module.exports = util.inherits;
     } catch (e) {
       module.exports = require_inherits_browser();
     }
-    var util2;
+    var util;
   }
 });
 
@@ -2184,10 +2184,10 @@ var require_utf7 = __commonJS({
       this.inBase64 = false;
       this.base64Accum = "";
     }
-    var base64Regex2 = /[A-Za-z0-9\/+]/;
+    var base64Regex = /[A-Za-z0-9\/+]/;
     var base64Chars = [];
     for (i = 0; i < 256; i++) {
-      base64Chars[i] = base64Regex2.test(String.fromCharCode(i));
+      base64Chars[i] = base64Regex.test(String.fromCharCode(i));
     }
     var i;
     var plusChar = "+".charCodeAt(0);
@@ -15199,11 +15199,11 @@ var require_mime_types = __commonJS({
       }
       return exts[0];
     }
-    function lookup(path) {
-      if (!path || typeof path !== "string") {
+    function lookup(path2) {
+      if (!path2 || typeof path2 !== "string") {
         return false;
       }
-      var extension2 = extname("x." + path).toLowerCase().slice(1);
+      var extension2 = extname("x." + path2).toLowerCase().slice(1);
       if (!extension2) {
         return false;
       }
@@ -18675,13 +18675,13 @@ var require_view = __commonJS({
   "../../node_modules/.pnpm/express@5.2.1/node_modules/express/lib/view.js"(exports, module) {
     "use strict";
     var debug = require_src()("express:view");
-    var path = __require("node:path");
+    var path2 = __require("node:path");
     var fs = __require("node:fs");
-    var dirname = path.dirname;
-    var basename = path.basename;
-    var extname = path.extname;
-    var join = path.join;
-    var resolve = path.resolve;
+    var dirname = path2.dirname;
+    var basename = path2.basename;
+    var extname = path2.extname;
+    var join = path2.join;
+    var resolve = path2.resolve;
     module.exports = View2;
     function View2(name, options) {
       var opts = options || {};
@@ -18710,17 +18710,17 @@ var require_view = __commonJS({
       this.path = this.lookup(fileName);
     }
     View2.prototype.lookup = function lookup(name) {
-      var path2;
+      var path3;
       var roots = [].concat(this.root);
       debug('lookup "%s"', name);
-      for (var i = 0; i < roots.length && !path2; i++) {
+      for (var i = 0; i < roots.length && !path3; i++) {
         var root = roots[i];
         var loc = resolve(root, name);
         var dir = dirname(loc);
         var file2 = basename(loc);
-        path2 = this.resolve(dir, file2);
+        path3 = this.resolve(dir, file2);
       }
-      return path2;
+      return path3;
     };
     View2.prototype.render = function render(options, callback) {
       var sync = true;
@@ -18742,21 +18742,21 @@ var require_view = __commonJS({
     };
     View2.prototype.resolve = function resolve2(dir, file2) {
       var ext = this.ext;
-      var path2 = join(dir, file2);
-      var stat = tryStat(path2);
+      var path3 = join(dir, file2);
+      var stat = tryStat(path3);
       if (stat && stat.isFile()) {
-        return path2;
+        return path3;
       }
-      path2 = join(dir, basename(file2, ext), "index" + ext);
-      stat = tryStat(path2);
+      path3 = join(dir, basename(file2, ext), "index" + ext);
+      stat = tryStat(path3);
       if (stat && stat.isFile()) {
-        return path2;
+        return path3;
       }
     };
-    function tryStat(path2) {
-      debug('stat "%s"', path2);
+    function tryStat(path3) {
+      debug('stat "%s"', path3);
       try {
-        return fs.statSync(path2);
+        return fs.statSync(path3);
       } catch (e) {
         return void 0;
       }
@@ -19954,15 +19954,15 @@ var require_dist = __commonJS({
           if (token.type === endType)
             break;
           if (token.type === "char" || token.type === "escape") {
-            let path = token.value;
+            let path2 = token.value;
             let cur = tokens[pos];
             while (cur.type === "char" || cur.type === "escape") {
-              path += cur.value;
+              path2 += cur.value;
               cur = tokens[++pos];
             }
             output.push({
               type: "text",
-              value: encodePath(path)
+              value: encodePath(path2)
             });
             continue;
           }
@@ -19986,16 +19986,16 @@ var require_dist = __commonJS({
       }
       return new TokenData(consumeUntil("end"), str);
     }
-    function compile(path, options = {}) {
+    function compile(path2, options = {}) {
       const { encode = encodeURIComponent, delimiter = DEFAULT_DELIMITER } = options;
-      const data = typeof path === "object" ? path : parse3(path, options);
+      const data = typeof path2 === "object" ? path2 : parse3(path2, options);
       const fn = tokensToFunction(data.tokens, delimiter, encode);
-      return function path2(params = {}) {
-        const [path3, ...missing] = fn(params);
+      return function path3(params = {}) {
+        const [path4, ...missing] = fn(params);
         if (missing.length) {
           throw new TypeError(`Missing parameters: ${missing.join(", ")}`);
         }
-        return path3;
+        return path4;
       };
     }
     function tokensToFunction(tokens, delimiter, encode) {
@@ -20051,9 +20051,9 @@ var require_dist = __commonJS({
         return [encodeValue(value)];
       };
     }
-    function match(path, options = {}) {
+    function match(path2, options = {}) {
       const { decode = decodeURIComponent, delimiter = DEFAULT_DELIMITER } = options;
-      const { regexp, keys } = pathToRegexp(path, options);
+      const { regexp, keys } = pathToRegexp(path2, options);
       const decoders = keys.map((key) => {
         if (decode === false)
           return NOOP_VALUE;
@@ -20065,7 +20065,7 @@ var require_dist = __commonJS({
         const m = regexp.exec(input);
         if (!m)
           return false;
-        const path2 = m[0];
+        const path3 = m[0];
         const params = /* @__PURE__ */ Object.create(null);
         for (let i = 1; i < m.length; i++) {
           if (m[i] === void 0)
@@ -20074,15 +20074,15 @@ var require_dist = __commonJS({
           const decoder = decoders[i - 1];
           params[key.name] = decoder(m[i]);
         }
-        return { path: path2, params };
+        return { path: path3, params };
       };
     }
-    function pathToRegexp(path, options = {}) {
+    function pathToRegexp(path2, options = {}) {
       const { delimiter = DEFAULT_DELIMITER, end = true, sensitive = false, trailing = true } = options;
       const keys = [];
       const flags = sensitive ? "" : "i";
       const sources = [];
-      for (const input of pathsToArray(path, [])) {
+      for (const input of pathsToArray(path2, [])) {
         const data = typeof input === "object" ? input : parse3(input, options);
         for (const tokens of flatten(data.tokens, 0, [])) {
           sources.push(toRegExpSource(tokens, delimiter, keys, data.originalPath));
@@ -20212,18 +20212,18 @@ var require_layer = __commonJS({
     var TRAILING_SLASH_REGEXP = /\/+$/;
     var MATCHING_GROUP_REGEXP = /\((?:\?<(.*?)>)?(?!\?)/g;
     module.exports = Layer;
-    function Layer(path, options, fn) {
+    function Layer(path2, options, fn) {
       if (!(this instanceof Layer)) {
-        return new Layer(path, options, fn);
+        return new Layer(path2, options, fn);
       }
-      debug("new %o", path);
+      debug("new %o", path2);
       const opts = options || {};
       this.handle = fn;
       this.keys = [];
       this.name = fn.name || "<anonymous>";
       this.params = void 0;
       this.path = void 0;
-      this.slash = path === "/" && opts.end === false;
+      this.slash = path2 === "/" && opts.end === false;
       function matcher(_path) {
         if (_path instanceof RegExp) {
           const keys = [];
@@ -20262,7 +20262,7 @@ var require_layer = __commonJS({
           decode: decodeParam
         });
       }
-      this.matchers = Array.isArray(path) ? path.map(matcher) : [matcher(path)];
+      this.matchers = Array.isArray(path2) ? path2.map(matcher) : [matcher(path2)];
     }
     Layer.prototype.handleError = function handleError(error40, req, res, next) {
       const fn = this.handle;
@@ -20302,9 +20302,9 @@ var require_layer = __commonJS({
         next(err);
       }
     };
-    Layer.prototype.match = function match(path) {
+    Layer.prototype.match = function match(path2) {
       let match2;
-      if (path != null) {
+      if (path2 != null) {
         if (this.slash) {
           this.params = {};
           this.path = "";
@@ -20312,7 +20312,7 @@ var require_layer = __commonJS({
         }
         let i = 0;
         while (!match2 && i < this.matchers.length) {
-          match2 = this.matchers[i](path);
+          match2 = this.matchers[i](path2);
           i++;
         }
       }
@@ -20340,13 +20340,13 @@ var require_layer = __commonJS({
         throw err;
       }
     }
-    function loosen(path) {
-      if (path instanceof RegExp || path === "/") {
-        return path;
+    function loosen(path2) {
+      if (path2 instanceof RegExp || path2 === "/") {
+        return path2;
       }
-      return Array.isArray(path) ? path.map(function(p) {
+      return Array.isArray(path2) ? path2.map(function(p) {
         return loosen(p);
-      }) : String(path).replace(TRAILING_SLASH_REGEXP, "");
+      }) : String(path2).replace(TRAILING_SLASH_REGEXP, "");
     }
   }
 });
@@ -20362,9 +20362,9 @@ var require_route = __commonJS({
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
     module.exports = Route;
-    function Route(path) {
-      debug("new %o", path);
-      this.path = path;
+    function Route(path2) {
+      debug("new %o", path2);
+      this.path = path2;
       this.stack = [];
       this.methods = /* @__PURE__ */ Object.create(null);
     }
@@ -20485,27 +20485,27 @@ var require_router = __commonJS({
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
-    module.exports = Router11;
+    module.exports = Router12;
     module.exports.Route = Route;
-    function Router11(options) {
-      if (!(this instanceof Router11)) {
-        return new Router11(options);
+    function Router12(options) {
+      if (!(this instanceof Router12)) {
+        return new Router12(options);
       }
       const opts = options || {};
-      function router11(req, res, next) {
-        router11.handle(req, res, next);
+      function router12(req, res, next) {
+        router12.handle(req, res, next);
       }
-      Object.setPrototypeOf(router11, this);
-      router11.caseSensitive = opts.caseSensitive;
-      router11.mergeParams = opts.mergeParams;
-      router11.params = {};
-      router11.strict = opts.strict;
-      router11.stack = [];
-      return router11;
+      Object.setPrototypeOf(router12, this);
+      router12.caseSensitive = opts.caseSensitive;
+      router12.mergeParams = opts.mergeParams;
+      router12.params = {};
+      router12.strict = opts.strict;
+      router12.stack = [];
+      return router12;
     }
-    Router11.prototype = function() {
+    Router12.prototype = function() {
     };
-    Router11.prototype.param = function param(name, fn) {
+    Router12.prototype.param = function param(name, fn) {
       if (!name) {
         throw new TypeError("argument name is required");
       }
@@ -20525,7 +20525,7 @@ var require_router = __commonJS({
       params.push(fn);
       return this;
     };
-    Router11.prototype.handle = function handle(req, res, callback) {
+    Router12.prototype.handle = function handle(req, res, callback) {
       if (!callback) {
         throw new TypeError("argument callback is required");
       }
@@ -20572,8 +20572,8 @@ var require_router = __commonJS({
         if (++sync > 100) {
           return setImmediate(next, err);
         }
-        const path = getPathname(req);
-        if (path == null) {
+        const path2 = getPathname(req);
+        if (path2 == null) {
           return done(layerError);
         }
         let layer;
@@ -20581,7 +20581,7 @@ var require_router = __commonJS({
         let route;
         while (match !== true && idx < stack.length) {
           layer = stack[idx++];
-          match = matchLayer(layer, path);
+          match = matchLayer(layer, path2);
           route = layer.route;
           if (typeof match !== "boolean") {
             layerError = layerError || match;
@@ -20619,18 +20619,18 @@ var require_router = __commonJS({
           } else if (route) {
             layer.handleRequest(req, res, next);
           } else {
-            trimPrefix(layer, layerError, layerPath, path);
+            trimPrefix(layer, layerError, layerPath, path2);
           }
           sync = 0;
         });
       }
-      function trimPrefix(layer, layerError, layerPath, path) {
+      function trimPrefix(layer, layerError, layerPath, path2) {
         if (layerPath.length !== 0) {
-          if (layerPath !== path.substring(0, layerPath.length)) {
+          if (layerPath !== path2.substring(0, layerPath.length)) {
             next(layerError);
             return;
           }
-          const c = path[layerPath.length];
+          const c = path2[layerPath.length];
           if (c && c !== "/") {
             next(layerError);
             return;
@@ -20652,9 +20652,9 @@ var require_router = __commonJS({
         }
       }
     };
-    Router11.prototype.use = function use(handler) {
+    Router12.prototype.use = function use(handler) {
       let offset = 0;
-      let path = "/";
+      let path2 = "/";
       if (typeof handler !== "function") {
         let arg = handler;
         while (Array.isArray(arg) && arg.length !== 0) {
@@ -20662,7 +20662,7 @@ var require_router = __commonJS({
         }
         if (typeof arg !== "function") {
           offset = 1;
-          path = handler;
+          path2 = handler;
         }
       }
       const callbacks = flatten.call(slice.call(arguments, offset), Infinity);
@@ -20674,8 +20674,8 @@ var require_router = __commonJS({
         if (typeof fn !== "function") {
           throw new TypeError("argument handler must be a function");
         }
-        debug("use %o %s", path, fn.name || "<anonymous>");
-        const layer = new Layer(path, {
+        debug("use %o %s", path2, fn.name || "<anonymous>");
+        const layer = new Layer(path2, {
           sensitive: this.caseSensitive,
           strict: false,
           end: false
@@ -20685,9 +20685,9 @@ var require_router = __commonJS({
       }
       return this;
     };
-    Router11.prototype.route = function route(path) {
-      const route2 = new Route(path);
-      const layer = new Layer(path, {
+    Router12.prototype.route = function route(path2) {
+      const route2 = new Route(path2);
+      const layer = new Layer(path2, {
         sensitive: this.caseSensitive,
         strict: this.strict,
         end: true
@@ -20700,8 +20700,8 @@ var require_router = __commonJS({
       return route2;
     };
     methods.concat("all").forEach(function(method) {
-      Router11.prototype[method] = function(path) {
-        const route = this.route(path);
+      Router12.prototype[method] = function(path2) {
+        const route = this.route(path2);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
       };
@@ -20730,9 +20730,9 @@ var require_router = __commonJS({
       const fqdnIndex = url2.substring(0, pathLength).indexOf("://");
       return fqdnIndex !== -1 ? url2.substring(0, url2.indexOf("/", 3 + fqdnIndex)) : void 0;
     }
-    function matchLayer(layer, path) {
+    function matchLayer(layer, path2) {
       try {
-        return layer.match(path);
+        return layer.match(path2);
       } catch (err) {
         return err;
       }
@@ -20883,13 +20883,13 @@ var require_application = __commonJS({
     var compileTrust = require_utils3().compileTrust;
     var resolve = __require("node:path").resolve;
     var once = require_once();
-    var Router11 = require_router();
+    var Router12 = require_router();
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var app2 = exports = module.exports = {};
     var trustProxyDefaultSymbol = "@@symbol:trust_proxy_default";
     app2.init = function init() {
-      var router11 = null;
+      var router12 = null;
       this.cache = /* @__PURE__ */ Object.create(null);
       this.engines = /* @__PURE__ */ Object.create(null);
       this.settings = /* @__PURE__ */ Object.create(null);
@@ -20898,13 +20898,13 @@ var require_application = __commonJS({
         configurable: true,
         enumerable: true,
         get: function getrouter() {
-          if (router11 === null) {
-            router11 = new Router11({
+          if (router12 === null) {
+            router12 = new Router12({
               caseSensitive: this.enabled("case sensitive routing"),
               strict: this.enabled("strict routing")
             });
           }
-          return router11;
+          return router12;
         }
       });
     };
@@ -20960,7 +20960,7 @@ var require_application = __commonJS({
     };
     app2.use = function use(fn) {
       var offset = 0;
-      var path = "/";
+      var path2 = "/";
       if (typeof fn !== "function") {
         var arg = fn;
         while (Array.isArray(arg) && arg.length !== 0) {
@@ -20968,22 +20968,22 @@ var require_application = __commonJS({
         }
         if (typeof arg !== "function") {
           offset = 1;
-          path = fn;
+          path2 = fn;
         }
       }
       var fns = flatten.call(slice.call(arguments, offset), Infinity);
       if (fns.length === 0) {
         throw new TypeError("app.use() requires a middleware function");
       }
-      var router11 = this.router;
+      var router12 = this.router;
       fns.forEach(function(fn2) {
         if (!fn2 || !fn2.handle || !fn2.set) {
-          return router11.use(path, fn2);
+          return router12.use(path2, fn2);
         }
-        debug(".use app under %s", path);
-        fn2.mountpath = path;
+        debug(".use app under %s", path2);
+        fn2.mountpath = path2;
         fn2.parent = this;
-        router11.use(path, function mounted_app(req, res, next) {
+        router12.use(path2, function mounted_app(req, res, next) {
           var orig = req.app;
           fn2.handle(req, res, function(err) {
             Object.setPrototypeOf(req, orig.request);
@@ -20995,8 +20995,8 @@ var require_application = __commonJS({
       }, this);
       return this;
     };
-    app2.route = function route(path) {
-      return this.router.route(path);
+    app2.route = function route(path2) {
+      return this.router.route(path2);
     };
     app2.engine = function engine(ext, fn) {
       if (typeof fn !== "function") {
@@ -21039,7 +21039,7 @@ var require_application = __commonJS({
       }
       return this;
     };
-    app2.path = function path() {
+    app2.path = function path2() {
       return this.parent ? this.parent.path() + this.mountpath : "";
     };
     app2.enabled = function enabled(setting) {
@@ -21055,17 +21055,17 @@ var require_application = __commonJS({
       return this.set(setting, false);
     };
     methods.forEach(function(method) {
-      app2[method] = function(path) {
+      app2[method] = function(path2) {
         if (method === "get" && arguments.length === 1) {
-          return this.set(path);
+          return this.set(path2);
         }
-        var route = this.route(path);
+        var route = this.route(path2);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
       };
     });
-    app2.all = function all(path) {
-      var route = this.route(path);
+    app2.all = function all(path2) {
+      var route = this.route(path2);
       var args = slice.call(arguments, 1);
       for (var i = 0; i < methods.length; i++) {
         route[methods[i]].apply(route, args);
@@ -21975,7 +21975,7 @@ var require_request = __commonJS({
       var subdomains2 = !isIP(hostname2) ? hostname2.split(".").reverse() : [hostname2];
       return subdomains2.slice(offset);
     });
-    defineGetter(req, "path", function path() {
+    defineGetter(req, "path", function path2() {
       return parse3(this).pathname;
     });
     defineGetter(req, "host", function host() {
@@ -22387,27 +22387,27 @@ var require_send = __commonJS({
     var ms = require_ms();
     var onFinished = require_on_finished();
     var parseRange = require_range_parser();
-    var path = __require("path");
+    var path2 = __require("path");
     var statuses = require_statuses();
     var Stream = __require("stream");
-    var util2 = __require("util");
-    var extname = path.extname;
-    var join = path.join;
-    var normalize = path.normalize;
-    var resolve = path.resolve;
-    var sep = path.sep;
+    var util = __require("util");
+    var extname = path2.extname;
+    var join = path2.join;
+    var normalize = path2.normalize;
+    var resolve = path2.resolve;
+    var sep = path2.sep;
     var BYTES_RANGE_REGEXP = /^ *bytes=/;
     var MAX_MAXAGE = 60 * 60 * 24 * 365 * 1e3;
     var UP_PATH_REGEXP = /(?:^|[\\/])\.\.(?:[\\/]|$)/;
     module.exports = send;
-    function send(req, path2, options) {
-      return new SendStream(req, path2, options);
+    function send(req, path3, options) {
+      return new SendStream(req, path3, options);
     }
-    function SendStream(req, path2, options) {
+    function SendStream(req, path3, options) {
       Stream.call(this);
       var opts = options || {};
       this.options = opts;
-      this.path = path2;
+      this.path = path3;
       this.req = req;
       this._acceptRanges = opts.acceptRanges !== void 0 ? Boolean(opts.acceptRanges) : true;
       this._cacheControl = opts.cacheControl !== void 0 ? Boolean(opts.cacheControl) : true;
@@ -22425,7 +22425,7 @@ var require_send = __commonJS({
       this._maxage = !isNaN(this._maxage) ? Math.min(Math.max(0, this._maxage), MAX_MAXAGE) : 0;
       this._root = opts.root ? resolve(opts.root) : null;
     }
-    util2.inherits(SendStream, Stream);
+    util.inherits(SendStream, Stream);
     SendStream.prototype.error = function error40(status, err) {
       if (hasListeners(this, "error")) {
         return this.emit("error", createHttpError(status, err));
@@ -22521,10 +22521,10 @@ var require_send = __commonJS({
       var lastModified = this.res.getHeader("Last-Modified");
       return parseHttpDate(lastModified) <= parseHttpDate(ifRange);
     };
-    SendStream.prototype.redirect = function redirect(path2) {
+    SendStream.prototype.redirect = function redirect(path3) {
       var res = this.res;
       if (hasListeners(this, "directory")) {
-        this.emit("directory", res, path2);
+        this.emit("directory", res, path3);
         return;
       }
       if (this.hasTrailingSlash()) {
@@ -22544,38 +22544,38 @@ var require_send = __commonJS({
     SendStream.prototype.pipe = function pipe2(res) {
       var root = this._root;
       this.res = res;
-      var path2 = decode(this.path);
-      if (path2 === -1) {
+      var path3 = decode(this.path);
+      if (path3 === -1) {
         this.error(400);
         return res;
       }
-      if (~path2.indexOf("\0")) {
+      if (~path3.indexOf("\0")) {
         this.error(400);
         return res;
       }
       var parts;
       if (root !== null) {
-        if (path2) {
-          path2 = normalize("." + sep + path2);
+        if (path3) {
+          path3 = normalize("." + sep + path3);
         }
-        if (UP_PATH_REGEXP.test(path2)) {
-          debug('malicious path "%s"', path2);
+        if (UP_PATH_REGEXP.test(path3)) {
+          debug('malicious path "%s"', path3);
           this.error(403);
           return res;
         }
-        parts = path2.split(sep);
-        path2 = normalize(join(root, path2));
+        parts = path3.split(sep);
+        path3 = normalize(join(root, path3));
       } else {
-        if (UP_PATH_REGEXP.test(path2)) {
-          debug('malicious path "%s"', path2);
+        if (UP_PATH_REGEXP.test(path3)) {
+          debug('malicious path "%s"', path3);
           this.error(403);
           return res;
         }
-        parts = normalize(path2).split(sep);
-        path2 = resolve(path2);
+        parts = normalize(path3).split(sep);
+        path3 = resolve(path3);
       }
       if (containsDotFile(parts)) {
-        debug('%s dotfile "%s"', this._dotfiles, path2);
+        debug('%s dotfile "%s"', this._dotfiles, path3);
         switch (this._dotfiles) {
           case "allow":
             break;
@@ -22589,13 +22589,13 @@ var require_send = __commonJS({
         }
       }
       if (this._index.length && this.hasTrailingSlash()) {
-        this.sendIndex(path2);
+        this.sendIndex(path3);
         return res;
       }
-      this.sendFile(path2);
+      this.sendFile(path3);
       return res;
     };
-    SendStream.prototype.send = function send2(path2, stat) {
+    SendStream.prototype.send = function send2(path3, stat) {
       var len = stat.size;
       var options = this.options;
       var opts = {};
@@ -22607,9 +22607,9 @@ var require_send = __commonJS({
         this.headersAlreadySent();
         return;
       }
-      debug('pipe "%s"', path2);
-      this.setHeader(path2, stat);
-      this.type(path2);
+      debug('pipe "%s"', path3);
+      this.setHeader(path3, stat);
+      this.type(path3);
       if (this.isConditionalGET()) {
         if (this.isPreconditionFailure()) {
           this.error(412);
@@ -22658,28 +22658,28 @@ var require_send = __commonJS({
         res.end();
         return;
       }
-      this.stream(path2, opts);
+      this.stream(path3, opts);
     };
-    SendStream.prototype.sendFile = function sendFile(path2) {
+    SendStream.prototype.sendFile = function sendFile(path3) {
       var i = 0;
       var self = this;
-      debug('stat "%s"', path2);
-      fs.stat(path2, function onstat(err, stat) {
-        var pathEndsWithSep = path2[path2.length - 1] === sep;
-        if (err && err.code === "ENOENT" && !extname(path2) && !pathEndsWithSep) {
+      debug('stat "%s"', path3);
+      fs.stat(path3, function onstat(err, stat) {
+        var pathEndsWithSep = path3[path3.length - 1] === sep;
+        if (err && err.code === "ENOENT" && !extname(path3) && !pathEndsWithSep) {
           return next(err);
         }
         if (err) return self.onStatError(err);
-        if (stat.isDirectory()) return self.redirect(path2);
+        if (stat.isDirectory()) return self.redirect(path3);
         if (pathEndsWithSep) return self.error(404);
-        self.emit("file", path2, stat);
-        self.send(path2, stat);
+        self.emit("file", path3, stat);
+        self.send(path3, stat);
       });
       function next(err) {
         if (self._extensions.length <= i) {
           return err ? self.onStatError(err) : self.error(404);
         }
-        var p = path2 + "." + self._extensions[i++];
+        var p = path3 + "." + self._extensions[i++];
         debug('stat "%s"', p);
         fs.stat(p, function(err2, stat) {
           if (err2) return next(err2);
@@ -22689,7 +22689,7 @@ var require_send = __commonJS({
         });
       }
     };
-    SendStream.prototype.sendIndex = function sendIndex(path2) {
+    SendStream.prototype.sendIndex = function sendIndex(path3) {
       var i = -1;
       var self = this;
       function next(err) {
@@ -22697,7 +22697,7 @@ var require_send = __commonJS({
           if (err) return self.onStatError(err);
           return self.error(404);
         }
-        var p = join(path2, self._index[i]);
+        var p = join(path3, self._index[i]);
         debug('stat "%s"', p);
         fs.stat(p, function(err2, stat) {
           if (err2) return next(err2);
@@ -22708,10 +22708,10 @@ var require_send = __commonJS({
       }
       next();
     };
-    SendStream.prototype.stream = function stream(path2, options) {
+    SendStream.prototype.stream = function stream(path3, options) {
       var self = this;
       var res = this.res;
-      var stream2 = fs.createReadStream(path2, options);
+      var stream2 = fs.createReadStream(path3, options);
       this.emit("stream", stream2);
       stream2.pipe(res);
       function cleanup() {
@@ -22726,17 +22726,17 @@ var require_send = __commonJS({
         self.emit("end");
       });
     };
-    SendStream.prototype.type = function type(path2) {
+    SendStream.prototype.type = function type(path3) {
       var res = this.res;
       if (res.getHeader("Content-Type")) return;
-      var ext = extname(path2);
+      var ext = extname(path3);
       var type2 = mime.contentType(ext) || "application/octet-stream";
       debug("content-type %s", type2);
       res.setHeader("Content-Type", type2);
     };
-    SendStream.prototype.setHeader = function setHeader(path2, stat) {
+    SendStream.prototype.setHeader = function setHeader(path3, stat) {
       var res = this.res;
-      this.emit("headers", res, path2, stat);
+      this.emit("headers", res, path3, stat);
       if (this._acceptRanges && !res.getHeader("Accept-Ranges")) {
         debug("accept ranges");
         res.setHeader("Accept-Ranges", "bytes");
@@ -22794,9 +22794,9 @@ var require_send = __commonJS({
       }
       return err instanceof Error ? createError(status, err, { expose: false }) : createError(status, err);
     }
-    function decode(path2) {
+    function decode(path3) {
       try {
-        return decodeURIComponent(path2);
+        return decodeURIComponent(path3);
       } catch (err) {
         return -1;
       }
@@ -22940,7 +22940,7 @@ var require_response = __commonJS({
     var http = __require("node:http");
     var onFinished = require_on_finished();
     var mime = require_mime_types();
-    var path = __require("node:path");
+    var path2 = __require("node:path");
     var pathIsAbsolute = __require("node:path").isAbsolute;
     var statuses = require_statuses();
     var sign = require_cookie_signature().sign;
@@ -22949,8 +22949,8 @@ var require_response = __commonJS({
     var setCharset = require_utils3().setCharset;
     var cookie = require_cookie();
     var send = require_send();
-    var extname = path.extname;
-    var resolve = path.resolve;
+    var extname = path2.extname;
+    var resolve = path2.resolve;
     var vary = require_vary();
     var { Buffer: Buffer2 } = __require("node:buffer");
     var res = Object.create(http.ServerResponse.prototype);
@@ -23096,26 +23096,26 @@ var require_response = __commonJS({
       this.type("txt");
       return this.send(body);
     };
-    res.sendFile = function sendFile(path2, options, callback) {
+    res.sendFile = function sendFile(path3, options, callback) {
       var done = callback;
       var req = this.req;
       var res2 = this;
       var next = req.next;
       var opts = options || {};
-      if (!path2) {
+      if (!path3) {
         throw new TypeError("path argument is required to res.sendFile");
       }
-      if (typeof path2 !== "string") {
+      if (typeof path3 !== "string") {
         throw new TypeError("path must be a string to res.sendFile");
       }
       if (typeof options === "function") {
         done = options;
         opts = {};
       }
-      if (!opts.root && !pathIsAbsolute(path2)) {
+      if (!opts.root && !pathIsAbsolute(path3)) {
         throw new TypeError("path must be absolute or specify root to res.sendFile");
       }
-      var pathname = encodeURI(path2);
+      var pathname = encodeURI(path3);
       opts.etag = this.app.enabled("etag");
       var file2 = send(req, pathname, opts);
       sendfile(res2, file2, opts, function(err) {
@@ -23126,7 +23126,7 @@ var require_response = __commonJS({
         }
       });
     };
-    res.download = function download(path2, filename, options, callback) {
+    res.download = function download(path3, filename, options, callback) {
       var done = callback;
       var name = filename;
       var opts = options || null;
@@ -23143,7 +23143,7 @@ var require_response = __commonJS({
         opts = filename;
       }
       var headers = {
-        "Content-Disposition": contentDisposition(name || path2)
+        "Content-Disposition": contentDisposition(name || path3)
       };
       if (opts && opts.headers) {
         var keys = Object.keys(opts.headers);
@@ -23156,7 +23156,7 @@ var require_response = __commonJS({
       }
       opts = Object.create(opts);
       opts.headers = headers;
-      var fullPath = !opts.root ? resolve(path2) : path2;
+      var fullPath = !opts.root ? resolve(path3) : path3;
       return this.sendFile(fullPath, opts, done);
     };
     res.contentType = res.type = function contentType(type) {
@@ -23439,11 +23439,11 @@ var require_serve_static = __commonJS({
         }
         var forwardError = !fallthrough;
         var originalUrl = parseUrl.original(req);
-        var path = parseUrl(req).pathname;
-        if (path === "/" && originalUrl.pathname.substr(-1) !== "/") {
-          path = "";
+        var path2 = parseUrl(req).pathname;
+        if (path2 === "/" && originalUrl.pathname.substr(-1) !== "/") {
+          path2 = "";
         }
-        var stream = send(req, path, opts);
+        var stream = send(req, path2, opts);
         stream.on("directory", onDirectory);
         if (setHeaders) {
           stream.on("headers", setHeaders);
@@ -23510,7 +23510,7 @@ var require_express = __commonJS({
     var EventEmitter = __require("node:events").EventEmitter;
     var mixin = require_merge_descriptors();
     var proto = require_application();
-    var Router11 = require_router();
+    var Router12 = require_router();
     var req = require_request();
     var res = require_response();
     exports = module.exports = createApplication;
@@ -23532,8 +23532,8 @@ var require_express = __commonJS({
     exports.application = proto;
     exports.request = req;
     exports.response = res;
-    exports.Route = Router11.Route;
-    exports.Router = Router11;
+    exports.Route = Router12.Route;
+    exports.Router = Router12;
     exports.json = bodyParser.json;
     exports.raw = bodyParser.raw;
     exports.static = require_serve_static();
@@ -24091,8 +24091,8 @@ var require_req = __commonJS({
       if (req.originalUrl) {
         _req.url = req.originalUrl;
       } else {
-        const path = req.path;
-        _req.url = typeof path === "string" ? path : req.url ? req.url.path || req.url : void 0;
+        const path2 = req.path;
+        _req.url = typeof path2 === "string" ? path2 : req.url ? req.url.path || req.url : void 0;
       }
       if (req.query) {
         _req.query = req.query;
@@ -24257,14 +24257,14 @@ var require_redact = __commonJS({
       }
       return obj;
     }
-    function parsePath(path) {
+    function parsePath(path2) {
       const parts = [];
       let current = "";
       let inBrackets = false;
       let inQuotes = false;
       let quoteChar = "";
-      for (let i = 0; i < path.length; i++) {
-        const char2 = path[i];
+      for (let i = 0; i < path2.length; i++) {
+        const char2 = path2[i];
         if (!inBrackets && char2 === ".") {
           if (current) {
             parts.push(current);
@@ -24395,10 +24395,10 @@ var require_redact = __commonJS({
       return current;
     }
     function redactPaths(obj, paths, censor, remove = false) {
-      for (const path of paths) {
-        const parts = parsePath(path);
+      for (const path2 of paths) {
+        const parts = parsePath(path2);
         if (parts.includes("*")) {
-          redactWildcardPath(obj, parts, censor, path, remove);
+          redactWildcardPath(obj, parts, censor, path2, remove);
         } else {
           if (remove) {
             removeKey(obj, parts);
@@ -24483,8 +24483,8 @@ var require_redact = __commonJS({
           }
         } else {
           if (afterWildcard.includes("*")) {
-            const wrappedCensor = typeof censor === "function" ? (value, path) => {
-              const fullPath = [...pathArray.slice(0, pathLength), ...path];
+            const wrappedCensor = typeof censor === "function" ? (value, path2) => {
+              const fullPath = [...pathArray.slice(0, pathLength), ...path2];
               return censor(value, fullPath);
             } : censor;
             redactWildcardPath(current, afterWildcard, wrappedCensor, originalPath, remove);
@@ -24519,8 +24519,8 @@ var require_redact = __commonJS({
         return null;
       }
       const pathStructure = /* @__PURE__ */ new Map();
-      for (const path of pathsToClone) {
-        const parts = parsePath(path);
+      for (const path2 of pathsToClone) {
+        const parts = parsePath(path2);
         let current = pathStructure;
         for (let i = 0; i < parts.length; i++) {
           const part = parts[i];
@@ -24572,24 +24572,24 @@ var require_redact = __commonJS({
       }
       return cloneSelectively(obj, pathStructure);
     }
-    function validatePath(path) {
-      if (typeof path !== "string") {
+    function validatePath(path2) {
+      if (typeof path2 !== "string") {
         throw new Error("Paths must be (non-empty) strings");
       }
-      if (path === "") {
+      if (path2 === "") {
         throw new Error("Invalid redaction path ()");
       }
-      if (path.includes("..")) {
-        throw new Error(`Invalid redaction path (${path})`);
+      if (path2.includes("..")) {
+        throw new Error(`Invalid redaction path (${path2})`);
       }
-      if (path.includes(",")) {
-        throw new Error(`Invalid redaction path (${path})`);
+      if (path2.includes(",")) {
+        throw new Error(`Invalid redaction path (${path2})`);
       }
       let bracketCount = 0;
       let inQuotes = false;
       let quoteChar = "";
-      for (let i = 0; i < path.length; i++) {
-        const char2 = path[i];
+      for (let i = 0; i < path2.length; i++) {
+        const char2 = path2[i];
         if ((char2 === '"' || char2 === "'") && bracketCount > 0) {
           if (!inQuotes) {
             inQuotes = true;
@@ -24603,20 +24603,20 @@ var require_redact = __commonJS({
         } else if (char2 === "]" && !inQuotes) {
           bracketCount--;
           if (bracketCount < 0) {
-            throw new Error(`Invalid redaction path (${path})`);
+            throw new Error(`Invalid redaction path (${path2})`);
           }
         }
       }
       if (bracketCount !== 0) {
-        throw new Error(`Invalid redaction path (${path})`);
+        throw new Error(`Invalid redaction path (${path2})`);
       }
     }
     function validatePaths(paths) {
       if (!Array.isArray(paths)) {
         throw new TypeError("paths must be an array");
       }
-      for (const path of paths) {
-        validatePath(path);
+      for (const path2 of paths) {
+        validatePath(path2);
       }
     }
     function slowRedact(options = {}) {
@@ -24784,8 +24784,8 @@ var require_redaction = __commonJS({
         if (shape[k] === null) {
           o[k] = (value) => topCensor(value, [k]);
         } else {
-          const wrappedCensor = typeof censor === "function" ? (value, path) => {
-            return censor(value, [k, ...path]);
+          const wrappedCensor = typeof censor === "function" ? (value, path2) => {
+            return censor(value, [k, ...path2]);
           } : censor;
           o[k] = Redact({
             paths: shape[k],
@@ -25006,7 +25006,7 @@ var require_sonic_boom = __commonJS({
     var fs = __require("fs");
     var EventEmitter = __require("events");
     var inherits = __require("util").inherits;
-    var path = __require("path");
+    var path2 = __require("path");
     var sleep = require_atomic_sleep();
     var assert2 = __require("assert");
     var BUSY_WRITE_TIMEOUT = 100;
@@ -25060,7 +25060,7 @@ var require_sonic_boom = __commonJS({
       const mode = sonic.mode;
       if (sonic.sync) {
         try {
-          if (sonic.mkdir) fs.mkdirSync(path.dirname(file2), { recursive: true });
+          if (sonic.mkdir) fs.mkdirSync(path2.dirname(file2), { recursive: true });
           const fd = fs.openSync(file2, flags, mode);
           fileOpened(null, fd);
         } catch (err) {
@@ -25068,7 +25068,7 @@ var require_sonic_boom = __commonJS({
           throw err;
         }
       } else if (sonic.mkdir) {
-        fs.mkdir(path.dirname(file2), { recursive: true }, (err) => {
+        fs.mkdir(path2.dirname(file2), { recursive: true }, (err) => {
           if (err) return fileOpened(err);
           fs.open(file2, flags, mode, fileOpened);
         });
@@ -27928,9 +27928,9 @@ var require_pino = __commonJS({
   "../../node_modules/.pnpm/pino@9.14.0/node_modules/pino/pino.js"(exports, module) {
     function pinoBundlerAbsolutePath(p) {
       try {
-        const path = __require("path");
-        const outputDir = "/home/runner/workspace/artifacts/api-server/dist";
-        return path.resolve(outputDir, p.replace(/^\.\//, ""));
+        const path2 = __require("path");
+        const outputDir = "/opt/zenops/app/artifacts/api-server/dist";
+        return path2.resolve(outputDir, p.replace(/^\.\//, ""));
       } catch (e) {
         const f = new Function("p", "return new URL(p, import.meta.url).pathname");
         return f(p);
@@ -28555,7 +28555,7 @@ var require_ms2 = __commonJS({
 var require_debug = __commonJS({
   "../../node_modules/.pnpm/debug@2.6.9/node_modules/debug/src/debug.js"(exports, module) {
     exports = module.exports = createDebug.debug = createDebug["default"] = createDebug;
-    exports.coerce = coerce2;
+    exports.coerce = coerce;
     exports.disable = disable;
     exports.enable = enable;
     exports.enabled = enabled;
@@ -28649,7 +28649,7 @@ var require_debug = __commonJS({
       }
       return false;
     }
-    function coerce2(val) {
+    function coerce(val) {
       if (val instanceof Error) return val.stack || val.message;
       return val;
     }
@@ -28746,7 +28746,7 @@ var require_browser2 = __commonJS({
 var require_node2 = __commonJS({
   "../../node_modules/.pnpm/debug@2.6.9/node_modules/debug/src/node.js"(exports, module) {
     var tty = __require("tty");
-    var util2 = __require("util");
+    var util = __require("util");
     exports = module.exports = require_debug();
     exports.init = init;
     exports.log = log;
@@ -28771,7 +28771,7 @@ var require_node2 = __commonJS({
     }, {});
     var fd = parseInt(process.env.DEBUG_FD, 10) || 2;
     if (1 !== fd && 2 !== fd) {
-      util2.deprecate(function() {
+      util.deprecate(function() {
       }, "except for stderr(2) and stdout(1), any other usage of DEBUG_FD is deprecated. Override debug.log if you want to use a different log function (https://git.io/debug_fd)")();
     }
     var stream = 1 === fd ? process.stdout : 2 === fd ? process.stderr : createWritableStdioStream(fd);
@@ -28780,13 +28780,13 @@ var require_node2 = __commonJS({
     }
     exports.formatters.o = function(v) {
       this.inspectOpts.colors = this.useColors;
-      return util2.inspect(v, this.inspectOpts).split("\n").map(function(str) {
+      return util.inspect(v, this.inspectOpts).split("\n").map(function(str) {
         return str.trim();
       }).join(" ");
     };
     exports.formatters.O = function(v) {
       this.inspectOpts.colors = this.useColors;
-      return util2.inspect(v, this.inspectOpts);
+      return util.inspect(v, this.inspectOpts);
     };
     function formatArgs(args) {
       var name = this.namespace;
@@ -28801,7 +28801,7 @@ var require_node2 = __commonJS({
       }
     }
     function log() {
-      return stream.write(util2.format.apply(util2, arguments) + "\n");
+      return stream.write(util.format.apply(util, arguments) + "\n");
     }
     function save(namespaces) {
       if (null == namespaces) {
@@ -29255,12 +29255,12 @@ var require_store = __commonJS({
     var Cookie = require_cookie2();
     var EventEmitter = __require("events").EventEmitter;
     var Session = require_session();
-    var util2 = __require("util");
+    var util = __require("util");
     module.exports = Store;
     function Store() {
       EventEmitter.call(this);
     }
-    util2.inherits(Store, EventEmitter);
+    util.inherits(Store, EventEmitter);
     Store.prototype.regenerate = function(req, fn) {
       var self = this;
       this.destroy(req.sessionID, function(err) {
@@ -29296,7 +29296,7 @@ var require_memory = __commonJS({
   "../../node_modules/.pnpm/express-session@1.19.0/node_modules/express-session/session/memory.js"(exports, module) {
     "use strict";
     var Store = require_store();
-    var util2 = __require("util");
+    var util = __require("util");
     var defer = typeof setImmediate === "function" ? setImmediate : function(fn) {
       process.nextTick(fn.bind.apply(fn, arguments));
     };
@@ -29305,7 +29305,7 @@ var require_memory = __commonJS({
       Store.call(this);
       this.sessions = /* @__PURE__ */ Object.create(null);
     }
-    util2.inherits(MemoryStore, Store);
+    util.inherits(MemoryStore, Store);
     MemoryStore.prototype.all = function all(callback) {
       var sessionIds = Object.keys(this.sessions);
       var sessions = /* @__PURE__ */ Object.create(null);
@@ -30230,7 +30230,7 @@ var require_textParsers = __commonJS({
       }
       return value;
     };
-    var parseJsonArray = function(value) {
+    var parseJsonArray2 = function(value) {
       if (!value) {
         return null;
       }
@@ -30310,8 +30310,8 @@ var require_textParsers = __commonJS({
       register(17, parseByteA);
       register(114, JSON.parse.bind(JSON));
       register(3802, JSON.parse.bind(JSON));
-      register(199, parseJsonArray);
-      register(3807, parseJsonArray);
+      register(199, parseJsonArray2);
+      register(3807, parseJsonArray2);
       register(3907, parseStringArray);
       register(2951, parseStringArray);
       register(791, parseStringArray);
@@ -30785,8 +30785,8 @@ var require_utils4 = __commonJS({
   "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/utils.js"(exports, module) {
     "use strict";
     var defaults2 = require_defaults();
-    var util2 = __require("util");
-    var { isDate } = util2.types || util2;
+    var util = __require("util");
+    var { isDate } = util.types || util;
     function escapeElement(elementRepresentation) {
       const escaped = elementRepresentation.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
       return '"' + escaped + '"';
@@ -33185,10 +33185,10 @@ var require_split2 = __commonJS({
 var require_helper = __commonJS({
   "../../node_modules/.pnpm/pgpass@1.0.5/node_modules/pgpass/lib/helper.js"(exports, module) {
     "use strict";
-    var path = __require("path");
+    var path2 = __require("path");
     var Stream = __require("stream").Stream;
     var split = require_split2();
-    var util2 = __require("util");
+    var util = __require("util");
     var defaultPort = 5432;
     var isWin = process.platform === "win32";
     var warnStream = process.stderr;
@@ -33206,7 +33206,7 @@ var require_helper = __commonJS({
       var isWritable = warnStream instanceof Stream && true === warnStream.writable;
       if (isWritable) {
         var args = Array.prototype.slice.call(arguments).concat("\n");
-        warnStream.write(util2.format.apply(util2, args));
+        warnStream.write(util.format.apply(util, args));
       }
     }
     Object.defineProperty(module.exports, "isWin", {
@@ -33224,7 +33224,7 @@ var require_helper = __commonJS({
     };
     module.exports.getFileName = function(rawEnv) {
       var env = rawEnv || process.env;
-      var file2 = env.PGPASSFILE || (isWin ? path.join(env.APPDATA || "./", "postgresql", "pgpass.conf") : path.join(env.HOME || "./", ".pgpass"));
+      var file2 = env.PGPASSFILE || (isWin ? path2.join(env.APPDATA || "./", "postgresql", "pgpass.conf") : path2.join(env.HOME || "./", ".pgpass"));
       return file2;
     };
     module.exports.usePgPass = function(stats, fname) {
@@ -33356,7 +33356,7 @@ var require_helper = __commonJS({
 var require_lib4 = __commonJS({
   "../../node_modules/.pnpm/pgpass@1.0.5/node_modules/pgpass/lib/index.js"(exports, module) {
     "use strict";
-    var path = __require("path");
+    var path2 = __require("path");
     var fs = __require("fs");
     var helper = require_helper();
     module.exports = function(connInfo, cb) {
@@ -34422,7 +34422,7 @@ var require_query2 = __commonJS({
   "../../node_modules/.pnpm/pg@8.20.0/node_modules/pg/lib/native/query.js"(exports, module) {
     "use strict";
     var EventEmitter = __require("events").EventEmitter;
-    var util2 = __require("util");
+    var util = __require("util");
     var utils = require_utils4();
     var NativeQuery = module.exports = function(config2, values, callback) {
       EventEmitter.call(this);
@@ -34442,7 +34442,7 @@ var require_query2 = __commonJS({
         }.bind(this)
       );
     };
-    util2.inherits(NativeQuery, EventEmitter);
+    util.inherits(NativeQuery, EventEmitter);
     var errorFieldMap = {
       sqlState: "code",
       statementPosition: "position",
@@ -34570,7 +34570,7 @@ var require_client2 = __commonJS({
     }
     var TypeOverrides2 = require_type_overrides();
     var EventEmitter = __require("events").EventEmitter;
-    var util2 = __require("util");
+    var util = __require("util");
     var ConnectionParameters = require_connection_parameters();
     var NativeQuery = require_query2();
     var queryQueueLengthDeprecationNotice = nodeUtils.deprecate(
@@ -34606,7 +34606,7 @@ var require_client2 = __commonJS({
       this.namedQueries = {};
     };
     Client2.Query = NativeQuery;
-    util2.inherits(Client2, EventEmitter);
+    util.inherits(Client2, EventEmitter);
     Client2.prototype._errorAllQueries = function(err) {
       const enqueueError = (query) => {
         process.nextTick(() => {
@@ -34886,4978 +34886,21 @@ var require_lib5 = __commonJS({
 });
 
 // src/app.ts
-var import_express11 = __toESM(require_express2(), 1);
+var import_express12 = __toESM(require_express2(), 1);
 var import_cors = __toESM(require_lib3(), 1);
 var import_pino_http = __toESM(require_logger(), 1);
 var import_express_session = __toESM(require_express_session(), 1);
+import path from "path";
+import { fileURLToPath } from "url";
 
 // src/routes/index.ts
-var import_express10 = __toESM(require_express2(), 1);
+var import_express11 = __toESM(require_express2(), 1);
 
 // src/routes/health.ts
 var import_express = __toESM(require_express2(), 1);
-
-// ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v3/helpers/util.js
-var util;
-(function(util2) {
-  util2.assertEqual = (_) => {
-  };
-  function assertIs2(_arg) {
-  }
-  util2.assertIs = assertIs2;
-  function assertNever2(_x) {
-    throw new Error();
-  }
-  util2.assertNever = assertNever2;
-  util2.arrayToEnum = (items) => {
-    const obj = {};
-    for (const item of items) {
-      obj[item] = item;
-    }
-    return obj;
-  };
-  util2.getValidEnumValues = (obj) => {
-    const validKeys = util2.objectKeys(obj).filter((k) => typeof obj[obj[k]] !== "number");
-    const filtered = {};
-    for (const k of validKeys) {
-      filtered[k] = obj[k];
-    }
-    return util2.objectValues(filtered);
-  };
-  util2.objectValues = (obj) => {
-    return util2.objectKeys(obj).map(function(e) {
-      return obj[e];
-    });
-  };
-  util2.objectKeys = typeof Object.keys === "function" ? (obj) => Object.keys(obj) : (object2) => {
-    const keys = [];
-    for (const key in object2) {
-      if (Object.prototype.hasOwnProperty.call(object2, key)) {
-        keys.push(key);
-      }
-    }
-    return keys;
-  };
-  util2.find = (arr, checker) => {
-    for (const item of arr) {
-      if (checker(item))
-        return item;
-    }
-    return void 0;
-  };
-  util2.isInteger = typeof Number.isInteger === "function" ? (val) => Number.isInteger(val) : (val) => typeof val === "number" && Number.isFinite(val) && Math.floor(val) === val;
-  function joinValues2(array2, separator = " | ") {
-    return array2.map((val) => typeof val === "string" ? `'${val}'` : val).join(separator);
-  }
-  util2.joinValues = joinValues2;
-  util2.jsonStringifyReplacer = (_, value) => {
-    if (typeof value === "bigint") {
-      return value.toString();
-    }
-    return value;
-  };
-})(util || (util = {}));
-var objectUtil;
-(function(objectUtil2) {
-  objectUtil2.mergeShapes = (first, second) => {
-    return {
-      ...first,
-      ...second
-      // second overwrites first
-    };
-  };
-})(objectUtil || (objectUtil = {}));
-var ZodParsedType = util.arrayToEnum([
-  "string",
-  "nan",
-  "number",
-  "integer",
-  "float",
-  "boolean",
-  "date",
-  "bigint",
-  "symbol",
-  "function",
-  "undefined",
-  "null",
-  "array",
-  "object",
-  "unknown",
-  "promise",
-  "void",
-  "never",
-  "map",
-  "set"
-]);
-var getParsedType = (data) => {
-  const t = typeof data;
-  switch (t) {
-    case "undefined":
-      return ZodParsedType.undefined;
-    case "string":
-      return ZodParsedType.string;
-    case "number":
-      return Number.isNaN(data) ? ZodParsedType.nan : ZodParsedType.number;
-    case "boolean":
-      return ZodParsedType.boolean;
-    case "function":
-      return ZodParsedType.function;
-    case "bigint":
-      return ZodParsedType.bigint;
-    case "symbol":
-      return ZodParsedType.symbol;
-    case "object":
-      if (Array.isArray(data)) {
-        return ZodParsedType.array;
-      }
-      if (data === null) {
-        return ZodParsedType.null;
-      }
-      if (data.then && typeof data.then === "function" && data.catch && typeof data.catch === "function") {
-        return ZodParsedType.promise;
-      }
-      if (typeof Map !== "undefined" && data instanceof Map) {
-        return ZodParsedType.map;
-      }
-      if (typeof Set !== "undefined" && data instanceof Set) {
-        return ZodParsedType.set;
-      }
-      if (typeof Date !== "undefined" && data instanceof Date) {
-        return ZodParsedType.date;
-      }
-      return ZodParsedType.object;
-    default:
-      return ZodParsedType.unknown;
-  }
-};
-
-// ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v3/ZodError.js
-var ZodIssueCode = util.arrayToEnum([
-  "invalid_type",
-  "invalid_literal",
-  "custom",
-  "invalid_union",
-  "invalid_union_discriminator",
-  "invalid_enum_value",
-  "unrecognized_keys",
-  "invalid_arguments",
-  "invalid_return_type",
-  "invalid_date",
-  "invalid_string",
-  "too_small",
-  "too_big",
-  "invalid_intersection_types",
-  "not_multiple_of",
-  "not_finite"
-]);
-var ZodError = class _ZodError extends Error {
-  get errors() {
-    return this.issues;
-  }
-  constructor(issues) {
-    super();
-    this.issues = [];
-    this.addIssue = (sub) => {
-      this.issues = [...this.issues, sub];
-    };
-    this.addIssues = (subs = []) => {
-      this.issues = [...this.issues, ...subs];
-    };
-    const actualProto = new.target.prototype;
-    if (Object.setPrototypeOf) {
-      Object.setPrototypeOf(this, actualProto);
-    } else {
-      this.__proto__ = actualProto;
-    }
-    this.name = "ZodError";
-    this.issues = issues;
-  }
-  format(_mapper) {
-    const mapper = _mapper || function(issue2) {
-      return issue2.message;
-    };
-    const fieldErrors = { _errors: [] };
-    const processError = (error40) => {
-      for (const issue2 of error40.issues) {
-        if (issue2.code === "invalid_union") {
-          issue2.unionErrors.map(processError);
-        } else if (issue2.code === "invalid_return_type") {
-          processError(issue2.returnTypeError);
-        } else if (issue2.code === "invalid_arguments") {
-          processError(issue2.argumentsError);
-        } else if (issue2.path.length === 0) {
-          fieldErrors._errors.push(mapper(issue2));
-        } else {
-          let curr = fieldErrors;
-          let i = 0;
-          while (i < issue2.path.length) {
-            const el = issue2.path[i];
-            const terminal = i === issue2.path.length - 1;
-            if (!terminal) {
-              curr[el] = curr[el] || { _errors: [] };
-            } else {
-              curr[el] = curr[el] || { _errors: [] };
-              curr[el]._errors.push(mapper(issue2));
-            }
-            curr = curr[el];
-            i++;
-          }
-        }
-      }
-    };
-    processError(this);
-    return fieldErrors;
-  }
-  static assert(value) {
-    if (!(value instanceof _ZodError)) {
-      throw new Error(`Not a ZodError: ${value}`);
-    }
-  }
-  toString() {
-    return this.message;
-  }
-  get message() {
-    return JSON.stringify(this.issues, util.jsonStringifyReplacer, 2);
-  }
-  get isEmpty() {
-    return this.issues.length === 0;
-  }
-  flatten(mapper = (issue2) => issue2.message) {
-    const fieldErrors = {};
-    const formErrors = [];
-    for (const sub of this.issues) {
-      if (sub.path.length > 0) {
-        const firstEl = sub.path[0];
-        fieldErrors[firstEl] = fieldErrors[firstEl] || [];
-        fieldErrors[firstEl].push(mapper(sub));
-      } else {
-        formErrors.push(mapper(sub));
-      }
-    }
-    return { formErrors, fieldErrors };
-  }
-  get formErrors() {
-    return this.flatten();
-  }
-};
-ZodError.create = (issues) => {
-  const error40 = new ZodError(issues);
-  return error40;
-};
-
-// ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v3/locales/en.js
-var errorMap = (issue2, _ctx) => {
-  let message;
-  switch (issue2.code) {
-    case ZodIssueCode.invalid_type:
-      if (issue2.received === ZodParsedType.undefined) {
-        message = "Required";
-      } else {
-        message = `Expected ${issue2.expected}, received ${issue2.received}`;
-      }
-      break;
-    case ZodIssueCode.invalid_literal:
-      message = `Invalid literal value, expected ${JSON.stringify(issue2.expected, util.jsonStringifyReplacer)}`;
-      break;
-    case ZodIssueCode.unrecognized_keys:
-      message = `Unrecognized key(s) in object: ${util.joinValues(issue2.keys, ", ")}`;
-      break;
-    case ZodIssueCode.invalid_union:
-      message = `Invalid input`;
-      break;
-    case ZodIssueCode.invalid_union_discriminator:
-      message = `Invalid discriminator value. Expected ${util.joinValues(issue2.options)}`;
-      break;
-    case ZodIssueCode.invalid_enum_value:
-      message = `Invalid enum value. Expected ${util.joinValues(issue2.options)}, received '${issue2.received}'`;
-      break;
-    case ZodIssueCode.invalid_arguments:
-      message = `Invalid function arguments`;
-      break;
-    case ZodIssueCode.invalid_return_type:
-      message = `Invalid function return type`;
-      break;
-    case ZodIssueCode.invalid_date:
-      message = `Invalid date`;
-      break;
-    case ZodIssueCode.invalid_string:
-      if (typeof issue2.validation === "object") {
-        if ("includes" in issue2.validation) {
-          message = `Invalid input: must include "${issue2.validation.includes}"`;
-          if (typeof issue2.validation.position === "number") {
-            message = `${message} at one or more positions greater than or equal to ${issue2.validation.position}`;
-          }
-        } else if ("startsWith" in issue2.validation) {
-          message = `Invalid input: must start with "${issue2.validation.startsWith}"`;
-        } else if ("endsWith" in issue2.validation) {
-          message = `Invalid input: must end with "${issue2.validation.endsWith}"`;
-        } else {
-          util.assertNever(issue2.validation);
-        }
-      } else if (issue2.validation !== "regex") {
-        message = `Invalid ${issue2.validation}`;
-      } else {
-        message = "Invalid";
-      }
-      break;
-    case ZodIssueCode.too_small:
-      if (issue2.type === "array")
-        message = `Array must contain ${issue2.exact ? "exactly" : issue2.inclusive ? `at least` : `more than`} ${issue2.minimum} element(s)`;
-      else if (issue2.type === "string")
-        message = `String must contain ${issue2.exact ? "exactly" : issue2.inclusive ? `at least` : `over`} ${issue2.minimum} character(s)`;
-      else if (issue2.type === "number")
-        message = `Number must be ${issue2.exact ? `exactly equal to ` : issue2.inclusive ? `greater than or equal to ` : `greater than `}${issue2.minimum}`;
-      else if (issue2.type === "bigint")
-        message = `Number must be ${issue2.exact ? `exactly equal to ` : issue2.inclusive ? `greater than or equal to ` : `greater than `}${issue2.minimum}`;
-      else if (issue2.type === "date")
-        message = `Date must be ${issue2.exact ? `exactly equal to ` : issue2.inclusive ? `greater than or equal to ` : `greater than `}${new Date(Number(issue2.minimum))}`;
-      else
-        message = "Invalid input";
-      break;
-    case ZodIssueCode.too_big:
-      if (issue2.type === "array")
-        message = `Array must contain ${issue2.exact ? `exactly` : issue2.inclusive ? `at most` : `less than`} ${issue2.maximum} element(s)`;
-      else if (issue2.type === "string")
-        message = `String must contain ${issue2.exact ? `exactly` : issue2.inclusive ? `at most` : `under`} ${issue2.maximum} character(s)`;
-      else if (issue2.type === "number")
-        message = `Number must be ${issue2.exact ? `exactly` : issue2.inclusive ? `less than or equal to` : `less than`} ${issue2.maximum}`;
-      else if (issue2.type === "bigint")
-        message = `BigInt must be ${issue2.exact ? `exactly` : issue2.inclusive ? `less than or equal to` : `less than`} ${issue2.maximum}`;
-      else if (issue2.type === "date")
-        message = `Date must be ${issue2.exact ? `exactly` : issue2.inclusive ? `smaller than or equal to` : `smaller than`} ${new Date(Number(issue2.maximum))}`;
-      else
-        message = "Invalid input";
-      break;
-    case ZodIssueCode.custom:
-      message = `Invalid input`;
-      break;
-    case ZodIssueCode.invalid_intersection_types:
-      message = `Intersection results could not be merged`;
-      break;
-    case ZodIssueCode.not_multiple_of:
-      message = `Number must be a multiple of ${issue2.multipleOf}`;
-      break;
-    case ZodIssueCode.not_finite:
-      message = "Number must be finite";
-      break;
-    default:
-      message = _ctx.defaultError;
-      util.assertNever(issue2);
-  }
-  return { message };
-};
-var en_default = errorMap;
-
-// ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v3/errors.js
-var overrideErrorMap = en_default;
-function getErrorMap() {
-  return overrideErrorMap;
-}
-
-// ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v3/helpers/parseUtil.js
-var makeIssue = (params) => {
-  const { data, path, errorMaps, issueData } = params;
-  const fullPath = [...path, ...issueData.path || []];
-  const fullIssue = {
-    ...issueData,
-    path: fullPath
-  };
-  if (issueData.message !== void 0) {
-    return {
-      ...issueData,
-      path: fullPath,
-      message: issueData.message
-    };
-  }
-  let errorMessage = "";
-  const maps = errorMaps.filter((m) => !!m).slice().reverse();
-  for (const map2 of maps) {
-    errorMessage = map2(fullIssue, { data, defaultError: errorMessage }).message;
-  }
-  return {
-    ...issueData,
-    path: fullPath,
-    message: errorMessage
-  };
-};
-function addIssueToContext(ctx, issueData) {
-  const overrideMap = getErrorMap();
-  const issue2 = makeIssue({
-    issueData,
-    data: ctx.data,
-    path: ctx.path,
-    errorMaps: [
-      ctx.common.contextualErrorMap,
-      // contextual error map is first priority
-      ctx.schemaErrorMap,
-      // then schema-bound map if available
-      overrideMap,
-      // then global override map
-      overrideMap === en_default ? void 0 : en_default
-      // then global default map
-    ].filter((x) => !!x)
-  });
-  ctx.common.issues.push(issue2);
-}
-var ParseStatus = class _ParseStatus {
-  constructor() {
-    this.value = "valid";
-  }
-  dirty() {
-    if (this.value === "valid")
-      this.value = "dirty";
-  }
-  abort() {
-    if (this.value !== "aborted")
-      this.value = "aborted";
-  }
-  static mergeArray(status, results) {
-    const arrayValue = [];
-    for (const s of results) {
-      if (s.status === "aborted")
-        return INVALID;
-      if (s.status === "dirty")
-        status.dirty();
-      arrayValue.push(s.value);
-    }
-    return { status: status.value, value: arrayValue };
-  }
-  static async mergeObjectAsync(status, pairs) {
-    const syncPairs = [];
-    for (const pair of pairs) {
-      const key = await pair.key;
-      const value = await pair.value;
-      syncPairs.push({
-        key,
-        value
-      });
-    }
-    return _ParseStatus.mergeObjectSync(status, syncPairs);
-  }
-  static mergeObjectSync(status, pairs) {
-    const finalObject = {};
-    for (const pair of pairs) {
-      const { key, value } = pair;
-      if (key.status === "aborted")
-        return INVALID;
-      if (value.status === "aborted")
-        return INVALID;
-      if (key.status === "dirty")
-        status.dirty();
-      if (value.status === "dirty")
-        status.dirty();
-      if (key.value !== "__proto__" && (typeof value.value !== "undefined" || pair.alwaysSet)) {
-        finalObject[key.value] = value.value;
-      }
-    }
-    return { status: status.value, value: finalObject };
-  }
-};
-var INVALID = Object.freeze({
-  status: "aborted"
-});
-var DIRTY = (value) => ({ status: "dirty", value });
-var OK = (value) => ({ status: "valid", value });
-var isAborted = (x) => x.status === "aborted";
-var isDirty = (x) => x.status === "dirty";
-var isValid = (x) => x.status === "valid";
-var isAsync = (x) => typeof Promise !== "undefined" && x instanceof Promise;
-
-// ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v3/helpers/errorUtil.js
-var errorUtil;
-(function(errorUtil2) {
-  errorUtil2.errToObj = (message) => typeof message === "string" ? { message } : message || {};
-  errorUtil2.toString = (message) => typeof message === "string" ? message : message?.message;
-})(errorUtil || (errorUtil = {}));
-
-// ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v3/types.js
-var ParseInputLazyPath = class {
-  constructor(parent, value, path, key) {
-    this._cachedPath = [];
-    this.parent = parent;
-    this.data = value;
-    this._path = path;
-    this._key = key;
-  }
-  get path() {
-    if (!this._cachedPath.length) {
-      if (Array.isArray(this._key)) {
-        this._cachedPath.push(...this._path, ...this._key);
-      } else {
-        this._cachedPath.push(...this._path, this._key);
-      }
-    }
-    return this._cachedPath;
-  }
-};
-var handleResult = (ctx, result) => {
-  if (isValid(result)) {
-    return { success: true, data: result.value };
-  } else {
-    if (!ctx.common.issues.length) {
-      throw new Error("Validation failed but no issues detected.");
-    }
-    return {
-      success: false,
-      get error() {
-        if (this._error)
-          return this._error;
-        const error40 = new ZodError(ctx.common.issues);
-        this._error = error40;
-        return this._error;
-      }
-    };
-  }
-};
-function processCreateParams(params) {
-  if (!params)
-    return {};
-  const { errorMap: errorMap2, invalid_type_error, required_error, description } = params;
-  if (errorMap2 && (invalid_type_error || required_error)) {
-    throw new Error(`Can't use "invalid_type_error" or "required_error" in conjunction with custom error map.`);
-  }
-  if (errorMap2)
-    return { errorMap: errorMap2, description };
-  const customMap = (iss, ctx) => {
-    const { message } = params;
-    if (iss.code === "invalid_enum_value") {
-      return { message: message ?? ctx.defaultError };
-    }
-    if (typeof ctx.data === "undefined") {
-      return { message: message ?? required_error ?? ctx.defaultError };
-    }
-    if (iss.code !== "invalid_type")
-      return { message: ctx.defaultError };
-    return { message: message ?? invalid_type_error ?? ctx.defaultError };
-  };
-  return { errorMap: customMap, description };
-}
-var ZodType = class {
-  get description() {
-    return this._def.description;
-  }
-  _getType(input) {
-    return getParsedType(input.data);
-  }
-  _getOrReturnCtx(input, ctx) {
-    return ctx || {
-      common: input.parent.common,
-      data: input.data,
-      parsedType: getParsedType(input.data),
-      schemaErrorMap: this._def.errorMap,
-      path: input.path,
-      parent: input.parent
-    };
-  }
-  _processInputParams(input) {
-    return {
-      status: new ParseStatus(),
-      ctx: {
-        common: input.parent.common,
-        data: input.data,
-        parsedType: getParsedType(input.data),
-        schemaErrorMap: this._def.errorMap,
-        path: input.path,
-        parent: input.parent
-      }
-    };
-  }
-  _parseSync(input) {
-    const result = this._parse(input);
-    if (isAsync(result)) {
-      throw new Error("Synchronous parse encountered promise.");
-    }
-    return result;
-  }
-  _parseAsync(input) {
-    const result = this._parse(input);
-    return Promise.resolve(result);
-  }
-  parse(data, params) {
-    const result = this.safeParse(data, params);
-    if (result.success)
-      return result.data;
-    throw result.error;
-  }
-  safeParse(data, params) {
-    const ctx = {
-      common: {
-        issues: [],
-        async: params?.async ?? false,
-        contextualErrorMap: params?.errorMap
-      },
-      path: params?.path || [],
-      schemaErrorMap: this._def.errorMap,
-      parent: null,
-      data,
-      parsedType: getParsedType(data)
-    };
-    const result = this._parseSync({ data, path: ctx.path, parent: ctx });
-    return handleResult(ctx, result);
-  }
-  "~validate"(data) {
-    const ctx = {
-      common: {
-        issues: [],
-        async: !!this["~standard"].async
-      },
-      path: [],
-      schemaErrorMap: this._def.errorMap,
-      parent: null,
-      data,
-      parsedType: getParsedType(data)
-    };
-    if (!this["~standard"].async) {
-      try {
-        const result = this._parseSync({ data, path: [], parent: ctx });
-        return isValid(result) ? {
-          value: result.value
-        } : {
-          issues: ctx.common.issues
-        };
-      } catch (err) {
-        if (err?.message?.toLowerCase()?.includes("encountered")) {
-          this["~standard"].async = true;
-        }
-        ctx.common = {
-          issues: [],
-          async: true
-        };
-      }
-    }
-    return this._parseAsync({ data, path: [], parent: ctx }).then((result) => isValid(result) ? {
-      value: result.value
-    } : {
-      issues: ctx.common.issues
-    });
-  }
-  async parseAsync(data, params) {
-    const result = await this.safeParseAsync(data, params);
-    if (result.success)
-      return result.data;
-    throw result.error;
-  }
-  async safeParseAsync(data, params) {
-    const ctx = {
-      common: {
-        issues: [],
-        contextualErrorMap: params?.errorMap,
-        async: true
-      },
-      path: params?.path || [],
-      schemaErrorMap: this._def.errorMap,
-      parent: null,
-      data,
-      parsedType: getParsedType(data)
-    };
-    const maybeAsyncResult = this._parse({ data, path: ctx.path, parent: ctx });
-    const result = await (isAsync(maybeAsyncResult) ? maybeAsyncResult : Promise.resolve(maybeAsyncResult));
-    return handleResult(ctx, result);
-  }
-  refine(check2, message) {
-    const getIssueProperties = (val) => {
-      if (typeof message === "string" || typeof message === "undefined") {
-        return { message };
-      } else if (typeof message === "function") {
-        return message(val);
-      } else {
-        return message;
-      }
-    };
-    return this._refinement((val, ctx) => {
-      const result = check2(val);
-      const setError = () => ctx.addIssue({
-        code: ZodIssueCode.custom,
-        ...getIssueProperties(val)
-      });
-      if (typeof Promise !== "undefined" && result instanceof Promise) {
-        return result.then((data) => {
-          if (!data) {
-            setError();
-            return false;
-          } else {
-            return true;
-          }
-        });
-      }
-      if (!result) {
-        setError();
-        return false;
-      } else {
-        return true;
-      }
-    });
-  }
-  refinement(check2, refinementData) {
-    return this._refinement((val, ctx) => {
-      if (!check2(val)) {
-        ctx.addIssue(typeof refinementData === "function" ? refinementData(val, ctx) : refinementData);
-        return false;
-      } else {
-        return true;
-      }
-    });
-  }
-  _refinement(refinement) {
-    return new ZodEffects({
-      schema: this,
-      typeName: ZodFirstPartyTypeKind.ZodEffects,
-      effect: { type: "refinement", refinement }
-    });
-  }
-  superRefine(refinement) {
-    return this._refinement(refinement);
-  }
-  constructor(def) {
-    this.spa = this.safeParseAsync;
-    this._def = def;
-    this.parse = this.parse.bind(this);
-    this.safeParse = this.safeParse.bind(this);
-    this.parseAsync = this.parseAsync.bind(this);
-    this.safeParseAsync = this.safeParseAsync.bind(this);
-    this.spa = this.spa.bind(this);
-    this.refine = this.refine.bind(this);
-    this.refinement = this.refinement.bind(this);
-    this.superRefine = this.superRefine.bind(this);
-    this.optional = this.optional.bind(this);
-    this.nullable = this.nullable.bind(this);
-    this.nullish = this.nullish.bind(this);
-    this.array = this.array.bind(this);
-    this.promise = this.promise.bind(this);
-    this.or = this.or.bind(this);
-    this.and = this.and.bind(this);
-    this.transform = this.transform.bind(this);
-    this.brand = this.brand.bind(this);
-    this.default = this.default.bind(this);
-    this.catch = this.catch.bind(this);
-    this.describe = this.describe.bind(this);
-    this.pipe = this.pipe.bind(this);
-    this.readonly = this.readonly.bind(this);
-    this.isNullable = this.isNullable.bind(this);
-    this.isOptional = this.isOptional.bind(this);
-    this["~standard"] = {
-      version: 1,
-      vendor: "zod",
-      validate: (data) => this["~validate"](data)
-    };
-  }
-  optional() {
-    return ZodOptional.create(this, this._def);
-  }
-  nullable() {
-    return ZodNullable.create(this, this._def);
-  }
-  nullish() {
-    return this.nullable().optional();
-  }
-  array() {
-    return ZodArray.create(this);
-  }
-  promise() {
-    return ZodPromise.create(this, this._def);
-  }
-  or(option) {
-    return ZodUnion.create([this, option], this._def);
-  }
-  and(incoming) {
-    return ZodIntersection.create(this, incoming, this._def);
-  }
-  transform(transform2) {
-    return new ZodEffects({
-      ...processCreateParams(this._def),
-      schema: this,
-      typeName: ZodFirstPartyTypeKind.ZodEffects,
-      effect: { type: "transform", transform: transform2 }
-    });
-  }
-  default(def) {
-    const defaultValueFunc = typeof def === "function" ? def : () => def;
-    return new ZodDefault({
-      ...processCreateParams(this._def),
-      innerType: this,
-      defaultValue: defaultValueFunc,
-      typeName: ZodFirstPartyTypeKind.ZodDefault
-    });
-  }
-  brand() {
-    return new ZodBranded({
-      typeName: ZodFirstPartyTypeKind.ZodBranded,
-      type: this,
-      ...processCreateParams(this._def)
-    });
-  }
-  catch(def) {
-    const catchValueFunc = typeof def === "function" ? def : () => def;
-    return new ZodCatch({
-      ...processCreateParams(this._def),
-      innerType: this,
-      catchValue: catchValueFunc,
-      typeName: ZodFirstPartyTypeKind.ZodCatch
-    });
-  }
-  describe(description) {
-    const This = this.constructor;
-    return new This({
-      ...this._def,
-      description
-    });
-  }
-  pipe(target) {
-    return ZodPipeline.create(this, target);
-  }
-  readonly() {
-    return ZodReadonly.create(this);
-  }
-  isOptional() {
-    return this.safeParse(void 0).success;
-  }
-  isNullable() {
-    return this.safeParse(null).success;
-  }
-};
-var cuidRegex = /^c[^\s-]{8,}$/i;
-var cuid2Regex = /^[0-9a-z]+$/;
-var ulidRegex = /^[0-9A-HJKMNP-TV-Z]{26}$/i;
-var uuidRegex = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/i;
-var nanoidRegex = /^[a-z0-9_-]{21}$/i;
-var jwtRegex = /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$/;
-var durationRegex = /^[-+]?P(?!$)(?:(?:[-+]?\d+Y)|(?:[-+]?\d+[.,]\d+Y$))?(?:(?:[-+]?\d+M)|(?:[-+]?\d+[.,]\d+M$))?(?:(?:[-+]?\d+W)|(?:[-+]?\d+[.,]\d+W$))?(?:(?:[-+]?\d+D)|(?:[-+]?\d+[.,]\d+D$))?(?:T(?=[\d+-])(?:(?:[-+]?\d+H)|(?:[-+]?\d+[.,]\d+H$))?(?:(?:[-+]?\d+M)|(?:[-+]?\d+[.,]\d+M$))?(?:[-+]?\d+(?:[.,]\d+)?S)?)??$/;
-var emailRegex = /^(?!\.)(?!.*\.\.)([A-Z0-9_'+\-\.]*)[A-Z0-9_+-]@([A-Z0-9][A-Z0-9\-]*\.)+[A-Z]{2,}$/i;
-var _emojiRegex = `^(\\p{Extended_Pictographic}|\\p{Emoji_Component})+$`;
-var emojiRegex;
-var ipv4Regex = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])$/;
-var ipv4CidrRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\.){3}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])\/(3[0-2]|[12]?[0-9])$/;
-var ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
-var ipv6CidrRegex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))\/(12[0-8]|1[01][0-9]|[1-9]?[0-9])$/;
-var base64Regex = /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/;
-var base64urlRegex = /^([0-9a-zA-Z-_]{4})*(([0-9a-zA-Z-_]{2}(==)?)|([0-9a-zA-Z-_]{3}(=)?))?$/;
-var dateRegexSource = `((\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-((0[13578]|1[02])-(0[1-9]|[12]\\d|3[01])|(0[469]|11)-(0[1-9]|[12]\\d|30)|(02)-(0[1-9]|1\\d|2[0-8])))`;
-var dateRegex = new RegExp(`^${dateRegexSource}$`);
-function timeRegexSource(args) {
-  let secondsRegexSource = `[0-5]\\d`;
-  if (args.precision) {
-    secondsRegexSource = `${secondsRegexSource}\\.\\d{${args.precision}}`;
-  } else if (args.precision == null) {
-    secondsRegexSource = `${secondsRegexSource}(\\.\\d+)?`;
-  }
-  const secondsQuantifier = args.precision ? "+" : "?";
-  return `([01]\\d|2[0-3]):[0-5]\\d(:${secondsRegexSource})${secondsQuantifier}`;
-}
-function timeRegex(args) {
-  return new RegExp(`^${timeRegexSource(args)}$`);
-}
-function datetimeRegex(args) {
-  let regex = `${dateRegexSource}T${timeRegexSource(args)}`;
-  const opts = [];
-  opts.push(args.local ? `Z?` : `Z`);
-  if (args.offset)
-    opts.push(`([+-]\\d{2}:?\\d{2})`);
-  regex = `${regex}(${opts.join("|")})`;
-  return new RegExp(`^${regex}$`);
-}
-function isValidIP(ip, version3) {
-  if ((version3 === "v4" || !version3) && ipv4Regex.test(ip)) {
-    return true;
-  }
-  if ((version3 === "v6" || !version3) && ipv6Regex.test(ip)) {
-    return true;
-  }
-  return false;
-}
-function isValidJWT(jwt2, alg) {
-  if (!jwtRegex.test(jwt2))
-    return false;
-  try {
-    const [header] = jwt2.split(".");
-    if (!header)
-      return false;
-    const base643 = header.replace(/-/g, "+").replace(/_/g, "/").padEnd(header.length + (4 - header.length % 4) % 4, "=");
-    const decoded = JSON.parse(atob(base643));
-    if (typeof decoded !== "object" || decoded === null)
-      return false;
-    if ("typ" in decoded && decoded?.typ !== "JWT")
-      return false;
-    if (!decoded.alg)
-      return false;
-    if (alg && decoded.alg !== alg)
-      return false;
-    return true;
-  } catch {
-    return false;
-  }
-}
-function isValidCidr(ip, version3) {
-  if ((version3 === "v4" || !version3) && ipv4CidrRegex.test(ip)) {
-    return true;
-  }
-  if ((version3 === "v6" || !version3) && ipv6CidrRegex.test(ip)) {
-    return true;
-  }
-  return false;
-}
-var ZodString = class _ZodString2 extends ZodType {
-  _parse(input) {
-    if (this._def.coerce) {
-      input.data = String(input.data);
-    }
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.string) {
-      const ctx2 = this._getOrReturnCtx(input);
-      addIssueToContext(ctx2, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.string,
-        received: ctx2.parsedType
-      });
-      return INVALID;
-    }
-    const status = new ParseStatus();
-    let ctx = void 0;
-    for (const check2 of this._def.checks) {
-      if (check2.kind === "min") {
-        if (input.data.length < check2.value) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.too_small,
-            minimum: check2.value,
-            type: "string",
-            inclusive: true,
-            exact: false,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "max") {
-        if (input.data.length > check2.value) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.too_big,
-            maximum: check2.value,
-            type: "string",
-            inclusive: true,
-            exact: false,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "length") {
-        const tooBig = input.data.length > check2.value;
-        const tooSmall = input.data.length < check2.value;
-        if (tooBig || tooSmall) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          if (tooBig) {
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.too_big,
-              maximum: check2.value,
-              type: "string",
-              inclusive: true,
-              exact: true,
-              message: check2.message
-            });
-          } else if (tooSmall) {
-            addIssueToContext(ctx, {
-              code: ZodIssueCode.too_small,
-              minimum: check2.value,
-              type: "string",
-              inclusive: true,
-              exact: true,
-              message: check2.message
-            });
-          }
-          status.dirty();
-        }
-      } else if (check2.kind === "email") {
-        if (!emailRegex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "email",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "emoji") {
-        if (!emojiRegex) {
-          emojiRegex = new RegExp(_emojiRegex, "u");
-        }
-        if (!emojiRegex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "emoji",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "uuid") {
-        if (!uuidRegex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "uuid",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "nanoid") {
-        if (!nanoidRegex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "nanoid",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "cuid") {
-        if (!cuidRegex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "cuid",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "cuid2") {
-        if (!cuid2Regex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "cuid2",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "ulid") {
-        if (!ulidRegex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "ulid",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "url") {
-        try {
-          new URL(input.data);
-        } catch {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "url",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "regex") {
-        check2.regex.lastIndex = 0;
-        const testResult = check2.regex.test(input.data);
-        if (!testResult) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "regex",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "trim") {
-        input.data = input.data.trim();
-      } else if (check2.kind === "includes") {
-        if (!input.data.includes(check2.value, check2.position)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.invalid_string,
-            validation: { includes: check2.value, position: check2.position },
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "toLowerCase") {
-        input.data = input.data.toLowerCase();
-      } else if (check2.kind === "toUpperCase") {
-        input.data = input.data.toUpperCase();
-      } else if (check2.kind === "startsWith") {
-        if (!input.data.startsWith(check2.value)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.invalid_string,
-            validation: { startsWith: check2.value },
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "endsWith") {
-        if (!input.data.endsWith(check2.value)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.invalid_string,
-            validation: { endsWith: check2.value },
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "datetime") {
-        const regex = datetimeRegex(check2);
-        if (!regex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.invalid_string,
-            validation: "datetime",
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "date") {
-        const regex = dateRegex;
-        if (!regex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.invalid_string,
-            validation: "date",
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "time") {
-        const regex = timeRegex(check2);
-        if (!regex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.invalid_string,
-            validation: "time",
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "duration") {
-        if (!durationRegex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "duration",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "ip") {
-        if (!isValidIP(input.data, check2.version)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "ip",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "jwt") {
-        if (!isValidJWT(input.data, check2.alg)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "jwt",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "cidr") {
-        if (!isValidCidr(input.data, check2.version)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "cidr",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "base64") {
-        if (!base64Regex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "base64",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "base64url") {
-        if (!base64urlRegex.test(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            validation: "base64url",
-            code: ZodIssueCode.invalid_string,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else {
-        util.assertNever(check2);
-      }
-    }
-    return { status: status.value, value: input.data };
-  }
-  _regex(regex, validation, message) {
-    return this.refinement((data) => regex.test(data), {
-      validation,
-      code: ZodIssueCode.invalid_string,
-      ...errorUtil.errToObj(message)
-    });
-  }
-  _addCheck(check2) {
-    return new _ZodString2({
-      ...this._def,
-      checks: [...this._def.checks, check2]
-    });
-  }
-  email(message) {
-    return this._addCheck({ kind: "email", ...errorUtil.errToObj(message) });
-  }
-  url(message) {
-    return this._addCheck({ kind: "url", ...errorUtil.errToObj(message) });
-  }
-  emoji(message) {
-    return this._addCheck({ kind: "emoji", ...errorUtil.errToObj(message) });
-  }
-  uuid(message) {
-    return this._addCheck({ kind: "uuid", ...errorUtil.errToObj(message) });
-  }
-  nanoid(message) {
-    return this._addCheck({ kind: "nanoid", ...errorUtil.errToObj(message) });
-  }
-  cuid(message) {
-    return this._addCheck({ kind: "cuid", ...errorUtil.errToObj(message) });
-  }
-  cuid2(message) {
-    return this._addCheck({ kind: "cuid2", ...errorUtil.errToObj(message) });
-  }
-  ulid(message) {
-    return this._addCheck({ kind: "ulid", ...errorUtil.errToObj(message) });
-  }
-  base64(message) {
-    return this._addCheck({ kind: "base64", ...errorUtil.errToObj(message) });
-  }
-  base64url(message) {
-    return this._addCheck({
-      kind: "base64url",
-      ...errorUtil.errToObj(message)
-    });
-  }
-  jwt(options) {
-    return this._addCheck({ kind: "jwt", ...errorUtil.errToObj(options) });
-  }
-  ip(options) {
-    return this._addCheck({ kind: "ip", ...errorUtil.errToObj(options) });
-  }
-  cidr(options) {
-    return this._addCheck({ kind: "cidr", ...errorUtil.errToObj(options) });
-  }
-  datetime(options) {
-    if (typeof options === "string") {
-      return this._addCheck({
-        kind: "datetime",
-        precision: null,
-        offset: false,
-        local: false,
-        message: options
-      });
-    }
-    return this._addCheck({
-      kind: "datetime",
-      precision: typeof options?.precision === "undefined" ? null : options?.precision,
-      offset: options?.offset ?? false,
-      local: options?.local ?? false,
-      ...errorUtil.errToObj(options?.message)
-    });
-  }
-  date(message) {
-    return this._addCheck({ kind: "date", message });
-  }
-  time(options) {
-    if (typeof options === "string") {
-      return this._addCheck({
-        kind: "time",
-        precision: null,
-        message: options
-      });
-    }
-    return this._addCheck({
-      kind: "time",
-      precision: typeof options?.precision === "undefined" ? null : options?.precision,
-      ...errorUtil.errToObj(options?.message)
-    });
-  }
-  duration(message) {
-    return this._addCheck({ kind: "duration", ...errorUtil.errToObj(message) });
-  }
-  regex(regex, message) {
-    return this._addCheck({
-      kind: "regex",
-      regex,
-      ...errorUtil.errToObj(message)
-    });
-  }
-  includes(value, options) {
-    return this._addCheck({
-      kind: "includes",
-      value,
-      position: options?.position,
-      ...errorUtil.errToObj(options?.message)
-    });
-  }
-  startsWith(value, message) {
-    return this._addCheck({
-      kind: "startsWith",
-      value,
-      ...errorUtil.errToObj(message)
-    });
-  }
-  endsWith(value, message) {
-    return this._addCheck({
-      kind: "endsWith",
-      value,
-      ...errorUtil.errToObj(message)
-    });
-  }
-  min(minLength, message) {
-    return this._addCheck({
-      kind: "min",
-      value: minLength,
-      ...errorUtil.errToObj(message)
-    });
-  }
-  max(maxLength, message) {
-    return this._addCheck({
-      kind: "max",
-      value: maxLength,
-      ...errorUtil.errToObj(message)
-    });
-  }
-  length(len, message) {
-    return this._addCheck({
-      kind: "length",
-      value: len,
-      ...errorUtil.errToObj(message)
-    });
-  }
-  /**
-   * Equivalent to `.min(1)`
-   */
-  nonempty(message) {
-    return this.min(1, errorUtil.errToObj(message));
-  }
-  trim() {
-    return new _ZodString2({
-      ...this._def,
-      checks: [...this._def.checks, { kind: "trim" }]
-    });
-  }
-  toLowerCase() {
-    return new _ZodString2({
-      ...this._def,
-      checks: [...this._def.checks, { kind: "toLowerCase" }]
-    });
-  }
-  toUpperCase() {
-    return new _ZodString2({
-      ...this._def,
-      checks: [...this._def.checks, { kind: "toUpperCase" }]
-    });
-  }
-  get isDatetime() {
-    return !!this._def.checks.find((ch) => ch.kind === "datetime");
-  }
-  get isDate() {
-    return !!this._def.checks.find((ch) => ch.kind === "date");
-  }
-  get isTime() {
-    return !!this._def.checks.find((ch) => ch.kind === "time");
-  }
-  get isDuration() {
-    return !!this._def.checks.find((ch) => ch.kind === "duration");
-  }
-  get isEmail() {
-    return !!this._def.checks.find((ch) => ch.kind === "email");
-  }
-  get isURL() {
-    return !!this._def.checks.find((ch) => ch.kind === "url");
-  }
-  get isEmoji() {
-    return !!this._def.checks.find((ch) => ch.kind === "emoji");
-  }
-  get isUUID() {
-    return !!this._def.checks.find((ch) => ch.kind === "uuid");
-  }
-  get isNANOID() {
-    return !!this._def.checks.find((ch) => ch.kind === "nanoid");
-  }
-  get isCUID() {
-    return !!this._def.checks.find((ch) => ch.kind === "cuid");
-  }
-  get isCUID2() {
-    return !!this._def.checks.find((ch) => ch.kind === "cuid2");
-  }
-  get isULID() {
-    return !!this._def.checks.find((ch) => ch.kind === "ulid");
-  }
-  get isIP() {
-    return !!this._def.checks.find((ch) => ch.kind === "ip");
-  }
-  get isCIDR() {
-    return !!this._def.checks.find((ch) => ch.kind === "cidr");
-  }
-  get isBase64() {
-    return !!this._def.checks.find((ch) => ch.kind === "base64");
-  }
-  get isBase64url() {
-    return !!this._def.checks.find((ch) => ch.kind === "base64url");
-  }
-  get minLength() {
-    let min = null;
-    for (const ch of this._def.checks) {
-      if (ch.kind === "min") {
-        if (min === null || ch.value > min)
-          min = ch.value;
-      }
-    }
-    return min;
-  }
-  get maxLength() {
-    let max = null;
-    for (const ch of this._def.checks) {
-      if (ch.kind === "max") {
-        if (max === null || ch.value < max)
-          max = ch.value;
-      }
-    }
-    return max;
-  }
-};
-ZodString.create = (params) => {
-  return new ZodString({
-    checks: [],
-    typeName: ZodFirstPartyTypeKind.ZodString,
-    coerce: params?.coerce ?? false,
-    ...processCreateParams(params)
-  });
-};
-function floatSafeRemainder(val, step) {
-  const valDecCount = (val.toString().split(".")[1] || "").length;
-  const stepDecCount = (step.toString().split(".")[1] || "").length;
-  const decCount = valDecCount > stepDecCount ? valDecCount : stepDecCount;
-  const valInt = Number.parseInt(val.toFixed(decCount).replace(".", ""));
-  const stepInt = Number.parseInt(step.toFixed(decCount).replace(".", ""));
-  return valInt % stepInt / 10 ** decCount;
-}
-var ZodNumber = class _ZodNumber extends ZodType {
-  constructor() {
-    super(...arguments);
-    this.min = this.gte;
-    this.max = this.lte;
-    this.step = this.multipleOf;
-  }
-  _parse(input) {
-    if (this._def.coerce) {
-      input.data = Number(input.data);
-    }
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.number) {
-      const ctx2 = this._getOrReturnCtx(input);
-      addIssueToContext(ctx2, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.number,
-        received: ctx2.parsedType
-      });
-      return INVALID;
-    }
-    let ctx = void 0;
-    const status = new ParseStatus();
-    for (const check2 of this._def.checks) {
-      if (check2.kind === "int") {
-        if (!util.isInteger(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.invalid_type,
-            expected: "integer",
-            received: "float",
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "min") {
-        const tooSmall = check2.inclusive ? input.data < check2.value : input.data <= check2.value;
-        if (tooSmall) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.too_small,
-            minimum: check2.value,
-            type: "number",
-            inclusive: check2.inclusive,
-            exact: false,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "max") {
-        const tooBig = check2.inclusive ? input.data > check2.value : input.data >= check2.value;
-        if (tooBig) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.too_big,
-            maximum: check2.value,
-            type: "number",
-            inclusive: check2.inclusive,
-            exact: false,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "multipleOf") {
-        if (floatSafeRemainder(input.data, check2.value) !== 0) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.not_multiple_of,
-            multipleOf: check2.value,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "finite") {
-        if (!Number.isFinite(input.data)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.not_finite,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else {
-        util.assertNever(check2);
-      }
-    }
-    return { status: status.value, value: input.data };
-  }
-  gte(value, message) {
-    return this.setLimit("min", value, true, errorUtil.toString(message));
-  }
-  gt(value, message) {
-    return this.setLimit("min", value, false, errorUtil.toString(message));
-  }
-  lte(value, message) {
-    return this.setLimit("max", value, true, errorUtil.toString(message));
-  }
-  lt(value, message) {
-    return this.setLimit("max", value, false, errorUtil.toString(message));
-  }
-  setLimit(kind, value, inclusive, message) {
-    return new _ZodNumber({
-      ...this._def,
-      checks: [
-        ...this._def.checks,
-        {
-          kind,
-          value,
-          inclusive,
-          message: errorUtil.toString(message)
-        }
-      ]
-    });
-  }
-  _addCheck(check2) {
-    return new _ZodNumber({
-      ...this._def,
-      checks: [...this._def.checks, check2]
-    });
-  }
-  int(message) {
-    return this._addCheck({
-      kind: "int",
-      message: errorUtil.toString(message)
-    });
-  }
-  positive(message) {
-    return this._addCheck({
-      kind: "min",
-      value: 0,
-      inclusive: false,
-      message: errorUtil.toString(message)
-    });
-  }
-  negative(message) {
-    return this._addCheck({
-      kind: "max",
-      value: 0,
-      inclusive: false,
-      message: errorUtil.toString(message)
-    });
-  }
-  nonpositive(message) {
-    return this._addCheck({
-      kind: "max",
-      value: 0,
-      inclusive: true,
-      message: errorUtil.toString(message)
-    });
-  }
-  nonnegative(message) {
-    return this._addCheck({
-      kind: "min",
-      value: 0,
-      inclusive: true,
-      message: errorUtil.toString(message)
-    });
-  }
-  multipleOf(value, message) {
-    return this._addCheck({
-      kind: "multipleOf",
-      value,
-      message: errorUtil.toString(message)
-    });
-  }
-  finite(message) {
-    return this._addCheck({
-      kind: "finite",
-      message: errorUtil.toString(message)
-    });
-  }
-  safe(message) {
-    return this._addCheck({
-      kind: "min",
-      inclusive: true,
-      value: Number.MIN_SAFE_INTEGER,
-      message: errorUtil.toString(message)
-    })._addCheck({
-      kind: "max",
-      inclusive: true,
-      value: Number.MAX_SAFE_INTEGER,
-      message: errorUtil.toString(message)
-    });
-  }
-  get minValue() {
-    let min = null;
-    for (const ch of this._def.checks) {
-      if (ch.kind === "min") {
-        if (min === null || ch.value > min)
-          min = ch.value;
-      }
-    }
-    return min;
-  }
-  get maxValue() {
-    let max = null;
-    for (const ch of this._def.checks) {
-      if (ch.kind === "max") {
-        if (max === null || ch.value < max)
-          max = ch.value;
-      }
-    }
-    return max;
-  }
-  get isInt() {
-    return !!this._def.checks.find((ch) => ch.kind === "int" || ch.kind === "multipleOf" && util.isInteger(ch.value));
-  }
-  get isFinite() {
-    let max = null;
-    let min = null;
-    for (const ch of this._def.checks) {
-      if (ch.kind === "finite" || ch.kind === "int" || ch.kind === "multipleOf") {
-        return true;
-      } else if (ch.kind === "min") {
-        if (min === null || ch.value > min)
-          min = ch.value;
-      } else if (ch.kind === "max") {
-        if (max === null || ch.value < max)
-          max = ch.value;
-      }
-    }
-    return Number.isFinite(min) && Number.isFinite(max);
-  }
-};
-ZodNumber.create = (params) => {
-  return new ZodNumber({
-    checks: [],
-    typeName: ZodFirstPartyTypeKind.ZodNumber,
-    coerce: params?.coerce || false,
-    ...processCreateParams(params)
-  });
-};
-var ZodBigInt = class _ZodBigInt extends ZodType {
-  constructor() {
-    super(...arguments);
-    this.min = this.gte;
-    this.max = this.lte;
-  }
-  _parse(input) {
-    if (this._def.coerce) {
-      try {
-        input.data = BigInt(input.data);
-      } catch {
-        return this._getInvalidInput(input);
-      }
-    }
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.bigint) {
-      return this._getInvalidInput(input);
-    }
-    let ctx = void 0;
-    const status = new ParseStatus();
-    for (const check2 of this._def.checks) {
-      if (check2.kind === "min") {
-        const tooSmall = check2.inclusive ? input.data < check2.value : input.data <= check2.value;
-        if (tooSmall) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.too_small,
-            type: "bigint",
-            minimum: check2.value,
-            inclusive: check2.inclusive,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "max") {
-        const tooBig = check2.inclusive ? input.data > check2.value : input.data >= check2.value;
-        if (tooBig) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.too_big,
-            type: "bigint",
-            maximum: check2.value,
-            inclusive: check2.inclusive,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "multipleOf") {
-        if (input.data % check2.value !== BigInt(0)) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.not_multiple_of,
-            multipleOf: check2.value,
-            message: check2.message
-          });
-          status.dirty();
-        }
-      } else {
-        util.assertNever(check2);
-      }
-    }
-    return { status: status.value, value: input.data };
-  }
-  _getInvalidInput(input) {
-    const ctx = this._getOrReturnCtx(input);
-    addIssueToContext(ctx, {
-      code: ZodIssueCode.invalid_type,
-      expected: ZodParsedType.bigint,
-      received: ctx.parsedType
-    });
-    return INVALID;
-  }
-  gte(value, message) {
-    return this.setLimit("min", value, true, errorUtil.toString(message));
-  }
-  gt(value, message) {
-    return this.setLimit("min", value, false, errorUtil.toString(message));
-  }
-  lte(value, message) {
-    return this.setLimit("max", value, true, errorUtil.toString(message));
-  }
-  lt(value, message) {
-    return this.setLimit("max", value, false, errorUtil.toString(message));
-  }
-  setLimit(kind, value, inclusive, message) {
-    return new _ZodBigInt({
-      ...this._def,
-      checks: [
-        ...this._def.checks,
-        {
-          kind,
-          value,
-          inclusive,
-          message: errorUtil.toString(message)
-        }
-      ]
-    });
-  }
-  _addCheck(check2) {
-    return new _ZodBigInt({
-      ...this._def,
-      checks: [...this._def.checks, check2]
-    });
-  }
-  positive(message) {
-    return this._addCheck({
-      kind: "min",
-      value: BigInt(0),
-      inclusive: false,
-      message: errorUtil.toString(message)
-    });
-  }
-  negative(message) {
-    return this._addCheck({
-      kind: "max",
-      value: BigInt(0),
-      inclusive: false,
-      message: errorUtil.toString(message)
-    });
-  }
-  nonpositive(message) {
-    return this._addCheck({
-      kind: "max",
-      value: BigInt(0),
-      inclusive: true,
-      message: errorUtil.toString(message)
-    });
-  }
-  nonnegative(message) {
-    return this._addCheck({
-      kind: "min",
-      value: BigInt(0),
-      inclusive: true,
-      message: errorUtil.toString(message)
-    });
-  }
-  multipleOf(value, message) {
-    return this._addCheck({
-      kind: "multipleOf",
-      value,
-      message: errorUtil.toString(message)
-    });
-  }
-  get minValue() {
-    let min = null;
-    for (const ch of this._def.checks) {
-      if (ch.kind === "min") {
-        if (min === null || ch.value > min)
-          min = ch.value;
-      }
-    }
-    return min;
-  }
-  get maxValue() {
-    let max = null;
-    for (const ch of this._def.checks) {
-      if (ch.kind === "max") {
-        if (max === null || ch.value < max)
-          max = ch.value;
-      }
-    }
-    return max;
-  }
-};
-ZodBigInt.create = (params) => {
-  return new ZodBigInt({
-    checks: [],
-    typeName: ZodFirstPartyTypeKind.ZodBigInt,
-    coerce: params?.coerce ?? false,
-    ...processCreateParams(params)
-  });
-};
-var ZodBoolean = class extends ZodType {
-  _parse(input) {
-    if (this._def.coerce) {
-      input.data = Boolean(input.data);
-    }
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.boolean) {
-      const ctx = this._getOrReturnCtx(input);
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.boolean,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    return OK(input.data);
-  }
-};
-ZodBoolean.create = (params) => {
-  return new ZodBoolean({
-    typeName: ZodFirstPartyTypeKind.ZodBoolean,
-    coerce: params?.coerce || false,
-    ...processCreateParams(params)
-  });
-};
-var ZodDate = class _ZodDate extends ZodType {
-  _parse(input) {
-    if (this._def.coerce) {
-      input.data = new Date(input.data);
-    }
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.date) {
-      const ctx2 = this._getOrReturnCtx(input);
-      addIssueToContext(ctx2, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.date,
-        received: ctx2.parsedType
-      });
-      return INVALID;
-    }
-    if (Number.isNaN(input.data.getTime())) {
-      const ctx2 = this._getOrReturnCtx(input);
-      addIssueToContext(ctx2, {
-        code: ZodIssueCode.invalid_date
-      });
-      return INVALID;
-    }
-    const status = new ParseStatus();
-    let ctx = void 0;
-    for (const check2 of this._def.checks) {
-      if (check2.kind === "min") {
-        if (input.data.getTime() < check2.value) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.too_small,
-            message: check2.message,
-            inclusive: true,
-            exact: false,
-            minimum: check2.value,
-            type: "date"
-          });
-          status.dirty();
-        }
-      } else if (check2.kind === "max") {
-        if (input.data.getTime() > check2.value) {
-          ctx = this._getOrReturnCtx(input, ctx);
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.too_big,
-            message: check2.message,
-            inclusive: true,
-            exact: false,
-            maximum: check2.value,
-            type: "date"
-          });
-          status.dirty();
-        }
-      } else {
-        util.assertNever(check2);
-      }
-    }
-    return {
-      status: status.value,
-      value: new Date(input.data.getTime())
-    };
-  }
-  _addCheck(check2) {
-    return new _ZodDate({
-      ...this._def,
-      checks: [...this._def.checks, check2]
-    });
-  }
-  min(minDate, message) {
-    return this._addCheck({
-      kind: "min",
-      value: minDate.getTime(),
-      message: errorUtil.toString(message)
-    });
-  }
-  max(maxDate, message) {
-    return this._addCheck({
-      kind: "max",
-      value: maxDate.getTime(),
-      message: errorUtil.toString(message)
-    });
-  }
-  get minDate() {
-    let min = null;
-    for (const ch of this._def.checks) {
-      if (ch.kind === "min") {
-        if (min === null || ch.value > min)
-          min = ch.value;
-      }
-    }
-    return min != null ? new Date(min) : null;
-  }
-  get maxDate() {
-    let max = null;
-    for (const ch of this._def.checks) {
-      if (ch.kind === "max") {
-        if (max === null || ch.value < max)
-          max = ch.value;
-      }
-    }
-    return max != null ? new Date(max) : null;
-  }
-};
-ZodDate.create = (params) => {
-  return new ZodDate({
-    checks: [],
-    coerce: params?.coerce || false,
-    typeName: ZodFirstPartyTypeKind.ZodDate,
-    ...processCreateParams(params)
-  });
-};
-var ZodSymbol = class extends ZodType {
-  _parse(input) {
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.symbol) {
-      const ctx = this._getOrReturnCtx(input);
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.symbol,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    return OK(input.data);
-  }
-};
-ZodSymbol.create = (params) => {
-  return new ZodSymbol({
-    typeName: ZodFirstPartyTypeKind.ZodSymbol,
-    ...processCreateParams(params)
-  });
-};
-var ZodUndefined = class extends ZodType {
-  _parse(input) {
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.undefined) {
-      const ctx = this._getOrReturnCtx(input);
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.undefined,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    return OK(input.data);
-  }
-};
-ZodUndefined.create = (params) => {
-  return new ZodUndefined({
-    typeName: ZodFirstPartyTypeKind.ZodUndefined,
-    ...processCreateParams(params)
-  });
-};
-var ZodNull = class extends ZodType {
-  _parse(input) {
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.null) {
-      const ctx = this._getOrReturnCtx(input);
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.null,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    return OK(input.data);
-  }
-};
-ZodNull.create = (params) => {
-  return new ZodNull({
-    typeName: ZodFirstPartyTypeKind.ZodNull,
-    ...processCreateParams(params)
-  });
-};
-var ZodAny = class extends ZodType {
-  constructor() {
-    super(...arguments);
-    this._any = true;
-  }
-  _parse(input) {
-    return OK(input.data);
-  }
-};
-ZodAny.create = (params) => {
-  return new ZodAny({
-    typeName: ZodFirstPartyTypeKind.ZodAny,
-    ...processCreateParams(params)
-  });
-};
-var ZodUnknown = class extends ZodType {
-  constructor() {
-    super(...arguments);
-    this._unknown = true;
-  }
-  _parse(input) {
-    return OK(input.data);
-  }
-};
-ZodUnknown.create = (params) => {
-  return new ZodUnknown({
-    typeName: ZodFirstPartyTypeKind.ZodUnknown,
-    ...processCreateParams(params)
-  });
-};
-var ZodNever = class extends ZodType {
-  _parse(input) {
-    const ctx = this._getOrReturnCtx(input);
-    addIssueToContext(ctx, {
-      code: ZodIssueCode.invalid_type,
-      expected: ZodParsedType.never,
-      received: ctx.parsedType
-    });
-    return INVALID;
-  }
-};
-ZodNever.create = (params) => {
-  return new ZodNever({
-    typeName: ZodFirstPartyTypeKind.ZodNever,
-    ...processCreateParams(params)
-  });
-};
-var ZodVoid = class extends ZodType {
-  _parse(input) {
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.undefined) {
-      const ctx = this._getOrReturnCtx(input);
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.void,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    return OK(input.data);
-  }
-};
-ZodVoid.create = (params) => {
-  return new ZodVoid({
-    typeName: ZodFirstPartyTypeKind.ZodVoid,
-    ...processCreateParams(params)
-  });
-};
-var ZodArray = class _ZodArray extends ZodType {
-  _parse(input) {
-    const { ctx, status } = this._processInputParams(input);
-    const def = this._def;
-    if (ctx.parsedType !== ZodParsedType.array) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.array,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    if (def.exactLength !== null) {
-      const tooBig = ctx.data.length > def.exactLength.value;
-      const tooSmall = ctx.data.length < def.exactLength.value;
-      if (tooBig || tooSmall) {
-        addIssueToContext(ctx, {
-          code: tooBig ? ZodIssueCode.too_big : ZodIssueCode.too_small,
-          minimum: tooSmall ? def.exactLength.value : void 0,
-          maximum: tooBig ? def.exactLength.value : void 0,
-          type: "array",
-          inclusive: true,
-          exact: true,
-          message: def.exactLength.message
-        });
-        status.dirty();
-      }
-    }
-    if (def.minLength !== null) {
-      if (ctx.data.length < def.minLength.value) {
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.too_small,
-          minimum: def.minLength.value,
-          type: "array",
-          inclusive: true,
-          exact: false,
-          message: def.minLength.message
-        });
-        status.dirty();
-      }
-    }
-    if (def.maxLength !== null) {
-      if (ctx.data.length > def.maxLength.value) {
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.too_big,
-          maximum: def.maxLength.value,
-          type: "array",
-          inclusive: true,
-          exact: false,
-          message: def.maxLength.message
-        });
-        status.dirty();
-      }
-    }
-    if (ctx.common.async) {
-      return Promise.all([...ctx.data].map((item, i) => {
-        return def.type._parseAsync(new ParseInputLazyPath(ctx, item, ctx.path, i));
-      })).then((result2) => {
-        return ParseStatus.mergeArray(status, result2);
-      });
-    }
-    const result = [...ctx.data].map((item, i) => {
-      return def.type._parseSync(new ParseInputLazyPath(ctx, item, ctx.path, i));
-    });
-    return ParseStatus.mergeArray(status, result);
-  }
-  get element() {
-    return this._def.type;
-  }
-  min(minLength, message) {
-    return new _ZodArray({
-      ...this._def,
-      minLength: { value: minLength, message: errorUtil.toString(message) }
-    });
-  }
-  max(maxLength, message) {
-    return new _ZodArray({
-      ...this._def,
-      maxLength: { value: maxLength, message: errorUtil.toString(message) }
-    });
-  }
-  length(len, message) {
-    return new _ZodArray({
-      ...this._def,
-      exactLength: { value: len, message: errorUtil.toString(message) }
-    });
-  }
-  nonempty(message) {
-    return this.min(1, message);
-  }
-};
-ZodArray.create = (schema, params) => {
-  return new ZodArray({
-    type: schema,
-    minLength: null,
-    maxLength: null,
-    exactLength: null,
-    typeName: ZodFirstPartyTypeKind.ZodArray,
-    ...processCreateParams(params)
-  });
-};
-function deepPartialify(schema) {
-  if (schema instanceof ZodObject) {
-    const newShape = {};
-    for (const key in schema.shape) {
-      const fieldSchema = schema.shape[key];
-      newShape[key] = ZodOptional.create(deepPartialify(fieldSchema));
-    }
-    return new ZodObject({
-      ...schema._def,
-      shape: () => newShape
-    });
-  } else if (schema instanceof ZodArray) {
-    return new ZodArray({
-      ...schema._def,
-      type: deepPartialify(schema.element)
-    });
-  } else if (schema instanceof ZodOptional) {
-    return ZodOptional.create(deepPartialify(schema.unwrap()));
-  } else if (schema instanceof ZodNullable) {
-    return ZodNullable.create(deepPartialify(schema.unwrap()));
-  } else if (schema instanceof ZodTuple) {
-    return ZodTuple.create(schema.items.map((item) => deepPartialify(item)));
-  } else {
-    return schema;
-  }
-}
-var ZodObject = class _ZodObject extends ZodType {
-  constructor() {
-    super(...arguments);
-    this._cached = null;
-    this.nonstrict = this.passthrough;
-    this.augment = this.extend;
-  }
-  _getCached() {
-    if (this._cached !== null)
-      return this._cached;
-    const shape = this._def.shape();
-    const keys = util.objectKeys(shape);
-    this._cached = { shape, keys };
-    return this._cached;
-  }
-  _parse(input) {
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.object) {
-      const ctx2 = this._getOrReturnCtx(input);
-      addIssueToContext(ctx2, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.object,
-        received: ctx2.parsedType
-      });
-      return INVALID;
-    }
-    const { status, ctx } = this._processInputParams(input);
-    const { shape, keys: shapeKeys } = this._getCached();
-    const extraKeys = [];
-    if (!(this._def.catchall instanceof ZodNever && this._def.unknownKeys === "strip")) {
-      for (const key in ctx.data) {
-        if (!shapeKeys.includes(key)) {
-          extraKeys.push(key);
-        }
-      }
-    }
-    const pairs = [];
-    for (const key of shapeKeys) {
-      const keyValidator = shape[key];
-      const value = ctx.data[key];
-      pairs.push({
-        key: { status: "valid", value: key },
-        value: keyValidator._parse(new ParseInputLazyPath(ctx, value, ctx.path, key)),
-        alwaysSet: key in ctx.data
-      });
-    }
-    if (this._def.catchall instanceof ZodNever) {
-      const unknownKeys = this._def.unknownKeys;
-      if (unknownKeys === "passthrough") {
-        for (const key of extraKeys) {
-          pairs.push({
-            key: { status: "valid", value: key },
-            value: { status: "valid", value: ctx.data[key] }
-          });
-        }
-      } else if (unknownKeys === "strict") {
-        if (extraKeys.length > 0) {
-          addIssueToContext(ctx, {
-            code: ZodIssueCode.unrecognized_keys,
-            keys: extraKeys
-          });
-          status.dirty();
-        }
-      } else if (unknownKeys === "strip") {
-      } else {
-        throw new Error(`Internal ZodObject error: invalid unknownKeys value.`);
-      }
-    } else {
-      const catchall = this._def.catchall;
-      for (const key of extraKeys) {
-        const value = ctx.data[key];
-        pairs.push({
-          key: { status: "valid", value: key },
-          value: catchall._parse(
-            new ParseInputLazyPath(ctx, value, ctx.path, key)
-            //, ctx.child(key), value, getParsedType(value)
-          ),
-          alwaysSet: key in ctx.data
-        });
-      }
-    }
-    if (ctx.common.async) {
-      return Promise.resolve().then(async () => {
-        const syncPairs = [];
-        for (const pair of pairs) {
-          const key = await pair.key;
-          const value = await pair.value;
-          syncPairs.push({
-            key,
-            value,
-            alwaysSet: pair.alwaysSet
-          });
-        }
-        return syncPairs;
-      }).then((syncPairs) => {
-        return ParseStatus.mergeObjectSync(status, syncPairs);
-      });
-    } else {
-      return ParseStatus.mergeObjectSync(status, pairs);
-    }
-  }
-  get shape() {
-    return this._def.shape();
-  }
-  strict(message) {
-    errorUtil.errToObj;
-    return new _ZodObject({
-      ...this._def,
-      unknownKeys: "strict",
-      ...message !== void 0 ? {
-        errorMap: (issue2, ctx) => {
-          const defaultError = this._def.errorMap?.(issue2, ctx).message ?? ctx.defaultError;
-          if (issue2.code === "unrecognized_keys")
-            return {
-              message: errorUtil.errToObj(message).message ?? defaultError
-            };
-          return {
-            message: defaultError
-          };
-        }
-      } : {}
-    });
-  }
-  strip() {
-    return new _ZodObject({
-      ...this._def,
-      unknownKeys: "strip"
-    });
-  }
-  passthrough() {
-    return new _ZodObject({
-      ...this._def,
-      unknownKeys: "passthrough"
-    });
-  }
-  // const AugmentFactory =
-  //   <Def extends ZodObjectDef>(def: Def) =>
-  //   <Augmentation extends ZodRawShape>(
-  //     augmentation: Augmentation
-  //   ): ZodObject<
-  //     extendShape<ReturnType<Def["shape"]>, Augmentation>,
-  //     Def["unknownKeys"],
-  //     Def["catchall"]
-  //   > => {
-  //     return new ZodObject({
-  //       ...def,
-  //       shape: () => ({
-  //         ...def.shape(),
-  //         ...augmentation,
-  //       }),
-  //     }) as any;
-  //   };
-  extend(augmentation) {
-    return new _ZodObject({
-      ...this._def,
-      shape: () => ({
-        ...this._def.shape(),
-        ...augmentation
-      })
-    });
-  }
-  /**
-   * Prior to zod@1.0.12 there was a bug in the
-   * inferred type of merged objects. Please
-   * upgrade if you are experiencing issues.
-   */
-  merge(merging) {
-    const merged = new _ZodObject({
-      unknownKeys: merging._def.unknownKeys,
-      catchall: merging._def.catchall,
-      shape: () => ({
-        ...this._def.shape(),
-        ...merging._def.shape()
-      }),
-      typeName: ZodFirstPartyTypeKind.ZodObject
-    });
-    return merged;
-  }
-  // merge<
-  //   Incoming extends AnyZodObject,
-  //   Augmentation extends Incoming["shape"],
-  //   NewOutput extends {
-  //     [k in keyof Augmentation | keyof Output]: k extends keyof Augmentation
-  //       ? Augmentation[k]["_output"]
-  //       : k extends keyof Output
-  //       ? Output[k]
-  //       : never;
-  //   },
-  //   NewInput extends {
-  //     [k in keyof Augmentation | keyof Input]: k extends keyof Augmentation
-  //       ? Augmentation[k]["_input"]
-  //       : k extends keyof Input
-  //       ? Input[k]
-  //       : never;
-  //   }
-  // >(
-  //   merging: Incoming
-  // ): ZodObject<
-  //   extendShape<T, ReturnType<Incoming["_def"]["shape"]>>,
-  //   Incoming["_def"]["unknownKeys"],
-  //   Incoming["_def"]["catchall"],
-  //   NewOutput,
-  //   NewInput
-  // > {
-  //   const merged: any = new ZodObject({
-  //     unknownKeys: merging._def.unknownKeys,
-  //     catchall: merging._def.catchall,
-  //     shape: () =>
-  //       objectUtil.mergeShapes(this._def.shape(), merging._def.shape()),
-  //     typeName: ZodFirstPartyTypeKind.ZodObject,
-  //   }) as any;
-  //   return merged;
-  // }
-  setKey(key, schema) {
-    return this.augment({ [key]: schema });
-  }
-  // merge<Incoming extends AnyZodObject>(
-  //   merging: Incoming
-  // ): //ZodObject<T & Incoming["_shape"], UnknownKeys, Catchall> = (merging) => {
-  // ZodObject<
-  //   extendShape<T, ReturnType<Incoming["_def"]["shape"]>>,
-  //   Incoming["_def"]["unknownKeys"],
-  //   Incoming["_def"]["catchall"]
-  // > {
-  //   // const mergedShape = objectUtil.mergeShapes(
-  //   //   this._def.shape(),
-  //   //   merging._def.shape()
-  //   // );
-  //   const merged: any = new ZodObject({
-  //     unknownKeys: merging._def.unknownKeys,
-  //     catchall: merging._def.catchall,
-  //     shape: () =>
-  //       objectUtil.mergeShapes(this._def.shape(), merging._def.shape()),
-  //     typeName: ZodFirstPartyTypeKind.ZodObject,
-  //   }) as any;
-  //   return merged;
-  // }
-  catchall(index) {
-    return new _ZodObject({
-      ...this._def,
-      catchall: index
-    });
-  }
-  pick(mask) {
-    const shape = {};
-    for (const key of util.objectKeys(mask)) {
-      if (mask[key] && this.shape[key]) {
-        shape[key] = this.shape[key];
-      }
-    }
-    return new _ZodObject({
-      ...this._def,
-      shape: () => shape
-    });
-  }
-  omit(mask) {
-    const shape = {};
-    for (const key of util.objectKeys(this.shape)) {
-      if (!mask[key]) {
-        shape[key] = this.shape[key];
-      }
-    }
-    return new _ZodObject({
-      ...this._def,
-      shape: () => shape
-    });
-  }
-  /**
-   * @deprecated
-   */
-  deepPartial() {
-    return deepPartialify(this);
-  }
-  partial(mask) {
-    const newShape = {};
-    for (const key of util.objectKeys(this.shape)) {
-      const fieldSchema = this.shape[key];
-      if (mask && !mask[key]) {
-        newShape[key] = fieldSchema;
-      } else {
-        newShape[key] = fieldSchema.optional();
-      }
-    }
-    return new _ZodObject({
-      ...this._def,
-      shape: () => newShape
-    });
-  }
-  required(mask) {
-    const newShape = {};
-    for (const key of util.objectKeys(this.shape)) {
-      if (mask && !mask[key]) {
-        newShape[key] = this.shape[key];
-      } else {
-        const fieldSchema = this.shape[key];
-        let newField = fieldSchema;
-        while (newField instanceof ZodOptional) {
-          newField = newField._def.innerType;
-        }
-        newShape[key] = newField;
-      }
-    }
-    return new _ZodObject({
-      ...this._def,
-      shape: () => newShape
-    });
-  }
-  keyof() {
-    return createZodEnum(util.objectKeys(this.shape));
-  }
-};
-ZodObject.create = (shape, params) => {
-  return new ZodObject({
-    shape: () => shape,
-    unknownKeys: "strip",
-    catchall: ZodNever.create(),
-    typeName: ZodFirstPartyTypeKind.ZodObject,
-    ...processCreateParams(params)
-  });
-};
-ZodObject.strictCreate = (shape, params) => {
-  return new ZodObject({
-    shape: () => shape,
-    unknownKeys: "strict",
-    catchall: ZodNever.create(),
-    typeName: ZodFirstPartyTypeKind.ZodObject,
-    ...processCreateParams(params)
-  });
-};
-ZodObject.lazycreate = (shape, params) => {
-  return new ZodObject({
-    shape,
-    unknownKeys: "strip",
-    catchall: ZodNever.create(),
-    typeName: ZodFirstPartyTypeKind.ZodObject,
-    ...processCreateParams(params)
-  });
-};
-var ZodUnion = class extends ZodType {
-  _parse(input) {
-    const { ctx } = this._processInputParams(input);
-    const options = this._def.options;
-    function handleResults(results) {
-      for (const result of results) {
-        if (result.result.status === "valid") {
-          return result.result;
-        }
-      }
-      for (const result of results) {
-        if (result.result.status === "dirty") {
-          ctx.common.issues.push(...result.ctx.common.issues);
-          return result.result;
-        }
-      }
-      const unionErrors = results.map((result) => new ZodError(result.ctx.common.issues));
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_union,
-        unionErrors
-      });
-      return INVALID;
-    }
-    if (ctx.common.async) {
-      return Promise.all(options.map(async (option) => {
-        const childCtx = {
-          ...ctx,
-          common: {
-            ...ctx.common,
-            issues: []
-          },
-          parent: null
-        };
-        return {
-          result: await option._parseAsync({
-            data: ctx.data,
-            path: ctx.path,
-            parent: childCtx
-          }),
-          ctx: childCtx
-        };
-      })).then(handleResults);
-    } else {
-      let dirty = void 0;
-      const issues = [];
-      for (const option of options) {
-        const childCtx = {
-          ...ctx,
-          common: {
-            ...ctx.common,
-            issues: []
-          },
-          parent: null
-        };
-        const result = option._parseSync({
-          data: ctx.data,
-          path: ctx.path,
-          parent: childCtx
-        });
-        if (result.status === "valid") {
-          return result;
-        } else if (result.status === "dirty" && !dirty) {
-          dirty = { result, ctx: childCtx };
-        }
-        if (childCtx.common.issues.length) {
-          issues.push(childCtx.common.issues);
-        }
-      }
-      if (dirty) {
-        ctx.common.issues.push(...dirty.ctx.common.issues);
-        return dirty.result;
-      }
-      const unionErrors = issues.map((issues2) => new ZodError(issues2));
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_union,
-        unionErrors
-      });
-      return INVALID;
-    }
-  }
-  get options() {
-    return this._def.options;
-  }
-};
-ZodUnion.create = (types3, params) => {
-  return new ZodUnion({
-    options: types3,
-    typeName: ZodFirstPartyTypeKind.ZodUnion,
-    ...processCreateParams(params)
-  });
-};
-var getDiscriminator = (type) => {
-  if (type instanceof ZodLazy) {
-    return getDiscriminator(type.schema);
-  } else if (type instanceof ZodEffects) {
-    return getDiscriminator(type.innerType());
-  } else if (type instanceof ZodLiteral) {
-    return [type.value];
-  } else if (type instanceof ZodEnum) {
-    return type.options;
-  } else if (type instanceof ZodNativeEnum) {
-    return util.objectValues(type.enum);
-  } else if (type instanceof ZodDefault) {
-    return getDiscriminator(type._def.innerType);
-  } else if (type instanceof ZodUndefined) {
-    return [void 0];
-  } else if (type instanceof ZodNull) {
-    return [null];
-  } else if (type instanceof ZodOptional) {
-    return [void 0, ...getDiscriminator(type.unwrap())];
-  } else if (type instanceof ZodNullable) {
-    return [null, ...getDiscriminator(type.unwrap())];
-  } else if (type instanceof ZodBranded) {
-    return getDiscriminator(type.unwrap());
-  } else if (type instanceof ZodReadonly) {
-    return getDiscriminator(type.unwrap());
-  } else if (type instanceof ZodCatch) {
-    return getDiscriminator(type._def.innerType);
-  } else {
-    return [];
-  }
-};
-var ZodDiscriminatedUnion = class _ZodDiscriminatedUnion extends ZodType {
-  _parse(input) {
-    const { ctx } = this._processInputParams(input);
-    if (ctx.parsedType !== ZodParsedType.object) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.object,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    const discriminator = this.discriminator;
-    const discriminatorValue = ctx.data[discriminator];
-    const option = this.optionsMap.get(discriminatorValue);
-    if (!option) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_union_discriminator,
-        options: Array.from(this.optionsMap.keys()),
-        path: [discriminator]
-      });
-      return INVALID;
-    }
-    if (ctx.common.async) {
-      return option._parseAsync({
-        data: ctx.data,
-        path: ctx.path,
-        parent: ctx
-      });
-    } else {
-      return option._parseSync({
-        data: ctx.data,
-        path: ctx.path,
-        parent: ctx
-      });
-    }
-  }
-  get discriminator() {
-    return this._def.discriminator;
-  }
-  get options() {
-    return this._def.options;
-  }
-  get optionsMap() {
-    return this._def.optionsMap;
-  }
-  /**
-   * The constructor of the discriminated union schema. Its behaviour is very similar to that of the normal z.union() constructor.
-   * However, it only allows a union of objects, all of which need to share a discriminator property. This property must
-   * have a different value for each object in the union.
-   * @param discriminator the name of the discriminator property
-   * @param types an array of object schemas
-   * @param params
-   */
-  static create(discriminator, options, params) {
-    const optionsMap = /* @__PURE__ */ new Map();
-    for (const type of options) {
-      const discriminatorValues = getDiscriminator(type.shape[discriminator]);
-      if (!discriminatorValues.length) {
-        throw new Error(`A discriminator value for key \`${discriminator}\` could not be extracted from all schema options`);
-      }
-      for (const value of discriminatorValues) {
-        if (optionsMap.has(value)) {
-          throw new Error(`Discriminator property ${String(discriminator)} has duplicate value ${String(value)}`);
-        }
-        optionsMap.set(value, type);
-      }
-    }
-    return new _ZodDiscriminatedUnion({
-      typeName: ZodFirstPartyTypeKind.ZodDiscriminatedUnion,
-      discriminator,
-      options,
-      optionsMap,
-      ...processCreateParams(params)
-    });
-  }
-};
-function mergeValues(a, b) {
-  const aType = getParsedType(a);
-  const bType = getParsedType(b);
-  if (a === b) {
-    return { valid: true, data: a };
-  } else if (aType === ZodParsedType.object && bType === ZodParsedType.object) {
-    const bKeys = util.objectKeys(b);
-    const sharedKeys = util.objectKeys(a).filter((key) => bKeys.indexOf(key) !== -1);
-    const newObj = { ...a, ...b };
-    for (const key of sharedKeys) {
-      const sharedValue = mergeValues(a[key], b[key]);
-      if (!sharedValue.valid) {
-        return { valid: false };
-      }
-      newObj[key] = sharedValue.data;
-    }
-    return { valid: true, data: newObj };
-  } else if (aType === ZodParsedType.array && bType === ZodParsedType.array) {
-    if (a.length !== b.length) {
-      return { valid: false };
-    }
-    const newArray = [];
-    for (let index = 0; index < a.length; index++) {
-      const itemA = a[index];
-      const itemB = b[index];
-      const sharedValue = mergeValues(itemA, itemB);
-      if (!sharedValue.valid) {
-        return { valid: false };
-      }
-      newArray.push(sharedValue.data);
-    }
-    return { valid: true, data: newArray };
-  } else if (aType === ZodParsedType.date && bType === ZodParsedType.date && +a === +b) {
-    return { valid: true, data: a };
-  } else {
-    return { valid: false };
-  }
-}
-var ZodIntersection = class extends ZodType {
-  _parse(input) {
-    const { status, ctx } = this._processInputParams(input);
-    const handleParsed = (parsedLeft, parsedRight) => {
-      if (isAborted(parsedLeft) || isAborted(parsedRight)) {
-        return INVALID;
-      }
-      const merged = mergeValues(parsedLeft.value, parsedRight.value);
-      if (!merged.valid) {
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.invalid_intersection_types
-        });
-        return INVALID;
-      }
-      if (isDirty(parsedLeft) || isDirty(parsedRight)) {
-        status.dirty();
-      }
-      return { status: status.value, value: merged.data };
-    };
-    if (ctx.common.async) {
-      return Promise.all([
-        this._def.left._parseAsync({
-          data: ctx.data,
-          path: ctx.path,
-          parent: ctx
-        }),
-        this._def.right._parseAsync({
-          data: ctx.data,
-          path: ctx.path,
-          parent: ctx
-        })
-      ]).then(([left, right]) => handleParsed(left, right));
-    } else {
-      return handleParsed(this._def.left._parseSync({
-        data: ctx.data,
-        path: ctx.path,
-        parent: ctx
-      }), this._def.right._parseSync({
-        data: ctx.data,
-        path: ctx.path,
-        parent: ctx
-      }));
-    }
-  }
-};
-ZodIntersection.create = (left, right, params) => {
-  return new ZodIntersection({
-    left,
-    right,
-    typeName: ZodFirstPartyTypeKind.ZodIntersection,
-    ...processCreateParams(params)
-  });
-};
-var ZodTuple = class _ZodTuple extends ZodType {
-  _parse(input) {
-    const { status, ctx } = this._processInputParams(input);
-    if (ctx.parsedType !== ZodParsedType.array) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.array,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    if (ctx.data.length < this._def.items.length) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.too_small,
-        minimum: this._def.items.length,
-        inclusive: true,
-        exact: false,
-        type: "array"
-      });
-      return INVALID;
-    }
-    const rest = this._def.rest;
-    if (!rest && ctx.data.length > this._def.items.length) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.too_big,
-        maximum: this._def.items.length,
-        inclusive: true,
-        exact: false,
-        type: "array"
-      });
-      status.dirty();
-    }
-    const items = [...ctx.data].map((item, itemIndex) => {
-      const schema = this._def.items[itemIndex] || this._def.rest;
-      if (!schema)
-        return null;
-      return schema._parse(new ParseInputLazyPath(ctx, item, ctx.path, itemIndex));
-    }).filter((x) => !!x);
-    if (ctx.common.async) {
-      return Promise.all(items).then((results) => {
-        return ParseStatus.mergeArray(status, results);
-      });
-    } else {
-      return ParseStatus.mergeArray(status, items);
-    }
-  }
-  get items() {
-    return this._def.items;
-  }
-  rest(rest) {
-    return new _ZodTuple({
-      ...this._def,
-      rest
-    });
-  }
-};
-ZodTuple.create = (schemas, params) => {
-  if (!Array.isArray(schemas)) {
-    throw new Error("You must pass an array of schemas to z.tuple([ ... ])");
-  }
-  return new ZodTuple({
-    items: schemas,
-    typeName: ZodFirstPartyTypeKind.ZodTuple,
-    rest: null,
-    ...processCreateParams(params)
-  });
-};
-var ZodRecord = class _ZodRecord extends ZodType {
-  get keySchema() {
-    return this._def.keyType;
-  }
-  get valueSchema() {
-    return this._def.valueType;
-  }
-  _parse(input) {
-    const { status, ctx } = this._processInputParams(input);
-    if (ctx.parsedType !== ZodParsedType.object) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.object,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    const pairs = [];
-    const keyType = this._def.keyType;
-    const valueType = this._def.valueType;
-    for (const key in ctx.data) {
-      pairs.push({
-        key: keyType._parse(new ParseInputLazyPath(ctx, key, ctx.path, key)),
-        value: valueType._parse(new ParseInputLazyPath(ctx, ctx.data[key], ctx.path, key)),
-        alwaysSet: key in ctx.data
-      });
-    }
-    if (ctx.common.async) {
-      return ParseStatus.mergeObjectAsync(status, pairs);
-    } else {
-      return ParseStatus.mergeObjectSync(status, pairs);
-    }
-  }
-  get element() {
-    return this._def.valueType;
-  }
-  static create(first, second, third) {
-    if (second instanceof ZodType) {
-      return new _ZodRecord({
-        keyType: first,
-        valueType: second,
-        typeName: ZodFirstPartyTypeKind.ZodRecord,
-        ...processCreateParams(third)
-      });
-    }
-    return new _ZodRecord({
-      keyType: ZodString.create(),
-      valueType: first,
-      typeName: ZodFirstPartyTypeKind.ZodRecord,
-      ...processCreateParams(second)
-    });
-  }
-};
-var ZodMap = class extends ZodType {
-  get keySchema() {
-    return this._def.keyType;
-  }
-  get valueSchema() {
-    return this._def.valueType;
-  }
-  _parse(input) {
-    const { status, ctx } = this._processInputParams(input);
-    if (ctx.parsedType !== ZodParsedType.map) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.map,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    const keyType = this._def.keyType;
-    const valueType = this._def.valueType;
-    const pairs = [...ctx.data.entries()].map(([key, value], index) => {
-      return {
-        key: keyType._parse(new ParseInputLazyPath(ctx, key, ctx.path, [index, "key"])),
-        value: valueType._parse(new ParseInputLazyPath(ctx, value, ctx.path, [index, "value"]))
-      };
-    });
-    if (ctx.common.async) {
-      const finalMap = /* @__PURE__ */ new Map();
-      return Promise.resolve().then(async () => {
-        for (const pair of pairs) {
-          const key = await pair.key;
-          const value = await pair.value;
-          if (key.status === "aborted" || value.status === "aborted") {
-            return INVALID;
-          }
-          if (key.status === "dirty" || value.status === "dirty") {
-            status.dirty();
-          }
-          finalMap.set(key.value, value.value);
-        }
-        return { status: status.value, value: finalMap };
-      });
-    } else {
-      const finalMap = /* @__PURE__ */ new Map();
-      for (const pair of pairs) {
-        const key = pair.key;
-        const value = pair.value;
-        if (key.status === "aborted" || value.status === "aborted") {
-          return INVALID;
-        }
-        if (key.status === "dirty" || value.status === "dirty") {
-          status.dirty();
-        }
-        finalMap.set(key.value, value.value);
-      }
-      return { status: status.value, value: finalMap };
-    }
-  }
-};
-ZodMap.create = (keyType, valueType, params) => {
-  return new ZodMap({
-    valueType,
-    keyType,
-    typeName: ZodFirstPartyTypeKind.ZodMap,
-    ...processCreateParams(params)
-  });
-};
-var ZodSet = class _ZodSet extends ZodType {
-  _parse(input) {
-    const { status, ctx } = this._processInputParams(input);
-    if (ctx.parsedType !== ZodParsedType.set) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.set,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    const def = this._def;
-    if (def.minSize !== null) {
-      if (ctx.data.size < def.minSize.value) {
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.too_small,
-          minimum: def.minSize.value,
-          type: "set",
-          inclusive: true,
-          exact: false,
-          message: def.minSize.message
-        });
-        status.dirty();
-      }
-    }
-    if (def.maxSize !== null) {
-      if (ctx.data.size > def.maxSize.value) {
-        addIssueToContext(ctx, {
-          code: ZodIssueCode.too_big,
-          maximum: def.maxSize.value,
-          type: "set",
-          inclusive: true,
-          exact: false,
-          message: def.maxSize.message
-        });
-        status.dirty();
-      }
-    }
-    const valueType = this._def.valueType;
-    function finalizeSet(elements2) {
-      const parsedSet = /* @__PURE__ */ new Set();
-      for (const element of elements2) {
-        if (element.status === "aborted")
-          return INVALID;
-        if (element.status === "dirty")
-          status.dirty();
-        parsedSet.add(element.value);
-      }
-      return { status: status.value, value: parsedSet };
-    }
-    const elements = [...ctx.data.values()].map((item, i) => valueType._parse(new ParseInputLazyPath(ctx, item, ctx.path, i)));
-    if (ctx.common.async) {
-      return Promise.all(elements).then((elements2) => finalizeSet(elements2));
-    } else {
-      return finalizeSet(elements);
-    }
-  }
-  min(minSize, message) {
-    return new _ZodSet({
-      ...this._def,
-      minSize: { value: minSize, message: errorUtil.toString(message) }
-    });
-  }
-  max(maxSize, message) {
-    return new _ZodSet({
-      ...this._def,
-      maxSize: { value: maxSize, message: errorUtil.toString(message) }
-    });
-  }
-  size(size, message) {
-    return this.min(size, message).max(size, message);
-  }
-  nonempty(message) {
-    return this.min(1, message);
-  }
-};
-ZodSet.create = (valueType, params) => {
-  return new ZodSet({
-    valueType,
-    minSize: null,
-    maxSize: null,
-    typeName: ZodFirstPartyTypeKind.ZodSet,
-    ...processCreateParams(params)
-  });
-};
-var ZodFunction = class _ZodFunction extends ZodType {
-  constructor() {
-    super(...arguments);
-    this.validate = this.implement;
-  }
-  _parse(input) {
-    const { ctx } = this._processInputParams(input);
-    if (ctx.parsedType !== ZodParsedType.function) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.function,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    function makeArgsIssue(args, error40) {
-      return makeIssue({
-        data: args,
-        path: ctx.path,
-        errorMaps: [ctx.common.contextualErrorMap, ctx.schemaErrorMap, getErrorMap(), en_default].filter((x) => !!x),
-        issueData: {
-          code: ZodIssueCode.invalid_arguments,
-          argumentsError: error40
-        }
-      });
-    }
-    function makeReturnsIssue(returns, error40) {
-      return makeIssue({
-        data: returns,
-        path: ctx.path,
-        errorMaps: [ctx.common.contextualErrorMap, ctx.schemaErrorMap, getErrorMap(), en_default].filter((x) => !!x),
-        issueData: {
-          code: ZodIssueCode.invalid_return_type,
-          returnTypeError: error40
-        }
-      });
-    }
-    const params = { errorMap: ctx.common.contextualErrorMap };
-    const fn = ctx.data;
-    if (this._def.returns instanceof ZodPromise) {
-      const me = this;
-      return OK(async function(...args) {
-        const error40 = new ZodError([]);
-        const parsedArgs = await me._def.args.parseAsync(args, params).catch((e) => {
-          error40.addIssue(makeArgsIssue(args, e));
-          throw error40;
-        });
-        const result = await Reflect.apply(fn, this, parsedArgs);
-        const parsedReturns = await me._def.returns._def.type.parseAsync(result, params).catch((e) => {
-          error40.addIssue(makeReturnsIssue(result, e));
-          throw error40;
-        });
-        return parsedReturns;
-      });
-    } else {
-      const me = this;
-      return OK(function(...args) {
-        const parsedArgs = me._def.args.safeParse(args, params);
-        if (!parsedArgs.success) {
-          throw new ZodError([makeArgsIssue(args, parsedArgs.error)]);
-        }
-        const result = Reflect.apply(fn, this, parsedArgs.data);
-        const parsedReturns = me._def.returns.safeParse(result, params);
-        if (!parsedReturns.success) {
-          throw new ZodError([makeReturnsIssue(result, parsedReturns.error)]);
-        }
-        return parsedReturns.data;
-      });
-    }
-  }
-  parameters() {
-    return this._def.args;
-  }
-  returnType() {
-    return this._def.returns;
-  }
-  args(...items) {
-    return new _ZodFunction({
-      ...this._def,
-      args: ZodTuple.create(items).rest(ZodUnknown.create())
-    });
-  }
-  returns(returnType) {
-    return new _ZodFunction({
-      ...this._def,
-      returns: returnType
-    });
-  }
-  implement(func) {
-    const validatedFunc = this.parse(func);
-    return validatedFunc;
-  }
-  strictImplement(func) {
-    const validatedFunc = this.parse(func);
-    return validatedFunc;
-  }
-  static create(args, returns, params) {
-    return new _ZodFunction({
-      args: args ? args : ZodTuple.create([]).rest(ZodUnknown.create()),
-      returns: returns || ZodUnknown.create(),
-      typeName: ZodFirstPartyTypeKind.ZodFunction,
-      ...processCreateParams(params)
-    });
-  }
-};
-var ZodLazy = class extends ZodType {
-  get schema() {
-    return this._def.getter();
-  }
-  _parse(input) {
-    const { ctx } = this._processInputParams(input);
-    const lazySchema = this._def.getter();
-    return lazySchema._parse({ data: ctx.data, path: ctx.path, parent: ctx });
-  }
-};
-ZodLazy.create = (getter, params) => {
-  return new ZodLazy({
-    getter,
-    typeName: ZodFirstPartyTypeKind.ZodLazy,
-    ...processCreateParams(params)
-  });
-};
-var ZodLiteral = class extends ZodType {
-  _parse(input) {
-    if (input.data !== this._def.value) {
-      const ctx = this._getOrReturnCtx(input);
-      addIssueToContext(ctx, {
-        received: ctx.data,
-        code: ZodIssueCode.invalid_literal,
-        expected: this._def.value
-      });
-      return INVALID;
-    }
-    return { status: "valid", value: input.data };
-  }
-  get value() {
-    return this._def.value;
-  }
-};
-ZodLiteral.create = (value, params) => {
-  return new ZodLiteral({
-    value,
-    typeName: ZodFirstPartyTypeKind.ZodLiteral,
-    ...processCreateParams(params)
-  });
-};
-function createZodEnum(values, params) {
-  return new ZodEnum({
-    values,
-    typeName: ZodFirstPartyTypeKind.ZodEnum,
-    ...processCreateParams(params)
-  });
-}
-var ZodEnum = class _ZodEnum extends ZodType {
-  _parse(input) {
-    if (typeof input.data !== "string") {
-      const ctx = this._getOrReturnCtx(input);
-      const expectedValues = this._def.values;
-      addIssueToContext(ctx, {
-        expected: util.joinValues(expectedValues),
-        received: ctx.parsedType,
-        code: ZodIssueCode.invalid_type
-      });
-      return INVALID;
-    }
-    if (!this._cache) {
-      this._cache = new Set(this._def.values);
-    }
-    if (!this._cache.has(input.data)) {
-      const ctx = this._getOrReturnCtx(input);
-      const expectedValues = this._def.values;
-      addIssueToContext(ctx, {
-        received: ctx.data,
-        code: ZodIssueCode.invalid_enum_value,
-        options: expectedValues
-      });
-      return INVALID;
-    }
-    return OK(input.data);
-  }
-  get options() {
-    return this._def.values;
-  }
-  get enum() {
-    const enumValues = {};
-    for (const val of this._def.values) {
-      enumValues[val] = val;
-    }
-    return enumValues;
-  }
-  get Values() {
-    const enumValues = {};
-    for (const val of this._def.values) {
-      enumValues[val] = val;
-    }
-    return enumValues;
-  }
-  get Enum() {
-    const enumValues = {};
-    for (const val of this._def.values) {
-      enumValues[val] = val;
-    }
-    return enumValues;
-  }
-  extract(values, newDef = this._def) {
-    return _ZodEnum.create(values, {
-      ...this._def,
-      ...newDef
-    });
-  }
-  exclude(values, newDef = this._def) {
-    return _ZodEnum.create(this.options.filter((opt) => !values.includes(opt)), {
-      ...this._def,
-      ...newDef
-    });
-  }
-};
-ZodEnum.create = createZodEnum;
-var ZodNativeEnum = class extends ZodType {
-  _parse(input) {
-    const nativeEnumValues = util.getValidEnumValues(this._def.values);
-    const ctx = this._getOrReturnCtx(input);
-    if (ctx.parsedType !== ZodParsedType.string && ctx.parsedType !== ZodParsedType.number) {
-      const expectedValues = util.objectValues(nativeEnumValues);
-      addIssueToContext(ctx, {
-        expected: util.joinValues(expectedValues),
-        received: ctx.parsedType,
-        code: ZodIssueCode.invalid_type
-      });
-      return INVALID;
-    }
-    if (!this._cache) {
-      this._cache = new Set(util.getValidEnumValues(this._def.values));
-    }
-    if (!this._cache.has(input.data)) {
-      const expectedValues = util.objectValues(nativeEnumValues);
-      addIssueToContext(ctx, {
-        received: ctx.data,
-        code: ZodIssueCode.invalid_enum_value,
-        options: expectedValues
-      });
-      return INVALID;
-    }
-    return OK(input.data);
-  }
-  get enum() {
-    return this._def.values;
-  }
-};
-ZodNativeEnum.create = (values, params) => {
-  return new ZodNativeEnum({
-    values,
-    typeName: ZodFirstPartyTypeKind.ZodNativeEnum,
-    ...processCreateParams(params)
-  });
-};
-var ZodPromise = class extends ZodType {
-  unwrap() {
-    return this._def.type;
-  }
-  _parse(input) {
-    const { ctx } = this._processInputParams(input);
-    if (ctx.parsedType !== ZodParsedType.promise && ctx.common.async === false) {
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.promise,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    const promisified = ctx.parsedType === ZodParsedType.promise ? ctx.data : Promise.resolve(ctx.data);
-    return OK(promisified.then((data) => {
-      return this._def.type.parseAsync(data, {
-        path: ctx.path,
-        errorMap: ctx.common.contextualErrorMap
-      });
-    }));
-  }
-};
-ZodPromise.create = (schema, params) => {
-  return new ZodPromise({
-    type: schema,
-    typeName: ZodFirstPartyTypeKind.ZodPromise,
-    ...processCreateParams(params)
-  });
-};
-var ZodEffects = class extends ZodType {
-  innerType() {
-    return this._def.schema;
-  }
-  sourceType() {
-    return this._def.schema._def.typeName === ZodFirstPartyTypeKind.ZodEffects ? this._def.schema.sourceType() : this._def.schema;
-  }
-  _parse(input) {
-    const { status, ctx } = this._processInputParams(input);
-    const effect = this._def.effect || null;
-    const checkCtx = {
-      addIssue: (arg) => {
-        addIssueToContext(ctx, arg);
-        if (arg.fatal) {
-          status.abort();
-        } else {
-          status.dirty();
-        }
-      },
-      get path() {
-        return ctx.path;
-      }
-    };
-    checkCtx.addIssue = checkCtx.addIssue.bind(checkCtx);
-    if (effect.type === "preprocess") {
-      const processed = effect.transform(ctx.data, checkCtx);
-      if (ctx.common.async) {
-        return Promise.resolve(processed).then(async (processed2) => {
-          if (status.value === "aborted")
-            return INVALID;
-          const result = await this._def.schema._parseAsync({
-            data: processed2,
-            path: ctx.path,
-            parent: ctx
-          });
-          if (result.status === "aborted")
-            return INVALID;
-          if (result.status === "dirty")
-            return DIRTY(result.value);
-          if (status.value === "dirty")
-            return DIRTY(result.value);
-          return result;
-        });
-      } else {
-        if (status.value === "aborted")
-          return INVALID;
-        const result = this._def.schema._parseSync({
-          data: processed,
-          path: ctx.path,
-          parent: ctx
-        });
-        if (result.status === "aborted")
-          return INVALID;
-        if (result.status === "dirty")
-          return DIRTY(result.value);
-        if (status.value === "dirty")
-          return DIRTY(result.value);
-        return result;
-      }
-    }
-    if (effect.type === "refinement") {
-      const executeRefinement = (acc) => {
-        const result = effect.refinement(acc, checkCtx);
-        if (ctx.common.async) {
-          return Promise.resolve(result);
-        }
-        if (result instanceof Promise) {
-          throw new Error("Async refinement encountered during synchronous parse operation. Use .parseAsync instead.");
-        }
-        return acc;
-      };
-      if (ctx.common.async === false) {
-        const inner = this._def.schema._parseSync({
-          data: ctx.data,
-          path: ctx.path,
-          parent: ctx
-        });
-        if (inner.status === "aborted")
-          return INVALID;
-        if (inner.status === "dirty")
-          status.dirty();
-        executeRefinement(inner.value);
-        return { status: status.value, value: inner.value };
-      } else {
-        return this._def.schema._parseAsync({ data: ctx.data, path: ctx.path, parent: ctx }).then((inner) => {
-          if (inner.status === "aborted")
-            return INVALID;
-          if (inner.status === "dirty")
-            status.dirty();
-          return executeRefinement(inner.value).then(() => {
-            return { status: status.value, value: inner.value };
-          });
-        });
-      }
-    }
-    if (effect.type === "transform") {
-      if (ctx.common.async === false) {
-        const base = this._def.schema._parseSync({
-          data: ctx.data,
-          path: ctx.path,
-          parent: ctx
-        });
-        if (!isValid(base))
-          return INVALID;
-        const result = effect.transform(base.value, checkCtx);
-        if (result instanceof Promise) {
-          throw new Error(`Asynchronous transform encountered during synchronous parse operation. Use .parseAsync instead.`);
-        }
-        return { status: status.value, value: result };
-      } else {
-        return this._def.schema._parseAsync({ data: ctx.data, path: ctx.path, parent: ctx }).then((base) => {
-          if (!isValid(base))
-            return INVALID;
-          return Promise.resolve(effect.transform(base.value, checkCtx)).then((result) => ({
-            status: status.value,
-            value: result
-          }));
-        });
-      }
-    }
-    util.assertNever(effect);
-  }
-};
-ZodEffects.create = (schema, effect, params) => {
-  return new ZodEffects({
-    schema,
-    typeName: ZodFirstPartyTypeKind.ZodEffects,
-    effect,
-    ...processCreateParams(params)
-  });
-};
-ZodEffects.createWithPreprocess = (preprocess2, schema, params) => {
-  return new ZodEffects({
-    schema,
-    effect: { type: "preprocess", transform: preprocess2 },
-    typeName: ZodFirstPartyTypeKind.ZodEffects,
-    ...processCreateParams(params)
-  });
-};
-var ZodOptional = class extends ZodType {
-  _parse(input) {
-    const parsedType4 = this._getType(input);
-    if (parsedType4 === ZodParsedType.undefined) {
-      return OK(void 0);
-    }
-    return this._def.innerType._parse(input);
-  }
-  unwrap() {
-    return this._def.innerType;
-  }
-};
-ZodOptional.create = (type, params) => {
-  return new ZodOptional({
-    innerType: type,
-    typeName: ZodFirstPartyTypeKind.ZodOptional,
-    ...processCreateParams(params)
-  });
-};
-var ZodNullable = class extends ZodType {
-  _parse(input) {
-    const parsedType4 = this._getType(input);
-    if (parsedType4 === ZodParsedType.null) {
-      return OK(null);
-    }
-    return this._def.innerType._parse(input);
-  }
-  unwrap() {
-    return this._def.innerType;
-  }
-};
-ZodNullable.create = (type, params) => {
-  return new ZodNullable({
-    innerType: type,
-    typeName: ZodFirstPartyTypeKind.ZodNullable,
-    ...processCreateParams(params)
-  });
-};
-var ZodDefault = class extends ZodType {
-  _parse(input) {
-    const { ctx } = this._processInputParams(input);
-    let data = ctx.data;
-    if (ctx.parsedType === ZodParsedType.undefined) {
-      data = this._def.defaultValue();
-    }
-    return this._def.innerType._parse({
-      data,
-      path: ctx.path,
-      parent: ctx
-    });
-  }
-  removeDefault() {
-    return this._def.innerType;
-  }
-};
-ZodDefault.create = (type, params) => {
-  return new ZodDefault({
-    innerType: type,
-    typeName: ZodFirstPartyTypeKind.ZodDefault,
-    defaultValue: typeof params.default === "function" ? params.default : () => params.default,
-    ...processCreateParams(params)
-  });
-};
-var ZodCatch = class extends ZodType {
-  _parse(input) {
-    const { ctx } = this._processInputParams(input);
-    const newCtx = {
-      ...ctx,
-      common: {
-        ...ctx.common,
-        issues: []
-      }
-    };
-    const result = this._def.innerType._parse({
-      data: newCtx.data,
-      path: newCtx.path,
-      parent: {
-        ...newCtx
-      }
-    });
-    if (isAsync(result)) {
-      return result.then((result2) => {
-        return {
-          status: "valid",
-          value: result2.status === "valid" ? result2.value : this._def.catchValue({
-            get error() {
-              return new ZodError(newCtx.common.issues);
-            },
-            input: newCtx.data
-          })
-        };
-      });
-    } else {
-      return {
-        status: "valid",
-        value: result.status === "valid" ? result.value : this._def.catchValue({
-          get error() {
-            return new ZodError(newCtx.common.issues);
-          },
-          input: newCtx.data
-        })
-      };
-    }
-  }
-  removeCatch() {
-    return this._def.innerType;
-  }
-};
-ZodCatch.create = (type, params) => {
-  return new ZodCatch({
-    innerType: type,
-    typeName: ZodFirstPartyTypeKind.ZodCatch,
-    catchValue: typeof params.catch === "function" ? params.catch : () => params.catch,
-    ...processCreateParams(params)
-  });
-};
-var ZodNaN = class extends ZodType {
-  _parse(input) {
-    const parsedType4 = this._getType(input);
-    if (parsedType4 !== ZodParsedType.nan) {
-      const ctx = this._getOrReturnCtx(input);
-      addIssueToContext(ctx, {
-        code: ZodIssueCode.invalid_type,
-        expected: ZodParsedType.nan,
-        received: ctx.parsedType
-      });
-      return INVALID;
-    }
-    return { status: "valid", value: input.data };
-  }
-};
-ZodNaN.create = (params) => {
-  return new ZodNaN({
-    typeName: ZodFirstPartyTypeKind.ZodNaN,
-    ...processCreateParams(params)
-  });
-};
-var ZodBranded = class extends ZodType {
-  _parse(input) {
-    const { ctx } = this._processInputParams(input);
-    const data = ctx.data;
-    return this._def.type._parse({
-      data,
-      path: ctx.path,
-      parent: ctx
-    });
-  }
-  unwrap() {
-    return this._def.type;
-  }
-};
-var ZodPipeline = class _ZodPipeline extends ZodType {
-  _parse(input) {
-    const { status, ctx } = this._processInputParams(input);
-    if (ctx.common.async) {
-      const handleAsync = async () => {
-        const inResult = await this._def.in._parseAsync({
-          data: ctx.data,
-          path: ctx.path,
-          parent: ctx
-        });
-        if (inResult.status === "aborted")
-          return INVALID;
-        if (inResult.status === "dirty") {
-          status.dirty();
-          return DIRTY(inResult.value);
-        } else {
-          return this._def.out._parseAsync({
-            data: inResult.value,
-            path: ctx.path,
-            parent: ctx
-          });
-        }
-      };
-      return handleAsync();
-    } else {
-      const inResult = this._def.in._parseSync({
-        data: ctx.data,
-        path: ctx.path,
-        parent: ctx
-      });
-      if (inResult.status === "aborted")
-        return INVALID;
-      if (inResult.status === "dirty") {
-        status.dirty();
-        return {
-          status: "dirty",
-          value: inResult.value
-        };
-      } else {
-        return this._def.out._parseSync({
-          data: inResult.value,
-          path: ctx.path,
-          parent: ctx
-        });
-      }
-    }
-  }
-  static create(a, b) {
-    return new _ZodPipeline({
-      in: a,
-      out: b,
-      typeName: ZodFirstPartyTypeKind.ZodPipeline
-    });
-  }
-};
-var ZodReadonly = class extends ZodType {
-  _parse(input) {
-    const result = this._def.innerType._parse(input);
-    const freeze = (data) => {
-      if (isValid(data)) {
-        data.value = Object.freeze(data.value);
-      }
-      return data;
-    };
-    return isAsync(result) ? result.then((data) => freeze(data)) : freeze(result);
-  }
-  unwrap() {
-    return this._def.innerType;
-  }
-};
-ZodReadonly.create = (type, params) => {
-  return new ZodReadonly({
-    innerType: type,
-    typeName: ZodFirstPartyTypeKind.ZodReadonly,
-    ...processCreateParams(params)
-  });
-};
-var late = {
-  object: ZodObject.lazycreate
-};
-var ZodFirstPartyTypeKind;
-(function(ZodFirstPartyTypeKind2) {
-  ZodFirstPartyTypeKind2["ZodString"] = "ZodString";
-  ZodFirstPartyTypeKind2["ZodNumber"] = "ZodNumber";
-  ZodFirstPartyTypeKind2["ZodNaN"] = "ZodNaN";
-  ZodFirstPartyTypeKind2["ZodBigInt"] = "ZodBigInt";
-  ZodFirstPartyTypeKind2["ZodBoolean"] = "ZodBoolean";
-  ZodFirstPartyTypeKind2["ZodDate"] = "ZodDate";
-  ZodFirstPartyTypeKind2["ZodSymbol"] = "ZodSymbol";
-  ZodFirstPartyTypeKind2["ZodUndefined"] = "ZodUndefined";
-  ZodFirstPartyTypeKind2["ZodNull"] = "ZodNull";
-  ZodFirstPartyTypeKind2["ZodAny"] = "ZodAny";
-  ZodFirstPartyTypeKind2["ZodUnknown"] = "ZodUnknown";
-  ZodFirstPartyTypeKind2["ZodNever"] = "ZodNever";
-  ZodFirstPartyTypeKind2["ZodVoid"] = "ZodVoid";
-  ZodFirstPartyTypeKind2["ZodArray"] = "ZodArray";
-  ZodFirstPartyTypeKind2["ZodObject"] = "ZodObject";
-  ZodFirstPartyTypeKind2["ZodUnion"] = "ZodUnion";
-  ZodFirstPartyTypeKind2["ZodDiscriminatedUnion"] = "ZodDiscriminatedUnion";
-  ZodFirstPartyTypeKind2["ZodIntersection"] = "ZodIntersection";
-  ZodFirstPartyTypeKind2["ZodTuple"] = "ZodTuple";
-  ZodFirstPartyTypeKind2["ZodRecord"] = "ZodRecord";
-  ZodFirstPartyTypeKind2["ZodMap"] = "ZodMap";
-  ZodFirstPartyTypeKind2["ZodSet"] = "ZodSet";
-  ZodFirstPartyTypeKind2["ZodFunction"] = "ZodFunction";
-  ZodFirstPartyTypeKind2["ZodLazy"] = "ZodLazy";
-  ZodFirstPartyTypeKind2["ZodLiteral"] = "ZodLiteral";
-  ZodFirstPartyTypeKind2["ZodEnum"] = "ZodEnum";
-  ZodFirstPartyTypeKind2["ZodEffects"] = "ZodEffects";
-  ZodFirstPartyTypeKind2["ZodNativeEnum"] = "ZodNativeEnum";
-  ZodFirstPartyTypeKind2["ZodOptional"] = "ZodOptional";
-  ZodFirstPartyTypeKind2["ZodNullable"] = "ZodNullable";
-  ZodFirstPartyTypeKind2["ZodDefault"] = "ZodDefault";
-  ZodFirstPartyTypeKind2["ZodCatch"] = "ZodCatch";
-  ZodFirstPartyTypeKind2["ZodPromise"] = "ZodPromise";
-  ZodFirstPartyTypeKind2["ZodBranded"] = "ZodBranded";
-  ZodFirstPartyTypeKind2["ZodPipeline"] = "ZodPipeline";
-  ZodFirstPartyTypeKind2["ZodReadonly"] = "ZodReadonly";
-})(ZodFirstPartyTypeKind || (ZodFirstPartyTypeKind = {}));
-var stringType = ZodString.create;
-var numberType = ZodNumber.create;
-var nanType = ZodNaN.create;
-var bigIntType = ZodBigInt.create;
-var booleanType = ZodBoolean.create;
-var dateType = ZodDate.create;
-var symbolType = ZodSymbol.create;
-var undefinedType = ZodUndefined.create;
-var nullType = ZodNull.create;
-var anyType = ZodAny.create;
-var unknownType = ZodUnknown.create;
-var neverType = ZodNever.create;
-var voidType = ZodVoid.create;
-var arrayType = ZodArray.create;
-var objectType = ZodObject.create;
-var strictObjectType = ZodObject.strictCreate;
-var unionType = ZodUnion.create;
-var discriminatedUnionType = ZodDiscriminatedUnion.create;
-var intersectionType = ZodIntersection.create;
-var tupleType = ZodTuple.create;
-var recordType = ZodRecord.create;
-var mapType = ZodMap.create;
-var setType = ZodSet.create;
-var functionType = ZodFunction.create;
-var lazyType = ZodLazy.create;
-var literalType = ZodLiteral.create;
-var enumType = ZodEnum.create;
-var nativeEnumType = ZodNativeEnum.create;
-var promiseType = ZodPromise.create;
-var effectsType = ZodEffects.create;
-var optionalType = ZodOptional.create;
-var nullableType = ZodNullable.create;
-var preprocessType = ZodEffects.createWithPreprocess;
-var pipelineType = ZodPipeline.create;
-var coerce = {
-  string: ((arg) => ZodString.create({ ...arg, coerce: true })),
-  number: ((arg) => ZodNumber.create({ ...arg, coerce: true })),
-  boolean: ((arg) => ZodBoolean.create({
-    ...arg,
-    coerce: true
-  })),
-  bigint: ((arg) => ZodBigInt.create({ ...arg, coerce: true })),
-  date: ((arg) => ZodDate.create({ ...arg, coerce: true }))
-};
-
-// ../../lib/api-zod/src/generated/api.ts
-var HealthCheckResponse = objectType({
-  status: stringType()
-});
-var LoginBody = objectType({
-  username: stringType(),
-  password: stringType()
-});
-var LoginResponse = objectType({
-  user: objectType({
-    id: numberType(),
-    username: stringType(),
-    fullName: stringType(),
-    role: enumType(["admin", "user"]),
-    isActive: booleanType(),
-    createdAt: stringType(),
-    updatedAt: stringType()
-  }),
-  message: stringType()
-});
-var LogoutResponse = objectType({
-  message: stringType()
-});
-var GetMeResponse = objectType({
-  id: numberType(),
-  username: stringType(),
-  fullName: stringType(),
-  role: enumType(["admin", "user"]),
-  isActive: booleanType(),
-  createdAt: stringType(),
-  updatedAt: stringType()
-});
-var ListUsersResponseItem = objectType({
-  id: numberType(),
-  username: stringType(),
-  fullName: stringType(),
-  role: enumType(["admin", "user"]),
-  isActive: booleanType(),
-  createdAt: stringType(),
-  updatedAt: stringType()
-});
-var ListUsersResponse = arrayType(ListUsersResponseItem);
-var CreateUserBody = objectType({
-  username: stringType(),
-  password: stringType(),
-  fullName: stringType(),
-  role: enumType(["admin", "user"])
-});
-var GetUserParams = objectType({
-  id: coerce.number()
-});
-var GetUserResponse = objectType({
-  id: numberType(),
-  username: stringType(),
-  fullName: stringType(),
-  role: enumType(["admin", "user"]),
-  isActive: booleanType(),
-  createdAt: stringType(),
-  updatedAt: stringType()
-});
-var UpdateUserParams = objectType({
-  id: coerce.number()
-});
-var UpdateUserBody = objectType({
-  fullName: stringType().nullish(),
-  role: unionType([literalType("admin"), literalType("user"), literalType(null)]).nullish(),
-  isActive: booleanType().nullish(),
-  password: stringType().nullish()
-});
-var UpdateUserResponse = objectType({
-  id: numberType(),
-  username: stringType(),
-  fullName: stringType(),
-  role: enumType(["admin", "user"]),
-  isActive: booleanType(),
-  createdAt: stringType(),
-  updatedAt: stringType()
-});
-var DeleteUserParams = objectType({
-  id: coerce.number()
-});
-var DeleteUserResponse = objectType({
-  message: stringType()
-});
-var ListWorkersResponseItem = objectType({
-  id: numberType(),
-  firstName: stringType(),
-  lastName: stringType(),
-  note: stringType().nullish(),
-  isActive: booleanType(),
-  createdAt: stringType(),
-  updatedAt: stringType()
-});
-var ListWorkersResponse = arrayType(ListWorkersResponseItem);
-var CreateWorkerBody = objectType({
-  firstName: stringType(),
-  lastName: stringType(),
-  note: stringType().nullish(),
-  isActive: booleanType()
-});
-var UpdateWorkerParams = objectType({
-  id: coerce.number()
-});
-var UpdateWorkerBody = objectType({
-  firstName: stringType(),
-  lastName: stringType(),
-  note: stringType().nullish(),
-  isActive: booleanType()
-});
-var UpdateWorkerResponse = objectType({
-  id: numberType(),
-  firstName: stringType(),
-  lastName: stringType(),
-  note: stringType().nullish(),
-  isActive: booleanType(),
-  createdAt: stringType(),
-  updatedAt: stringType()
-});
-var DeleteWorkerParams = objectType({
-  id: coerce.number()
-});
-var DeleteWorkerResponse = objectType({
-  message: stringType()
-});
-var ListVehiclesResponseItem = objectType({
-  id: numberType(),
-  name: stringType(),
-  licensePlate: stringType().nullish(),
-  note: stringType().nullish(),
-  isActive: booleanType(),
-  createdAt: stringType(),
-  updatedAt: stringType()
-});
-var ListVehiclesResponse = arrayType(ListVehiclesResponseItem);
-var CreateVehicleBody = objectType({
-  name: stringType(),
-  licensePlate: stringType().nullish(),
-  note: stringType().nullish(),
-  isActive: booleanType()
-});
-var UpdateVehicleParams = objectType({
-  id: coerce.number()
-});
-var UpdateVehicleBody = objectType({
-  name: stringType(),
-  licensePlate: stringType().nullish(),
-  note: stringType().nullish(),
-  isActive: booleanType()
-});
-var UpdateVehicleResponse = objectType({
-  id: numberType(),
-  name: stringType(),
-  licensePlate: stringType().nullish(),
-  note: stringType().nullish(),
-  isActive: booleanType(),
-  createdAt: stringType(),
-  updatedAt: stringType()
-});
-var DeleteVehicleParams = objectType({
-  id: coerce.number()
-});
-var DeleteVehicleResponse = objectType({
-  message: stringType()
-});
-var ListMachinesResponseItem = objectType({
-  id: numberType(),
-  name: stringType(),
-  type: stringType(),
-  note: stringType().nullish(),
-  isActive: booleanType(),
-  createdAt: stringType(),
-  updatedAt: stringType()
-});
-var ListMachinesResponse = arrayType(ListMachinesResponseItem);
-var CreateMachineBody = objectType({
-  name: stringType(),
-  type: stringType(),
-  note: stringType().nullish(),
-  isActive: booleanType()
-});
-var UpdateMachineParams = objectType({
-  id: coerce.number()
-});
-var UpdateMachineBody = objectType({
-  name: stringType(),
-  type: stringType(),
-  note: stringType().nullish(),
-  isActive: booleanType()
-});
-var UpdateMachineResponse = objectType({
-  id: numberType(),
-  name: stringType(),
-  type: stringType(),
-  note: stringType().nullish(),
-  isActive: booleanType(),
-  createdAt: stringType(),
-  updatedAt: stringType()
-});
-var DeleteMachineParams = objectType({
-  id: coerce.number()
-});
-var DeleteMachineResponse = objectType({
-  message: stringType()
-});
-var ListAccessoriesResponseItem = objectType({
-  id: numberType(),
-  name: stringType(),
-  type: stringType().nullish(),
-  serialNumber: stringType().nullish(),
-  note: stringType().nullish(),
-  isActive: booleanType(),
-  createdAt: stringType(),
-  updatedAt: stringType()
-});
-var ListAccessoriesResponse = arrayType(ListAccessoriesResponseItem);
-var CreateAccessoryBody = objectType({
-  name: stringType(),
-  type: stringType().nullish(),
-  serialNumber: stringType().nullish(),
-  note: stringType().nullish(),
-  isActive: booleanType()
-});
-var UpdateAccessoryParams = objectType({
-  id: coerce.number()
-});
-var UpdateAccessoryBody = objectType({
-  name: stringType(),
-  type: stringType().nullish(),
-  serialNumber: stringType().nullish(),
-  note: stringType().nullish(),
-  isActive: booleanType()
-});
-var UpdateAccessoryResponse = objectType({
-  id: numberType(),
-  name: stringType(),
-  type: stringType().nullish(),
-  serialNumber: stringType().nullish(),
-  note: stringType().nullish(),
-  isActive: booleanType(),
-  createdAt: stringType(),
-  updatedAt: stringType()
-});
-var DeleteAccessoryParams = objectType({
-  id: coerce.number()
-});
-var DeleteAccessoryResponse = objectType({
-  message: stringType()
-});
-var ListRegionsResponseItem = objectType({
-  id: numberType(),
-  name: stringType(),
-  code: stringType().nullish(),
-  note: stringType().nullish(),
-  isActive: booleanType(),
-  createdAt: stringType(),
-  updatedAt: stringType()
-});
-var ListRegionsResponse = arrayType(ListRegionsResponseItem);
-var CreateRegionBody = objectType({
-  name: stringType(),
-  code: stringType().nullish(),
-  note: stringType().nullish(),
-  isActive: booleanType()
-});
-var UpdateRegionParams = objectType({
-  id: coerce.number()
-});
-var UpdateRegionBody = objectType({
-  name: stringType(),
-  code: stringType().nullish(),
-  note: stringType().nullish(),
-  isActive: booleanType()
-});
-var UpdateRegionResponse = objectType({
-  id: numberType(),
-  name: stringType(),
-  code: stringType().nullish(),
-  note: stringType().nullish(),
-  isActive: booleanType(),
-  createdAt: stringType(),
-  updatedAt: stringType()
-});
-var DeleteRegionParams = objectType({
-  id: coerce.number()
-});
-var DeleteRegionResponse = objectType({
-  message: stringType()
-});
-var ListWeatherTypesResponseItem = objectType({
-  id: numberType(),
-  name: stringType(),
-  icon: stringType().nullish(),
-  isActive: booleanType(),
-  createdAt: stringType(),
-  updatedAt: stringType()
-});
-var ListWeatherTypesResponse = arrayType(ListWeatherTypesResponseItem);
-var CreateWeatherTypeBody = objectType({
-  name: stringType(),
-  icon: stringType().nullish(),
-  isActive: booleanType()
-});
-var UpdateWeatherTypeParams = objectType({
-  id: coerce.number()
-});
-var UpdateWeatherTypeBody = objectType({
-  name: stringType(),
-  icon: stringType().nullish(),
-  isActive: booleanType()
-});
-var UpdateWeatherTypeResponse = objectType({
-  id: numberType(),
-  name: stringType(),
-  icon: stringType().nullish(),
-  isActive: booleanType(),
-  createdAt: stringType(),
-  updatedAt: stringType()
-});
-var DeleteWeatherTypeParams = objectType({
-  id: coerce.number()
-});
-var DeleteWeatherTypeResponse = objectType({
-  message: stringType()
-});
-var ListFellingRecordsQueryParams = objectType({
-  userId: coerce.number().nullish(),
-  dateFrom: coerce.string().nullish(),
-  dateTo: coerce.string().nullish(),
-  regionId: coerce.number().nullish()
-});
-var ListFellingRecordsResponseItem = objectType({
-  id: numberType(),
-  date: stringType(),
-  userId: numberType(),
-  regionId: numberType(),
-  location: stringType().nullish(),
-  startTime: stringType().nullish(),
-  endTime: stringType().nullish(),
-  weatherTypeId: numberType().nullish(),
-  temperature: numberType().nullish(),
-  mth: numberType().nullish(),
-  fuelConsumption: numberType().nullish(),
-  refueling: numberType().nullish(),
-  workerIds: arrayType(numberType()),
-  vehicleIds: arrayType(numberType()),
-  machineIds: arrayType(numberType()),
-  accessoryIds: arrayType(numberType()),
-  note: stringType().nullish(),
-  createdAt: stringType(),
-  updatedAt: stringType(),
-  user: objectType({
-    id: numberType(),
-    username: stringType(),
-    fullName: stringType(),
-    role: enumType(["admin", "user"]),
-    isActive: booleanType(),
-    createdAt: stringType(),
-    updatedAt: stringType()
-  }),
-  region: objectType({
-    id: numberType(),
-    name: stringType(),
-    code: stringType().nullish(),
-    note: stringType().nullish(),
-    isActive: booleanType(),
-    createdAt: stringType(),
-    updatedAt: stringType()
-  }),
-  weatherType: unionType([
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      icon: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    }),
-    nullType()
-  ]).optional(),
-  workers: arrayType(
-    objectType({
-      id: numberType(),
-      firstName: stringType(),
-      lastName: stringType(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    })
-  ),
-  vehicles: arrayType(
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      licensePlate: stringType().nullish(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    })
-  ),
-  machines: arrayType(
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      type: stringType(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    })
-  ),
-  accessories: arrayType(
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      type: stringType().nullish(),
-      serialNumber: stringType().nullish(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    })
-  )
-});
-var ListFellingRecordsResponse = arrayType(
-  ListFellingRecordsResponseItem
-);
-var CreateFellingRecordBody = objectType({
-  date: stringType(),
-  regionId: numberType(),
-  location: stringType().nullish(),
-  startTime: stringType().nullish(),
-  endTime: stringType().nullish(),
-  weatherTypeId: numberType().nullish(),
-  temperature: numberType().nullish(),
-  mth: numberType().nullish(),
-  fuelConsumption: numberType().nullish(),
-  refueling: numberType().nullish(),
-  workerIds: arrayType(numberType()),
-  vehicleIds: arrayType(numberType()),
-  machineIds: arrayType(numberType()),
-  accessoryIds: arrayType(numberType()),
-  note: stringType().nullish()
-});
-var GetFellingRecordParams = objectType({
-  id: coerce.number()
-});
-var GetFellingRecordResponse = objectType({
-  id: numberType(),
-  date: stringType(),
-  userId: numberType(),
-  regionId: numberType(),
-  location: stringType().nullish(),
-  startTime: stringType().nullish(),
-  endTime: stringType().nullish(),
-  weatherTypeId: numberType().nullish(),
-  temperature: numberType().nullish(),
-  mth: numberType().nullish(),
-  fuelConsumption: numberType().nullish(),
-  refueling: numberType().nullish(),
-  workerIds: arrayType(numberType()),
-  vehicleIds: arrayType(numberType()),
-  machineIds: arrayType(numberType()),
-  accessoryIds: arrayType(numberType()),
-  note: stringType().nullish(),
-  createdAt: stringType(),
-  updatedAt: stringType(),
-  user: objectType({
-    id: numberType(),
-    username: stringType(),
-    fullName: stringType(),
-    role: enumType(["admin", "user"]),
-    isActive: booleanType(),
-    createdAt: stringType(),
-    updatedAt: stringType()
-  }),
-  region: objectType({
-    id: numberType(),
-    name: stringType(),
-    code: stringType().nullish(),
-    note: stringType().nullish(),
-    isActive: booleanType(),
-    createdAt: stringType(),
-    updatedAt: stringType()
-  }),
-  weatherType: unionType([
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      icon: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    }),
-    nullType()
-  ]).optional(),
-  workers: arrayType(
-    objectType({
-      id: numberType(),
-      firstName: stringType(),
-      lastName: stringType(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    })
-  ),
-  vehicles: arrayType(
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      licensePlate: stringType().nullish(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    })
-  ),
-  machines: arrayType(
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      type: stringType(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    })
-  ),
-  accessories: arrayType(
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      type: stringType().nullish(),
-      serialNumber: stringType().nullish(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    })
-  )
-});
-var UpdateFellingRecordParams = objectType({
-  id: coerce.number()
-});
-var UpdateFellingRecordBody = objectType({
-  date: stringType().nullish(),
-  regionId: numberType().nullish(),
-  location: stringType().nullish(),
-  startTime: stringType().nullish(),
-  endTime: stringType().nullish(),
-  weatherTypeId: numberType().nullish(),
-  temperature: numberType().nullish(),
-  mth: numberType().nullish(),
-  fuelConsumption: numberType().nullish(),
-  refueling: numberType().nullish(),
-  workerIds: arrayType(numberType()).nullish(),
-  vehicleIds: arrayType(numberType()).nullish(),
-  machineIds: arrayType(numberType()).nullish(),
-  accessoryIds: arrayType(numberType()).nullish(),
-  note: stringType().nullish()
-});
-var UpdateFellingRecordResponse = objectType({
-  id: numberType(),
-  date: stringType(),
-  userId: numberType(),
-  regionId: numberType(),
-  location: stringType().nullish(),
-  startTime: stringType().nullish(),
-  endTime: stringType().nullish(),
-  weatherTypeId: numberType().nullish(),
-  temperature: numberType().nullish(),
-  mth: numberType().nullish(),
-  fuelConsumption: numberType().nullish(),
-  refueling: numberType().nullish(),
-  workerIds: arrayType(numberType()),
-  vehicleIds: arrayType(numberType()),
-  machineIds: arrayType(numberType()),
-  accessoryIds: arrayType(numberType()),
-  note: stringType().nullish(),
-  createdAt: stringType(),
-  updatedAt: stringType(),
-  user: objectType({
-    id: numberType(),
-    username: stringType(),
-    fullName: stringType(),
-    role: enumType(["admin", "user"]),
-    isActive: booleanType(),
-    createdAt: stringType(),
-    updatedAt: stringType()
-  }),
-  region: objectType({
-    id: numberType(),
-    name: stringType(),
-    code: stringType().nullish(),
-    note: stringType().nullish(),
-    isActive: booleanType(),
-    createdAt: stringType(),
-    updatedAt: stringType()
-  }),
-  weatherType: unionType([
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      icon: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    }),
-    nullType()
-  ]).optional(),
-  workers: arrayType(
-    objectType({
-      id: numberType(),
-      firstName: stringType(),
-      lastName: stringType(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    })
-  ),
-  vehicles: arrayType(
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      licensePlate: stringType().nullish(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    })
-  ),
-  machines: arrayType(
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      type: stringType(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    })
-  ),
-  accessories: arrayType(
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      type: stringType().nullish(),
-      serialNumber: stringType().nullish(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    })
-  )
-});
-var DeleteFellingRecordParams = objectType({
-  id: coerce.number()
-});
-var DeleteFellingRecordResponse = objectType({
-  message: stringType()
-});
-var ListMowingRecordsQueryParams = objectType({
-  userId: coerce.number().nullish(),
-  dateFrom: coerce.string().nullish(),
-  dateTo: coerce.string().nullish(),
-  regionId: coerce.number().nullish()
-});
-var ListMowingRecordsResponseItem = objectType({
-  id: numberType(),
-  date: stringType(),
-  userId: numberType(),
-  regionId: numberType(),
-  location: stringType().nullish(),
-  startTime: stringType().nullish(),
-  endTime: stringType().nullish(),
-  weatherTypeId: numberType().nullish(),
-  vehicleId: numberType().nullish(),
-  mthStart: numberType().nullish(),
-  mthEnd: numberType().nullish(),
-  mthTotal: numberType().nullish(),
-  fuelConsumption: numberType().nullish(),
-  refueling: numberType().nullish(),
-  workerIds: arrayType(numberType()),
-  machineIds: arrayType(numberType()),
-  accessoryIds: arrayType(numberType()),
-  note: stringType().nullish(),
-  createdAt: stringType(),
-  updatedAt: stringType(),
-  user: objectType({
-    id: numberType(),
-    username: stringType(),
-    fullName: stringType(),
-    role: enumType(["admin", "user"]),
-    isActive: booleanType(),
-    createdAt: stringType(),
-    updatedAt: stringType()
-  }),
-  region: objectType({
-    id: numberType(),
-    name: stringType(),
-    code: stringType().nullish(),
-    note: stringType().nullish(),
-    isActive: booleanType(),
-    createdAt: stringType(),
-    updatedAt: stringType()
-  }),
-  weatherType: unionType([
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      icon: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    }),
-    nullType()
-  ]).optional(),
-  vehicle: unionType([
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      licensePlate: stringType().nullish(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    }),
-    nullType()
-  ]).optional(),
-  workers: arrayType(
-    objectType({
-      id: numberType(),
-      firstName: stringType(),
-      lastName: stringType(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    })
-  ),
-  machines: arrayType(
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      type: stringType(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    })
-  ),
-  accessories: arrayType(
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      type: stringType().nullish(),
-      serialNumber: stringType().nullish(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    })
-  )
-});
-var ListMowingRecordsResponse = arrayType(
-  ListMowingRecordsResponseItem
-);
-var CreateMowingRecordBody = objectType({
-  date: stringType(),
-  regionId: numberType(),
-  location: stringType().nullish(),
-  startTime: stringType().nullish(),
-  endTime: stringType().nullish(),
-  weatherTypeId: numberType().nullish(),
-  vehicleId: numberType().nullish(),
-  mthStart: numberType().nullish(),
-  mthEnd: numberType().nullish(),
-  mthTotal: numberType().nullish(),
-  fuelConsumption: numberType().nullish(),
-  refueling: numberType().nullish(),
-  workerIds: arrayType(numberType()),
-  machineIds: arrayType(numberType()),
-  accessoryIds: arrayType(numberType()),
-  note: stringType().nullish()
-});
-var GetMowingRecordParams = objectType({
-  id: coerce.number()
-});
-var GetMowingRecordResponse = objectType({
-  id: numberType(),
-  date: stringType(),
-  userId: numberType(),
-  regionId: numberType(),
-  location: stringType().nullish(),
-  startTime: stringType().nullish(),
-  endTime: stringType().nullish(),
-  weatherTypeId: numberType().nullish(),
-  vehicleId: numberType().nullish(),
-  mthStart: numberType().nullish(),
-  mthEnd: numberType().nullish(),
-  mthTotal: numberType().nullish(),
-  fuelConsumption: numberType().nullish(),
-  refueling: numberType().nullish(),
-  workerIds: arrayType(numberType()),
-  machineIds: arrayType(numberType()),
-  accessoryIds: arrayType(numberType()),
-  note: stringType().nullish(),
-  createdAt: stringType(),
-  updatedAt: stringType(),
-  user: objectType({
-    id: numberType(),
-    username: stringType(),
-    fullName: stringType(),
-    role: enumType(["admin", "user"]),
-    isActive: booleanType(),
-    createdAt: stringType(),
-    updatedAt: stringType()
-  }),
-  region: objectType({
-    id: numberType(),
-    name: stringType(),
-    code: stringType().nullish(),
-    note: stringType().nullish(),
-    isActive: booleanType(),
-    createdAt: stringType(),
-    updatedAt: stringType()
-  }),
-  weatherType: unionType([
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      icon: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    }),
-    nullType()
-  ]).optional(),
-  vehicle: unionType([
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      licensePlate: stringType().nullish(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    }),
-    nullType()
-  ]).optional(),
-  workers: arrayType(
-    objectType({
-      id: numberType(),
-      firstName: stringType(),
-      lastName: stringType(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    })
-  ),
-  machines: arrayType(
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      type: stringType(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    })
-  ),
-  accessories: arrayType(
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      type: stringType().nullish(),
-      serialNumber: stringType().nullish(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    })
-  )
-});
-var UpdateMowingRecordParams = objectType({
-  id: coerce.number()
-});
-var UpdateMowingRecordBody = objectType({
-  date: stringType().nullish(),
-  regionId: numberType().nullish(),
-  location: stringType().nullish(),
-  startTime: stringType().nullish(),
-  endTime: stringType().nullish(),
-  weatherTypeId: numberType().nullish(),
-  vehicleId: numberType().nullish(),
-  mthStart: numberType().nullish(),
-  mthEnd: numberType().nullish(),
-  mthTotal: numberType().nullish(),
-  fuelConsumption: numberType().nullish(),
-  refueling: numberType().nullish(),
-  workerIds: arrayType(numberType()).nullish(),
-  machineIds: arrayType(numberType()).nullish(),
-  accessoryIds: arrayType(numberType()).nullish(),
-  note: stringType().nullish()
-});
-var UpdateMowingRecordResponse = objectType({
-  id: numberType(),
-  date: stringType(),
-  userId: numberType(),
-  regionId: numberType(),
-  location: stringType().nullish(),
-  startTime: stringType().nullish(),
-  endTime: stringType().nullish(),
-  weatherTypeId: numberType().nullish(),
-  vehicleId: numberType().nullish(),
-  mthStart: numberType().nullish(),
-  mthEnd: numberType().nullish(),
-  mthTotal: numberType().nullish(),
-  fuelConsumption: numberType().nullish(),
-  refueling: numberType().nullish(),
-  workerIds: arrayType(numberType()),
-  machineIds: arrayType(numberType()),
-  accessoryIds: arrayType(numberType()),
-  note: stringType().nullish(),
-  createdAt: stringType(),
-  updatedAt: stringType(),
-  user: objectType({
-    id: numberType(),
-    username: stringType(),
-    fullName: stringType(),
-    role: enumType(["admin", "user"]),
-    isActive: booleanType(),
-    createdAt: stringType(),
-    updatedAt: stringType()
-  }),
-  region: objectType({
-    id: numberType(),
-    name: stringType(),
-    code: stringType().nullish(),
-    note: stringType().nullish(),
-    isActive: booleanType(),
-    createdAt: stringType(),
-    updatedAt: stringType()
-  }),
-  weatherType: unionType([
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      icon: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    }),
-    nullType()
-  ]).optional(),
-  vehicle: unionType([
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      licensePlate: stringType().nullish(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    }),
-    nullType()
-  ]).optional(),
-  workers: arrayType(
-    objectType({
-      id: numberType(),
-      firstName: stringType(),
-      lastName: stringType(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    })
-  ),
-  machines: arrayType(
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      type: stringType(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    })
-  ),
-  accessories: arrayType(
-    objectType({
-      id: numberType(),
-      name: stringType(),
-      type: stringType().nullish(),
-      serialNumber: stringType().nullish(),
-      note: stringType().nullish(),
-      isActive: booleanType(),
-      createdAt: stringType(),
-      updatedAt: stringType()
-    })
-  )
-});
-var DeleteMowingRecordParams = objectType({
-  id: coerce.number()
-});
-var DeleteMowingRecordResponse = objectType({
-  message: stringType()
-});
-var GetDashboardStatsResponse = objectType({
-  totalFellingRecords: numberType(),
-  totalMowingRecords: numberType(),
-  totalVolumeM3: numberType(),
-  totalAreaHa: numberType(),
-  recordsThisMonth: numberType(),
-  activeWorkers: numberType()
-});
-var GetRecentRecordsResponse = objectType({
-  records: arrayType(
-    objectType({
-      id: numberType(),
-      type: enumType(["kaceni", "seceni"]),
-      date: stringType(),
-      regionName: stringType(),
-      userFullName: stringType(),
-      createdAt: stringType()
-    })
-  )
-});
-var ListAuditLogsQueryParams = objectType({
-  tableName: coerce.string().optional(),
-  userId: coerce.number().optional(),
-  action: coerce.string().optional(),
-  dateFrom: coerce.string().optional(),
-  dateTo: coerce.string().optional()
-});
-var ListAuditLogsResponseItem = objectType({
-  id: numberType(),
-  action: stringType(),
-  tableName: stringType(),
-  recordId: numberType().nullish(),
-  description: stringType(),
-  oldData: objectType({}).passthrough().nullish(),
-  newData: objectType({}).passthrough().nullish(),
-  createdAt: stringType(),
-  userId: numberType().nullish(),
-  userFullName: stringType().nullish(),
-  userUsername: stringType().nullish()
-});
-var ListAuditLogsResponse = arrayType(ListAuditLogsResponseItem);
-var GetAuditLogParams = objectType({
-  id: coerce.number()
-});
-var GetAuditLogResponse = objectType({
-  id: numberType(),
-  action: stringType(),
-  tableName: stringType(),
-  recordId: numberType().nullish(),
-  description: stringType(),
-  oldData: objectType({}).passthrough().nullish(),
-  newData: objectType({}).passthrough().nullish(),
-  createdAt: stringType(),
-  userId: numberType().nullish(),
-  userFullName: stringType().nullish(),
-  userUsername: stringType().nullish()
-});
-
-// src/routes/health.ts
 var router = (0, import_express.Router)();
 router.get("/healthz", (_req, res) => {
-  const data = HealthCheckResponse.parse({ status: "ok" });
-  res.json(data);
+  res.json({ status: "ok" });
 });
 var health_default = router;
 
@@ -41903,6 +36946,9 @@ function iife(fn, ...args) {
 }
 
 // ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/pg-core/unique-constraint.js
+function unique(name) {
+  return new UniqueOnConstraintBuilder(name);
+}
 function uniqueKeyName(table, columns) {
   return `${table[TableName]}_${columns.join("_")}_unique`;
 }
@@ -42962,7 +38008,7 @@ var SelectionProxyHandler = class _SelectionProxyHandler {
 function mapResultRow(columns, row, joinsNotNullableMap) {
   const nullifyMap = {};
   const result = columns.reduce(
-    (result2, { path, field }, columnIndex) => {
+    (result2, { path: path2, field }, columnIndex) => {
       let decoder;
       if (is(field, Column)) {
         decoder = field;
@@ -42974,8 +38020,8 @@ function mapResultRow(columns, row, joinsNotNullableMap) {
         decoder = field.sql.decoder;
       }
       let node = result2;
-      for (const [pathChunkIndex, pathChunk] of path.entries()) {
-        if (pathChunkIndex < path.length - 1) {
+      for (const [pathChunkIndex, pathChunk] of path2.entries()) {
+        if (pathChunkIndex < path2.length - 1) {
           if (!(pathChunk in node)) {
             node[pathChunk] = {};
           }
@@ -42983,8 +38029,8 @@ function mapResultRow(columns, row, joinsNotNullableMap) {
         } else {
           const rawValue = row[columnIndex];
           const value = node[pathChunk] = rawValue === null ? null : decoder.mapFromDriverValue(rawValue);
-          if (joinsNotNullableMap && is(field, Column) && path.length === 2) {
-            const objectName = path[0];
+          if (joinsNotNullableMap && is(field, Column) && path2.length === 2) {
+            const objectName = path2[0];
             if (!(objectName in nullifyMap)) {
               nullifyMap[objectName] = value === null ? getTableName(field.table) : false;
             } else if (typeof nullifyMap[objectName] === "string" && nullifyMap[objectName] !== getTableName(field.table)) {
@@ -48145,19 +43191,19 @@ var PgPreparedQuery = class {
   /** @internal */
   joinsNotNullableMap;
   /** @internal */
-  async queryWithCache(queryString, params, query) {
+  async queryWithCache(queryString2, params, query) {
     if (this.cache === void 0 || is(this.cache, NoopCache) || this.queryMetadata === void 0) {
       try {
         return await query();
       } catch (e) {
-        throw new DrizzleQueryError(queryString, params, e);
+        throw new DrizzleQueryError(queryString2, params, e);
       }
     }
     if (this.cacheConfig && !this.cacheConfig.enable) {
       try {
         return await query();
       } catch (e) {
-        throw new DrizzleQueryError(queryString, params, e);
+        throw new DrizzleQueryError(queryString2, params, e);
       }
     }
     if ((this.queryMetadata.type === "insert" || this.queryMetadata.type === "update" || this.queryMetadata.type === "delete") && this.queryMetadata.tables.length > 0) {
@@ -48168,19 +43214,19 @@ var PgPreparedQuery = class {
         ]);
         return res;
       } catch (e) {
-        throw new DrizzleQueryError(queryString, params, e);
+        throw new DrizzleQueryError(queryString2, params, e);
       }
     }
     if (!this.cacheConfig) {
       try {
         return await query();
       } catch (e) {
-        throw new DrizzleQueryError(queryString, params, e);
+        throw new DrizzleQueryError(queryString2, params, e);
       }
     }
     if (this.queryMetadata.type === "select") {
       const fromCache = await this.cache.get(
-        this.cacheConfig.tag ?? await hashQuery(queryString, params),
+        this.cacheConfig.tag ?? await hashQuery(queryString2, params),
         this.queryMetadata.tables,
         this.cacheConfig.tag !== void 0,
         this.cacheConfig.autoInvalidate
@@ -48190,10 +43236,10 @@ var PgPreparedQuery = class {
         try {
           result = await query();
         } catch (e) {
-          throw new DrizzleQueryError(queryString, params, e);
+          throw new DrizzleQueryError(queryString2, params, e);
         }
         await this.cache.put(
-          this.cacheConfig.tag ?? await hashQuery(queryString, params),
+          this.cacheConfig.tag ?? await hashQuery(queryString2, params),
           result,
           // make sure we send tables that were used in a query only if user wants to invalidate it on each write
           this.cacheConfig.autoInvalidate ? this.queryMetadata.tables : [],
@@ -48207,7 +43253,7 @@ var PgPreparedQuery = class {
     try {
       return await query();
     } catch (e) {
-      throw new DrizzleQueryError(queryString, params, e);
+      throw new DrizzleQueryError(queryString2, params, e);
     }
   }
 };
@@ -48278,10 +43324,10 @@ var PgTransaction = class extends PgDatabase {
 // ../../node_modules/.pnpm/drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0/node_modules/drizzle-orm/node-postgres/session.js
 var { Pool: Pool2, types: types2 } = esm_default;
 var NodePgPreparedQuery = class extends PgPreparedQuery {
-  constructor(client, queryString, params, logger2, cache, queryMetadata, cacheConfig, fields, name, _isResponseInArrayMode, customResultMapper) {
-    super({ sql: queryString, params }, cache, queryMetadata, cacheConfig);
+  constructor(client, queryString2, params, logger2, cache, queryMetadata, cacheConfig, fields, name, _isResponseInArrayMode, customResultMapper) {
+    super({ sql: queryString2, params }, cache, queryMetadata, cacheConfig);
     this.client = client;
-    this.queryString = queryString;
+    this.queryString = queryString2;
     this.params = params;
     this.logger = logger2;
     this.fields = fields;
@@ -48289,7 +43335,7 @@ var NodePgPreparedQuery = class extends PgPreparedQuery {
     this.customResultMapper = customResultMapper;
     this.rawQueryConfig = {
       name,
-      text: queryString,
+      text: queryString2,
       types: {
         // @ts-ignore
         getTypeParser: (typeId, format) => {
@@ -48326,7 +43372,7 @@ var NodePgPreparedQuery = class extends PgPreparedQuery {
     };
     this.queryConfig = {
       name,
-      text: queryString,
+      text: queryString2,
       rowMode: "array",
       types: {
         // @ts-ignore
@@ -48568,12 +43614,14 @@ var schema_exports = {};
 __export(schema_exports, {
   accessoriesTable: () => accessoriesTable,
   auditLogsTable: () => auditLogsTable,
+  contractorCompaniesTable: () => contractorCompaniesTable,
   fellingRecordAccessoriesTable: () => fellingRecordAccessoriesTable,
   fellingRecordMachinesTable: () => fellingRecordMachinesTable,
   fellingRecordVehiclesTable: () => fellingRecordVehiclesTable,
   fellingRecordWorkersTable: () => fellingRecordWorkersTable,
   fellingRecordsTable: () => fellingRecordsTable,
   insertAccessorySchema: () => insertAccessorySchema,
+  insertContractorCompanySchema: () => insertContractorCompanySchema,
   insertMachineSchema: () => insertMachineSchema,
   insertRegionSchema: () => insertRegionSchema,
   insertUserSchema: () => insertUserSchema,
@@ -48586,6 +43634,9 @@ __export(schema_exports, {
   mowingRecordWorkersTable: () => mowingRecordWorkersTable,
   mowingRecordsTable: () => mowingRecordsTable,
   regionsTable: () => regionsTable,
+  teamDailyAssignmentsTable: () => teamDailyAssignmentsTable,
+  teamDailyEntriesTable: () => teamDailyEntriesTable,
+  teamDailyRecordsTable: () => teamDailyRecordsTable,
   usersTable: () => usersTable,
   vehiclesTable: () => vehiclesTable,
   weatherTypesTable: () => weatherTypesTable,
@@ -48600,28 +43651,28 @@ __export(external_exports, {
   $output: () => $output,
   NEVER: () => NEVER,
   TimePrecision: () => TimePrecision,
-  ZodAny: () => ZodAny2,
-  ZodArray: () => ZodArray2,
+  ZodAny: () => ZodAny,
+  ZodArray: () => ZodArray,
   ZodBase64: () => ZodBase64,
   ZodBase64URL: () => ZodBase64URL,
-  ZodBigInt: () => ZodBigInt2,
+  ZodBigInt: () => ZodBigInt,
   ZodBigIntFormat: () => ZodBigIntFormat,
-  ZodBoolean: () => ZodBoolean2,
+  ZodBoolean: () => ZodBoolean,
   ZodCIDRv4: () => ZodCIDRv4,
   ZodCIDRv6: () => ZodCIDRv6,
   ZodCUID: () => ZodCUID,
   ZodCUID2: () => ZodCUID2,
-  ZodCatch: () => ZodCatch2,
+  ZodCatch: () => ZodCatch,
   ZodCustom: () => ZodCustom,
   ZodCustomStringFormat: () => ZodCustomStringFormat,
-  ZodDate: () => ZodDate2,
-  ZodDefault: () => ZodDefault2,
-  ZodDiscriminatedUnion: () => ZodDiscriminatedUnion2,
+  ZodDate: () => ZodDate,
+  ZodDefault: () => ZodDefault,
+  ZodDiscriminatedUnion: () => ZodDiscriminatedUnion,
   ZodE164: () => ZodE164,
   ZodEmail: () => ZodEmail,
   ZodEmoji: () => ZodEmoji,
-  ZodEnum: () => ZodEnum2,
-  ZodError: () => ZodError2,
+  ZodEnum: () => ZodEnum,
+  ZodError: () => ZodError,
   ZodFile: () => ZodFile,
   ZodGUID: () => ZodGUID,
   ZodIPv4: () => ZodIPv4,
@@ -48630,45 +43681,45 @@ __export(external_exports, {
   ZodISODateTime: () => ZodISODateTime,
   ZodISODuration: () => ZodISODuration,
   ZodISOTime: () => ZodISOTime,
-  ZodIntersection: () => ZodIntersection2,
-  ZodIssueCode: () => ZodIssueCode2,
+  ZodIntersection: () => ZodIntersection,
+  ZodIssueCode: () => ZodIssueCode,
   ZodJWT: () => ZodJWT,
   ZodKSUID: () => ZodKSUID,
-  ZodLazy: () => ZodLazy2,
-  ZodLiteral: () => ZodLiteral2,
-  ZodMap: () => ZodMap2,
-  ZodNaN: () => ZodNaN2,
+  ZodLazy: () => ZodLazy,
+  ZodLiteral: () => ZodLiteral,
+  ZodMap: () => ZodMap,
+  ZodNaN: () => ZodNaN,
   ZodNanoID: () => ZodNanoID,
-  ZodNever: () => ZodNever2,
+  ZodNever: () => ZodNever,
   ZodNonOptional: () => ZodNonOptional,
-  ZodNull: () => ZodNull2,
-  ZodNullable: () => ZodNullable2,
-  ZodNumber: () => ZodNumber2,
+  ZodNull: () => ZodNull,
+  ZodNullable: () => ZodNullable,
+  ZodNumber: () => ZodNumber,
   ZodNumberFormat: () => ZodNumberFormat,
-  ZodObject: () => ZodObject2,
-  ZodOptional: () => ZodOptional2,
+  ZodObject: () => ZodObject,
+  ZodOptional: () => ZodOptional,
   ZodPipe: () => ZodPipe,
   ZodPrefault: () => ZodPrefault,
-  ZodPromise: () => ZodPromise2,
-  ZodReadonly: () => ZodReadonly2,
+  ZodPromise: () => ZodPromise,
+  ZodReadonly: () => ZodReadonly,
   ZodRealError: () => ZodRealError,
-  ZodRecord: () => ZodRecord2,
-  ZodSet: () => ZodSet2,
-  ZodString: () => ZodString2,
+  ZodRecord: () => ZodRecord,
+  ZodSet: () => ZodSet,
+  ZodString: () => ZodString,
   ZodStringFormat: () => ZodStringFormat,
   ZodSuccess: () => ZodSuccess,
-  ZodSymbol: () => ZodSymbol2,
+  ZodSymbol: () => ZodSymbol,
   ZodTemplateLiteral: () => ZodTemplateLiteral,
   ZodTransform: () => ZodTransform,
-  ZodTuple: () => ZodTuple2,
-  ZodType: () => ZodType2,
+  ZodTuple: () => ZodTuple,
+  ZodType: () => ZodType,
   ZodULID: () => ZodULID,
   ZodURL: () => ZodURL,
   ZodUUID: () => ZodUUID,
-  ZodUndefined: () => ZodUndefined2,
-  ZodUnion: () => ZodUnion2,
-  ZodUnknown: () => ZodUnknown2,
-  ZodVoid: () => ZodVoid2,
+  ZodUndefined: () => ZodUndefined,
+  ZodUnion: () => ZodUnion,
+  ZodUnknown: () => ZodUnknown,
+  ZodVoid: () => ZodVoid,
   ZodXID: () => ZodXID,
   _ZodString: () => _ZodString,
   _default: () => _default2,
@@ -48702,7 +43753,7 @@ __export(external_exports, {
   float64: () => float64,
   formatError: () => formatError,
   function: () => _function,
-  getErrorMap: () => getErrorMap2,
+  getErrorMap: () => getErrorMap,
   globalRegistry: () => globalRegistry,
   gt: () => _gt,
   gte: () => _gte,
@@ -49032,7 +44083,7 @@ __export(core_exports2, {
   globalRegistry: () => globalRegistry,
   isValidBase64: () => isValidBase64,
   isValidBase64URL: () => isValidBase64URL,
-  isValidJWT: () => isValidJWT2,
+  isValidJWT: () => isValidJWT,
   locales: () => locales_exports,
   parse: () => parse,
   parseAsync: () => parseAsync,
@@ -49133,11 +44184,11 @@ __export(util_exports, {
   escapeRegex: () => escapeRegex,
   extend: () => extend,
   finalizeIssue: () => finalizeIssue,
-  floatSafeRemainder: () => floatSafeRemainder2,
+  floatSafeRemainder: () => floatSafeRemainder,
   getElementAtPath: () => getElementAtPath,
   getEnumValues: () => getEnumValues,
   getLengthableOrigin: () => getLengthableOrigin,
-  getParsedType: () => getParsedType2,
+  getParsedType: () => getParsedType,
   getSizableOrigin: () => getSizableOrigin,
   isObject: () => isObject,
   isPlainObject: () => isPlainObject,
@@ -49208,7 +44259,7 @@ function cleanRegex(source) {
   const end = source.endsWith("$") ? source.length - 1 : source.length;
   return source.slice(start, end);
 }
-function floatSafeRemainder2(val, step) {
+function floatSafeRemainder(val, step) {
   const valDecCount = (val.toString().split(".")[1] || "").length;
   const stepDecCount = (step.toString().split(".")[1] || "").length;
   const decCount = valDecCount > stepDecCount ? valDecCount : stepDecCount;
@@ -49244,10 +44295,10 @@ function assignProp(target, prop, value) {
     configurable: true
   });
 }
-function getElementAtPath(obj, path) {
-  if (!path)
+function getElementAtPath(obj, path2) {
+  if (!path2)
     return obj;
-  return path.reduce((acc, key) => acc?.[key], obj);
+  return path2.reduce((acc, key) => acc?.[key], obj);
 }
 function promiseAllObject(promisesObj) {
   const keys = Object.keys(promisesObj);
@@ -49311,7 +44362,7 @@ function numKeys(data) {
   }
   return keyCount;
 }
-var getParsedType2 = (data) => {
+var getParsedType = (data) => {
   const t = typeof data;
   switch (t) {
     case "undefined":
@@ -49567,11 +44618,11 @@ function aborted(x, startIndex = 0) {
   }
   return false;
 }
-function prefixIssues(path, issues) {
+function prefixIssues(path2, issues) {
   return issues.map((iss) => {
     var _a;
     (_a = iss).path ?? (_a.path = []);
-    iss.path.unshift(path);
+    iss.path.unshift(path2);
     return iss;
   });
 }
@@ -49708,7 +44759,7 @@ function treeifyError(error40, _mapper) {
     return issue2.message;
   };
   const result = { errors: [] };
-  const processError = (error41, path = []) => {
+  const processError = (error41, path2 = []) => {
     var _a, _b;
     for (const issue2 of error41.issues) {
       if (issue2.code === "invalid_union" && issue2.errors.length) {
@@ -49718,7 +44769,7 @@ function treeifyError(error40, _mapper) {
       } else if (issue2.code === "invalid_element") {
         processError({ issues: issue2.issues }, issue2.path);
       } else {
-        const fullpath = [...path, ...issue2.path];
+        const fullpath = [...path2, ...issue2.path];
         if (fullpath.length === 0) {
           result.errors.push(mapper(issue2));
           continue;
@@ -49748,9 +44799,9 @@ function treeifyError(error40, _mapper) {
   processError(error40);
   return result;
 }
-function toDotPath(path) {
+function toDotPath(path2) {
   const segs = [];
-  for (const seg of path) {
+  for (const seg of path2) {
     if (typeof seg === "number")
       segs.push(`[${seg}]`);
     else if (typeof seg === "symbol")
@@ -49925,8 +44976,8 @@ function datetime(args) {
     opts.push("");
   if (args.offset)
     opts.push(`([+-]\\d{2}:\\d{2})`);
-  const timeRegex2 = `${time4}(?:${opts.join("|")})`;
-  return new RegExp(`^${dateSource}T(?:${timeRegex2})$`);
+  const timeRegex = `${time4}(?:${opts.join("|")})`;
+  return new RegExp(`^${dateSource}T(?:${timeRegex})$`);
 }
 var string = (params) => {
   const regex = params ? `[\\s\\S]{${params?.minimum ?? 0},${params?.maximum ?? ""}}` : `[\\s\\S]*`;
@@ -50018,7 +45069,7 @@ var $ZodCheckMultipleOf = /* @__PURE__ */ $constructor("$ZodCheckMultipleOf", (i
   inst._zod.check = (payload) => {
     if (typeof payload.value !== typeof def.value)
       throw new Error("Cannot mix number and bigint in multiple_of check.");
-    const isMultiple = typeof payload.value === "bigint" ? payload.value % def.value === BigInt(0) : floatSafeRemainder2(payload.value, def.value) === 0;
+    const isMultiple = typeof payload.value === "bigint" ? payload.value % def.value === BigInt(0) : floatSafeRemainder(payload.value, def.value) === 0;
     if (isMultiple)
       return;
     payload.issues.push({
@@ -50545,14 +45596,14 @@ var $ZodType = /* @__PURE__ */ $constructor("$ZodType", (inst, def) => {
     });
   } else {
     const runChecks = (payload, checks2, ctx) => {
-      let isAborted2 = aborted(payload);
+      let isAborted = aborted(payload);
       let asyncResult;
       for (const ch of checks2) {
         if (ch._zod.def.when) {
           const shouldRun = ch._zod.def.when(payload);
           if (!shouldRun)
             continue;
-        } else if (isAborted2) {
+        } else if (isAborted) {
           continue;
         }
         const currLen = payload.issues.length;
@@ -50566,15 +45617,15 @@ var $ZodType = /* @__PURE__ */ $constructor("$ZodType", (inst, def) => {
             const nextLen = payload.issues.length;
             if (nextLen === currLen)
               return;
-            if (!isAborted2)
-              isAborted2 = aborted(payload, currLen);
+            if (!isAborted)
+              isAborted = aborted(payload, currLen);
           });
         } else {
           const nextLen = payload.issues.length;
           if (nextLen === currLen)
             continue;
-          if (!isAborted2)
-            isAborted2 = aborted(payload, currLen);
+          if (!isAborted)
+            isAborted = aborted(payload, currLen);
         }
       }
       if (asyncResult) {
@@ -50872,7 +45923,7 @@ var $ZodE164 = /* @__PURE__ */ $constructor("$ZodE164", (inst, def) => {
   def.pattern ?? (def.pattern = e164);
   $ZodStringFormat.init(inst, def);
 });
-function isValidJWT2(token, algorithm = null) {
+function isValidJWT(token, algorithm = null) {
   try {
     const tokensParts = token.split(".");
     if (tokensParts.length !== 3)
@@ -50895,7 +45946,7 @@ function isValidJWT2(token, algorithm = null) {
 var $ZodJWT = /* @__PURE__ */ $constructor("$ZodJWT", (inst, def) => {
   $ZodStringFormat.init(inst, def);
   inst._zod.check = (payload) => {
-    if (isValidJWT2(payload.value, def.alg))
+    if (isValidJWT(payload.value, def.alg))
       return;
     payload.issues.push({
       code: "invalid_format",
@@ -51463,7 +46514,7 @@ var $ZodIntersection = /* @__PURE__ */ $constructor("$ZodIntersection", (inst, d
     return handleIntersectionResults(payload, left, right);
   };
 });
-function mergeValues2(a, b) {
+function mergeValues(a, b) {
   if (a === b) {
     return { valid: true, data: a };
   }
@@ -51475,7 +46526,7 @@ function mergeValues2(a, b) {
     const sharedKeys = Object.keys(a).filter((key) => bKeys.indexOf(key) !== -1);
     const newObj = { ...a, ...b };
     for (const key of sharedKeys) {
-      const sharedValue = mergeValues2(a[key], b[key]);
+      const sharedValue = mergeValues(a[key], b[key]);
       if (!sharedValue.valid) {
         return {
           valid: false,
@@ -51494,7 +46545,7 @@ function mergeValues2(a, b) {
     for (let index = 0; index < a.length; index++) {
       const itemA = a[index];
       const itemB = b[index];
-      const sharedValue = mergeValues2(itemA, itemB);
+      const sharedValue = mergeValues(itemA, itemB);
       if (!sharedValue.valid) {
         return {
           valid: false,
@@ -51516,7 +46567,7 @@ function handleIntersectionResults(result, left, right) {
   }
   if (aborted(result))
     return result;
-  const merged = mergeValues2(left.value, right.value);
+  const merged = mergeValues(left.value, right.value);
   if (!merged.valid) {
     throw new Error(`Unmergable intersection. Error path: ${JSON.stringify(merged.mergeErrorPath)}`);
   }
@@ -52158,7 +47209,7 @@ __export(locales_exports, {
   ca: () => ca_default,
   cs: () => cs_default,
   de: () => de_default,
-  en: () => en_default2,
+  en: () => en_default,
   eo: () => eo_default,
   es: () => es_default,
   fa: () => fa_default,
@@ -53076,7 +48127,7 @@ var error7 = () => {
     }
   };
 };
-function en_default2() {
+function en_default() {
   return {
     localeError: error7()
   };
@@ -58732,7 +53783,7 @@ var initializer2 = (inst, issues) => {
     }
   });
 };
-var ZodError2 = $constructor("ZodError", initializer2);
+var ZodError = $constructor("ZodError", initializer2);
 var ZodRealError = $constructor("ZodError", initializer2, {
   Parent: Error
 });
@@ -58744,7 +53795,7 @@ var safeParse2 = /* @__PURE__ */ _safeParse(ZodRealError);
 var safeParseAsync2 = /* @__PURE__ */ _safeParseAsync(ZodRealError);
 
 // ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v4/classic/schemas.js
-var ZodType2 = /* @__PURE__ */ $constructor("ZodType", (inst, def) => {
+var ZodType = /* @__PURE__ */ $constructor("ZodType", (inst, def) => {
   $ZodType.init(inst, def);
   inst.def = def;
   Object.defineProperty(inst, "_def", { value: def });
@@ -58812,7 +53863,7 @@ var ZodType2 = /* @__PURE__ */ $constructor("ZodType", (inst, def) => {
 });
 var _ZodString = /* @__PURE__ */ $constructor("_ZodString", (inst, def) => {
   $ZodString.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   const bag = inst._zod.bag;
   inst.format = bag.format ?? null;
   inst.minLength = bag.minimum ?? null;
@@ -58832,7 +53883,7 @@ var _ZodString = /* @__PURE__ */ $constructor("_ZodString", (inst, def) => {
   inst.toLowerCase = () => inst.check(_toLowerCase());
   inst.toUpperCase = () => inst.check(_toUpperCase());
 });
-var ZodString2 = /* @__PURE__ */ $constructor("ZodString", (inst, def) => {
+var ZodString = /* @__PURE__ */ $constructor("ZodString", (inst, def) => {
   $ZodString.init(inst, def);
   _ZodString.init(inst, def);
   inst.email = (params) => inst.check(_email(ZodEmail, params));
@@ -58864,7 +53915,7 @@ var ZodString2 = /* @__PURE__ */ $constructor("ZodString", (inst, def) => {
   inst.duration = (params) => inst.check(duration2(params));
 });
 function string2(params) {
-  return _string(ZodString2, params);
+  return _string(ZodString, params);
 }
 var ZodStringFormat = /* @__PURE__ */ $constructor("ZodStringFormat", (inst, def) => {
   $ZodStringFormat.init(inst, def);
@@ -59019,9 +54070,9 @@ var ZodCustomStringFormat = /* @__PURE__ */ $constructor("ZodCustomStringFormat"
 function stringFormat(format, fnOrRegex, _params = {}) {
   return _stringFormat(ZodCustomStringFormat, format, fnOrRegex, _params);
 }
-var ZodNumber2 = /* @__PURE__ */ $constructor("ZodNumber", (inst, def) => {
+var ZodNumber = /* @__PURE__ */ $constructor("ZodNumber", (inst, def) => {
   $ZodNumber.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.gt = (value, params) => inst.check(_gt(value, params));
   inst.gte = (value, params) => inst.check(_gte(value, params));
   inst.min = (value, params) => inst.check(_gte(value, params));
@@ -59045,11 +54096,11 @@ var ZodNumber2 = /* @__PURE__ */ $constructor("ZodNumber", (inst, def) => {
   inst.format = bag.format ?? null;
 });
 function number2(params) {
-  return _number(ZodNumber2, params);
+  return _number(ZodNumber, params);
 }
 var ZodNumberFormat = /* @__PURE__ */ $constructor("ZodNumberFormat", (inst, def) => {
   $ZodNumberFormat.init(inst, def);
-  ZodNumber2.init(inst, def);
+  ZodNumber.init(inst, def);
 });
 function int(params) {
   return _int(ZodNumberFormat, params);
@@ -59066,16 +54117,16 @@ function int32(params) {
 function uint32(params) {
   return _uint32(ZodNumberFormat, params);
 }
-var ZodBoolean2 = /* @__PURE__ */ $constructor("ZodBoolean", (inst, def) => {
+var ZodBoolean = /* @__PURE__ */ $constructor("ZodBoolean", (inst, def) => {
   $ZodBoolean.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function boolean3(params) {
-  return _boolean(ZodBoolean2, params);
+  return _boolean(ZodBoolean, params);
 }
-var ZodBigInt2 = /* @__PURE__ */ $constructor("ZodBigInt", (inst, def) => {
+var ZodBigInt = /* @__PURE__ */ $constructor("ZodBigInt", (inst, def) => {
   $ZodBigInt.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.gte = (value, params) => inst.check(_gte(value, params));
   inst.min = (value, params) => inst.check(_gte(value, params));
   inst.gt = (value, params) => inst.check(_gt(value, params));
@@ -59095,11 +54146,11 @@ var ZodBigInt2 = /* @__PURE__ */ $constructor("ZodBigInt", (inst, def) => {
   inst.format = bag.format ?? null;
 });
 function bigint3(params) {
-  return _bigint(ZodBigInt2, params);
+  return _bigint(ZodBigInt, params);
 }
 var ZodBigIntFormat = /* @__PURE__ */ $constructor("ZodBigIntFormat", (inst, def) => {
   $ZodBigIntFormat.init(inst, def);
-  ZodBigInt2.init(inst, def);
+  ZodBigInt.init(inst, def);
 });
 function int64(params) {
   return _int64(ZodBigIntFormat, params);
@@ -59107,58 +54158,58 @@ function int64(params) {
 function uint64(params) {
   return _uint64(ZodBigIntFormat, params);
 }
-var ZodSymbol2 = /* @__PURE__ */ $constructor("ZodSymbol", (inst, def) => {
+var ZodSymbol = /* @__PURE__ */ $constructor("ZodSymbol", (inst, def) => {
   $ZodSymbol.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function symbol(params) {
-  return _symbol(ZodSymbol2, params);
+  return _symbol(ZodSymbol, params);
 }
-var ZodUndefined2 = /* @__PURE__ */ $constructor("ZodUndefined", (inst, def) => {
+var ZodUndefined = /* @__PURE__ */ $constructor("ZodUndefined", (inst, def) => {
   $ZodUndefined.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function _undefined3(params) {
-  return _undefined2(ZodUndefined2, params);
+  return _undefined2(ZodUndefined, params);
 }
-var ZodNull2 = /* @__PURE__ */ $constructor("ZodNull", (inst, def) => {
+var ZodNull = /* @__PURE__ */ $constructor("ZodNull", (inst, def) => {
   $ZodNull.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function _null3(params) {
-  return _null2(ZodNull2, params);
+  return _null2(ZodNull, params);
 }
-var ZodAny2 = /* @__PURE__ */ $constructor("ZodAny", (inst, def) => {
+var ZodAny = /* @__PURE__ */ $constructor("ZodAny", (inst, def) => {
   $ZodAny.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function any() {
-  return _any(ZodAny2);
+  return _any(ZodAny);
 }
-var ZodUnknown2 = /* @__PURE__ */ $constructor("ZodUnknown", (inst, def) => {
+var ZodUnknown = /* @__PURE__ */ $constructor("ZodUnknown", (inst, def) => {
   $ZodUnknown.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function unknown() {
-  return _unknown(ZodUnknown2);
+  return _unknown(ZodUnknown);
 }
-var ZodNever2 = /* @__PURE__ */ $constructor("ZodNever", (inst, def) => {
+var ZodNever = /* @__PURE__ */ $constructor("ZodNever", (inst, def) => {
   $ZodNever.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function never(params) {
-  return _never(ZodNever2, params);
+  return _never(ZodNever, params);
 }
-var ZodVoid2 = /* @__PURE__ */ $constructor("ZodVoid", (inst, def) => {
+var ZodVoid = /* @__PURE__ */ $constructor("ZodVoid", (inst, def) => {
   $ZodVoid.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function _void2(params) {
-  return _void(ZodVoid2, params);
+  return _void(ZodVoid, params);
 }
-var ZodDate2 = /* @__PURE__ */ $constructor("ZodDate", (inst, def) => {
+var ZodDate = /* @__PURE__ */ $constructor("ZodDate", (inst, def) => {
   $ZodDate.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.min = (value, params) => inst.check(_gte(value, params));
   inst.max = (value, params) => inst.check(_lte(value, params));
   const c = inst._zod.bag;
@@ -59166,11 +54217,11 @@ var ZodDate2 = /* @__PURE__ */ $constructor("ZodDate", (inst, def) => {
   inst.maxDate = c.maximum ? new Date(c.maximum) : null;
 });
 function date4(params) {
-  return _date(ZodDate2, params);
+  return _date(ZodDate, params);
 }
-var ZodArray2 = /* @__PURE__ */ $constructor("ZodArray", (inst, def) => {
+var ZodArray = /* @__PURE__ */ $constructor("ZodArray", (inst, def) => {
   $ZodArray.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.element = def.element;
   inst.min = (minLength, params) => inst.check(_minLength(minLength, params));
   inst.nonempty = (params) => inst.check(_minLength(1, params));
@@ -59179,15 +54230,15 @@ var ZodArray2 = /* @__PURE__ */ $constructor("ZodArray", (inst, def) => {
   inst.unwrap = () => inst.element;
 });
 function array(element, params) {
-  return _array(ZodArray2, element, params);
+  return _array(ZodArray, element, params);
 }
 function keyof(schema) {
   const shape = schema._zod.def.shape;
   return literal(Object.keys(shape));
 }
-var ZodObject2 = /* @__PURE__ */ $constructor("ZodObject", (inst, def) => {
+var ZodObject = /* @__PURE__ */ $constructor("ZodObject", (inst, def) => {
   $ZodObject.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   util_exports.defineLazy(inst, "shape", () => def.shape);
   inst.keyof = () => _enum2(Object.keys(inst._zod.def.shape));
   inst.catchall = (catchall) => inst.clone({ ...inst._zod.def, catchall });
@@ -59201,7 +54252,7 @@ var ZodObject2 = /* @__PURE__ */ $constructor("ZodObject", (inst, def) => {
   inst.merge = (other) => util_exports.merge(inst, other);
   inst.pick = (mask) => util_exports.pick(inst, mask);
   inst.omit = (mask) => util_exports.omit(inst, mask);
-  inst.partial = (...args) => util_exports.partial(ZodOptional2, inst, args[0]);
+  inst.partial = (...args) => util_exports.partial(ZodOptional, inst, args[0]);
   inst.required = (...args) => util_exports.required(ZodNonOptional, inst, args[0]);
 });
 function object(shape, params) {
@@ -59213,10 +54264,10 @@ function object(shape, params) {
     },
     ...util_exports.normalizeParams(params)
   };
-  return new ZodObject2(def);
+  return new ZodObject(def);
 }
 function strictObject(shape, params) {
-  return new ZodObject2({
+  return new ZodObject({
     type: "object",
     get shape() {
       util_exports.assignProp(this, "shape", { ...shape });
@@ -59227,7 +54278,7 @@ function strictObject(shape, params) {
   });
 }
 function looseObject(shape, params) {
-  return new ZodObject2({
+  return new ZodObject({
     type: "object",
     get shape() {
       util_exports.assignProp(this, "shape", { ...shape });
@@ -59237,44 +54288,44 @@ function looseObject(shape, params) {
     ...util_exports.normalizeParams(params)
   });
 }
-var ZodUnion2 = /* @__PURE__ */ $constructor("ZodUnion", (inst, def) => {
+var ZodUnion = /* @__PURE__ */ $constructor("ZodUnion", (inst, def) => {
   $ZodUnion.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.options = def.options;
 });
 function union2(options, params) {
-  return new ZodUnion2({
+  return new ZodUnion({
     type: "union",
     options,
     ...util_exports.normalizeParams(params)
   });
 }
-var ZodDiscriminatedUnion2 = /* @__PURE__ */ $constructor("ZodDiscriminatedUnion", (inst, def) => {
-  ZodUnion2.init(inst, def);
+var ZodDiscriminatedUnion = /* @__PURE__ */ $constructor("ZodDiscriminatedUnion", (inst, def) => {
+  ZodUnion.init(inst, def);
   $ZodDiscriminatedUnion.init(inst, def);
 });
 function discriminatedUnion(discriminator, options, params) {
-  return new ZodDiscriminatedUnion2({
+  return new ZodDiscriminatedUnion({
     type: "union",
     options,
     discriminator,
     ...util_exports.normalizeParams(params)
   });
 }
-var ZodIntersection2 = /* @__PURE__ */ $constructor("ZodIntersection", (inst, def) => {
+var ZodIntersection = /* @__PURE__ */ $constructor("ZodIntersection", (inst, def) => {
   $ZodIntersection.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function intersection(left, right) {
-  return new ZodIntersection2({
+  return new ZodIntersection({
     type: "intersection",
     left,
     right
   });
 }
-var ZodTuple2 = /* @__PURE__ */ $constructor("ZodTuple", (inst, def) => {
+var ZodTuple = /* @__PURE__ */ $constructor("ZodTuple", (inst, def) => {
   $ZodTuple.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.rest = (rest) => inst.clone({
     ...inst._zod.def,
     rest
@@ -59284,21 +54335,21 @@ function tuple(items, _paramsOrRest, _params) {
   const hasRest = _paramsOrRest instanceof $ZodType;
   const params = hasRest ? _params : _paramsOrRest;
   const rest = hasRest ? _paramsOrRest : null;
-  return new ZodTuple2({
+  return new ZodTuple({
     type: "tuple",
     items,
     rest,
     ...util_exports.normalizeParams(params)
   });
 }
-var ZodRecord2 = /* @__PURE__ */ $constructor("ZodRecord", (inst, def) => {
+var ZodRecord = /* @__PURE__ */ $constructor("ZodRecord", (inst, def) => {
   $ZodRecord.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.keyType = def.keyType;
   inst.valueType = def.valueType;
 });
 function record(keyType, valueType, params) {
-  return new ZodRecord2({
+  return new ZodRecord({
     type: "record",
     keyType,
     valueType,
@@ -59306,45 +54357,45 @@ function record(keyType, valueType, params) {
   });
 }
 function partialRecord(keyType, valueType, params) {
-  return new ZodRecord2({
+  return new ZodRecord({
     type: "record",
     keyType: union2([keyType, never()]),
     valueType,
     ...util_exports.normalizeParams(params)
   });
 }
-var ZodMap2 = /* @__PURE__ */ $constructor("ZodMap", (inst, def) => {
+var ZodMap = /* @__PURE__ */ $constructor("ZodMap", (inst, def) => {
   $ZodMap.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.keyType = def.keyType;
   inst.valueType = def.valueType;
 });
 function map(keyType, valueType, params) {
-  return new ZodMap2({
+  return new ZodMap({
     type: "map",
     keyType,
     valueType,
     ...util_exports.normalizeParams(params)
   });
 }
-var ZodSet2 = /* @__PURE__ */ $constructor("ZodSet", (inst, def) => {
+var ZodSet = /* @__PURE__ */ $constructor("ZodSet", (inst, def) => {
   $ZodSet.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.min = (...args) => inst.check(_minSize(...args));
   inst.nonempty = (params) => inst.check(_minSize(1, params));
   inst.max = (...args) => inst.check(_maxSize(...args));
   inst.size = (...args) => inst.check(_size(...args));
 });
 function set(valueType, params) {
-  return new ZodSet2({
+  return new ZodSet({
     type: "set",
     valueType,
     ...util_exports.normalizeParams(params)
   });
 }
-var ZodEnum2 = /* @__PURE__ */ $constructor("ZodEnum", (inst, def) => {
+var ZodEnum = /* @__PURE__ */ $constructor("ZodEnum", (inst, def) => {
   $ZodEnum.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.enum = def.entries;
   inst.options = Object.values(def.entries);
   const keys = new Set(Object.keys(def.entries));
@@ -59356,7 +54407,7 @@ var ZodEnum2 = /* @__PURE__ */ $constructor("ZodEnum", (inst, def) => {
       } else
         throw new Error(`Key ${value} not found in enum`);
     }
-    return new ZodEnum2({
+    return new ZodEnum({
       ...def,
       checks: [],
       ...util_exports.normalizeParams(params),
@@ -59371,7 +54422,7 @@ var ZodEnum2 = /* @__PURE__ */ $constructor("ZodEnum", (inst, def) => {
       } else
         throw new Error(`Key ${value} not found in enum`);
     }
-    return new ZodEnum2({
+    return new ZodEnum({
       ...def,
       checks: [],
       ...util_exports.normalizeParams(params),
@@ -59381,22 +54432,22 @@ var ZodEnum2 = /* @__PURE__ */ $constructor("ZodEnum", (inst, def) => {
 });
 function _enum2(values, params) {
   const entries = Array.isArray(values) ? Object.fromEntries(values.map((v) => [v, v])) : values;
-  return new ZodEnum2({
+  return new ZodEnum({
     type: "enum",
     entries,
     ...util_exports.normalizeParams(params)
   });
 }
 function nativeEnum(entries, params) {
-  return new ZodEnum2({
+  return new ZodEnum({
     type: "enum",
     entries,
     ...util_exports.normalizeParams(params)
   });
 }
-var ZodLiteral2 = /* @__PURE__ */ $constructor("ZodLiteral", (inst, def) => {
+var ZodLiteral = /* @__PURE__ */ $constructor("ZodLiteral", (inst, def) => {
   $ZodLiteral.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.values = new Set(def.values);
   Object.defineProperty(inst, "value", {
     get() {
@@ -59408,7 +54459,7 @@ var ZodLiteral2 = /* @__PURE__ */ $constructor("ZodLiteral", (inst, def) => {
   });
 });
 function literal(value, params) {
-  return new ZodLiteral2({
+  return new ZodLiteral({
     type: "literal",
     values: Array.isArray(value) ? value : [value],
     ...util_exports.normalizeParams(params)
@@ -59416,7 +54467,7 @@ function literal(value, params) {
 }
 var ZodFile = /* @__PURE__ */ $constructor("ZodFile", (inst, def) => {
   $ZodFile.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.min = (size, params) => inst.check(_minSize(size, params));
   inst.max = (size, params) => inst.check(_maxSize(size, params));
   inst.mime = (types3, params) => inst.check(_mime(Array.isArray(types3) ? types3 : [types3], params));
@@ -59426,7 +54477,7 @@ function file(params) {
 }
 var ZodTransform = /* @__PURE__ */ $constructor("ZodTransform", (inst, def) => {
   $ZodTransform.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst._zod.parse = (payload, _ctx) => {
     payload.addIssue = (issue2) => {
       if (typeof issue2 === "string") {
@@ -59459,24 +54510,24 @@ function transform(fn) {
     transform: fn
   });
 }
-var ZodOptional2 = /* @__PURE__ */ $constructor("ZodOptional", (inst, def) => {
+var ZodOptional = /* @__PURE__ */ $constructor("ZodOptional", (inst, def) => {
   $ZodOptional.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.unwrap = () => inst._zod.def.innerType;
 });
 function optional(innerType) {
-  return new ZodOptional2({
+  return new ZodOptional({
     type: "optional",
     innerType
   });
 }
-var ZodNullable2 = /* @__PURE__ */ $constructor("ZodNullable", (inst, def) => {
+var ZodNullable = /* @__PURE__ */ $constructor("ZodNullable", (inst, def) => {
   $ZodNullable.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.unwrap = () => inst._zod.def.innerType;
 });
 function nullable(innerType) {
-  return new ZodNullable2({
+  return new ZodNullable({
     type: "nullable",
     innerType
   });
@@ -59484,14 +54535,14 @@ function nullable(innerType) {
 function nullish2(innerType) {
   return optional(nullable(innerType));
 }
-var ZodDefault2 = /* @__PURE__ */ $constructor("ZodDefault", (inst, def) => {
+var ZodDefault = /* @__PURE__ */ $constructor("ZodDefault", (inst, def) => {
   $ZodDefault.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.unwrap = () => inst._zod.def.innerType;
   inst.removeDefault = inst.unwrap;
 });
 function _default2(innerType, defaultValue) {
-  return new ZodDefault2({
+  return new ZodDefault({
     type: "default",
     innerType,
     get defaultValue() {
@@ -59501,7 +54552,7 @@ function _default2(innerType, defaultValue) {
 }
 var ZodPrefault = /* @__PURE__ */ $constructor("ZodPrefault", (inst, def) => {
   $ZodPrefault.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.unwrap = () => inst._zod.def.innerType;
 });
 function prefault(innerType, defaultValue) {
@@ -59515,7 +54566,7 @@ function prefault(innerType, defaultValue) {
 }
 var ZodNonOptional = /* @__PURE__ */ $constructor("ZodNonOptional", (inst, def) => {
   $ZodNonOptional.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.unwrap = () => inst._zod.def.innerType;
 });
 function nonoptional(innerType, params) {
@@ -59527,7 +54578,7 @@ function nonoptional(innerType, params) {
 }
 var ZodSuccess = /* @__PURE__ */ $constructor("ZodSuccess", (inst, def) => {
   $ZodSuccess.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.unwrap = () => inst._zod.def.innerType;
 });
 function success(innerType) {
@@ -59536,29 +54587,29 @@ function success(innerType) {
     innerType
   });
 }
-var ZodCatch2 = /* @__PURE__ */ $constructor("ZodCatch", (inst, def) => {
+var ZodCatch = /* @__PURE__ */ $constructor("ZodCatch", (inst, def) => {
   $ZodCatch.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.unwrap = () => inst._zod.def.innerType;
   inst.removeCatch = inst.unwrap;
 });
 function _catch2(innerType, catchValue) {
-  return new ZodCatch2({
+  return new ZodCatch({
     type: "catch",
     innerType,
     catchValue: typeof catchValue === "function" ? catchValue : () => catchValue
   });
 }
-var ZodNaN2 = /* @__PURE__ */ $constructor("ZodNaN", (inst, def) => {
+var ZodNaN = /* @__PURE__ */ $constructor("ZodNaN", (inst, def) => {
   $ZodNaN.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function nan(params) {
-  return _nan(ZodNaN2, params);
+  return _nan(ZodNaN, params);
 }
 var ZodPipe = /* @__PURE__ */ $constructor("ZodPipe", (inst, def) => {
   $ZodPipe.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.in = def.in;
   inst.out = def.out;
 });
@@ -59570,19 +54621,19 @@ function pipe(in_, out) {
     // ...util.normalizeParams(params),
   });
 }
-var ZodReadonly2 = /* @__PURE__ */ $constructor("ZodReadonly", (inst, def) => {
+var ZodReadonly = /* @__PURE__ */ $constructor("ZodReadonly", (inst, def) => {
   $ZodReadonly.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function readonly(innerType) {
-  return new ZodReadonly2({
+  return new ZodReadonly({
     type: "readonly",
     innerType
   });
 }
 var ZodTemplateLiteral = /* @__PURE__ */ $constructor("ZodTemplateLiteral", (inst, def) => {
   $ZodTemplateLiteral.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function templateLiteral(parts, params) {
   return new ZodTemplateLiteral({
@@ -59591,31 +54642,31 @@ function templateLiteral(parts, params) {
     ...util_exports.normalizeParams(params)
   });
 }
-var ZodLazy2 = /* @__PURE__ */ $constructor("ZodLazy", (inst, def) => {
+var ZodLazy = /* @__PURE__ */ $constructor("ZodLazy", (inst, def) => {
   $ZodLazy.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.unwrap = () => inst._zod.def.getter();
 });
 function lazy(getter) {
-  return new ZodLazy2({
+  return new ZodLazy({
     type: "lazy",
     getter
   });
 }
-var ZodPromise2 = /* @__PURE__ */ $constructor("ZodPromise", (inst, def) => {
+var ZodPromise = /* @__PURE__ */ $constructor("ZodPromise", (inst, def) => {
   $ZodPromise.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
   inst.unwrap = () => inst._zod.def.innerType;
 });
 function promise(innerType) {
-  return new ZodPromise2({
+  return new ZodPromise({
     type: "promise",
     innerType
   });
 }
 var ZodCustom = /* @__PURE__ */ $constructor("ZodCustom", (inst, def) => {
   $ZodCustom.init(inst, def);
-  ZodType2.init(inst, def);
+  ZodType.init(inst, def);
 });
 function check(fn) {
   const ch = new $ZodCheck({
@@ -59666,8 +54717,8 @@ function _instanceof(cls, params = {
 }
 var stringbool = (...args) => _stringbool({
   Pipe: ZodPipe,
-  Boolean: ZodBoolean2,
-  String: ZodString2,
+  Boolean: ZodBoolean,
+  String: ZodString,
   Transform: ZodTransform
 }, ...args);
 function json2(params) {
@@ -59681,7 +54732,7 @@ function preprocess(fn, schema) {
 }
 
 // ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v4/classic/compat.js
-var ZodIssueCode2 = {
+var ZodIssueCode = {
   invalid_type: "invalid_type",
   too_big: "too_big",
   too_small: "too_small",
@@ -59699,7 +54750,7 @@ function setErrorMap(map2) {
     customError: map2
   });
 }
-function getErrorMap2() {
+function getErrorMap() {
   return config().customError;
 }
 
@@ -59713,23 +54764,23 @@ __export(coerce_exports, {
   string: () => string3
 });
 function string3(params) {
-  return _coercedString(ZodString2, params);
+  return _coercedString(ZodString, params);
 }
 function number3(params) {
-  return _coercedNumber(ZodNumber2, params);
+  return _coercedNumber(ZodNumber, params);
 }
 function boolean4(params) {
-  return _coercedBoolean(ZodBoolean2, params);
+  return _coercedBoolean(ZodBoolean, params);
 }
 function bigint4(params) {
-  return _coercedBigint(ZodBigInt2, params);
+  return _coercedBigint(ZodBigInt, params);
 }
 function date5(params) {
-  return _coercedDate(ZodDate2, params);
+  return _coercedDate(ZodDate, params);
 }
 
 // ../../node_modules/.pnpm/zod@3.25.76/node_modules/zod/v4/classic/external.js
-config(en_default2());
+config(en_default());
 
 // ../../node_modules/.pnpm/drizzle-zod@0.8.3_drizzle-orm@0.45.1_@types+pg@8.18.0_pg@8.20.0__zod@3.25.76/node_modules/drizzle-zod/index.mjs
 var CONSTANTS = {
@@ -59767,7 +54818,7 @@ var jsonSchema = external_exports.union([
 var bufferSchema = external_exports.custom((v) => v instanceof Buffer);
 function columnToSchema(column, factory) {
   const z$1 = factory?.zodInstance ?? external_exports;
-  const coerce2 = factory?.coerce ?? {};
+  const coerce = factory?.coerce ?? {};
   let schema;
   if (isWithEnum(column)) {
     schema = column.enumValues.length ? z$1.enum(column.enumValues) : z$1.string();
@@ -59794,15 +54845,15 @@ function columnToSchema(column, factory) {
     } else if (column.dataType === "array") {
       schema = z$1.array(z$1.any());
     } else if (column.dataType === "number") {
-      schema = numberColumnToSchema(column, z$1, coerce2);
+      schema = numberColumnToSchema(column, z$1, coerce);
     } else if (column.dataType === "bigint") {
-      schema = bigintColumnToSchema(column, z$1, coerce2);
+      schema = bigintColumnToSchema(column, z$1, coerce);
     } else if (column.dataType === "boolean") {
-      schema = coerce2 === true || coerce2.boolean ? z$1.coerce.boolean() : z$1.boolean();
+      schema = coerce === true || coerce.boolean ? z$1.coerce.boolean() : z$1.boolean();
     } else if (column.dataType === "date") {
-      schema = coerce2 === true || coerce2.date ? z$1.coerce.date() : z$1.date();
+      schema = coerce === true || coerce.date ? z$1.coerce.date() : z$1.date();
     } else if (column.dataType === "string") {
-      schema = stringColumnToSchema(column, z$1, coerce2);
+      schema = stringColumnToSchema(column, z$1, coerce);
     } else if (column.dataType === "json") {
       schema = jsonSchema;
     } else if (column.dataType === "custom") {
@@ -59816,7 +54867,7 @@ function columnToSchema(column, factory) {
   }
   return schema;
 }
-function numberColumnToSchema(column, z, coerce2) {
+function numberColumnToSchema(column, z, coerce) {
   let unsigned = column.getSQLType().includes("unsigned");
   let min;
   let max;
@@ -59884,18 +54935,18 @@ function numberColumnToSchema(column, z, coerce2) {
     min = Number.MIN_SAFE_INTEGER;
     max = Number.MAX_SAFE_INTEGER;
   }
-  let schema = coerce2 === true || coerce2?.number ? integer3 ? z.coerce.number() : z.coerce.number().int() : integer3 ? z.int() : z.number();
+  let schema = coerce === true || coerce?.number ? integer3 ? z.coerce.number() : z.coerce.number().int() : integer3 ? z.int() : z.number();
   schema = schema.gte(min).lte(max);
   return schema;
 }
-function bigintColumnToSchema(column, z, coerce2) {
+function bigintColumnToSchema(column, z, coerce) {
   const unsigned = column.getSQLType().includes("unsigned");
   const min = unsigned ? 0n : CONSTANTS.INT64_MIN;
   const max = unsigned ? CONSTANTS.INT64_UNSIGNED_MAX : CONSTANTS.INT64_MAX;
-  const schema = coerce2 === true || coerce2?.bigint ? z.coerce.bigint() : z.bigint();
+  const schema = coerce === true || coerce?.bigint ? z.coerce.bigint() : z.bigint();
   return schema.gte(min).lte(max);
 }
-function stringColumnToSchema(column, z, coerce2) {
+function stringColumnToSchema(column, z, coerce) {
   if (isColumnType(column, ["PgUUID"])) {
     return z.uuid();
   }
@@ -59929,7 +54980,7 @@ function stringColumnToSchema(column, z, coerce2) {
     regex = /^[01]+$/;
     max = column.dimensions;
   }
-  let schema = coerce2 === true || coerce2?.string ? z.coerce.string() : z.string();
+  let schema = coerce === true || coerce?.string ? z.coerce.string() : z.string();
   schema = regex ? schema.regex(regex) : schema;
   return max && fixed ? schema.length(max) : max ? schema.max(max) : schema;
 }
@@ -59978,20 +55029,19 @@ var createInsertSchema = (entity, refine2) => {
   return handleColumns(columns, refine2 ?? {}, insertConditions);
 };
 
-// ../../lib/db/src/schema/users.ts
-var usersTable = pgTable("users", {
+// ../../lib/db/src/schema/contractorCompanies.ts
+var contractorCompaniesTable = pgTable("contractor_companies", {
   id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  passwordHash: text("password_hash").notNull(),
-  fullName: text("full_name").notNull(),
-  role: text("role", { enum: ["admin", "user"] }).notNull().default("user"),
+  name: text("name").notNull(),
+  companyId: text("company_id"),
+  note: text("note"),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => /* @__PURE__ */ new Date()),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
   deletedBy: serial("deleted_by")
 });
-var insertUserSchema = createInsertSchema(usersTable).omit({
+var insertContractorCompanySchema = createInsertSchema(contractorCompaniesTable).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
@@ -60005,6 +55055,10 @@ var workersTable = pgTable("workers", {
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
   note: text("note"),
+  contractorCompanyId: integer("contractor_company_id").references(() => contractorCompaniesTable.id),
+  defaultSubcontractor: boolean("default_subcontractor").notNull().default(false),
+  defaultBrushcutter: boolean("default_brushcutter").notNull().default(false),
+  defaultSlopeMower: boolean("default_slope_mower").notNull().default(false),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => /* @__PURE__ */ new Date()),
@@ -60019,12 +55073,35 @@ var insertWorkerSchema = createInsertSchema(workersTable).omit({
   deletedBy: true
 });
 
+// ../../lib/db/src/schema/users.ts
+var usersTable = pgTable("users", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  fullName: text("full_name").notNull(),
+  role: text("role", { enum: ["admin", "user", "employee", "manager"] }).notNull().default("user"),
+  workerId: integer("worker_id").unique().references(() => workersTable.id),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => /* @__PURE__ */ new Date()),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  deletedBy: serial("deleted_by")
+});
+var insertUserSchema = createInsertSchema(usersTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  deletedAt: true,
+  deletedBy: true
+});
+
 // ../../lib/db/src/schema/vehicles.ts
 var vehiclesTable = pgTable("vehicles", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   licensePlate: text("license_plate"),
   note: text("note"),
+  defaultSlopeMower: boolean("default_slope_mower").notNull().default(false),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => /* @__PURE__ */ new Date()),
@@ -60044,6 +55121,9 @@ var machinesTable = pgTable("machines", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   type: text("type").notNull(),
+  mowingCategory: text("mowing_category"),
+  defaultAccessoryId: integer("default_accessory_id"),
+  defaultOperatorId: integer("default_operator_id"),
   note: text("note"),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -60123,14 +55203,26 @@ var fellingRecordsTable = pgTable("felling_records", {
   date: date("date").notNull(),
   userId: integer("user_id").notNull().references(() => usersTable.id),
   regionId: integer("region_id").notNull().references(() => regionsTable.id),
+  workType: text("work_type"),
   location: text("location"),
   startTime: text("start_time"),
   endTime: text("end_time"),
   weatherTypeId: integer("weather_type_id").references(() => weatherTypesTable.id),
+  weatherTypeIds: text("weather_type_ids"),
   temperature: integer("temperature"),
   mth: numeric("mth", { precision: 10, scale: 2 }),
   fuelConsumption: numeric("fuel_consumption", { precision: 10, scale: 2 }),
   refueling: numeric("refueling", { precision: 10, scale: 2 }),
+  manualWorkerIds: text("manual_worker_ids"),
+  machineWorkerIds: text("machine_worker_ids"),
+  workerTimeEntries: text("worker_time_entries"),
+  machineMthEntries: text("machine_mth_entries"),
+  assignedAverage: text("assigned_average"),
+  vehicleKmStart: numeric("vehicle_km_start", { precision: 10, scale: 2 }),
+  vehicleKmEnd: numeric("vehicle_km_end", { precision: 10, scale: 2 }),
+  vehicleKmTotal: numeric("vehicle_km_total", { precision: 10, scale: 2 }),
+  vehicleRefueling: numeric("vehicle_refueling", { precision: 10, scale: 2 }),
+  trafficMarking: text("traffic_marking"),
   note: text("note"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => /* @__PURE__ */ new Date()),
@@ -60164,16 +55256,38 @@ var mowingRecordsTable = pgTable("mowing_records", {
   date: date("date").notNull(),
   userId: integer("user_id").notNull().references(() => usersTable.id),
   regionId: integer("region_id").notNull().references(() => regionsTable.id),
+  workType: text("work_type"),
+  mowingSection: text("mowing_section"),
+  mowingKind: text("mowing_kind"),
+  manualMowingKind: text("manual_mowing_kind"),
+  contractorCompanyId: integer("contractor_company_id").references(() => contractorCompaniesTable.id),
   location: text("location"),
   startTime: text("start_time"),
   endTime: text("end_time"),
   weatherTypeId: integer("weather_type_id").references(() => weatherTypesTable.id),
+  weatherTypeIds: text("weather_type_ids"),
+  temperature: integer("temperature"),
   vehicleId: integer("vehicle_id").references(() => vehiclesTable.id),
   mthStart: numeric("mth_start", { precision: 10, scale: 2 }),
   mthEnd: numeric("mth_end", { precision: 10, scale: 2 }),
   mthTotal: numeric("mth_total", { precision: 10, scale: 2 }),
   fuelConsumption: numeric("fuel_consumption", { precision: 10, scale: 2 }),
   refueling: numeric("refueling", { precision: 10, scale: 2 }),
+  manualWorkerIds: text("manual_worker_ids"),
+  machineWorkerIds: text("machine_worker_ids"),
+  workerTimeEntries: text("worker_time_entries"),
+  machineMthEntries: text("machine_mth_entries"),
+  vehicleEntries: text("vehicle_entries"),
+  assignedAverage: text("assigned_average"),
+  dayHours: numeric("day_hours", { precision: 10, scale: 2 }),
+  nightHours: numeric("night_hours", { precision: 10, scale: 2 }),
+  laborHours: numeric("labor_hours", { precision: 10, scale: 2 }),
+  vehicleKmStart: numeric("vehicle_km_start", { precision: 10, scale: 2 }),
+  vehicleKmEnd: numeric("vehicle_km_end", { precision: 10, scale: 2 }),
+  vehicleKmTotal: numeric("vehicle_km_total", { precision: 10, scale: 2 }),
+  vehicleRefueling: numeric("vehicle_refueling", { precision: 10, scale: 2 }),
+  brushcutterRefueling: numeric("brushcutter_refueling", { precision: 10, scale: 2 }),
+  trafficMarking: text("traffic_marking"),
   note: text("note"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => /* @__PURE__ */ new Date()),
@@ -60209,6 +55323,40 @@ var auditLogsTable = pgTable("audit_logs", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
 });
 
+// ../../lib/db/src/schema/teamDailyRecords.ts
+var teamDailyRecordsTable = pgTable("team_daily_records", {
+  id: serial("id").primaryKey(),
+  date: date("date").notNull(),
+  workCategory: text("work_category").notNull().default("sheep"),
+  regionId: integer("region_id").notNull().references(() => regionsTable.id),
+  location: text("location"),
+  weatherTypeId: integer("weather_type_id").references(() => weatherTypesTable.id),
+  temperature: integer("temperature"),
+  status: text("status", { enum: ["draft", "open", "closed"] }).notNull().default("draft"),
+  createdByUserId: integer("created_by_user_id").notNull().references(() => usersTable.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => /* @__PURE__ */ new Date()),
+  deletedAt: timestamp("deleted_at", { withTimezone: true })
+});
+var teamDailyAssignmentsTable = pgTable("team_daily_assignments", {
+  id: serial("id").primaryKey(),
+  dailyRecordId: integer("daily_record_id").notNull().references(() => teamDailyRecordsTable.id, { onDelete: "cascade" }),
+  workerId: integer("worker_id").notNull().references(() => workersTable.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow()
+}, (table) => [unique("team_daily_assignment_record_worker_unique").on(table.dailyRecordId, table.workerId)]);
+var teamDailyEntriesTable = pgTable("team_daily_entries", {
+  id: serial("id").primaryKey(),
+  dailyRecordId: integer("daily_record_id").notNull().references(() => teamDailyRecordsTable.id, { onDelete: "cascade" }),
+  userId: integer("user_id").notNull().references(() => usersTable.id),
+  workerId: integer("worker_id").notNull().references(() => workersTable.id),
+  machineEntries: jsonb("machine_entries").notNull().default([]),
+  vehicleEntries: jsonb("vehicle_entries").notNull().default([]),
+  note: text("note"),
+  submittedAt: timestamp("submitted_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => /* @__PURE__ */ new Date())
+}, (table) => [unique("team_daily_entry_record_worker_unique").on(table.dailyRecordId, table.workerId)]);
+
 // ../../lib/db/src/index.ts
 var { Pool: Pool3 } = esm_default;
 if (!process.env.DATABASE_URL) {
@@ -60240,6 +55388,18 @@ function requireAdmin(req, res, next) {
   }
   next();
 }
+function requireOperationsAccess(req, res, next) {
+  const session2 = req.session;
+  if (!session2?.userId) {
+    res.status(401).json({ error: "Nep\u0159ihl\xE1\u0161en" });
+    return;
+  }
+  if (!session2.userRole || !["admin", "user"].includes(session2.userRole)) {
+    res.status(403).json({ error: "Tato \u010D\xE1st aplikace pro va\u0161i roli zat\xEDm nen\xED zp\u0159\xEDstupn\u011Bna" });
+    return;
+  }
+  next();
+}
 
 // src/routes/auth.ts
 var router2 = (0, import_express2.Router)();
@@ -60254,8 +55414,8 @@ router2.post("/auth/login", async (req, res) => {
     res.status(401).json({ error: "Neplatn\xE9 p\u0159ihla\u0161ovac\xED \xFAdaje" });
     return;
   }
-  const isValid2 = await bcryptjs_default.compare(password, user.passwordHash);
-  if (!isValid2) {
+  const isValid = await bcryptjs_default.compare(password, user.passwordHash);
+  if (!isValid) {
     res.status(401).json({ error: "Neplatn\xE9 p\u0159ihla\u0161ovac\xED \xFAdaje" });
     return;
   }
@@ -60268,6 +55428,7 @@ router2.post("/auth/login", async (req, res) => {
       username: user.username,
       fullName: user.fullName,
       role: user.role,
+      workerId: user.workerId,
       isActive: user.isActive,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt
@@ -60299,6 +55460,7 @@ router2.get("/auth/me", requireAuth, async (req, res) => {
     username: user.username,
     fullName: user.fullName,
     role: user.role,
+    workerId: user.workerId,
     isActive: user.isActive,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt
@@ -60333,30 +55495,64 @@ var userFields = {
   username: usersTable.username,
   fullName: usersTable.fullName,
   role: usersTable.role,
+  workerId: usersTable.workerId,
   isActive: usersTable.isActive,
   createdAt: usersTable.createdAt,
   updatedAt: usersTable.updatedAt
 };
+function splitFullName(fullName) {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  return {
+    firstName: parts[0] ?? fullName.trim(),
+    lastName: parts.slice(1).join(" ") || "\u2014"
+  };
+}
 router3.get("/users", requireAdmin, async (_req, res) => {
   const users = await db.select(userFields).from(usersTable).where(isNull(usersTable.deletedAt)).orderBy(usersTable.fullName);
   res.json(users);
 });
 router3.post("/users", requireAdmin, async (req, res) => {
   const session2 = req.session;
-  const { username, password, fullName, role } = req.body;
+  const { username, password, fullName, role, workerId } = req.body;
   if (!username || !password || !fullName || !role) {
     res.status(400).json({ error: "V\u0161echna pole jsou povinn\xE1" });
     return;
   }
+  if (!["admin", "user", "employee", "manager"].includes(role)) {
+    res.status(400).json({ error: "Neplatn\xE1 role" });
+    return;
+  }
+  if (workerId) {
+    const [worker] = await db.select({ id: workersTable.id }).from(workersTable).where(and(eq(workersTable.id, workerId), eq(workersTable.isActive, true), isNull(workersTable.deletedAt)));
+    if (!worker) {
+      res.status(400).json({ error: "Pracovn\xED profil neexistuje nebo nen\xED aktivn\xED" });
+      return;
+    }
+    const [linked] = await db.select({ id: usersTable.id }).from(usersTable).where(and(eq(usersTable.workerId, workerId), isNull(usersTable.deletedAt)));
+    if (linked) {
+      res.status(409).json({ error: "Tento pracovn\xEDk ji\u017E m\xE1 u\u017Eivatelsk\xFD \xFA\u010Det" });
+      return;
+    }
+  }
   const passwordHash = await bcryptjs_default.hash(password, 10);
-  const [user] = await db.insert(usersTable).values({ username, passwordHash, fullName, role }).returning({
-    id: usersTable.id,
-    username: usersTable.username,
-    fullName: usersTable.fullName,
-    role: usersTable.role,
-    isActive: usersTable.isActive,
-    createdAt: usersTable.createdAt,
-    updatedAt: usersTable.updatedAt
+  const user = await db.transaction(async (tx) => {
+    let linkedWorkerId = workerId ?? null;
+    if (["employee", "manager"].includes(role) && !linkedWorkerId) {
+      const workerName = splitFullName(fullName);
+      const [worker] = await tx.insert(workersTable).values({ ...workerName, isActive: true }).returning({ id: workersTable.id });
+      linkedWorkerId = worker.id;
+    }
+    const [created] = await tx.insert(usersTable).values({ username, passwordHash, fullName: fullName.trim(), role, workerId: linkedWorkerId }).returning({
+      id: usersTable.id,
+      username: usersTable.username,
+      fullName: usersTable.fullName,
+      role: usersTable.role,
+      workerId: usersTable.workerId,
+      isActive: usersTable.isActive,
+      createdAt: usersTable.createdAt,
+      updatedAt: usersTable.updatedAt
+    });
+    return created;
   });
   await logAudit({
     userId: session2.userId,
@@ -60382,25 +55578,62 @@ router3.patch("/users/:id", requireAdmin, async (req, res) => {
   const session2 = req.session;
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
-  const { fullName, role, isActive, password } = req.body;
+  const { fullName, role, isActive, password, workerId } = req.body;
   const [before] = await db.select(userFields).from(usersTable).where(eq(usersTable.id, id)).limit(1);
+  if (!before) {
+    res.status(404).json({ error: "U\u017Eivatel nenalezen" });
+    return;
+  }
+  const nextRole = role ?? before.role;
+  const nextWorkerId = workerId !== void 0 ? workerId : before.workerId;
   const updates = {};
   if (fullName != null) updates.fullName = fullName;
   if (role != null) updates.role = role;
+  if (role != null && !["admin", "user", "employee", "manager"].includes(role)) {
+    res.status(400).json({ error: "Neplatn\xE1 role" });
+    return;
+  }
+  if (workerId !== void 0) {
+    if (workerId != null) {
+      const [linked] = await db.select({ id: usersTable.id }).from(usersTable).where(and(eq(usersTable.workerId, workerId), isNull(usersTable.deletedAt)));
+      if (linked && linked.id !== id) {
+        res.status(409).json({ error: "Tento pracovn\xEDk ji\u017E m\xE1 u\u017Eivatelsk\xFD \xFA\u010Det" });
+        return;
+      }
+    }
+    updates.workerId = workerId;
+  }
   if (isActive != null) updates.isActive = isActive;
   if (password) updates.passwordHash = await bcryptjs_default.hash(password, 10);
   if (Object.keys(updates).length === 0) {
     res.status(400).json({ error: "\u017D\xE1dn\xE1 data k aktualizaci" });
     return;
   }
-  const [user] = await db.update(usersTable).set(updates).where(eq(usersTable.id, id)).returning({
-    id: usersTable.id,
-    username: usersTable.username,
-    fullName: usersTable.fullName,
-    role: usersTable.role,
-    isActive: usersTable.isActive,
-    createdAt: usersTable.createdAt,
-    updatedAt: usersTable.updatedAt
+  const user = await db.transaction(async (tx) => {
+    let linkedWorkerId = nextWorkerId;
+    if (["employee", "manager"].includes(nextRole) && !linkedWorkerId) {
+      const workerName = splitFullName(fullName ?? before.fullName);
+      const [worker] = await tx.insert(workersTable).values({ ...workerName, isActive: isActive ?? before.isActive }).returning({ id: workersTable.id });
+      linkedWorkerId = worker.id;
+      updates.workerId = linkedWorkerId;
+    }
+    if (linkedWorkerId && ["employee", "manager"].includes(nextRole)) {
+      const workerUpdates = {};
+      if (fullName != null) Object.assign(workerUpdates, splitFullName(fullName));
+      if (isActive != null) workerUpdates.isActive = isActive;
+      if (Object.keys(workerUpdates).length) await tx.update(workersTable).set(workerUpdates).where(eq(workersTable.id, linkedWorkerId));
+    }
+    const [updated] = await tx.update(usersTable).set(updates).where(eq(usersTable.id, id)).returning({
+      id: usersTable.id,
+      username: usersTable.username,
+      fullName: usersTable.fullName,
+      role: usersTable.role,
+      workerId: usersTable.workerId,
+      isActive: usersTable.isActive,
+      createdAt: usersTable.createdAt,
+      updatedAt: usersTable.updatedAt
+    });
+    return updated;
   });
   if (!user) {
     res.status(404).json({ error: "U\u017Eivatel nenalezen" });
@@ -60424,7 +55657,10 @@ router3.delete("/users/:id", requireAdmin, async (req, res) => {
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
   const [before] = await db.select(userFields).from(usersTable).where(eq(usersTable.id, id)).limit(1);
-  const [user] = await db.update(usersTable).set({ deletedAt: /* @__PURE__ */ new Date(), deletedBy: session2.userId }).where(eq(usersTable.id, id)).returning({ id: usersTable.id });
+  if (before?.workerId) {
+    await db.update(workersTable).set({ isActive: false }).where(eq(workersTable.id, before.workerId));
+  }
+  const [user] = await db.update(usersTable).set({ deletedAt: /* @__PURE__ */ new Date(), deletedBy: session2.userId, workerId: null, isActive: false }).where(eq(usersTable.id, id)).returning({ id: usersTable.id });
   if (!user) {
     res.status(404).json({ error: "U\u017Eivatel nenalezen" });
     return;
@@ -60443,35 +55679,209 @@ var users_default = router3;
 
 // src/routes/codebooks.ts
 var import_express4 = __toESM(require_express2(), 1);
+
+// src/lib/query.ts
+function queryString(value) {
+  if (typeof value === "string") return value;
+  if (Array.isArray(value)) {
+    const first = value.find((v) => typeof v === "string");
+    return typeof first === "string" ? first : void 0;
+  }
+  return void 0;
+}
+
+// src/lib/recordFields.ts
+function parseIdList(value) {
+  if (!value) return [];
+  return value.split(",").map((item) => Number(item.trim())).filter((item) => Number.isInteger(item) && item > 0);
+}
+function serializeIdList(ids) {
+  if (!ids?.length) return null;
+  const unique2 = Array.from(new Set(ids.filter((id) => Number.isInteger(id) && id > 0)));
+  return unique2.length ? unique2.join(",") : null;
+}
+function uniqueIds(...lists) {
+  return Array.from(
+    new Set(
+      lists.flatMap((list) => list ?? []).filter((id) => Number.isInteger(id) && id > 0)
+    )
+  );
+}
+function parseDbNumber(value) {
+  if (value == null || value === "") return null;
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+function parseJsonArray(value) {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+function nullableTime(value) {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+function finiteNumber(value) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+function calculateDerivedTotal(start, end) {
+  if (start == null || end == null || end < start) return null;
+  return Math.round((end - start) * 100) / 100;
+}
+function normalizeWorkerTimeEntries(entries) {
+  return parseJsonArray(typeof entries === "string" ? entries : JSON.stringify(entries ?? [])).map((entry) => ({
+    workerId: Number(entry.workerId),
+    category: entry.category === "machine" ? "machine" : "manual",
+    shiftType: entry.shiftType === "morning" || entry.shiftType === "evening" || entry.shiftType === "custom" ? entry.shiftType : null,
+    startTime: nullableTime(entry.startTime),
+    endTime: nullableTime(entry.endTime)
+  })).filter((entry) => Number.isInteger(entry.workerId) && entry.workerId > 0);
+}
+function normalizeMachineMthEntries(entries) {
+  return parseJsonArray(typeof entries === "string" ? entries : JSON.stringify(entries ?? [])).map((entry) => {
+    const mthStart = finiteNumber(entry.mthStart);
+    const mthEnd = finiteNumber(entry.mthEnd);
+    const mthTotal = calculateDerivedTotal(mthStart, mthEnd) ?? finiteNumber(entry.mthTotal);
+    return {
+      machineId: Number(entry.machineId),
+      accessoryId: Number.isInteger(Number(entry.accessoryId)) && Number(entry.accessoryId) > 0 ? Number(entry.accessoryId) : null,
+      operatorId: Number.isInteger(Number(entry.operatorId)) && Number(entry.operatorId) > 0 ? Number(entry.operatorId) : null,
+      startTime: nullableTime(entry.startTime),
+      endTime: nullableTime(entry.endTime),
+      mthStart,
+      mthEnd,
+      mthTotal,
+      fuelConsumption: finiteNumber(entry.fuelConsumption),
+      refueling: finiteNumber(entry.refueling)
+    };
+  }).filter((entry) => Number.isInteger(entry.machineId) && entry.machineId > 0);
+}
+function normalizeVehicleEntries(entries) {
+  return parseJsonArray(typeof entries === "string" ? entries : JSON.stringify(entries ?? [])).map((entry) => {
+    const kmStart = finiteNumber(entry.kmStart);
+    const kmEnd = finiteNumber(entry.kmEnd);
+    return {
+      vehicleId: Number(entry.vehicleId),
+      kmStart,
+      kmEnd,
+      kmTotal: calculateDerivedTotal(kmStart, kmEnd) ?? finiteNumber(entry.kmTotal),
+      refueling: finiteNumber(entry.refueling)
+    };
+  }).filter((entry) => Number.isInteger(entry.vehicleId) && entry.vehicleId > 0);
+}
+function serializeJsonArray(value) {
+  if (!value?.length) return null;
+  return JSON.stringify(value);
+}
+function sumMachineMthTotals(entries) {
+  const totals = entries.map((entry) => entry.mthTotal).filter((value) => value != null);
+  if (!totals.length) return null;
+  return Math.round(totals.reduce((sum2, value) => sum2 + value, 0) * 100) / 100;
+}
+function sumMachineValue(entries, field) {
+  const values = entries.map((entry) => entry[field]).filter((value) => value != null);
+  if (!values.length) return null;
+  return Math.round(values.reduce((sum2, value) => sum2 + value, 0) * 100) / 100;
+}
+
+// src/routes/codebooks.ts
 var router4 = (0, import_express4.Router)();
 function getSession(req) {
   return req.session;
 }
-router4.get("/workers", requireAuth, async (_req, res) => {
+router4.get("/contractor-companies", requireOperationsAccess, async (_req, res) => {
+  const companies = await db.select().from(contractorCompaniesTable).where(isNull(contractorCompaniesTable.deletedAt)).orderBy(contractorCompaniesTable.name);
+  res.json(companies);
+});
+router4.post("/contractor-companies", requireAdmin, async (req, res) => {
+  const session2 = getSession(req);
+  const { name, companyId, note, isActive } = req.body;
+  if (!name?.trim()) {
+    res.status(400).json({ error: "N\xE1zev firmy je povinn\xFD" });
+    return;
+  }
+  const [company] = await db.insert(contractorCompaniesTable).values({ name: name.trim(), companyId: companyId?.trim() || null, note: note?.trim() || null, isActive: isActive ?? true }).returning();
+  await logAudit({ userId: session2.userId, action: "create", tableName: "contractor_companies", recordId: company.id, description: `Vytvo\u0159ena subdodavatelsk\xE1 firma ${company.name}`, newData: company });
+  res.status(201).json(company);
+});
+router4.patch("/contractor-companies/:id", requireAdmin, async (req, res) => {
+  const session2 = getSession(req);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
+  const { name, companyId, note, isActive } = req.body;
+  const [before] = await db.select().from(contractorCompaniesTable).where(eq(contractorCompaniesTable.id, id));
+  if (!before) {
+    res.status(404).json({ error: "Firma nenalezena" });
+    return;
+  }
+  const updates = {};
+  if (name !== void 0) {
+    if (!name.trim()) {
+      res.status(400).json({ error: "N\xE1zev firmy je povinn\xFD" });
+      return;
+    }
+    updates.name = name.trim();
+  }
+  if (companyId !== void 0) updates.companyId = companyId?.trim() || null;
+  if (note !== void 0) updates.note = note?.trim() || null;
+  if (isActive !== void 0) updates.isActive = isActive;
+  const [company] = await db.update(contractorCompaniesTable).set(updates).where(eq(contractorCompaniesTable.id, id)).returning();
+  await logAudit({ userId: session2.userId, action: "update", tableName: "contractor_companies", recordId: id, description: `Upravena subdodavatelsk\xE1 firma ${company.name}`, oldData: before, newData: company });
+  res.json(company);
+});
+router4.delete("/contractor-companies/:id", requireAdmin, async (req, res) => {
+  const session2 = getSession(req);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
+  const [before] = await db.select().from(contractorCompaniesTable).where(eq(contractorCompaniesTable.id, id));
+  if (!before) {
+    res.status(404).json({ error: "Firma nenalezena" });
+    return;
+  }
+  const linkedWorkers = await db.select({ id: workersTable.id }).from(workersTable).where(and(eq(workersTable.contractorCompanyId, id), isNull(workersTable.deletedAt)));
+  if (linkedWorkers.length > 0) {
+    res.status(409).json({ error: "Firmu nelze smazat, dokud m\xE1 p\u0159i\u0159azen\xE9 pracovn\xEDky" });
+    return;
+  }
+  await db.update(contractorCompaniesTable).set({ deletedAt: /* @__PURE__ */ new Date() }).where(eq(contractorCompaniesTable.id, id));
+  await logAudit({ userId: session2.userId, action: "delete", tableName: "contractor_companies", recordId: id, description: `Smaz\xE1na subdodavatelsk\xE1 firma ${before.name}`, oldData: before });
+  res.json({ message: "Firma smaz\xE1na" });
+});
+router4.get("/workers", requireOperationsAccess, async (_req, res) => {
   const workers = await db.select().from(workersTable).where(isNull(workersTable.deletedAt)).orderBy(workersTable.lastName);
   res.json(workers);
 });
 router4.post("/workers", requireAdmin, async (req, res) => {
   const session2 = getSession(req);
-  const { firstName, lastName, note, isActive } = req.body;
+  const { firstName, lastName, note, isActive, defaultBrushcutter, defaultSlopeMower, contractorCompanyId, defaultSubcontractor } = req.body;
   if (!firstName || !lastName) {
     res.status(400).json({ error: "Jm\xE9no a p\u0159\xEDjmen\xED jsou povinn\xE9" });
     return;
   }
-  const [w] = await db.insert(workersTable).values({ firstName, lastName, note, isActive: isActive ?? true }).returning();
+  const [w] = await db.insert(workersTable).values({ firstName, lastName, note, isActive: isActive ?? true, defaultBrushcutter: defaultBrushcutter ?? false, defaultSlopeMower: defaultSlopeMower ?? false, contractorCompanyId: contractorCompanyId ?? null, defaultSubcontractor: defaultSubcontractor ?? false }).returning();
   await logAudit({ userId: session2.userId, action: "create", tableName: "workers", recordId: w.id, description: `Vytvo\u0159en pracovn\xEDk ${w.firstName} ${w.lastName}`, newData: { firstName: w.firstName, lastName: w.lastName } });
   res.status(201).json(w);
 });
 router4.patch("/workers/:id", requireAdmin, async (req, res) => {
   const session2 = getSession(req);
-  const id = parseInt(req.params.id, 10);
-  const { firstName, lastName, note, isActive } = req.body;
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
+  const { firstName, lastName, note, isActive, defaultBrushcutter, defaultSlopeMower, contractorCompanyId, defaultSubcontractor } = req.body;
   const [before] = await db.select().from(workersTable).where(eq(workersTable.id, id));
   const updates = {};
   if (firstName != null) updates.firstName = firstName;
   if (lastName != null) updates.lastName = lastName;
   if (note !== void 0) updates.note = note;
   if (isActive != null) updates.isActive = isActive;
+  if (defaultBrushcutter != null) updates.defaultBrushcutter = defaultBrushcutter;
+  if (defaultSlopeMower != null) updates.defaultSlopeMower = defaultSlopeMower;
+  if (contractorCompanyId !== void 0) updates.contractorCompanyId = contractorCompanyId;
+  if (defaultSubcontractor != null) updates.defaultSubcontractor = defaultSubcontractor;
   const [w] = await db.update(workersTable).set(updates).where(eq(workersTable.id, id)).returning();
   if (!w) {
     res.status(404).json({ error: "Pracovn\xEDk nenalezen" });
@@ -60482,41 +55892,43 @@ router4.patch("/workers/:id", requireAdmin, async (req, res) => {
 });
 router4.delete("/workers/:id", requireAdmin, async (req, res) => {
   const session2 = getSession(req);
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const [before] = await db.select().from(workersTable).where(eq(workersTable.id, id));
   const [w] = await db.update(workersTable).set({ deletedAt: /* @__PURE__ */ new Date() }).where(eq(workersTable.id, id)).returning({ id: workersTable.id });
   if (!w) {
     res.status(404).json({ error: "Pracovn\xEDk nenalezen" });
     return;
   }
+  await db.update(usersTable).set({ isActive: false }).where(eq(usersTable.workerId, id));
   await logAudit({ userId: session2.userId, action: "delete", tableName: "workers", recordId: id, description: `Smaz\xE1n pracovn\xEDk ${before?.firstName ?? ""} ${before?.lastName ?? ""}`, oldData: before });
   res.json({ message: "Pracovn\xEDk smaz\xE1n" });
 });
-router4.get("/vehicles", requireAuth, async (_req, res) => {
+router4.get("/vehicles", requireOperationsAccess, async (_req, res) => {
   const vehicles = await db.select().from(vehiclesTable).where(isNull(vehiclesTable.deletedAt)).orderBy(vehiclesTable.name);
   res.json(vehicles);
 });
 router4.post("/vehicles", requireAdmin, async (req, res) => {
   const session2 = getSession(req);
-  const { name, licensePlate, note, isActive } = req.body;
+  const { name, licensePlate, note, isActive, defaultSlopeMower } = req.body;
   if (!name) {
     res.status(400).json({ error: "N\xE1zev je povinn\xFD" });
     return;
   }
-  const [v] = await db.insert(vehiclesTable).values({ name, licensePlate, note, isActive: isActive ?? true }).returning();
+  const [v] = await db.insert(vehiclesTable).values({ name, licensePlate, note, isActive: isActive ?? true, defaultSlopeMower: defaultSlopeMower ?? false }).returning();
   await logAudit({ userId: session2.userId, action: "create", tableName: "vehicles", recordId: v.id, description: `Vytvo\u0159eno vozidlo ${v.name}${v.licensePlate ? ` (${v.licensePlate})` : ""}`, newData: { name: v.name, licensePlate: v.licensePlate } });
   res.status(201).json(v);
 });
 router4.patch("/vehicles/:id", requireAdmin, async (req, res) => {
   const session2 = getSession(req);
-  const id = parseInt(req.params.id, 10);
-  const { name, licensePlate, note, isActive } = req.body;
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
+  const { name, licensePlate, note, isActive, defaultSlopeMower } = req.body;
   const [before] = await db.select().from(vehiclesTable).where(eq(vehiclesTable.id, id));
   const updates = {};
   if (name != null) updates.name = name;
   if (licensePlate !== void 0) updates.licensePlate = licensePlate;
   if (note !== void 0) updates.note = note;
   if (isActive != null) updates.isActive = isActive;
+  if (defaultSlopeMower != null) updates.defaultSlopeMower = defaultSlopeMower;
   const [v] = await db.update(vehiclesTable).set(updates).where(eq(vehiclesTable.id, id)).returning();
   if (!v) {
     res.status(404).json({ error: "Vozidlo nenalezeno" });
@@ -60527,7 +55939,7 @@ router4.patch("/vehicles/:id", requireAdmin, async (req, res) => {
 });
 router4.delete("/vehicles/:id", requireAdmin, async (req, res) => {
   const session2 = getSession(req);
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const [before] = await db.select().from(vehiclesTable).where(eq(vehiclesTable.id, id));
   const [v] = await db.update(vehiclesTable).set({ deletedAt: /* @__PURE__ */ new Date() }).where(eq(vehiclesTable.id, id)).returning({ id: vehiclesTable.id });
   if (!v) {
@@ -60537,31 +55949,34 @@ router4.delete("/vehicles/:id", requireAdmin, async (req, res) => {
   await logAudit({ userId: session2.userId, action: "delete", tableName: "vehicles", recordId: id, description: `Smaz\xE1no vozidlo ${before?.name ?? id}`, oldData: before });
   res.json({ message: "Vozidlo smaz\xE1no" });
 });
-router4.get("/machines", requireAuth, async (_req, res) => {
+router4.get("/machines", requireOperationsAccess, async (_req, res) => {
   const machines = await db.select().from(machinesTable).where(isNull(machinesTable.deletedAt)).orderBy(machinesTable.name);
   res.json(machines);
 });
 router4.post("/machines", requireAdmin, async (req, res) => {
   const session2 = getSession(req);
-  const { name, type, note, isActive } = req.body;
+  const { name, type, note, isActive, defaultAccessoryId, defaultOperatorId, mowingCategory } = req.body;
   if (!name || !type) {
     res.status(400).json({ error: "N\xE1zev a typ jsou povinn\xE9" });
     return;
   }
-  const [m] = await db.insert(machinesTable).values({ name, type, note, isActive: isActive ?? true }).returning();
+  const [m] = await db.insert(machinesTable).values({ name, type, note, isActive: isActive ?? true, defaultAccessoryId: defaultAccessoryId ?? null, defaultOperatorId: defaultOperatorId ?? null, mowingCategory: mowingCategory ?? null }).returning();
   await logAudit({ userId: session2.userId, action: "create", tableName: "machines", recordId: m.id, description: `Vytvo\u0159en stroj ${m.name} (${m.type})`, newData: { name: m.name, type: m.type } });
   res.status(201).json(m);
 });
 router4.patch("/machines/:id", requireAdmin, async (req, res) => {
   const session2 = getSession(req);
-  const id = parseInt(req.params.id, 10);
-  const { name, type, note, isActive } = req.body;
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
+  const { name, type, note, isActive, defaultAccessoryId, defaultOperatorId, mowingCategory } = req.body;
   const [before] = await db.select().from(machinesTable).where(eq(machinesTable.id, id));
   const updates = {};
   if (name != null) updates.name = name;
   if (type != null) updates.type = type;
   if (note !== void 0) updates.note = note;
   if (isActive != null) updates.isActive = isActive;
+  if (defaultAccessoryId !== void 0) updates.defaultAccessoryId = defaultAccessoryId;
+  if (defaultOperatorId !== void 0) updates.defaultOperatorId = defaultOperatorId;
+  if (mowingCategory !== void 0) updates.mowingCategory = mowingCategory;
   const [m] = await db.update(machinesTable).set(updates).where(eq(machinesTable.id, id)).returning();
   if (!m) {
     res.status(404).json({ error: "Stroj nenalezen" });
@@ -60570,9 +55985,26 @@ router4.patch("/machines/:id", requireAdmin, async (req, res) => {
   await logAudit({ userId: session2.userId, action: "update", tableName: "machines", recordId: id, description: `Upraven stroj ${m.name}`, oldData: before, newData: m });
   res.json(m);
 });
+router4.get("/machines/:id/last-mth", requireOperationsAccess, async (req, res) => {
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
+  if (!Number.isInteger(id)) {
+    res.status(400).json({ error: "Neplatn\xE9 ID stroje" });
+    return;
+  }
+  const rows = await db.select({ record: mowingRecordsTable }).from(mowingRecordMachinesTable).innerJoin(mowingRecordsTable, eq(mowingRecordMachinesTable.mowingRecordId, mowingRecordsTable.id)).where(and(eq(mowingRecordMachinesTable.machineId, id), isNull(mowingRecordsTable.deletedAt))).orderBy(desc(mowingRecordsTable.date), desc(mowingRecordsTable.id));
+  for (const { record: record2 } of rows) {
+    const entry = normalizeMachineMthEntries(record2.machineMthEntries).find((item) => item.machineId === id);
+    const value = entry?.mthEnd ?? (rows.length === 1 ? parseDbNumber(record2.mthEnd) : null);
+    if (value != null) {
+      res.json({ machineId: id, mthEnd: value, recordDate: record2.date });
+      return;
+    }
+  }
+  res.json({ machineId: id, mthEnd: null, recordDate: null });
+});
 router4.delete("/machines/:id", requireAdmin, async (req, res) => {
   const session2 = getSession(req);
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const [before] = await db.select().from(machinesTable).where(eq(machinesTable.id, id));
   const [m] = await db.update(machinesTable).set({ deletedAt: /* @__PURE__ */ new Date() }).where(eq(machinesTable.id, id)).returning({ id: machinesTable.id });
   if (!m) {
@@ -60582,7 +56014,7 @@ router4.delete("/machines/:id", requireAdmin, async (req, res) => {
   await logAudit({ userId: session2.userId, action: "delete", tableName: "machines", recordId: id, description: `Smaz\xE1n stroj ${before?.name ?? id}`, oldData: before });
   res.json({ message: "Stroj smaz\xE1n" });
 });
-router4.get("/regions", requireAuth, async (_req, res) => {
+router4.get("/regions", requireOperationsAccess, async (_req, res) => {
   const regions = await db.select().from(regionsTable).where(isNull(regionsTable.deletedAt)).orderBy(regionsTable.name);
   res.json(regions);
 });
@@ -60599,7 +56031,7 @@ router4.post("/regions", requireAdmin, async (req, res) => {
 });
 router4.patch("/regions/:id", requireAdmin, async (req, res) => {
   const session2 = getSession(req);
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const { name, code, note, isActive } = req.body;
   const [before] = await db.select().from(regionsTable).where(eq(regionsTable.id, id));
   const updates = {};
@@ -60617,7 +56049,7 @@ router4.patch("/regions/:id", requireAdmin, async (req, res) => {
 });
 router4.delete("/regions/:id", requireAdmin, async (req, res) => {
   const session2 = getSession(req);
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const [before] = await db.select().from(regionsTable).where(eq(regionsTable.id, id));
   const [r] = await db.update(regionsTable).set({ deletedAt: /* @__PURE__ */ new Date() }).where(eq(regionsTable.id, id)).returning({ id: regionsTable.id });
   if (!r) {
@@ -60627,7 +56059,7 @@ router4.delete("/regions/:id", requireAdmin, async (req, res) => {
   await logAudit({ userId: session2.userId, action: "delete", tableName: "regions", recordId: id, description: `Smaz\xE1n rev\xEDr ${before?.name ?? id}`, oldData: before });
   res.json({ message: "Rev\xEDr smaz\xE1n" });
 });
-router4.get("/weather-types", requireAuth, async (_req, res) => {
+router4.get("/weather-types", requireOperationsAccess, async (_req, res) => {
   const wt = await db.select().from(weatherTypesTable).where(isNull(weatherTypesTable.deletedAt)).orderBy(weatherTypesTable.name);
   res.json(wt);
 });
@@ -60644,7 +56076,7 @@ router4.post("/weather-types", requireAdmin, async (req, res) => {
 });
 router4.patch("/weather-types/:id", requireAdmin, async (req, res) => {
   const session2 = getSession(req);
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const { name, icon, isActive } = req.body;
   const [before] = await db.select().from(weatherTypesTable).where(eq(weatherTypesTable.id, id));
   const updates = {};
@@ -60661,7 +56093,7 @@ router4.patch("/weather-types/:id", requireAdmin, async (req, res) => {
 });
 router4.delete("/weather-types/:id", requireAdmin, async (req, res) => {
   const session2 = getSession(req);
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const [before] = await db.select().from(weatherTypesTable).where(eq(weatherTypesTable.id, id));
   const [wt] = await db.update(weatherTypesTable).set({ deletedAt: /* @__PURE__ */ new Date() }).where(eq(weatherTypesTable.id, id)).returning({ id: weatherTypesTable.id });
   if (!wt) {
@@ -60683,91 +56115,105 @@ router5.get("/accessories", requireAdmin, async (_req, res) => {
 router5.post("/accessories", requireAdmin, async (req, res) => {
   const session2 = req.session;
   const { name, type, serialNumber, note, isActive } = req.body;
-  if (!name) {
-    res.status(400).json({ error: "N\xE1zev je povinn\xFD" });
-    return;
-  }
-  const [item] = await db.insert(accessoriesTable).values({ name, type, serialNumber, note, isActive: isActive ?? true }).returning();
+  const [created] = await db.insert(accessoriesTable).values({
+    name,
+    type: type ?? null,
+    serialNumber: serialNumber ?? null,
+    note: note ?? null,
+    isActive: typeof isActive === "boolean" ? isActive : true
+  }).returning();
   await logAudit({
     userId: session2.userId,
     action: "create",
     tableName: "accessories",
-    recordId: item.id,
-    description: `Vytvo\u0159eno p\u0159\xEDslu\u0161enstv\xED ${item.name}${item.type ? ` (${item.type})` : ""}`,
-    newData: { name: item.name, type: item.type, serialNumber: item.serialNumber }
+    recordId: created.id,
+    description: `Vytvo\u0159eno p\u0159\xEDslu\u0161enstv\xED ${created.name}`,
+    newData: created
   });
-  res.status(201).json(item);
+  res.status(201).json(created);
 });
-router5.patch("/accessories/:id", requireAdmin, async (req, res) => {
+router5.put("/accessories/:id", requireAdmin, async (req, res) => {
   const session2 = req.session;
-  const id = parseInt(req.params.id, 10);
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Neplatn\xE9 ID" });
-    return;
-  }
-  const [existing] = await db.select().from(accessoriesTable).where(eq(accessoriesTable.id, id)).limit(1);
-  if (!existing || existing.deletedAt) {
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
+  const { name, type, serialNumber, note, isActive } = req.body;
+  const [updated] = await db.update(accessoriesTable).set({
+    name,
+    type: type ?? null,
+    serialNumber: serialNumber ?? null,
+    note: note ?? null,
+    isActive: typeof isActive === "boolean" ? isActive : true,
+    updatedAt: /* @__PURE__ */ new Date()
+  }).where(eq(accessoriesTable.id, id)).returning();
+  if (!updated) {
     res.status(404).json({ error: "P\u0159\xEDslu\u0161enstv\xED nenalezeno" });
     return;
   }
-  const { name, type, serialNumber, note, isActive } = req.body;
-  const [updated] = await db.update(accessoriesTable).set({
-    ...name !== void 0 && { name },
-    ...type !== void 0 && { type },
-    ...serialNumber !== void 0 && { serialNumber },
-    ...note !== void 0 && { note },
-    ...isActive !== void 0 && { isActive }
-  }).where(eq(accessoriesTable.id, id)).returning();
   await logAudit({
     userId: session2.userId,
     action: "update",
     tableName: "accessories",
-    recordId: id,
+    recordId: updated.id,
     description: `Upraveno p\u0159\xEDslu\u0161enstv\xED ${updated.name}`,
-    oldData: existing,
     newData: updated
   });
   res.json(updated);
 });
 router5.delete("/accessories/:id", requireAdmin, async (req, res) => {
   const session2 = req.session;
-  const id = parseInt(req.params.id, 10);
-  if (isNaN(id)) {
-    res.status(400).json({ error: "Neplatn\xE9 ID" });
-    return;
-  }
-  const [existing] = await db.select().from(accessoriesTable).where(eq(accessoriesTable.id, id)).limit(1);
-  if (!existing || existing.deletedAt) {
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
+  const [deleted] = await db.update(accessoriesTable).set({ deletedAt: /* @__PURE__ */ new Date() }).where(eq(accessoriesTable.id, id)).returning();
+  if (!deleted) {
     res.status(404).json({ error: "P\u0159\xEDslu\u0161enstv\xED nenalezeno" });
     return;
   }
-  await db.update(accessoriesTable).set({ deletedAt: /* @__PURE__ */ new Date() }).where(eq(accessoriesTable.id, id));
   await logAudit({
     userId: session2.userId,
     action: "delete",
     tableName: "accessories",
-    recordId: id,
-    description: `Smaz\xE1no p\u0159\xEDslu\u0161enstv\xED ${existing.name}`,
-    oldData: existing
+    recordId: deleted.id,
+    description: `Smaz\xE1no p\u0159\xEDslu\u0161enstv\xED ${deleted.name}`,
+    oldData: deleted
   });
-  res.json({ message: "P\u0159\xEDslu\u0161enstv\xED smaz\xE1no" });
+  res.status(204).end();
 });
 var accessories_default = router5;
 
 // src/routes/fellingRecords.ts
 var import_express6 = __toESM(require_express2(), 1);
 var router6 = (0, import_express6.Router)();
+function getFallbackWorkerTimeEntries(record2, workerIds, manualWorkerIds, machineWorkerIds) {
+  return workerIds.map((workerId) => ({
+    workerId,
+    category: machineWorkerIds.includes(workerId) ? "machine" : "manual",
+    startTime: record2.startTime ?? null,
+    endTime: record2.endTime ?? null
+  }));
+}
+function getFallbackMachineMthEntries(record2, machineIds) {
+  return machineIds.map((machineId) => ({
+    machineId,
+    startTime: record2.startTime ?? null,
+    endTime: record2.endTime ?? null,
+    mthStart: null,
+    mthEnd: null,
+    mthTotal: machineIds.length === 1 ? parseDbNumber(record2.mth) : null,
+    fuelConsumption: machineIds.length === 1 ? parseDbNumber(record2.fuelConsumption) : null,
+    refueling: machineIds.length === 1 ? parseDbNumber(record2.refueling) : null
+  }));
+}
 async function buildFellingRecord(record2) {
   const [user] = await db.select({ id: usersTable.id, username: usersTable.username, fullName: usersTable.fullName, role: usersTable.role, isActive: usersTable.isActive, createdAt: usersTable.createdAt, updatedAt: usersTable.updatedAt }).from(usersTable).where(eq(usersTable.id, record2.userId));
   const [region] = await db.select().from(regionsTable).where(eq(regionsTable.id, record2.regionId));
-  let weatherType = null;
-  if (record2.weatherTypeId) {
-    const [wt] = await db.select().from(weatherTypesTable).where(eq(weatherTypesTable.id, record2.weatherTypeId));
-    weatherType = wt ?? null;
-  }
+  const resolvedWeatherTypeIds = parseIdList(record2.weatherTypeIds).length ? parseIdList(record2.weatherTypeIds) : record2.weatherTypeId ? [record2.weatherTypeId] : [];
+  const weatherTypes = resolvedWeatherTypeIds.length > 0 ? await db.select().from(weatherTypesTable).where(inArray(weatherTypesTable.id, resolvedWeatherTypeIds)) : [];
+  const weatherType = record2.weatherTypeId ? weatherTypes.find((item) => item.id === record2.weatherTypeId) ?? null : weatherTypes[0] ?? null;
   const workerLinks = await db.select().from(fellingRecordWorkersTable).where(eq(fellingRecordWorkersTable.fellingRecordId, record2.id));
   const workerIds = workerLinks.map((w) => w.workerId);
   const workers = workerIds.length > 0 ? await db.select().from(workersTable).where(inArray(workersTable.id, workerIds)) : [];
+  const manualWorkerIds = parseIdList(record2.manualWorkerIds).length ? parseIdList(record2.manualWorkerIds) : workerIds;
+  const machineWorkerIds = parseIdList(record2.machineWorkerIds);
+  const manualWorkers = manualWorkerIds.length > 0 ? workers.filter((worker) => manualWorkerIds.includes(worker.id)) : [];
+  const machineWorkers = machineWorkerIds.length > 0 ? workers.filter((worker) => machineWorkerIds.includes(worker.id)) : [];
   const vehicleLinks = await db.select().from(fellingRecordVehiclesTable).where(eq(fellingRecordVehiclesTable.fellingRecordId, record2.id));
   const vehicleIds = vehicleLinks.map((v) => v.vehicleId);
   const vehicles = vehicleIds.length > 0 ? await db.select().from(vehiclesTable).where(inArray(vehiclesTable.id, vehicleIds)) : [];
@@ -60777,27 +56223,52 @@ async function buildFellingRecord(record2) {
   const accessoryLinks = await db.select().from(fellingRecordAccessoriesTable).where(eq(fellingRecordAccessoriesTable.fellingRecordId, record2.id));
   const accessoryIds = accessoryLinks.map((a) => a.accessoryId);
   const accessories = accessoryIds.length > 0 ? await db.select().from(accessoriesTable).where(inArray(accessoriesTable.id, accessoryIds)) : [];
+  const workerTimeEntries = normalizeWorkerTimeEntries(record2.workerTimeEntries).filter((entry) => workerIds.includes(entry.workerId));
+  const resolvedWorkerTimeEntries = workerTimeEntries.length > 0 ? workerTimeEntries : getFallbackWorkerTimeEntries(record2, workerIds, manualWorkerIds, machineWorkerIds);
+  const machineMthEntries = normalizeMachineMthEntries(record2.machineMthEntries).filter((entry) => machineIds.includes(entry.machineId));
+  const resolvedMachineMthEntries = machineMthEntries.length > 0 ? machineMthEntries : getFallbackMachineMthEntries(record2, machineIds);
   return {
     ...record2,
-    mth: record2.mth ? parseFloat(record2.mth) : null,
-    fuelConsumption: record2.fuelConsumption ? parseFloat(record2.fuelConsumption) : null,
-    refueling: record2.refueling ? parseFloat(record2.refueling) : null,
+    weatherTypeIds: resolvedWeatherTypeIds,
+    weatherTypes,
+    mth: sumMachineMthTotals(resolvedMachineMthEntries) ?? parseDbNumber(record2.mth),
+    fuelConsumption: sumMachineValue(resolvedMachineMthEntries, "fuelConsumption") ?? parseDbNumber(record2.fuelConsumption),
+    refueling: sumMachineValue(resolvedMachineMthEntries, "refueling") ?? parseDbNumber(record2.refueling),
+    vehicleKmStart: parseDbNumber(record2.vehicleKmStart),
+    vehicleKmEnd: parseDbNumber(record2.vehicleKmEnd),
+    vehicleKmTotal: parseDbNumber(record2.vehicleKmTotal),
+    vehicleRefueling: parseDbNumber(record2.vehicleRefueling),
+    manualWorkerIds,
+    machineWorkerIds,
     workerIds,
     vehicleIds,
     machineIds,
     accessoryIds,
+    workerTimeEntries: resolvedWorkerTimeEntries.map((entry) => ({
+      ...entry,
+      worker: workers.find((worker) => worker.id === entry.workerId) ?? null
+    })),
+    machineMthEntries: resolvedMachineMthEntries.map((entry) => ({
+      ...entry,
+      machine: machines.find((machine) => machine.id === entry.machineId) ?? null
+    })),
     user,
     region,
     weatherType,
     workers,
+    manualWorkers,
+    machineWorkers,
     vehicles,
     machines,
     accessories
   };
 }
-router6.get("/felling-records", requireAuth, async (req, res) => {
+router6.get("/felling-records", requireOperationsAccess, async (req, res) => {
   const session2 = req.session;
-  const { userId: filterUserId, dateFrom, dateTo, regionId } = req.query;
+  const filterUserId = queryString(req.query.userId);
+  const dateFrom = queryString(req.query.dateFrom);
+  const dateTo = queryString(req.query.dateTo);
+  const regionId = queryString(req.query.regionId);
   const conditions = [isNull(fellingRecordsTable.deletedAt)];
   if (session2.userRole !== "admin") {
     conditions.push(eq(fellingRecordsTable.userId, session2.userId));
@@ -60808,57 +56279,93 @@ router6.get("/felling-records", requireAuth, async (req, res) => {
   if (dateTo) conditions.push(lte(fellingRecordsTable.date, dateTo));
   if (regionId) conditions.push(eq(fellingRecordsTable.regionId, parseInt(regionId, 10)));
   const records = await db.select().from(fellingRecordsTable).where(and(...conditions)).orderBy(fellingRecordsTable.date);
-  const result = await Promise.all(records.map(buildFellingRecord));
-  res.json(result);
+  res.json(await Promise.all(records.map(buildFellingRecord)));
 });
-router6.post("/felling-records", requireAuth, async (req, res) => {
+router6.post("/felling-records", requireOperationsAccess, async (req, res) => {
   const session2 = req.session;
   const {
     date: date6,
     regionId,
+    workType,
     location,
     startTime,
     endTime,
     weatherTypeId,
+    weatherTypeIds,
     temperature,
     mth,
     fuelConsumption,
     refueling,
+    manualWorkerIds,
+    machineWorkerIds,
     workerIds,
     vehicleIds,
     machineIds,
     accessoryIds,
+    workerTimeEntries,
+    machineMthEntries,
+    assignedAverage,
+    vehicleKmStart,
+    vehicleKmEnd,
+    vehicleKmTotal,
+    vehicleRefueling,
+    trafficMarking,
     note
   } = req.body;
   if (!date6 || !regionId) {
     res.status(400).json({ error: "Datum a rev\xEDr jsou povinn\xE9" });
     return;
   }
+  const normalizedWorkerTimeEntries = normalizeWorkerTimeEntries(workerTimeEntries ?? []);
+  const normalizedMachineMthEntries = normalizeMachineMthEntries(machineMthEntries ?? []);
+  const derivedManualWorkerIds = normalizedWorkerTimeEntries.filter((entry) => entry.category === "manual").map((entry) => entry.workerId);
+  const derivedMachineWorkerIds = normalizedWorkerTimeEntries.filter((entry) => entry.category === "machine").map((entry) => entry.workerId);
+  const derivedMachineIds = normalizedMachineMthEntries.map((entry) => entry.machineId);
+  const nextManualWorkerIds = workerTimeEntries !== void 0 ? derivedManualWorkerIds : manualWorkerIds ?? [];
+  const nextMachineWorkerIds = workerTimeEntries !== void 0 ? derivedMachineWorkerIds : machineWorkerIds ?? [];
+  const nextMachineIds = machineMthEntries !== void 0 ? derivedMachineIds : machineIds ?? [];
+  const mergedWorkerIds = uniqueIds(workerIds ?? [], nextManualWorkerIds, nextMachineWorkerIds);
+  const mergedWeatherTypeIds = uniqueIds(weatherTypeIds ?? [], weatherTypeId != null ? [weatherTypeId] : []);
+  const totalMth = sumMachineMthTotals(normalizedMachineMthEntries) ?? mth ?? null;
+  const aggregateFuelConsumption = sumMachineValue(normalizedMachineMthEntries, "fuelConsumption") ?? fuelConsumption ?? null;
+  const aggregateRefueling = sumMachineValue(normalizedMachineMthEntries, "refueling") ?? refueling ?? null;
   const [record2] = await db.insert(fellingRecordsTable).values({
     date: date6,
     userId: session2.userId,
     regionId,
+    workType: workType ?? null,
     location: location ?? null,
     startTime: startTime ?? null,
     endTime: endTime ?? null,
-    weatherTypeId: weatherTypeId ?? null,
+    weatherTypeId: mergedWeatherTypeIds[0] ?? weatherTypeId ?? null,
+    weatherTypeIds: serializeIdList(mergedWeatherTypeIds),
     temperature: temperature ?? null,
-    mth: mth != null ? String(mth) : null,
-    fuelConsumption: fuelConsumption != null ? String(fuelConsumption) : null,
-    refueling: refueling != null ? String(refueling) : null,
+    mth: totalMth != null ? String(totalMth) : null,
+    fuelConsumption: aggregateFuelConsumption != null ? String(aggregateFuelConsumption) : null,
+    refueling: aggregateRefueling != null ? String(aggregateRefueling) : null,
+    manualWorkerIds: serializeIdList(nextManualWorkerIds),
+    machineWorkerIds: serializeIdList(nextMachineWorkerIds),
+    workerTimeEntries: serializeJsonArray(normalizedWorkerTimeEntries),
+    machineMthEntries: serializeJsonArray(normalizedMachineMthEntries),
+    assignedAverage: assignedAverage ?? null,
+    vehicleKmStart: vehicleKmStart != null ? String(vehicleKmStart) : null,
+    vehicleKmEnd: vehicleKmEnd != null ? String(vehicleKmEnd) : null,
+    vehicleKmTotal: vehicleKmTotal != null ? String(vehicleKmTotal) : null,
+    vehicleRefueling: vehicleRefueling != null ? String(vehicleRefueling) : null,
+    trafficMarking: trafficMarking ?? null,
     note: note ?? null
   }).returning();
-  if (workerIds && workerIds.length > 0) {
-    await db.insert(fellingRecordWorkersTable).values(workerIds.map((wId) => ({ fellingRecordId: record2.id, workerId: wId })));
+  if (mergedWorkerIds.length > 0) {
+    await db.insert(fellingRecordWorkersTable).values(mergedWorkerIds.map((workerId) => ({ fellingRecordId: record2.id, workerId })));
   }
   if (vehicleIds && vehicleIds.length > 0) {
-    await db.insert(fellingRecordVehiclesTable).values(vehicleIds.map((vId) => ({ fellingRecordId: record2.id, vehicleId: vId })));
+    await db.insert(fellingRecordVehiclesTable).values(vehicleIds.map((vehicleId) => ({ fellingRecordId: record2.id, vehicleId })));
   }
-  if (machineIds && machineIds.length > 0) {
-    await db.insert(fellingRecordMachinesTable).values(machineIds.map((mId) => ({ fellingRecordId: record2.id, machineId: mId })));
+  if (nextMachineIds.length > 0) {
+    await db.insert(fellingRecordMachinesTable).values(nextMachineIds.map((machineId) => ({ fellingRecordId: record2.id, machineId })));
   }
   if (accessoryIds && accessoryIds.length > 0) {
-    await db.insert(fellingRecordAccessoriesTable).values(accessoryIds.map((aId) => ({ fellingRecordId: record2.id, accessoryId: aId })));
+    await db.insert(fellingRecordAccessoriesTable).values(accessoryIds.map((accessoryId) => ({ fellingRecordId: record2.id, accessoryId })));
   }
   const full = await buildFellingRecord(record2);
   await logAudit({
@@ -60867,13 +56374,13 @@ router6.post("/felling-records", requireAuth, async (req, res) => {
     tableName: "felling_records",
     recordId: record2.id,
     description: `Vytvo\u0159en z\xE1znam k\xE1cen\xED ${record2.date}${record2.location ? ` \u2013 ${record2.location}` : ""}`,
-    newData: { date: record2.date, regionId: record2.regionId, location: record2.location, workerIds, vehicleIds, machineIds }
+    newData: { date: record2.date, regionId: record2.regionId, workType: record2.workType, workerIds: mergedWorkerIds, vehicleIds, machineIds: nextMachineIds, weatherTypeIds: mergedWeatherTypeIds, workerTimeEntries: normalizedWorkerTimeEntries, machineMthEntries: normalizedMachineMthEntries }
   });
   res.status(201).json(full);
 });
-router6.get("/felling-records/:id", requireAuth, async (req, res) => {
+router6.get("/felling-records/:id", requireOperationsAccess, async (req, res) => {
   const session2 = req.session;
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const [record2] = await db.select().from(fellingRecordsTable).where(and(eq(fellingRecordsTable.id, id), isNull(fellingRecordsTable.deletedAt)));
   if (!record2) {
     res.status(404).json({ error: "Z\xE1znam nenalezen" });
@@ -60883,12 +56390,11 @@ router6.get("/felling-records/:id", requireAuth, async (req, res) => {
     res.status(403).json({ error: "Nedostate\u010Dn\xE1 opr\xE1vn\u011Bn\xED" });
     return;
   }
-  const full = await buildFellingRecord(record2);
-  res.json(full);
+  res.json(await buildFellingRecord(record2));
 });
-router6.patch("/felling-records/:id", requireAuth, async (req, res) => {
+router6.patch("/felling-records/:id", requireOperationsAccess, async (req, res) => {
   const session2 = req.session;
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const [existing] = await db.select().from(fellingRecordsTable).where(and(eq(fellingRecordsTable.id, id), isNull(fellingRecordsTable.deletedAt)));
   if (!existing) {
     res.status(404).json({ error: "Z\xE1znam nenalezen" });
@@ -60901,55 +56407,101 @@ router6.patch("/felling-records/:id", requireAuth, async (req, res) => {
   const {
     date: date6,
     regionId,
+    workType,
     location,
     startTime,
     endTime,
     weatherTypeId,
+    weatherTypeIds,
     temperature,
     mth,
     fuelConsumption,
     refueling,
+    manualWorkerIds,
+    machineWorkerIds,
     workerIds,
     vehicleIds,
     machineIds,
     accessoryIds,
+    workerTimeEntries,
+    machineMthEntries,
+    assignedAverage,
+    vehicleKmStart,
+    vehicleKmEnd,
+    vehicleKmTotal,
+    vehicleRefueling,
+    trafficMarking,
     note
   } = req.body;
+  const existingWorkerIds = (await db.select().from(fellingRecordWorkersTable).where(eq(fellingRecordWorkersTable.fellingRecordId, id))).map((item) => item.workerId);
+  const existingManualWorkerIds = parseIdList(existing.manualWorkerIds);
+  const existingMachineWorkerIds = parseIdList(existing.machineWorkerIds);
+  const normalizedWorkerTimeEntries = workerTimeEntries !== void 0 ? normalizeWorkerTimeEntries(workerTimeEntries ?? []) : normalizeWorkerTimeEntries(existing.workerTimeEntries).length ? normalizeWorkerTimeEntries(existing.workerTimeEntries) : getFallbackWorkerTimeEntries(existing, existingWorkerIds, existingManualWorkerIds, existingMachineWorkerIds);
+  const nextManualWorkerIds = workerTimeEntries !== void 0 ? normalizedWorkerTimeEntries.filter((entry) => entry.category === "manual").map((entry) => entry.workerId) : manualWorkerIds !== void 0 ? manualWorkerIds ?? [] : existingManualWorkerIds;
+  const nextMachineWorkerIds = workerTimeEntries !== void 0 ? normalizedWorkerTimeEntries.filter((entry) => entry.category === "machine").map((entry) => entry.workerId) : machineWorkerIds !== void 0 ? machineWorkerIds ?? [] : existingMachineWorkerIds;
+  const mergedWorkerIds = workerIds !== void 0 || manualWorkerIds !== void 0 || machineWorkerIds !== void 0 || workerTimeEntries !== void 0 ? uniqueIds(workerIds ?? [], nextManualWorkerIds, nextMachineWorkerIds) : existingWorkerIds;
+  const nextWeatherTypeIds = weatherTypeIds !== void 0 ? uniqueIds(weatherTypeIds ?? [], weatherTypeId != null ? [weatherTypeId] : []) : weatherTypeId !== void 0 ? uniqueIds(weatherTypeId != null ? [weatherTypeId] : []) : parseIdList(existing.weatherTypeIds);
+  const existingMachineIds = (await db.select().from(fellingRecordMachinesTable).where(eq(fellingRecordMachinesTable.fellingRecordId, id))).map((item) => item.machineId);
+  const normalizedMachineMthEntries = machineMthEntries !== void 0 ? normalizeMachineMthEntries(machineMthEntries ?? []) : normalizeMachineMthEntries(existing.machineMthEntries).length ? normalizeMachineMthEntries(existing.machineMthEntries) : getFallbackMachineMthEntries(existing, existingMachineIds);
+  const nextMachineIds = machineMthEntries !== void 0 ? normalizedMachineMthEntries.map((entry) => entry.machineId) : machineIds !== void 0 ? machineIds ?? [] : existingMachineIds;
+  const totalMth = sumMachineMthTotals(normalizedMachineMthEntries) ?? (mth !== void 0 ? mth : parseDbNumber(existing.mth));
+  const aggregateFuelConsumption = sumMachineValue(normalizedMachineMthEntries, "fuelConsumption") ?? (fuelConsumption !== void 0 ? fuelConsumption : parseDbNumber(existing.fuelConsumption));
+  const aggregateRefueling = sumMachineValue(normalizedMachineMthEntries, "refueling") ?? (refueling !== void 0 ? refueling : parseDbNumber(existing.refueling));
   const updates = {};
   if (date6 != null) updates.date = date6;
   if (regionId != null) updates.regionId = regionId;
+  if (workType !== void 0) updates.workType = workType;
   if (location !== void 0) updates.location = location;
   if (startTime !== void 0) updates.startTime = startTime;
   if (endTime !== void 0) updates.endTime = endTime;
-  if (weatherTypeId !== void 0) updates.weatherTypeId = weatherTypeId;
+  if (weatherTypeIds !== void 0 || weatherTypeId !== void 0) {
+    updates.weatherTypeId = nextWeatherTypeIds[0] ?? null;
+    updates.weatherTypeIds = serializeIdList(nextWeatherTypeIds);
+  }
   if (temperature !== void 0) updates.temperature = temperature;
-  if (mth !== void 0) updates.mth = mth != null ? String(mth) : null;
-  if (fuelConsumption !== void 0) updates.fuelConsumption = fuelConsumption != null ? String(fuelConsumption) : null;
-  if (refueling !== void 0) updates.refueling = refueling != null ? String(refueling) : null;
+  if (mth !== void 0 || machineMthEntries !== void 0) updates.mth = totalMth != null ? String(totalMth) : null;
+  if (fuelConsumption !== void 0 || machineMthEntries !== void 0) updates.fuelConsumption = aggregateFuelConsumption != null ? String(aggregateFuelConsumption) : null;
+  if (refueling !== void 0 || machineMthEntries !== void 0) updates.refueling = aggregateRefueling != null ? String(aggregateRefueling) : null;
+  if (manualWorkerIds !== void 0) updates.manualWorkerIds = serializeIdList(manualWorkerIds);
+  if (machineWorkerIds !== void 0) updates.machineWorkerIds = serializeIdList(machineWorkerIds);
+  if (workerTimeEntries !== void 0) {
+    updates.manualWorkerIds = serializeIdList(nextManualWorkerIds);
+    updates.machineWorkerIds = serializeIdList(nextMachineWorkerIds);
+    updates.workerTimeEntries = serializeJsonArray(normalizedWorkerTimeEntries);
+  }
+  if (machineMthEntries !== void 0) {
+    updates.machineMthEntries = serializeJsonArray(normalizedMachineMthEntries);
+  }
+  if (assignedAverage !== void 0) updates.assignedAverage = assignedAverage;
+  if (vehicleKmStart !== void 0) updates.vehicleKmStart = vehicleKmStart != null ? String(vehicleKmStart) : null;
+  if (vehicleKmEnd !== void 0) updates.vehicleKmEnd = vehicleKmEnd != null ? String(vehicleKmEnd) : null;
+  if (vehicleKmTotal !== void 0) updates.vehicleKmTotal = vehicleKmTotal != null ? String(vehicleKmTotal) : null;
+  if (vehicleRefueling !== void 0) updates.vehicleRefueling = vehicleRefueling != null ? String(vehicleRefueling) : null;
+  if (trafficMarking !== void 0) updates.trafficMarking = trafficMarking;
   if (note !== void 0) updates.note = note;
   const [record2] = Object.keys(updates).length > 0 ? await db.update(fellingRecordsTable).set(updates).where(eq(fellingRecordsTable.id, id)).returning() : [existing];
-  if (workerIds != null) {
+  if (workerIds !== void 0 || manualWorkerIds !== void 0 || machineWorkerIds !== void 0 || workerTimeEntries !== void 0) {
     await db.delete(fellingRecordWorkersTable).where(eq(fellingRecordWorkersTable.fellingRecordId, id));
-    if (workerIds.length > 0) {
-      await db.insert(fellingRecordWorkersTable).values(workerIds.map((wId) => ({ fellingRecordId: id, workerId: wId })));
+    if (mergedWorkerIds.length > 0) {
+      await db.insert(fellingRecordWorkersTable).values(mergedWorkerIds.map((workerId) => ({ fellingRecordId: id, workerId })));
     }
   }
   if (vehicleIds != null) {
     await db.delete(fellingRecordVehiclesTable).where(eq(fellingRecordVehiclesTable.fellingRecordId, id));
     if (vehicleIds.length > 0) {
-      await db.insert(fellingRecordVehiclesTable).values(vehicleIds.map((vId) => ({ fellingRecordId: id, vehicleId: vId })));
+      await db.insert(fellingRecordVehiclesTable).values(vehicleIds.map((vehicleId) => ({ fellingRecordId: id, vehicleId })));
     }
   }
-  if (machineIds != null) {
+  if (machineIds != null || machineMthEntries !== void 0) {
     await db.delete(fellingRecordMachinesTable).where(eq(fellingRecordMachinesTable.fellingRecordId, id));
-    if (machineIds.length > 0) {
-      await db.insert(fellingRecordMachinesTable).values(machineIds.map((mId) => ({ fellingRecordId: id, machineId: mId })));
+    if (nextMachineIds.length > 0) {
+      await db.insert(fellingRecordMachinesTable).values(nextMachineIds.map((machineId) => ({ fellingRecordId: id, machineId })));
     }
   }
   if (accessoryIds != null) {
     await db.delete(fellingRecordAccessoriesTable).where(eq(fellingRecordAccessoriesTable.fellingRecordId, id));
     if (accessoryIds.length > 0) {
-      await db.insert(fellingRecordAccessoriesTable).values(accessoryIds.map((aId) => ({ fellingRecordId: id, accessoryId: aId })));
+      await db.insert(fellingRecordAccessoriesTable).values(accessoryIds.map((accessoryId) => ({ fellingRecordId: id, accessoryId })));
     }
   }
   const full = await buildFellingRecord(record2);
@@ -60960,13 +56512,13 @@ router6.patch("/felling-records/:id", requireAuth, async (req, res) => {
     recordId: id,
     description: `Upraven z\xE1znam k\xE1cen\xED ${record2.date}${record2.location ? ` \u2013 ${record2.location}` : ""}`,
     oldData: existing,
-    newData: { ...updates, workerIds, vehicleIds, machineIds }
+    newData: { ...updates, workerIds: mergedWorkerIds, vehicleIds, machineIds: nextMachineIds, accessoryIds, weatherTypeIds: nextWeatherTypeIds, workerTimeEntries: normalizedWorkerTimeEntries, machineMthEntries: normalizedMachineMthEntries }
   });
   res.json(full);
 });
-router6.delete("/felling-records/:id", requireAuth, async (req, res) => {
+router6.delete("/felling-records/:id", requireOperationsAccess, async (req, res) => {
   const session2 = req.session;
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const [existing] = await db.select().from(fellingRecordsTable).where(and(eq(fellingRecordsTable.id, id), isNull(fellingRecordsTable.deletedAt)));
   if (!existing) {
     res.status(404).json({ error: "Z\xE1znam nenalezen" });
@@ -60992,50 +56544,127 @@ var fellingRecords_default = router6;
 // src/routes/mowingRecords.ts
 var import_express7 = __toESM(require_express2(), 1);
 var router7 = (0, import_express7.Router)();
+function getFallbackWorkerTimeEntries2(record2, workerIds, manualWorkerIds, machineWorkerIds) {
+  return workerIds.map((workerId) => ({
+    workerId,
+    category: machineWorkerIds.includes(workerId) ? "machine" : "manual",
+    startTime: record2.startTime ?? null,
+    endTime: record2.endTime ?? null
+  }));
+}
+function getFallbackMachineMthEntries2(record2, machineIds) {
+  const mthStart = parseDbNumber(record2.mthStart);
+  const mthEnd = parseDbNumber(record2.mthEnd);
+  const mthTotal = calculateDerivedTotal(mthStart, mthEnd) ?? parseDbNumber(record2.mthTotal);
+  return machineIds.map((machineId) => ({
+    machineId,
+    accessoryId: null,
+    operatorId: null,
+    startTime: record2.startTime ?? null,
+    endTime: record2.endTime ?? null,
+    mthStart: machineIds.length === 1 ? mthStart : null,
+    mthEnd: machineIds.length === 1 ? mthEnd : null,
+    mthTotal: machineIds.length === 1 ? mthTotal : null,
+    fuelConsumption: machineIds.length === 1 ? parseDbNumber(record2.fuelConsumption) : null,
+    refueling: machineIds.length === 1 ? parseDbNumber(record2.refueling) : null
+  }));
+}
 async function buildMowingRecord(record2) {
   const [user] = await db.select({ id: usersTable.id, username: usersTable.username, fullName: usersTable.fullName, role: usersTable.role, isActive: usersTable.isActive, createdAt: usersTable.createdAt, updatedAt: usersTable.updatedAt }).from(usersTable).where(eq(usersTable.id, record2.userId));
   const [region] = await db.select().from(regionsTable).where(eq(regionsTable.id, record2.regionId));
-  let weatherType = null;
-  if (record2.weatherTypeId) {
-    const [wt] = await db.select().from(weatherTypesTable).where(eq(weatherTypesTable.id, record2.weatherTypeId));
-    weatherType = wt ?? null;
-  }
-  let vehicle = null;
-  if (record2.vehicleId) {
-    const [v] = await db.select().from(vehiclesTable).where(eq(vehiclesTable.id, record2.vehicleId));
-    vehicle = v ?? null;
-  }
+  const resolvedWeatherTypeIds = parseIdList(record2.weatherTypeIds).length ? parseIdList(record2.weatherTypeIds) : record2.weatherTypeId ? [record2.weatherTypeId] : [];
+  const weatherTypes = resolvedWeatherTypeIds.length > 0 ? await db.select().from(weatherTypesTable).where(inArray(weatherTypesTable.id, resolvedWeatherTypeIds)) : [];
+  const weatherType = record2.weatherTypeId ? weatherTypes.find((item) => item.id === record2.weatherTypeId) ?? null : weatherTypes[0] ?? null;
+  const storedVehicleEntries = normalizeVehicleEntries(record2.vehicleEntries);
+  const resolvedVehicleEntries = storedVehicleEntries.length > 0 ? storedVehicleEntries : record2.vehicleId ? [{
+    vehicleId: record2.vehicleId,
+    kmStart: parseDbNumber(record2.vehicleKmStart),
+    kmEnd: parseDbNumber(record2.vehicleKmEnd),
+    kmTotal: parseDbNumber(record2.vehicleKmTotal),
+    refueling: parseDbNumber(record2.vehicleRefueling)
+  }] : [];
+  const vehicleIds = uniqueIds(resolvedVehicleEntries.map((entry) => entry.vehicleId));
+  const vehicles = vehicleIds.length > 0 ? await db.select().from(vehiclesTable).where(inArray(vehiclesTable.id, vehicleIds)) : [];
+  const vehicle = record2.vehicleId ? vehicles.find((item) => item.id === record2.vehicleId) ?? null : vehicles[0] ?? null;
   const workerLinks = await db.select().from(mowingRecordWorkersTable).where(eq(mowingRecordWorkersTable.mowingRecordId, record2.id));
   const workerIds = workerLinks.map((w) => w.workerId);
   const workers = workerIds.length > 0 ? await db.select().from(workersTable).where(inArray(workersTable.id, workerIds)) : [];
+  const manualWorkerIds = parseIdList(record2.manualWorkerIds).length ? parseIdList(record2.manualWorkerIds) : workerIds;
+  const machineWorkerIds = parseIdList(record2.machineWorkerIds);
+  const manualWorkers = manualWorkerIds.length > 0 ? workers.filter((worker) => manualWorkerIds.includes(worker.id)) : [];
+  const machineWorkers = machineWorkerIds.length > 0 ? workers.filter((worker) => machineWorkerIds.includes(worker.id)) : [];
   const machineLinks = await db.select().from(mowingRecordMachinesTable).where(eq(mowingRecordMachinesTable.mowingRecordId, record2.id));
   const machineIds = machineLinks.map((m) => m.machineId);
   const machines = machineIds.length > 0 ? await db.select().from(machinesTable).where(inArray(machinesTable.id, machineIds)) : [];
   const accessoryLinks = await db.select().from(mowingRecordAccessoriesTable).where(eq(mowingRecordAccessoriesTable.mowingRecordId, record2.id));
   const accessoryIds = accessoryLinks.map((a) => a.accessoryId);
   const accessories = accessoryIds.length > 0 ? await db.select().from(accessoriesTable).where(inArray(accessoriesTable.id, accessoryIds)) : [];
+  const workerTimeEntries = normalizeWorkerTimeEntries(record2.workerTimeEntries).filter((entry) => workerIds.includes(entry.workerId));
+  const resolvedWorkerTimeEntries = workerTimeEntries.length > 0 ? workerTimeEntries : getFallbackWorkerTimeEntries2(record2, workerIds, manualWorkerIds, machineWorkerIds);
+  const machineMthEntries = normalizeMachineMthEntries(record2.machineMthEntries).filter((entry) => machineIds.includes(entry.machineId));
+  const resolvedMachineMthEntries = (machineMthEntries.length > 0 ? machineMthEntries : getFallbackMachineMthEntries2(record2, machineIds)).map((entry) => ({
+    ...entry,
+    accessoryId: entry.accessoryId ?? (machineIds.length === 1 ? accessoryIds[0] ?? null : null),
+    operatorId: entry.operatorId ?? (machineIds.length === 1 ? machineWorkerIds[0] ?? null : null)
+  }));
+  const aggregateMthTotal = sumMachineMthTotals(resolvedMachineMthEntries) ?? parseDbNumber(record2.mthTotal);
+  const singleMachineEntry = resolvedMachineMthEntries.length === 1 ? resolvedMachineMthEntries[0] : null;
+  const [contractorCompany] = record2.contractorCompanyId ? await db.select().from(contractorCompaniesTable).where(eq(contractorCompaniesTable.id, record2.contractorCompanyId)) : [];
   return {
     ...record2,
-    mthStart: record2.mthStart ? parseFloat(record2.mthStart) : null,
-    mthEnd: record2.mthEnd ? parseFloat(record2.mthEnd) : null,
-    mthTotal: record2.mthTotal ? parseFloat(record2.mthTotal) : null,
-    fuelConsumption: record2.fuelConsumption ? parseFloat(record2.fuelConsumption) : null,
-    refueling: record2.refueling ? parseFloat(record2.refueling) : null,
+    temperature: record2.temperature ?? null,
+    weatherTypeIds: resolvedWeatherTypeIds,
+    weatherTypes,
+    mthStart: singleMachineEntry?.mthStart ?? parseDbNumber(record2.mthStart),
+    mthEnd: singleMachineEntry?.mthEnd ?? parseDbNumber(record2.mthEnd),
+    mthTotal: aggregateMthTotal,
+    fuelConsumption: sumMachineValue(resolvedMachineMthEntries, "fuelConsumption") ?? parseDbNumber(record2.fuelConsumption),
+    refueling: sumMachineValue(resolvedMachineMthEntries, "refueling") ?? parseDbNumber(record2.refueling),
+    brushcutterRefueling: parseDbNumber(record2.brushcutterRefueling),
+    dayHours: parseDbNumber(record2.dayHours),
+    nightHours: parseDbNumber(record2.nightHours),
+    laborHours: parseDbNumber(record2.laborHours),
+    vehicleKmStart: parseDbNumber(record2.vehicleKmStart),
+    vehicleKmEnd: parseDbNumber(record2.vehicleKmEnd),
+    vehicleKmTotal: parseDbNumber(record2.vehicleKmTotal),
+    vehicleRefueling: parseDbNumber(record2.vehicleRefueling),
+    vehicleEntries: resolvedVehicleEntries.map((entry) => ({
+      ...entry,
+      vehicle: vehicles.find((vehicleItem) => vehicleItem.id === entry.vehicleId) ?? null
+    })),
+    manualWorkerIds,
+    machineWorkerIds,
     workerIds,
     machineIds,
     accessoryIds,
+    workerTimeEntries: resolvedWorkerTimeEntries.map((entry) => ({
+      ...entry,
+      worker: workers.find((worker) => worker.id === entry.workerId) ?? null
+    })),
+    machineMthEntries: resolvedMachineMthEntries.map((entry) => ({
+      ...entry,
+      machine: machines.find((machine) => machine.id === entry.machineId) ?? null,
+      accessory: accessories.find((accessory) => accessory.id === entry.accessoryId) ?? null,
+      operator: workers.find((worker) => worker.id === entry.operatorId) ?? null
+    })),
     user,
     region,
     weatherType,
     vehicle,
     workers,
+    manualWorkers,
+    machineWorkers,
+    contractorCompany: contractorCompany ?? null,
     machines,
     accessories
   };
 }
-router7.get("/mowing-records", requireAuth, async (req, res) => {
+router7.get("/mowing-records", requireOperationsAccess, async (req, res) => {
   const session2 = req.session;
-  const { userId: filterUserId, dateFrom, dateTo, regionId } = req.query;
+  const filterUserId = queryString(req.query.userId);
+  const dateFrom = queryString(req.query.dateFrom);
+  const dateTo = queryString(req.query.dateTo);
+  const regionId = queryString(req.query.regionId);
   const conditions = [isNull(mowingRecordsTable.deletedAt)];
   if (session2.userRole !== "admin") {
     conditions.push(eq(mowingRecordsTable.userId, session2.userId));
@@ -61046,57 +56675,199 @@ router7.get("/mowing-records", requireAuth, async (req, res) => {
   if (dateTo) conditions.push(lte(mowingRecordsTable.date, dateTo));
   if (regionId) conditions.push(eq(mowingRecordsTable.regionId, parseInt(regionId, 10)));
   const records = await db.select().from(mowingRecordsTable).where(and(...conditions)).orderBy(mowingRecordsTable.date);
-  const result = await Promise.all(records.map(buildMowingRecord));
-  res.json(result);
+  res.json(await Promise.all(records.map(buildMowingRecord)));
 });
-router7.post("/mowing-records", requireAuth, async (req, res) => {
+router7.post("/mowing-records", requireOperationsAccess, async (req, res) => {
   const session2 = req.session;
   const {
     date: date6,
     regionId,
+    workType,
+    mowingSection,
+    mowingKind,
+    manualMowingKind,
+    contractorCompanyId,
     location,
     startTime,
     endTime,
     weatherTypeId,
+    weatherTypeIds,
+    temperature,
     vehicleId,
+    vehicleEntries,
     mthStart,
     mthEnd,
     mthTotal,
     fuelConsumption,
     refueling,
+    manualWorkerIds,
+    machineWorkerIds,
     workerIds,
     machineIds,
     accessoryIds,
+    workerTimeEntries,
+    machineMthEntries,
+    assignedAverage,
+    dayHours,
+    nightHours,
+    laborHours,
+    vehicleKmStart,
+    vehicleKmEnd,
+    vehicleKmTotal,
+    vehicleRefueling,
+    brushcutterRefueling,
+    trafficMarking,
     note
   } = req.body;
   if (!date6 || !regionId) {
     res.status(400).json({ error: "Datum a rev\xEDr jsou povinn\xE9" });
     return;
   }
+  const normalizedWorkerTimeEntries = normalizeWorkerTimeEntries(workerTimeEntries ?? []);
+  const normalizedMachineMthEntries = normalizeMachineMthEntries(machineMthEntries ?? []);
+  const normalizedVehicleEntries = normalizeVehicleEntries(vehicleEntries ?? (vehicleId ? [{ vehicleId, kmStart: vehicleKmStart, kmEnd: vehicleKmEnd, kmTotal: vehicleKmTotal, refueling: vehicleRefueling }] : []));
+  const derivedManualWorkerIds = normalizedWorkerTimeEntries.filter((entry) => entry.category === "manual").map((entry) => entry.workerId);
+  const derivedMachineWorkerIds = normalizedWorkerTimeEntries.filter((entry) => entry.category === "machine").map((entry) => entry.workerId);
+  const entryOperatorIds = normalizedMachineMthEntries.flatMap((entry) => entry.operatorId != null ? [entry.operatorId] : []);
+  const entryAccessoryIds = normalizedMachineMthEntries.flatMap((entry) => entry.accessoryId != null ? [entry.accessoryId] : []);
+  const derivedMachineIds = normalizedMachineMthEntries.map((entry) => entry.machineId);
+  const nextManualWorkerIds = workerTimeEntries !== void 0 ? derivedManualWorkerIds : manualWorkerIds ?? [];
+  const nextMachineWorkerIds = uniqueIds(workerTimeEntries !== void 0 ? derivedMachineWorkerIds : machineWorkerIds ?? [], entryOperatorIds);
+  const nextMachineIds = machineMthEntries !== void 0 ? derivedMachineIds : machineIds ?? [];
+  const nextAccessoryIds = uniqueIds(accessoryIds ?? [], entryAccessoryIds);
+  const mergedWorkerIds = uniqueIds(workerIds ?? [], nextManualWorkerIds, nextMachineWorkerIds);
+  const mergedWeatherTypeIds = uniqueIds(weatherTypeIds ?? [], weatherTypeId != null ? [weatherTypeId] : []);
+  const aggregateMthTotal = sumMachineMthTotals(normalizedMachineMthEntries) ?? calculateDerivedTotal(mthStart, mthEnd) ?? mthTotal ?? null;
+  const aggregateFuelConsumption = sumMachineValue(normalizedMachineMthEntries, "fuelConsumption") ?? fuelConsumption ?? null;
+  const aggregateRefueling = sumMachineValue(normalizedMachineMthEntries, "refueling") ?? refueling ?? null;
+  const singleMachineEntry = normalizedMachineMthEntries.length === 1 ? normalizedMachineMthEntries[0] : null;
+  const singleVehicleEntry = normalizedVehicleEntries.length === 1 ? normalizedVehicleEntries[0] : null;
+  const aggregateVehicleKm = normalizedVehicleEntries.length ? Math.round(normalizedVehicleEntries.reduce((sum2, entry) => sum2 + (entry.kmTotal ?? 0), 0) * 100) / 100 : null;
+  const aggregateVehicleRefueling = normalizedVehicleEntries.length ? Math.round(normalizedVehicleEntries.reduce((sum2, entry) => sum2 + (entry.refueling ?? 0), 0) * 100) / 100 : null;
+  if (mowingKind === "strojni") {
+    if (normalizedMachineMthEntries.length === 0) {
+      res.status(400).json({ error: "Pro strojn\xED se\u010Den\xED p\u0159idejte alespo\u0148 jeden traktor" });
+      return;
+    }
+    if (new Set(nextMachineIds).size !== nextMachineIds.length) {
+      res.status(400).json({ error: "Ka\u017Ed\xFD traktor lze do denn\xEDho z\xE1znamu p\u0159idat pouze jednou" });
+      return;
+    }
+    if (normalizedMachineMthEntries.some((entry) => entry.operatorId == null)) {
+      res.status(400).json({ error: "U ka\u017Ed\xE9ho traktoru vyberte obsluhu" });
+      return;
+    }
+    if (normalizedMachineMthEntries.some((entry) => entry.mthStart == null || entry.mthEnd == null || entry.mthEnd < entry.mthStart)) {
+      res.status(400).json({ error: "U ka\u017Ed\xE9ho traktoru vypl\u0148te platn\xE9 po\u010D\xE1te\u010Dn\xED a kone\u010Dn\xE9 motohodiny" });
+      return;
+    }
+    if ((aggregateFuelConsumption ?? 0) < 0 || (aggregateRefueling ?? 0) < 0) {
+      res.status(400).json({ error: "Spot\u0159eba ani tankov\xE1n\xED nesm\xED b\xFDt z\xE1porn\xE9" });
+      return;
+    }
+  }
+  if (mowingKind === "rucni") {
+    if (session2.userRole !== "admin") {
+      res.status(403).json({ error: "Ru\u010Dn\xED se\u010Den\xED m\u016F\u017Ee evidovat pouze administr\xE1tor" });
+      return;
+    }
+    if (manualMowingKind === "core" && nextManualWorkerIds.length === 0) {
+      res.status(400).json({ error: "Vyberte alespo\u0148 jednoho kmenov\xE9ho zam\u011Bstnance" });
+      return;
+    }
+    if (manualMowingKind === "slope") {
+      if (normalizedMachineMthEntries.length === 0) {
+        res.status(400).json({ error: "P\u0159idejte alespo\u0148 jednu svahovou seka\u010Dku" });
+        return;
+      }
+      if (normalizedMachineMthEntries.some((entry) => entry.mthStart == null || entry.mthEnd == null || entry.mthEnd < entry.mthStart)) {
+        res.status(400).json({ error: "U ka\u017Ed\xE9 svahov\xE9 seka\u010Dky vypl\u0148te platn\xE9 motohodiny" });
+        return;
+      }
+      if (nextManualWorkerIds.length === 0) {
+        res.status(400).json({ error: "Vyberte alespo\u0148 jednoho pracovn\xEDka" });
+        return;
+      }
+    }
+    if (manualMowingKind === "subcontractor") {
+      if (!contractorCompanyId) {
+        res.status(400).json({ error: "Vyberte subdodavatelskou firmu" });
+        return;
+      }
+      if (nextManualWorkerIds.length === 0) {
+        res.status(400).json({ error: "Vyberte alespo\u0148 jednoho pracovn\xEDka subdodavatele" });
+        return;
+      }
+      const [company] = await db.select().from(contractorCompaniesTable).where(and(eq(contractorCompaniesTable.id, contractorCompanyId), eq(contractorCompaniesTable.isActive, true), isNull(contractorCompaniesTable.deletedAt)));
+      if (!company) {
+        res.status(400).json({ error: "Vybran\xE1 subdodavatelsk\xE1 firma nen\xED aktivn\xED" });
+        return;
+      }
+      const selectedWorkers = await db.select({ id: workersTable.id, contractorCompanyId: workersTable.contractorCompanyId }).from(workersTable).where(inArray(workersTable.id, nextManualWorkerIds));
+      if (selectedWorkers.length !== nextManualWorkerIds.length || selectedWorkers.some((worker) => worker.contractorCompanyId !== contractorCompanyId)) {
+        res.status(400).json({ error: "V\u0161ichni pracovn\xEDci mus\xED pat\u0159it k vybran\xE9 firm\u011B" });
+        return;
+      }
+    }
+    if (!manualMowingKind || !["core", "slope", "subcontractor"].includes(manualMowingKind)) {
+      res.status(400).json({ error: "Vyberte variantu ru\u010Dn\xEDho se\u010Den\xED" });
+      return;
+    }
+    if ((brushcutterRefueling ?? 0) < 0) {
+      res.status(400).json({ error: "Tankov\xE1n\xED k\u0159ovino\u0159ez\u016F nesm\xED b\xFDt z\xE1porn\xE9" });
+      return;
+    }
+  }
+  if (normalizedVehicleEntries.some((entry) => (entry.kmStart ?? 0) < 0 || (entry.kmEnd ?? 0) < 0 || (entry.refueling ?? 0) < 0 || entry.kmStart != null && entry.kmEnd != null && entry.kmEnd < entry.kmStart)) {
+    res.status(400).json({ error: "U ka\u017Ed\xE9 j\xEDzdy auta zadejte platn\xE9 kilometry a tankov\xE1n\xED" });
+    return;
+  }
   const [record2] = await db.insert(mowingRecordsTable).values({
     date: date6,
     userId: session2.userId,
     regionId,
+    workType: workType ?? null,
+    mowingSection: mowingSection ?? null,
+    mowingKind: mowingKind ?? null,
+    manualMowingKind: manualMowingKind ?? null,
+    contractorCompanyId: manualMowingKind === "subcontractor" ? contractorCompanyId ?? null : null,
     location: location ?? null,
     startTime: startTime ?? null,
     endTime: endTime ?? null,
-    weatherTypeId: weatherTypeId ?? null,
-    vehicleId: vehicleId ?? null,
-    mthStart: mthStart != null ? String(mthStart) : null,
-    mthEnd: mthEnd != null ? String(mthEnd) : null,
-    mthTotal: mthTotal != null ? String(mthTotal) : null,
-    fuelConsumption: fuelConsumption != null ? String(fuelConsumption) : null,
-    refueling: refueling != null ? String(refueling) : null,
+    weatherTypeId: mergedWeatherTypeIds[0] ?? weatherTypeId ?? null,
+    weatherTypeIds: serializeIdList(mergedWeatherTypeIds),
+    temperature: temperature ?? null,
+    vehicleId: singleVehicleEntry?.vehicleId ?? null,
+    vehicleEntries: serializeJsonArray(normalizedVehicleEntries),
+    mthStart: singleMachineEntry?.mthStart != null ? String(singleMachineEntry.mthStart) : mthStart != null ? String(mthStart) : null,
+    mthEnd: singleMachineEntry?.mthEnd != null ? String(singleMachineEntry.mthEnd) : mthEnd != null ? String(mthEnd) : null,
+    mthTotal: aggregateMthTotal != null ? String(aggregateMthTotal) : null,
+    fuelConsumption: aggregateFuelConsumption != null ? String(aggregateFuelConsumption) : null,
+    refueling: aggregateRefueling != null ? String(aggregateRefueling) : null,
+    manualWorkerIds: serializeIdList(nextManualWorkerIds),
+    machineWorkerIds: serializeIdList(nextMachineWorkerIds),
+    workerTimeEntries: serializeJsonArray(normalizedWorkerTimeEntries),
+    machineMthEntries: serializeJsonArray(normalizedMachineMthEntries),
+    assignedAverage: assignedAverage ?? null,
+    dayHours: dayHours != null ? String(dayHours) : null,
+    nightHours: nightHours != null ? String(nightHours) : null,
+    laborHours: laborHours != null ? String(laborHours) : null,
+    vehicleKmStart: singleVehicleEntry?.kmStart != null ? String(singleVehicleEntry.kmStart) : null,
+    vehicleKmEnd: singleVehicleEntry?.kmEnd != null ? String(singleVehicleEntry.kmEnd) : null,
+    vehicleKmTotal: aggregateVehicleKm != null ? String(aggregateVehicleKm) : null,
+    vehicleRefueling: aggregateVehicleRefueling != null ? String(aggregateVehicleRefueling) : null,
+    brushcutterRefueling: brushcutterRefueling != null ? String(brushcutterRefueling) : null,
+    trafficMarking: trafficMarking ?? null,
     note: note ?? null
   }).returning();
-  if (workerIds && workerIds.length > 0) {
-    await db.insert(mowingRecordWorkersTable).values(workerIds.map((wId) => ({ mowingRecordId: record2.id, workerId: wId })));
+  if (mergedWorkerIds.length > 0) {
+    await db.insert(mowingRecordWorkersTable).values(mergedWorkerIds.map((workerId) => ({ mowingRecordId: record2.id, workerId })));
   }
-  if (machineIds && machineIds.length > 0) {
-    await db.insert(mowingRecordMachinesTable).values(machineIds.map((mId) => ({ mowingRecordId: record2.id, machineId: mId })));
+  if (nextMachineIds.length > 0) {
+    await db.insert(mowingRecordMachinesTable).values(nextMachineIds.map((machineId) => ({ mowingRecordId: record2.id, machineId })));
   }
-  if (accessoryIds && accessoryIds.length > 0) {
-    await db.insert(mowingRecordAccessoriesTable).values(accessoryIds.map((aId) => ({ mowingRecordId: record2.id, accessoryId: aId })));
+  if (nextAccessoryIds.length > 0) {
+    await db.insert(mowingRecordAccessoriesTable).values(nextAccessoryIds.map((accessoryId) => ({ mowingRecordId: record2.id, accessoryId })));
   }
   const full = await buildMowingRecord(record2);
   await logAudit({
@@ -61105,13 +56876,13 @@ router7.post("/mowing-records", requireAuth, async (req, res) => {
     tableName: "mowing_records",
     recordId: record2.id,
     description: `Vytvo\u0159en z\xE1znam se\u010Den\xED ${record2.date}${record2.location ? ` \u2013 ${record2.location}` : ""}`,
-    newData: { date: record2.date, regionId: record2.regionId, location: record2.location, workerIds, machineIds }
+    newData: { date: record2.date, regionId: record2.regionId, workType: record2.workType, workerIds: mergedWorkerIds, machineIds: nextMachineIds, accessoryIds: nextAccessoryIds, weatherTypeIds: mergedWeatherTypeIds, workerTimeEntries: normalizedWorkerTimeEntries, machineMthEntries: normalizedMachineMthEntries, vehicleEntries: normalizedVehicleEntries }
   });
   res.status(201).json(full);
 });
-router7.get("/mowing-records/:id", requireAuth, async (req, res) => {
+router7.get("/mowing-records/:id", requireOperationsAccess, async (req, res) => {
   const session2 = req.session;
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const [record2] = await db.select().from(mowingRecordsTable).where(and(eq(mowingRecordsTable.id, id), isNull(mowingRecordsTable.deletedAt)));
   if (!record2) {
     res.status(404).json({ error: "Z\xE1znam nenalezen" });
@@ -61121,12 +56892,11 @@ router7.get("/mowing-records/:id", requireAuth, async (req, res) => {
     res.status(403).json({ error: "Nedostate\u010Dn\xE1 opr\xE1vn\u011Bn\xED" });
     return;
   }
-  const full = await buildMowingRecord(record2);
-  res.json(full);
+  res.json(await buildMowingRecord(record2));
 });
-router7.patch("/mowing-records/:id", requireAuth, async (req, res) => {
+router7.patch("/mowing-records/:id", requireOperationsAccess, async (req, res) => {
   const session2 = req.session;
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const [existing] = await db.select().from(mowingRecordsTable).where(and(eq(mowingRecordsTable.id, id), isNull(mowingRecordsTable.deletedAt)));
   if (!existing) {
     res.status(404).json({ error: "Z\xE1znam nenalezen" });
@@ -61139,52 +56909,233 @@ router7.patch("/mowing-records/:id", requireAuth, async (req, res) => {
   const {
     date: date6,
     regionId,
+    workType,
+    mowingSection,
+    mowingKind,
+    manualMowingKind,
+    contractorCompanyId,
     location,
     startTime,
     endTime,
     weatherTypeId,
+    weatherTypeIds,
+    temperature,
     vehicleId,
+    vehicleEntries,
     mthStart,
     mthEnd,
     mthTotal,
     fuelConsumption,
     refueling,
+    manualWorkerIds,
+    machineWorkerIds,
     workerIds,
     machineIds,
     accessoryIds,
+    workerTimeEntries,
+    machineMthEntries,
+    assignedAverage,
+    dayHours,
+    nightHours,
+    laborHours,
+    vehicleKmStart,
+    vehicleKmEnd,
+    vehicleKmTotal,
+    vehicleRefueling,
+    brushcutterRefueling,
+    trafficMarking,
     note
   } = req.body;
+  const existingWorkerIds = (await db.select().from(mowingRecordWorkersTable).where(eq(mowingRecordWorkersTable.mowingRecordId, id))).map((item) => item.workerId);
+  const existingManualWorkerIds = parseIdList(existing.manualWorkerIds);
+  const existingMachineWorkerIds = parseIdList(existing.machineWorkerIds);
+  const normalizedWorkerTimeEntries = workerTimeEntries !== void 0 ? normalizeWorkerTimeEntries(workerTimeEntries ?? []) : normalizeWorkerTimeEntries(existing.workerTimeEntries).length ? normalizeWorkerTimeEntries(existing.workerTimeEntries) : getFallbackWorkerTimeEntries2(existing, existingWorkerIds, existingManualWorkerIds, existingMachineWorkerIds);
+  const nextManualWorkerIds = workerTimeEntries !== void 0 ? normalizedWorkerTimeEntries.filter((entry) => entry.category === "manual").map((entry) => entry.workerId) : manualWorkerIds !== void 0 ? manualWorkerIds ?? [] : existingManualWorkerIds;
+  const nextMachineWorkerIds = workerTimeEntries !== void 0 ? normalizedWorkerTimeEntries.filter((entry) => entry.category === "machine").map((entry) => entry.workerId) : machineWorkerIds !== void 0 ? machineWorkerIds ?? [] : existingMachineWorkerIds;
+  const mergedWorkerIds = workerIds !== void 0 || manualWorkerIds !== void 0 || machineWorkerIds !== void 0 || workerTimeEntries !== void 0 ? uniqueIds(workerIds ?? [], nextManualWorkerIds, nextMachineWorkerIds) : existingWorkerIds;
+  const nextWeatherTypeIds = weatherTypeIds !== void 0 ? uniqueIds(weatherTypeIds ?? [], weatherTypeId != null ? [weatherTypeId] : []) : weatherTypeId !== void 0 ? uniqueIds(weatherTypeId != null ? [weatherTypeId] : []) : parseIdList(existing.weatherTypeIds);
+  const existingMachineIds = (await db.select().from(mowingRecordMachinesTable).where(eq(mowingRecordMachinesTable.mowingRecordId, id))).map((item) => item.machineId);
+  const normalizedMachineMthEntries = machineMthEntries !== void 0 ? normalizeMachineMthEntries(machineMthEntries ?? []) : normalizeMachineMthEntries(existing.machineMthEntries).length ? normalizeMachineMthEntries(existing.machineMthEntries) : getFallbackMachineMthEntries2(existing, existingMachineIds);
+  const nextMachineIds = machineMthEntries !== void 0 ? normalizedMachineMthEntries.map((entry) => entry.machineId) : machineIds !== void 0 ? machineIds ?? [] : existingMachineIds;
+  const entryOperatorIds = normalizedMachineMthEntries.flatMap((entry) => entry.operatorId != null ? [entry.operatorId] : []);
+  const entryAccessoryIds = normalizedMachineMthEntries.flatMap((entry) => entry.accessoryId != null ? [entry.accessoryId] : []);
+  const resolvedMachineWorkerIds = uniqueIds(nextMachineWorkerIds, entryOperatorIds);
+  const existingAccessoryIds = (await db.select().from(mowingRecordAccessoriesTable).where(eq(mowingRecordAccessoriesTable.mowingRecordId, id))).map((item) => item.accessoryId);
+  const nextAccessoryIds = machineMthEntries !== void 0 ? uniqueIds(accessoryIds ?? [], entryAccessoryIds) : accessoryIds !== void 0 ? accessoryIds ?? [] : existingAccessoryIds;
+  const resolvedWorkerIds = uniqueIds(mergedWorkerIds, resolvedMachineWorkerIds);
+  const nextMthStart = mthStart !== void 0 ? mthStart : parseDbNumber(existing.mthStart);
+  const nextMthEnd = mthEnd !== void 0 ? mthEnd : parseDbNumber(existing.mthEnd);
+  const singleMachineEntry = normalizedMachineMthEntries.length === 1 ? normalizedMachineMthEntries[0] : null;
+  const aggregateMthTotal = sumMachineMthTotals(normalizedMachineMthEntries) ?? calculateDerivedTotal(nextMthStart, nextMthEnd) ?? parseDbNumber(existing.mthTotal);
+  const aggregateFuelConsumption = sumMachineValue(normalizedMachineMthEntries, "fuelConsumption") ?? (fuelConsumption !== void 0 ? fuelConsumption : parseDbNumber(existing.fuelConsumption));
+  const aggregateRefueling = sumMachineValue(normalizedMachineMthEntries, "refueling") ?? (refueling !== void 0 ? refueling : parseDbNumber(existing.refueling));
+  const existingVehicleEntries = normalizeVehicleEntries(existing.vehicleEntries);
+  const normalizedVehicleEntries = vehicleEntries !== void 0 ? normalizeVehicleEntries(vehicleEntries ?? []) : existingVehicleEntries.length > 0 ? existingVehicleEntries : existing.vehicleId ? [{
+    vehicleId: existing.vehicleId,
+    kmStart: parseDbNumber(existing.vehicleKmStart),
+    kmEnd: parseDbNumber(existing.vehicleKmEnd),
+    kmTotal: parseDbNumber(existing.vehicleKmTotal),
+    refueling: parseDbNumber(existing.vehicleRefueling)
+  }] : [];
+  const singleVehicleEntry = normalizedVehicleEntries.length === 1 ? normalizedVehicleEntries[0] : null;
+  const aggregateVehicleKm = normalizedVehicleEntries.length ? Math.round(normalizedVehicleEntries.reduce((sum2, entry) => sum2 + (entry.kmTotal ?? 0), 0) * 100) / 100 : null;
+  const aggregateVehicleRefueling = normalizedVehicleEntries.length ? Math.round(normalizedVehicleEntries.reduce((sum2, entry) => sum2 + (entry.refueling ?? 0), 0) * 100) / 100 : null;
+  const nextMowingKind = mowingKind !== void 0 ? mowingKind : existing.mowingKind;
+  const nextManualMowingKind = manualMowingKind !== void 0 ? manualMowingKind : existing.manualMowingKind;
+  const nextContractorCompanyId = contractorCompanyId !== void 0 ? contractorCompanyId : existing.contractorCompanyId;
+  if (nextMowingKind === "strojni") {
+    if (normalizedMachineMthEntries.length === 0) {
+      res.status(400).json({ error: "Pro strojn\xED se\u010Den\xED p\u0159idejte alespo\u0148 jeden traktor" });
+      return;
+    }
+    if (new Set(nextMachineIds).size !== nextMachineIds.length) {
+      res.status(400).json({ error: "Ka\u017Ed\xFD traktor lze do denn\xEDho z\xE1znamu p\u0159idat pouze jednou" });
+      return;
+    }
+    if (normalizedMachineMthEntries.some((entry) => entry.operatorId == null)) {
+      res.status(400).json({ error: "U ka\u017Ed\xE9ho traktoru vyberte obsluhu" });
+      return;
+    }
+    if (normalizedMachineMthEntries.some((entry) => entry.mthStart == null || entry.mthEnd == null || entry.mthEnd < entry.mthStart)) {
+      res.status(400).json({ error: "U ka\u017Ed\xE9ho traktoru vypl\u0148te platn\xE9 po\u010D\xE1te\u010Dn\xED a kone\u010Dn\xE9 motohodiny" });
+      return;
+    }
+    if ((aggregateFuelConsumption ?? 0) < 0 || (aggregateRefueling ?? 0) < 0) {
+      res.status(400).json({ error: "Spot\u0159eba ani tankov\xE1n\xED nesm\xED b\xFDt z\xE1porn\xE9" });
+      return;
+    }
+  }
+  if (nextMowingKind === "rucni") {
+    if (session2.userRole !== "admin") {
+      res.status(403).json({ error: "Ru\u010Dn\xED se\u010Den\xED m\u016F\u017Ee evidovat pouze administr\xE1tor" });
+      return;
+    }
+    if (nextManualMowingKind === "core" && nextManualWorkerIds.length === 0) {
+      res.status(400).json({ error: "Vyberte alespo\u0148 jednoho kmenov\xE9ho zam\u011Bstnance" });
+      return;
+    }
+    if (nextManualMowingKind === "slope") {
+      if (normalizedMachineMthEntries.length === 0) {
+        res.status(400).json({ error: "P\u0159idejte alespo\u0148 jednu svahovou seka\u010Dku" });
+        return;
+      }
+      if (normalizedMachineMthEntries.some((entry) => entry.mthStart == null || entry.mthEnd == null || entry.mthEnd < entry.mthStart)) {
+        res.status(400).json({ error: "U ka\u017Ed\xE9 svahov\xE9 seka\u010Dky vypl\u0148te platn\xE9 motohodiny" });
+        return;
+      }
+      if (nextManualWorkerIds.length === 0) {
+        res.status(400).json({ error: "Vyberte alespo\u0148 jednoho pracovn\xEDka" });
+        return;
+      }
+    }
+    if (nextManualMowingKind === "subcontractor") {
+      if (!nextContractorCompanyId) {
+        res.status(400).json({ error: "Vyberte subdodavatelskou firmu" });
+        return;
+      }
+      if (nextManualWorkerIds.length === 0) {
+        res.status(400).json({ error: "Vyberte alespo\u0148 jednoho pracovn\xEDka subdodavatele" });
+        return;
+      }
+      const [company] = await db.select().from(contractorCompaniesTable).where(and(eq(contractorCompaniesTable.id, nextContractorCompanyId), eq(contractorCompaniesTable.isActive, true), isNull(contractorCompaniesTable.deletedAt)));
+      if (!company) {
+        res.status(400).json({ error: "Vybran\xE1 subdodavatelsk\xE1 firma nen\xED aktivn\xED" });
+        return;
+      }
+      const selectedWorkers = await db.select({ id: workersTable.id, contractorCompanyId: workersTable.contractorCompanyId }).from(workersTable).where(inArray(workersTable.id, nextManualWorkerIds));
+      if (selectedWorkers.length !== nextManualWorkerIds.length || selectedWorkers.some((worker) => worker.contractorCompanyId !== nextContractorCompanyId)) {
+        res.status(400).json({ error: "V\u0161ichni pracovn\xEDci mus\xED pat\u0159it k vybran\xE9 firm\u011B" });
+        return;
+      }
+    }
+    if (!nextManualMowingKind || !["core", "slope", "subcontractor"].includes(nextManualMowingKind)) {
+      res.status(400).json({ error: "Vyberte variantu ru\u010Dn\xEDho se\u010Den\xED" });
+      return;
+    }
+    const nextBrushcutterRefueling = brushcutterRefueling !== void 0 ? brushcutterRefueling : parseDbNumber(existing.brushcutterRefueling);
+    if ((nextBrushcutterRefueling ?? 0) < 0) {
+      res.status(400).json({ error: "Tankov\xE1n\xED k\u0159ovino\u0159ez\u016F nesm\xED b\xFDt z\xE1porn\xE9" });
+      return;
+    }
+  }
+  if (normalizedVehicleEntries.some((entry) => (entry.kmStart ?? 0) < 0 || (entry.kmEnd ?? 0) < 0 || (entry.refueling ?? 0) < 0 || entry.kmStart != null && entry.kmEnd != null && entry.kmEnd < entry.kmStart)) {
+    res.status(400).json({ error: "U ka\u017Ed\xE9 j\xEDzdy auta zadejte platn\xE9 kilometry a tankov\xE1n\xED" });
+    return;
+  }
   const updates = {};
   if (date6 != null) updates.date = date6;
   if (regionId != null) updates.regionId = regionId;
+  if (workType !== void 0) updates.workType = workType;
+  if (mowingSection !== void 0) updates.mowingSection = mowingSection;
+  if (mowingKind !== void 0) updates.mowingKind = mowingKind;
+  if (manualMowingKind !== void 0) updates.manualMowingKind = manualMowingKind;
+  if (contractorCompanyId !== void 0 || manualMowingKind !== void 0) updates.contractorCompanyId = nextManualMowingKind === "subcontractor" ? nextContractorCompanyId : null;
   if (location !== void 0) updates.location = location;
   if (startTime !== void 0) updates.startTime = startTime;
   if (endTime !== void 0) updates.endTime = endTime;
-  if (weatherTypeId !== void 0) updates.weatherTypeId = weatherTypeId;
-  if (vehicleId !== void 0) updates.vehicleId = vehicleId;
-  if (mthStart !== void 0) updates.mthStart = mthStart != null ? String(mthStart) : null;
-  if (mthEnd !== void 0) updates.mthEnd = mthEnd != null ? String(mthEnd) : null;
-  if (mthTotal !== void 0) updates.mthTotal = mthTotal != null ? String(mthTotal) : null;
-  if (fuelConsumption !== void 0) updates.fuelConsumption = fuelConsumption != null ? String(fuelConsumption) : null;
-  if (refueling !== void 0) updates.refueling = refueling != null ? String(refueling) : null;
+  if (weatherTypeIds !== void 0 || weatherTypeId !== void 0) {
+    updates.weatherTypeId = nextWeatherTypeIds[0] ?? null;
+    updates.weatherTypeIds = serializeIdList(nextWeatherTypeIds);
+  }
+  if (temperature !== void 0) updates.temperature = temperature;
+  if (vehicleEntries !== void 0) {
+    updates.vehicleId = singleVehicleEntry?.vehicleId ?? null;
+    updates.vehicleEntries = serializeJsonArray(normalizedVehicleEntries);
+    updates.vehicleKmStart = singleVehicleEntry?.kmStart != null ? String(singleVehicleEntry.kmStart) : null;
+    updates.vehicleKmEnd = singleVehicleEntry?.kmEnd != null ? String(singleVehicleEntry.kmEnd) : null;
+    updates.vehicleKmTotal = aggregateVehicleKm != null ? String(aggregateVehicleKm) : null;
+    updates.vehicleRefueling = aggregateVehicleRefueling != null ? String(aggregateVehicleRefueling) : null;
+  } else if (vehicleId !== void 0) updates.vehicleId = vehicleId;
+  if (mthStart !== void 0 || machineMthEntries !== void 0) {
+    updates.mthStart = singleMachineEntry?.mthStart != null ? String(singleMachineEntry.mthStart) : mthStart != null ? String(mthStart) : null;
+  }
+  if (mthEnd !== void 0 || machineMthEntries !== void 0) {
+    updates.mthEnd = singleMachineEntry?.mthEnd != null ? String(singleMachineEntry.mthEnd) : mthEnd != null ? String(mthEnd) : null;
+  }
+  if (mthStart !== void 0 || mthEnd !== void 0 || mthTotal !== void 0 || machineMthEntries !== void 0) {
+    updates.mthTotal = aggregateMthTotal != null ? String(aggregateMthTotal) : null;
+  }
+  if (fuelConsumption !== void 0 || machineMthEntries !== void 0) updates.fuelConsumption = aggregateFuelConsumption != null ? String(aggregateFuelConsumption) : null;
+  if (refueling !== void 0 || machineMthEntries !== void 0) updates.refueling = aggregateRefueling != null ? String(aggregateRefueling) : null;
+  if (manualWorkerIds !== void 0) updates.manualWorkerIds = serializeIdList(manualWorkerIds);
+  if (machineWorkerIds !== void 0) updates.machineWorkerIds = serializeIdList(machineWorkerIds);
+  if (workerTimeEntries !== void 0) {
+    updates.manualWorkerIds = serializeIdList(nextManualWorkerIds);
+    updates.machineWorkerIds = serializeIdList(resolvedMachineWorkerIds);
+    updates.workerTimeEntries = serializeJsonArray(normalizedWorkerTimeEntries);
+  }
+  if (machineMthEntries !== void 0) {
+    updates.machineWorkerIds = serializeIdList(resolvedMachineWorkerIds);
+    updates.machineMthEntries = serializeJsonArray(normalizedMachineMthEntries);
+  }
+  if (assignedAverage !== void 0) updates.assignedAverage = assignedAverage;
+  if (dayHours !== void 0) updates.dayHours = dayHours != null ? String(dayHours) : null;
+  if (nightHours !== void 0) updates.nightHours = nightHours != null ? String(nightHours) : null;
+  if (laborHours !== void 0) updates.laborHours = laborHours != null ? String(laborHours) : null;
+  if (vehicleEntries === void 0 && vehicleKmStart !== void 0) updates.vehicleKmStart = vehicleKmStart != null ? String(vehicleKmStart) : null;
+  if (vehicleEntries === void 0 && vehicleKmEnd !== void 0) updates.vehicleKmEnd = vehicleKmEnd != null ? String(vehicleKmEnd) : null;
+  if (vehicleEntries === void 0 && vehicleKmTotal !== void 0) updates.vehicleKmTotal = vehicleKmTotal != null ? String(vehicleKmTotal) : null;
+  if (vehicleEntries === void 0 && vehicleRefueling !== void 0) updates.vehicleRefueling = vehicleRefueling != null ? String(vehicleRefueling) : null;
+  if (brushcutterRefueling !== void 0) updates.brushcutterRefueling = brushcutterRefueling != null ? String(brushcutterRefueling) : null;
+  if (trafficMarking !== void 0) updates.trafficMarking = trafficMarking;
   if (note !== void 0) updates.note = note;
   const [record2] = Object.keys(updates).length > 0 ? await db.update(mowingRecordsTable).set(updates).where(eq(mowingRecordsTable.id, id)).returning() : [existing];
-  if (workerIds != null) {
+  if (workerIds !== void 0 || manualWorkerIds !== void 0 || machineWorkerIds !== void 0 || workerTimeEntries !== void 0 || machineMthEntries !== void 0) {
     await db.delete(mowingRecordWorkersTable).where(eq(mowingRecordWorkersTable.mowingRecordId, id));
-    if (workerIds.length > 0) {
-      await db.insert(mowingRecordWorkersTable).values(workerIds.map((wId) => ({ mowingRecordId: id, workerId: wId })));
+    if (resolvedWorkerIds.length > 0) {
+      await db.insert(mowingRecordWorkersTable).values(resolvedWorkerIds.map((workerId) => ({ mowingRecordId: id, workerId })));
     }
   }
-  if (machineIds != null) {
+  if (machineIds != null || machineMthEntries !== void 0) {
     await db.delete(mowingRecordMachinesTable).where(eq(mowingRecordMachinesTable.mowingRecordId, id));
-    if (machineIds.length > 0) {
-      await db.insert(mowingRecordMachinesTable).values(machineIds.map((mId) => ({ mowingRecordId: id, machineId: mId })));
+    if (nextMachineIds.length > 0) {
+      await db.insert(mowingRecordMachinesTable).values(nextMachineIds.map((machineId) => ({ mowingRecordId: id, machineId })));
     }
   }
-  if (accessoryIds != null) {
+  if (accessoryIds != null || machineMthEntries !== void 0) {
     await db.delete(mowingRecordAccessoriesTable).where(eq(mowingRecordAccessoriesTable.mowingRecordId, id));
-    if (accessoryIds.length > 0) {
-      await db.insert(mowingRecordAccessoriesTable).values(accessoryIds.map((aId) => ({ mowingRecordId: id, accessoryId: aId })));
+    if (nextAccessoryIds.length > 0) {
+      await db.insert(mowingRecordAccessoriesTable).values(nextAccessoryIds.map((accessoryId) => ({ mowingRecordId: id, accessoryId })));
     }
   }
   const full = await buildMowingRecord(record2);
@@ -61195,13 +57146,13 @@ router7.patch("/mowing-records/:id", requireAuth, async (req, res) => {
     recordId: id,
     description: `Upraven z\xE1znam se\u010Den\xED ${record2.date}${record2.location ? ` \u2013 ${record2.location}` : ""}`,
     oldData: existing,
-    newData: { ...updates, workerIds, machineIds, accessoryIds }
+    newData: { ...updates, workerIds: resolvedWorkerIds, machineIds: nextMachineIds, accessoryIds: nextAccessoryIds, weatherTypeIds: nextWeatherTypeIds, workerTimeEntries: normalizedWorkerTimeEntries, machineMthEntries: normalizedMachineMthEntries, vehicleEntries: normalizedVehicleEntries }
   });
   res.json(full);
 });
-router7.delete("/mowing-records/:id", requireAuth, async (req, res) => {
+router7.delete("/mowing-records/:id", requireOperationsAccess, async (req, res) => {
   const session2 = req.session;
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const [existing] = await db.select().from(mowingRecordsTable).where(and(eq(mowingRecordsTable.id, id), isNull(mowingRecordsTable.deletedAt)));
   if (!existing) {
     res.status(404).json({ error: "Z\xE1znam nenalezen" });
@@ -61227,7 +57178,7 @@ var mowingRecords_default = router7;
 // src/routes/dashboard.ts
 var import_express8 = __toESM(require_express2(), 1);
 var router8 = (0, import_express8.Router)();
-router8.get("/dashboard/stats", requireAuth, async (req, res) => {
+router8.get("/dashboard/stats", requireOperationsAccess, async (req, res) => {
   const session2 = req.session;
   const fellingWhere = session2.userRole === "admin" ? isNull(fellingRecordsTable.deletedAt) : and(isNull(fellingRecordsTable.deletedAt), eq(fellingRecordsTable.userId, session2.userId));
   const mowingWhere = session2.userRole === "admin" ? isNull(mowingRecordsTable.deletedAt) : and(isNull(mowingRecordsTable.deletedAt), eq(mowingRecordsTable.userId, session2.userId));
@@ -61250,7 +57201,7 @@ router8.get("/dashboard/stats", requireAuth, async (req, res) => {
     totalUsers: totalUsers?.total ?? 0
   });
 });
-router8.get("/dashboard/recent-records", requireAuth, async (req, res) => {
+router8.get("/dashboard/recent-records", requireOperationsAccess, async (req, res) => {
   const session2 = req.session;
   const fellingWhere = session2.userRole === "admin" ? isNull(fellingRecordsTable.deletedAt) : and(isNull(fellingRecordsTable.deletedAt), eq(fellingRecordsTable.userId, session2.userId));
   const mowingWhere = session2.userRole === "admin" ? isNull(mowingRecordsTable.deletedAt) : and(isNull(mowingRecordsTable.deletedAt), eq(mowingRecordsTable.userId, session2.userId));
@@ -61310,13 +57261,11 @@ var dashboard_default = router8;
 var import_express9 = __toESM(require_express2(), 1);
 var router9 = (0, import_express9.Router)();
 router9.get("/audit-logs", requireAdmin, async (req, res) => {
-  const {
-    tableName,
-    userId: filterUserId,
-    action: filterAction,
-    dateFrom,
-    dateTo
-  } = req.query;
+  const tableName = queryString(req.query.tableName);
+  const filterUserId = queryString(req.query.userId);
+  const filterAction = queryString(req.query.action);
+  const dateFrom = queryString(req.query.dateFrom);
+  const dateTo = queryString(req.query.dateTo);
   const conditions = [];
   if (tableName) conditions.push(eq(auditLogsTable.tableName, tableName));
   if (filterUserId) conditions.push(eq(auditLogsTable.userId, parseInt(filterUserId, 10)));
@@ -61343,7 +57292,7 @@ router9.get("/audit-logs", requireAdmin, async (req, res) => {
   res.json(logs);
 });
 router9.get("/audit-logs/:id", requireAdmin, async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(queryString(req.params.id) ?? "", 10);
   const [log] = await db.select({
     id: auditLogsTable.id,
     action: auditLogsTable.action,
@@ -61365,18 +57314,242 @@ router9.get("/audit-logs/:id", requireAdmin, async (req, res) => {
 });
 var auditLogs_default = router9;
 
-// src/routes/index.ts
+// src/routes/teamDailyRecords.ts
+var import_express10 = __toESM(require_express2(), 1);
 var router10 = (0, import_express10.Router)();
-router10.use(health_default);
-router10.use(auth_default);
-router10.use(users_default);
-router10.use(codebooks_default);
-router10.use(accessories_default);
-router10.use(fellingRecords_default);
-router10.use(mowingRecords_default);
-router10.use(dashboard_default);
-router10.use(auditLogs_default);
-var routes_default = router10;
+function sessionOf(req) {
+  return req.session;
+}
+function routeId(value) {
+  return Number(Array.isArray(value) ? value[0] : value);
+}
+function requireRole(roles) {
+  return (req, res, next) => {
+    const session2 = sessionOf(req);
+    if (!roles.includes(session2.userRole)) {
+      res.status(403).json({ error: "Pro tuto akci nem\xE1te opr\xE1vn\u011Bn\xED" });
+      return;
+    }
+    next();
+  };
+}
+function optionalNumber(value) {
+  if (value === "" || value === null || value === void 0) return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+function nonNegative(value) {
+  const parsed = optionalNumber(value);
+  return parsed == null || parsed < 0 ? null : parsed;
+}
+async function getUserWorker(userId) {
+  const [user] = await db.select({ workerId: usersTable.workerId, fullName: usersTable.fullName, role: usersTable.role }).from(usersTable).where(and(eq(usersTable.id, userId), isNull(usersTable.deletedAt))).limit(1);
+  return user;
+}
+async function canReadRecord(recordId, session2) {
+  const [record2] = await db.select().from(teamDailyRecordsTable).where(and(eq(teamDailyRecordsTable.id, recordId), isNull(teamDailyRecordsTable.deletedAt))).limit(1);
+  if (!record2) return { record: null, workerId: null };
+  if (session2.userRole === "manager" && record2.createdByUserId === session2.userId) return { record: record2, workerId: null };
+  if (session2.userRole === "admin") return { record: record2, workerId: null };
+  if (session2.userRole !== "employee" || record2.status === "draft") return { record: null, workerId: null };
+  const user = await getUserWorker(session2.userId);
+  if (!user?.workerId) return { record: null, workerId: null };
+  const [assignment] = await db.select({ id: teamDailyAssignmentsTable.id }).from(teamDailyAssignmentsTable).where(and(eq(teamDailyAssignmentsTable.dailyRecordId, recordId), eq(teamDailyAssignmentsTable.workerId, user.workerId))).limit(1);
+  return assignment ? { record: record2, workerId: user.workerId } : { record: null, workerId: null };
+}
+router10.get("/team-daily-records/options", requireAuth, requireRole(["manager", "employee", "admin"]), async (req, res) => {
+  const session2 = sessionOf(req);
+  const [regions, weatherTypes, machines, accessories, vehicles] = await Promise.all([
+    db.select({ id: regionsTable.id, name: regionsTable.name, code: regionsTable.code }).from(regionsTable).where(and(eq(regionsTable.isActive, true), isNull(regionsTable.deletedAt))).orderBy(regionsTable.name),
+    db.select({ id: weatherTypesTable.id, name: weatherTypesTable.name, icon: weatherTypesTable.icon }).from(weatherTypesTable).where(and(eq(weatherTypesTable.isActive, true), isNull(weatherTypesTable.deletedAt))).orderBy(weatherTypesTable.name),
+    db.select({ id: machinesTable.id, name: machinesTable.name, type: machinesTable.type, defaultAccessoryId: machinesTable.defaultAccessoryId }).from(machinesTable).where(and(eq(machinesTable.isActive, true), isNull(machinesTable.deletedAt))).orderBy(machinesTable.name),
+    db.select({ id: accessoriesTable.id, name: accessoriesTable.name, type: accessoriesTable.type }).from(accessoriesTable).where(and(eq(accessoriesTable.isActive, true), isNull(accessoriesTable.deletedAt))).orderBy(accessoriesTable.name),
+    db.select({ id: vehiclesTable.id, name: vehiclesTable.name, licensePlate: vehiclesTable.licensePlate }).from(vehiclesTable).where(and(eq(vehiclesTable.isActive, true), isNull(vehiclesTable.deletedAt))).orderBy(vehiclesTable.name)
+  ]);
+  const workers = session2.userRole === "manager" || session2.userRole === "admin" ? await db.select({ id: workersTable.id, firstName: workersTable.firstName, lastName: workersTable.lastName }).from(workersTable).innerJoin(usersTable, and(eq(usersTable.workerId, workersTable.id), eq(usersTable.role, "employee"), eq(usersTable.isActive, true), isNull(usersTable.deletedAt))).where(and(eq(workersTable.isActive, true), isNull(workersTable.deletedAt), isNull(workersTable.contractorCompanyId))).orderBy(workersTable.lastName, workersTable.firstName) : [];
+  res.json({ regions, weatherTypes, machines, accessories, vehicles, workers });
+});
+router10.get("/team-daily-records", requireAuth, requireRole(["manager", "employee", "admin"]), async (req, res) => {
+  const session2 = sessionOf(req);
+  const archive = req.query.archive === "1" || req.query.archive === "true";
+  let records;
+  if (session2.userRole === "employee") {
+    const user = await getUserWorker(session2.userId);
+    if (!user?.workerId) {
+      res.json([]);
+      return;
+    }
+    records = await db.select({ record: teamDailyRecordsTable }).from(teamDailyAssignmentsTable).innerJoin(teamDailyRecordsTable, eq(teamDailyAssignmentsTable.dailyRecordId, teamDailyRecordsTable.id)).where(and(eq(teamDailyAssignmentsTable.workerId, user.workerId), isNull(teamDailyRecordsTable.deletedAt), eq(teamDailyRecordsTable.status, archive ? "closed" : "open"))).orderBy(desc(teamDailyRecordsTable.date), desc(teamDailyRecordsTable.id));
+  } else {
+    const statusCondition = archive ? eq(teamDailyRecordsTable.status, "closed") : inArray(teamDailyRecordsTable.status, ["draft", "open"]);
+    const condition = session2.userRole === "admin" ? and(isNull(teamDailyRecordsTable.deletedAt), statusCondition) : and(eq(teamDailyRecordsTable.createdByUserId, session2.userId), isNull(teamDailyRecordsTable.deletedAt), statusCondition);
+    records = await db.select({ record: teamDailyRecordsTable }).from(teamDailyRecordsTable).where(condition).orderBy(desc(teamDailyRecordsTable.date), desc(teamDailyRecordsTable.id));
+  }
+  res.json(records.map((item) => item.record));
+});
+router10.post("/team-daily-records", requireAuth, requireRole(["manager", "admin"]), async (req, res) => {
+  const session2 = sessionOf(req);
+  const { date: date6, regionId, location, weatherTypeId, temperature, workerIds, status } = req.body;
+  const uniqueWorkerIds = [...new Set((workerIds ?? []).map(Number).filter(Number.isInteger))];
+  if (!date6 || !Number.isInteger(Number(regionId)) || uniqueWorkerIds.length === 0) {
+    res.status(400).json({ error: "Datum, rev\xEDr a alespo\u0148 jeden zam\u011Bstnanec jsou povinn\xE9" });
+    return;
+  }
+  if (!["draft", "open"].includes(status ?? "open")) {
+    res.status(400).json({ error: "Neplatn\xFD stav z\xE1znamu" });
+    return;
+  }
+  const validWorkers = await db.select({ id: workersTable.id }).from(workersTable).innerJoin(usersTable, and(eq(usersTable.workerId, workersTable.id), eq(usersTable.role, "employee"), eq(usersTable.isActive, true), isNull(usersTable.deletedAt))).where(and(inArray(workersTable.id, uniqueWorkerIds), eq(workersTable.isActive, true), isNull(workersTable.deletedAt), isNull(workersTable.contractorCompanyId)));
+  if (validWorkers.length !== uniqueWorkerIds.length) {
+    res.status(400).json({ error: "N\u011Bkter\xFD zam\u011Bstnanec nen\xED aktivn\xED nebo nem\xE1 zam\u011Bstnaneck\xFD \xFA\u010Det" });
+    return;
+  }
+  const record2 = await db.transaction(async (tx) => {
+    const [created] = await tx.insert(teamDailyRecordsTable).values({
+      date: date6,
+      workCategory: "sheep",
+      regionId: Number(regionId),
+      location: location?.trim() || null,
+      weatherTypeId: weatherTypeId ? Number(weatherTypeId) : null,
+      temperature: optionalNumber(temperature),
+      status: status ?? "open",
+      createdByUserId: session2.userId
+    }).returning();
+    await tx.insert(teamDailyAssignmentsTable).values(uniqueWorkerIds.map((workerId) => ({ dailyRecordId: created.id, workerId })));
+    return created;
+  });
+  await logAudit({ userId: session2.userId, action: "create", tableName: "team_daily_records", recordId: record2.id, description: `Vedouc\xED vytvo\u0159il denn\xED z\xE1znam Ove\u010Dky pro ${uniqueWorkerIds.length} zam\u011Bstnanc\u016F`, newData: { date: date6, regionId, location, weatherTypeId, temperature, workerIds: uniqueWorkerIds, status: record2.status } });
+  res.status(201).json(record2);
+});
+router10.get("/team-daily-records/:id", requireAuth, requireRole(["manager", "employee", "admin"]), async (req, res) => {
+  const session2 = sessionOf(req);
+  const id = routeId(req.params.id);
+  const access = await canReadRecord(id, session2);
+  if (!access.record) {
+    res.status(404).json({ error: "Denn\xED z\xE1znam nebyl nalezen" });
+    return;
+  }
+  const [region, weather, creator, assignments, entries] = await Promise.all([
+    db.select({ id: regionsTable.id, name: regionsTable.name, code: regionsTable.code }).from(regionsTable).where(eq(regionsTable.id, access.record.regionId)).limit(1),
+    access.record.weatherTypeId ? db.select({ id: weatherTypesTable.id, name: weatherTypesTable.name, icon: weatherTypesTable.icon }).from(weatherTypesTable).where(eq(weatherTypesTable.id, access.record.weatherTypeId)).limit(1) : Promise.resolve([]),
+    db.select({ id: usersTable.id, fullName: usersTable.fullName }).from(usersTable).where(eq(usersTable.id, access.record.createdByUserId)).limit(1),
+    db.select({ workerId: workersTable.id, firstName: workersTable.firstName, lastName: workersTable.lastName }).from(teamDailyAssignmentsTable).innerJoin(workersTable, eq(teamDailyAssignmentsTable.workerId, workersTable.id)).where(eq(teamDailyAssignmentsTable.dailyRecordId, id)).orderBy(asc(workersTable.lastName), asc(workersTable.firstName)),
+    db.select({ id: teamDailyEntriesTable.id, workerId: teamDailyEntriesTable.workerId, userId: teamDailyEntriesTable.userId, fullName: usersTable.fullName, machineEntries: teamDailyEntriesTable.machineEntries, vehicleEntries: teamDailyEntriesTable.vehicleEntries, note: teamDailyEntriesTable.note, submittedAt: teamDailyEntriesTable.submittedAt, updatedAt: teamDailyEntriesTable.updatedAt }).from(teamDailyEntriesTable).innerJoin(usersTable, eq(teamDailyEntriesTable.userId, usersTable.id)).where(eq(teamDailyEntriesTable.dailyRecordId, id)).orderBy(asc(usersTable.fullName))
+  ]);
+  const visibleEntries = session2.userRole === "employee" ? entries.filter((entry) => entry.workerId === access.workerId) : entries;
+  res.json({ ...access.record, region: region[0] ?? null, weather: weather[0] ?? null, creator: creator[0] ?? null, assignments, entries: visibleEntries, myWorkerId: access.workerId });
+});
+router10.patch("/team-daily-records/:id/status", requireAuth, requireRole(["manager", "admin"]), async (req, res) => {
+  const session2 = sessionOf(req);
+  const id = routeId(req.params.id);
+  const status = String(req.body?.status ?? "");
+  if (!["draft", "open", "closed"].includes(status)) {
+    res.status(400).json({ error: "Neplatn\xFD stav" });
+    return;
+  }
+  const access = await canReadRecord(id, session2);
+  if (!access.record) {
+    res.status(404).json({ error: "Denn\xED z\xE1znam nebyl nalezen" });
+    return;
+  }
+  const [record2] = await db.update(teamDailyRecordsTable).set({ status }).where(eq(teamDailyRecordsTable.id, id)).returning();
+  await logAudit({ userId: session2.userId, action: "update", tableName: "team_daily_records", recordId: id, description: `Stav denn\xEDho z\xE1znamu zm\u011Bn\u011Bn na ${status}`, oldData: { status: access.record.status }, newData: { status } });
+  res.json(record2);
+});
+router10.put("/team-daily-records/:id/my-entry", requireAuth, requireRole(["employee"]), async (req, res) => {
+  const session2 = sessionOf(req);
+  const id = routeId(req.params.id);
+  const access = await canReadRecord(id, session2);
+  if (!access.record || !access.workerId) {
+    res.status(404).json({ error: "Denn\xED z\xE1znam nebyl nalezen" });
+    return;
+  }
+  if (access.record.status !== "open") {
+    res.status(409).json({ error: "Tento denn\xED z\xE1znam nen\xED otev\u0159en\xFD pro \xFApravy" });
+    return;
+  }
+  const rawMachines = Array.isArray(req.body?.machineEntries) ? req.body.machineEntries : [];
+  const rawVehicles = Array.isArray(req.body?.vehicleEntries) ? req.body.vehicleEntries : [];
+  if (rawMachines.length === 0) {
+    res.status(400).json({ error: "P\u0159idejte alespo\u0148 jeden stroj" });
+    return;
+  }
+  if (rawMachines.length > 20 || rawVehicles.length > 20) {
+    res.status(400).json({ error: "P\u0159\xEDli\u0161 mnoho polo\u017Eek v jednom z\xE1pisu" });
+    return;
+  }
+  const machineEntries = rawMachines.map((item) => {
+    const mthStart = nonNegative(item.mthStart);
+    const mthEnd = nonNegative(item.mthEnd);
+    return {
+      machineId: Number(item.machineId),
+      accessoryId: item.accessoryId ? Number(item.accessoryId) : null,
+      mthStart,
+      mthEnd,
+      mthTotal: mthStart != null && mthEnd != null ? Math.round((mthEnd - mthStart) * 100) / 100 : null,
+      fuelConsumption: nonNegative(item.fuelConsumption),
+      refueling: nonNegative(item.refueling)
+    };
+  });
+  const vehicleEntries = rawVehicles.map((item) => {
+    const kmStart = nonNegative(item.kmStart);
+    const kmEnd = nonNegative(item.kmEnd);
+    return {
+      vehicleId: Number(item.vehicleId),
+      kmStart,
+      kmEnd,
+      kmTotal: kmStart != null && kmEnd != null ? Math.round((kmEnd - kmStart) * 100) / 100 : null,
+      refueling: nonNegative(item.refueling)
+    };
+  });
+  if (machineEntries.some((item) => !Number.isInteger(item.machineId) || item.mthStart == null || item.mthEnd == null || item.mthEnd < item.mthStart)) {
+    res.status(400).json({ error: "U ka\u017Ed\xE9ho stroje vypl\u0148te platn\xE9 MTH; kone\u010Dn\xFD stav nesm\xED b\xFDt ni\u017E\u0161\xED" });
+    return;
+  }
+  if (vehicleEntries.some((item) => !Number.isInteger(item.vehicleId) || item.kmStart == null || item.kmEnd == null || item.kmEnd < item.kmStart)) {
+    res.status(400).json({ error: "U ka\u017Ed\xE9ho auta vypl\u0148te platn\xE9 kilometry; kone\u010Dn\xFD stav nesm\xED b\xFDt ni\u017E\u0161\xED" });
+    return;
+  }
+  const machineIds = [...new Set(machineEntries.map((item) => item.machineId))];
+  const vehicleIds = [...new Set(vehicleEntries.map((item) => item.vehicleId))];
+  const [validMachines, validVehicles] = await Promise.all([
+    db.select({ id: machinesTable.id }).from(machinesTable).where(and(inArray(machinesTable.id, machineIds), eq(machinesTable.isActive, true), isNull(machinesTable.deletedAt))),
+    vehicleIds.length ? db.select({ id: vehiclesTable.id }).from(vehiclesTable).where(and(inArray(vehiclesTable.id, vehicleIds), eq(vehiclesTable.isActive, true), isNull(vehiclesTable.deletedAt))) : Promise.resolve([])
+  ]);
+  if (validMachines.length !== machineIds.length || validVehicles.length !== vehicleIds.length) {
+    res.status(400).json({ error: "Vybran\xFD stroj nebo auto nen\xED aktivn\xED" });
+    return;
+  }
+  const [entry] = await db.insert(teamDailyEntriesTable).values({
+    dailyRecordId: id,
+    userId: session2.userId,
+    workerId: access.workerId,
+    machineEntries,
+    vehicleEntries,
+    note: typeof req.body?.note === "string" ? req.body.note.trim() || null : null,
+    submittedAt: /* @__PURE__ */ new Date()
+  }).onConflictDoUpdate({
+    target: [teamDailyEntriesTable.dailyRecordId, teamDailyEntriesTable.workerId],
+    set: { userId: session2.userId, machineEntries, vehicleEntries, note: typeof req.body?.note === "string" ? req.body.note.trim() || null : null, submittedAt: /* @__PURE__ */ new Date(), updatedAt: /* @__PURE__ */ new Date() }
+  }).returning();
+  await logAudit({ userId: session2.userId, action: "update", tableName: "team_daily_entries", recordId: entry.id, description: `Zam\u011Bstnanec ulo\u017Eil sv\u016Fj z\xE1pis k denn\xEDmu z\xE1znamu #${id}`, newData: { workerId: access.workerId, machineCount: machineEntries.length, vehicleCount: vehicleEntries.length } });
+  res.json(entry);
+});
+var teamDailyRecords_default = router10;
+
+// src/routes/index.ts
+var router11 = (0, import_express11.Router)();
+router11.use(health_default);
+router11.use(auth_default);
+router11.use(users_default);
+router11.use(codebooks_default);
+router11.use(accessories_default);
+router11.use(fellingRecords_default);
+router11.use(mowingRecords_default);
+router11.use(dashboard_default);
+router11.use(auditLogs_default);
+router11.use(teamDailyRecords_default);
+var routes_default = router11;
 
 // src/lib/logger.ts
 var import_pino = __toESM(require_pino(), 1);
@@ -61397,7 +57570,11 @@ var logger = (0, import_pino.default)({
 });
 
 // src/app.ts
-var app = (0, import_express11.default)();
+var app = (0, import_express12.default)();
+var __filename = fileURLToPath(import.meta.url);
+var __dirname2 = path.dirname(__filename);
+var frontendDist = path.resolve(__dirname2, "../../pracovni-zaznamy/dist/public");
+app.set("trust proxy", 1);
 app.use(
   (0, import_pino_http.default)({
     logger,
@@ -61421,8 +57598,8 @@ app.use((0, import_cors.default)({
   origin: true,
   credentials: true
 }));
-app.use(import_express11.default.json());
-app.use(import_express11.default.urlencoded({ extended: true }));
+app.use(import_express12.default.json());
+app.use(import_express12.default.urlencoded({ extended: true }));
 var sessionSecret = process.env.SESSION_SECRET ?? "pracovni-zaznamy-dev-secret-change-in-production";
 app.use(
   (0, import_express_session.default)({
@@ -61433,11 +57610,15 @@ app.use(
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
       maxAge: 1e3 * 60 * 60 * 24 * 7,
-      sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax"
+      sameSite: process.env.NODE_ENV === "production" ? "lax" : "lax"
     }
   })
 );
 app.use("/api", routes_default);
+app.use(import_express12.default.static(frontendDist));
+app.get(/^(?!\/api(?:\/|$)).*/, (_req, res) => {
+  res.sendFile(path.join(frontendDist, "index.html"));
+});
 var app_default = app;
 
 // src/index.ts

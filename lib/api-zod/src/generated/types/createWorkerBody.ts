@@ -11,5 +11,10 @@ export interface CreateWorkerBody {
   lastName: string;
   /** @nullable */
   note?: string | null;
+  defaultBrushcutter?: boolean;
+  defaultSlopeMower?: boolean;
+  /** @nullable */
+  contractorCompanyId?: number | null;
+  defaultSubcontractor?: boolean;
   isActive: boolean;
 }
