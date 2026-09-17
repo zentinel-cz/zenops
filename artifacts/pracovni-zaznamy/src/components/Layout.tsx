@@ -13,6 +13,7 @@ const navItems: NavItem[] = [
   { label: "Přehled", href: "/" },
   { label: "Kácení", href: "/kaceni" },
   { label: "Sečení", href: "/seceni" },
+  { label: "Denní záznamy", href: "/admin/denni-zaznamy", adminOnly: true },
   { label: "Uživatelé", href: "/admin/uzivatele", adminOnly: true },
   { label: "Číselníky", href: "/admin/ciselniky", adminOnly: true },
   { label: "Audit log", href: "/admin/audit-log", adminOnly: true },

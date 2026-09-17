@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { exportTeamDailyExcel } from "@/lib/exportExcel";
 
 type Option = { id: number; name: string; code?: string | null; icon?: string | null; type?: string | null; licensePlate?: string | null; defaultAccessoryId?: number | null };
 type Worker = { id: number; firstName: string; lastName: string };
 type Assignment = { workerId: number; firstName: string; lastName: string };
 type Options = { regions: Option[]; weatherTypes: Option[]; machines: Option[]; accessories: Option[]; vehicles: Option[]; workers: Worker[] };
-type DailyRecord = { id: number; date: string; regionId: number; location: string | null; weatherTypeId: number | null; temperature: number | null; status: "draft" | "open" | "closed"; createdAt: string };
+type DailyRecord = { id: number; date: string; regionId: number; location: string | null; weatherTypeId: number | null; temperature: number | null; status: "draft" | "open" | "closed"; createdAt: string; updatedAt: string; creatorName?: string | null; assignmentCount?: number; entryCount?: number };
 type MachineEntry = { machineId: number | ""; accessoryId: number | ""; mthStart: number | ""; mthEnd: number | ""; mthTotal?: number | null; fuelConsumption: number | ""; refueling: number | "" };
 type VehicleEntry = { vehicleId: number | ""; kmStart: number | ""; kmEnd: number | ""; kmTotal?: number | null; refueling: number | "" };
 type EmployeeEntry = { id: number; workerId: number; fullName: string; machineEntries: MachineEntry[]; vehicleEntries: VehicleEntry[]; note: string | null; updatedAt: string };
@@ -37,6 +39,10 @@ function formatDate(value: string) {
   return new Date(`${value}T12:00:00`).toLocaleDateString("cs-CZ");
 }
 
+function formatDateTime(value: string) {
+  return new Date(value).toLocaleString("cs-CZ", { dateStyle: "short", timeStyle: "short" });
+}
+
 function RecordHeading({ record, options }: { record: DailyRecord; options: Options | null }) {
   const region = options?.regions.find((item) => item.id === record.regionId);
   const weather = options?.weatherTypes.find((item) => item.id === record.weatherTypeId);
@@ -47,11 +53,13 @@ function RecordHeading({ record, options }: { record: DailyRecord; options: Opti
         <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${statusClass(record.status)}`}>{statusLabel(record.status)}</span>
       </div>
       <p className="mt-1 text-sm text-slate-500">{record.location || "Místo neuvedeno"}{weather ? ` · ${weather.icon ?? ""} ${weather.name}` : ""}{record.temperature != null ? ` · ${record.temperature} °C` : ""}</p>
+      <p className="mt-1 text-xs font-medium text-slate-400">Vytvořeno {formatDateTime(record.createdAt)}{record.creatorName ? ` · ${record.creatorName}` : ""}</p>
     </div>
   );
 }
 
 export function ManagerDailyWorkflow() {
+  const { isAdmin } = useAuth();
   const [options, setOptions] = useState<Options | null>(null);
   const [records, setRecords] = useState<DailyRecord[]>([]);
   const [detail, setDetail] = useState<Detail | null>(null);
@@ -59,6 +67,10 @@ export function ManagerDailyWorkflow() {
   const [showArchive, setShowArchive] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [month, setMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [exporting, setExporting] = useState(false);
   const [form, setForm] = useState({
     date: new Date().toISOString().slice(0, 10),
     regionId: "",
@@ -68,11 +80,12 @@ export function ManagerDailyWorkflow() {
     workerIds: [] as number[],
     status: "open" as "draft" | "open",
   });
+  const [editForm, setEditForm] = useState({ date: "", regionId: "", location: "", weatherTypeId: "", temperature: "", workerIds: [] as number[] });
 
   const refresh = async (archive = showArchive) => {
     const [nextOptions, nextRecords] = await Promise.all([
       api<Options>("/api/team-daily-records/options"),
-      api<DailyRecord[]>(`/api/team-daily-records${archive ? "?archive=1" : ""}`),
+      api<DailyRecord[]>(isAdmin ? "/api/team-daily-records?all=1" : `/api/team-daily-records${archive ? "?archive=1" : ""}`),
     ]);
     setOptions(nextOptions);
     setRecords(nextRecords);
@@ -85,7 +98,10 @@ export function ManagerDailyWorkflow() {
   const loadDetail = async (id: number) => {
     try {
       setError("");
-      setDetail(await api<Detail>(`/api/team-daily-records/${id}`));
+      setIsEditing(false);
+      const next = await api<Detail>(`/api/team-daily-records/${id}`);
+      setDetail(next);
+      setEditForm({ date: next.date, regionId: String(next.regionId), location: next.location ?? "", weatherTypeId: next.weatherTypeId ? String(next.weatherTypeId) : "", temperature: next.temperature == null ? "" : String(next.temperature), workerIds: next.assignments.map((item) => item.workerId) });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Záznam nelze načíst");
     }
@@ -129,6 +145,39 @@ export function ManagerDailyWorkflow() {
     }
   };
 
+  const saveEdit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!detail) return;
+    try {
+      setError("");
+      await api(`/api/team-daily-records/${detail.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ ...editForm, regionId: Number(editForm.regionId), weatherTypeId: editForm.weatherTypeId ? Number(editForm.weatherTypeId) : null, temperature: editForm.temperature === "" ? null : Number(editForm.temperature) }),
+      });
+      await refresh(showArchive);
+      await loadDetail(detail.id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Záznam nelze upravit");
+    }
+  };
+
+  const visibleRecords = useMemo(() => isAdmin && month ? records.filter((record) => record.date.startsWith(month)) : records, [isAdmin, month, records]);
+  const selectedVisibleIds = visibleRecords.filter((record) => selectedIds.includes(record.id)).map((record) => record.id);
+  const toggleSelected = (id: number) => setSelectedIds((ids) => ids.includes(id) ? ids.filter((item) => item !== id) : [...ids, id]);
+  const exportSelected = async () => {
+    if (!options || selectedIds.length === 0) return;
+    try {
+      setError("");
+      setExporting(true);
+      const details = await Promise.all(selectedIds.map((id) => api<Detail>(`/api/team-daily-records/${id}`)));
+      exportTeamDailyExcel(details, { machines: options.machines, vehicles: options.vehicles });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Excel se nepodařilo vytvořit");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const machineName = (id: number | "") => options?.machines.find((item) => item.id === id)?.name ?? `Stroj #${id}`;
   const vehicleName = (id: number | "") => options?.vehicles.find((item) => item.id === id)?.name ?? `Auto #${id}`;
 
@@ -136,21 +185,39 @@ export function ManagerDailyWorkflow() {
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Vedoucí · Ovečky</p>
-          <h1 className="mt-1 font-display text-3xl font-bold text-slate-950">Denní záznamy týmu</h1>
-          <p className="mt-2 text-sm text-slate-500">Připravte místo a podmínky, zaměstnanci následně doplní svou techniku.</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">{isAdmin ? "Administrace · Ovečky" : "Vedoucí · Ovečky"}</p>
+          <h1 className="mt-1 font-display text-3xl font-bold text-slate-950">{isAdmin ? "Kontrola denních záznamů" : "Denní záznamy týmu"}</h1>
+          <p className="mt-2 text-sm text-slate-500">{isAdmin ? "Měsíční přehled všech vedoucích, kontrola vyplnění a výběrový export do Excelu." : "Připravte místo a podmínky, zaměstnanci následně doplní svou techniku."}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => { const next = !showArchive; setShowArchive(next); setDetail(null); setShowCreate(false); void refresh(next); }} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700">
+          {!isAdmin && <button type="button" onClick={() => { const next = !showArchive; setShowArchive(next); setDetail(null); setShowCreate(false); void refresh(next); }} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700">
             {showArchive ? "← Aktivní záznamy" : "Archiv uzavřených"}
-          </button>
-          {!showArchive && <button type="button" onClick={() => { setShowCreate((value) => !value); setDetail(null); }} className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-bold text-white shadow-lg hover:bg-slate-800">
+          </button>}
+          {!isAdmin && !showArchive && <button type="button" onClick={() => { setShowCreate((value) => !value); setDetail(null); }} className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-bold text-white shadow-lg hover:bg-slate-800">
             {showCreate ? "Zavřít formulář" : "+ Nový denní záznam"}
           </button>}
         </div>
       </div>
 
       {error && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">{error}</div>}
+
+      {isAdmin && !detail && (
+        <section className={panelClass}>
+          <div className="grid gap-4 lg:grid-cols-[220px_1fr_auto] lg:items-end">
+            <div><label className={labelClass}>Kontrolovaný měsíc</label><input type="month" value={month} onChange={(event) => { setMonth(event.target.value); setSelectedIds([]); }} className={inputClass} /></div>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="rounded-xl bg-slate-100 p-3"><p className="text-xs text-slate-500">Celkem</p><b className="text-xl">{visibleRecords.length}</b></div>
+              <div className="rounded-xl bg-emerald-50 p-3"><p className="text-xs text-emerald-700">Vyplněno</p><b className="text-xl">{visibleRecords.reduce((sum, record) => sum + (record.entryCount ?? 0), 0)}</b></div>
+              <div className="rounded-xl bg-cyan-50 p-3"><p className="text-xs text-cyan-700">Vybráno</p><b className="text-xl">{selectedIds.length}</b></div>
+            </div>
+            <button type="button" disabled={selectedIds.length === 0 || exporting} onClick={() => void exportSelected()} className="rounded-xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-40">{exporting ? "Připravuji Excel…" : `Exportovat vybrané (${selectedIds.length})`}</button>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button type="button" onClick={() => setSelectedIds(selectedVisibleIds.length === visibleRecords.length ? selectedIds.filter((id) => !visibleRecords.some((record) => record.id === id)) : [...new Set([...selectedIds, ...visibleRecords.map((record) => record.id)])])} className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold">{selectedVisibleIds.length === visibleRecords.length && visibleRecords.length ? "Zrušit výběr měsíce" : "Vybrat celý měsíc"}</button>
+            <span className="self-center text-xs text-slate-500">Do Excelu se uloží přehled i samostatný list s výkony jednotlivých zaměstnanců.</span>
+          </div>
+        </section>
+      )}
 
       {showCreate && options && (
         <form onSubmit={createRecord} className={panelClass}>
@@ -184,11 +251,39 @@ export function ManagerDailyWorkflow() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <RecordHeading record={detail} options={options} />
             <div className="flex flex-wrap gap-2">
-              {detail.status !== "open" && <button onClick={() => void changeStatus("open")} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white">Otevřít</button>}
-              {detail.status !== "closed" && <button onClick={() => void changeStatus("closed")} className="rounded-lg bg-slate-800 px-3 py-2 text-xs font-bold text-white">Uzavřít</button>}
-              <button onClick={() => setDetail(null)} className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold">Zpět</button>
+              <button type="button" onClick={() => setIsEditing((value) => !value)} className="rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-xs font-bold text-primary">{isEditing ? "Zrušit úpravy" : "Upravit záznam"}</button>
+              {detail.status !== "open" && <button type="button" onClick={() => void changeStatus("open")} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white">Otevřít</button>}
+              {detail.status !== "closed" && <button type="button" onClick={() => void changeStatus("closed")} className="rounded-lg bg-slate-800 px-3 py-2 text-xs font-bold text-white">Uzavřít</button>}
+              <button type="button" onClick={() => setDetail(null)} className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold">Zpět</button>
             </div>
           </div>
+          <div className="mt-4 flex flex-wrap gap-x-6 gap-y-1 rounded-xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+            <span><b>Vedoucí:</b> {detail.creator?.fullName ?? "—"}</span>
+            <span><b>Vytvořeno:</b> {formatDateTime(detail.createdAt)}</span>
+            <span><b>Naposledy upraveno:</b> {formatDateTime(detail.updatedAt)}</span>
+          </div>
+          {isEditing && options && (
+            <form onSubmit={saveEdit} className="mt-5 rounded-2xl border border-primary/20 bg-primary/[0.03] p-4">
+              <h2 className="font-display text-lg font-bold">Upravit denní záznam a viditelnost</h2>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div><label className={labelClass}>Datum *</label><input type="date" value={editForm.date} onChange={(event) => setEditForm({ ...editForm, date: event.target.value })} className={inputClass} required /></div>
+                <div><label className={labelClass}>Revír *</label><select value={editForm.regionId} onChange={(event) => setEditForm({ ...editForm, regionId: event.target.value })} className={inputClass} required><option value="">-- Vyberte revír --</option>{options.regions.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div>
+                <div className="sm:col-span-2"><label className={labelClass}>Místo práce</label><input value={editForm.location} onChange={(event) => setEditForm({ ...editForm, location: event.target.value })} className={inputClass} /></div>
+                <div><label className={labelClass}>Počasí</label><select value={editForm.weatherTypeId} onChange={(event) => setEditForm({ ...editForm, weatherTypeId: event.target.value })} className={inputClass}><option value="">-- Vyberte počasí --</option>{options.weatherTypes.map((item) => <option key={item.id} value={item.id}>{item.icon} {item.name}</option>)}</select></div>
+                <div><label className={labelClass}>Teplota °C</label><input type="number" value={editForm.temperature} onChange={(event) => setEditForm({ ...editForm, temperature: event.target.value })} className={inputClass} /></div>
+              </div>
+              <div className="mt-4">
+                <label className={labelClass}>Kdo záznam uvidí *</label>
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{options.workers.map((worker) => {
+                  const checked = editForm.workerIds.includes(worker.id);
+                  const hasEntry = detail.entries.some((entry) => entry.workerId === worker.id);
+                  return <label key={worker.id} className={`rounded-xl border p-3 text-sm font-medium ${hasEntry ? "cursor-not-allowed border-emerald-200 bg-emerald-50" : "cursor-pointer border-slate-200 bg-white"}`}><input type="checkbox" checked={checked} disabled={hasEntry} onChange={() => setEditForm((current) => ({ ...current, workerIds: checked ? current.workerIds.filter((id) => id !== worker.id) : [...current.workerIds, worker.id] }))} className="mr-2" />{worker.firstName} {worker.lastName}{hasEntry ? " · zápis uložen" : ""}</label>;
+                })}</div>
+                <p className="mt-2 text-xs text-slate-500">Zaměstnance s uloženým zápisem nelze odebrat, aby nedošlo ke ztrátě dat.</p>
+              </div>
+              <button type="submit" className="mt-5 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white">Uložit změny</button>
+            </form>
+          )}
           <div className="mt-6 space-y-3">
             {detail.assignments.map((worker) => {
               const workerId = worker.workerId;
@@ -213,10 +308,17 @@ export function ManagerDailyWorkflow() {
 
       {!detail && !showCreate && (
         <section className="grid gap-3">
-          {loading ? <div className={panelClass}>Načítám záznamy…</div> : records.length === 0 ? <div className={panelClass}>{showArchive ? "Archiv zatím neobsahuje žádné uzavřené záznamy." : "Zatím nejsou vytvořené žádné aktivní týmové denní záznamy."}</div> : records.map((record) => (
-            <button key={record.id} type="button" onClick={() => void loadDetail(record.id)} className={`${panelClass} flex w-full items-center justify-between gap-4 text-left transition-transform hover:-translate-y-0.5`}>
-              <RecordHeading record={record} options={options} /><span className="text-xl text-slate-400">→</span>
-            </button>
+          {loading ? <div className={panelClass}>Načítám záznamy…</div> : visibleRecords.length === 0 ? <div className={panelClass}>{isAdmin ? "Pro vybraný měsíc nejsou žádné denní záznamy." : showArchive ? "Archiv zatím neobsahuje žádné uzavřené záznamy." : "Zatím nejsou vytvořené žádné aktivní týmové denní záznamy."}</div> : visibleRecords.map((record) => (
+            <div key={record.id} className={`${panelClass} flex w-full items-center gap-4 transition-transform hover:-translate-y-0.5`}>
+              {isAdmin && <input type="checkbox" checked={selectedIds.includes(record.id)} onChange={() => toggleSelected(record.id)} aria-label={`Vybrat záznam ${record.id}`} className="h-5 w-5 shrink-0 accent-primary" />}
+              <button type="button" onClick={() => void loadDetail(record.id)} className="flex min-w-0 flex-1 items-center justify-between gap-4 text-left">
+                <RecordHeading record={record} options={options} />
+                <div className="flex shrink-0 items-center gap-3">
+                  {isAdmin && <span className="hidden rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-600 sm:block">{record.entryCount ?? 0}/{record.assignmentCount ?? 0} vyplněno</span>}
+                  <span className="text-xl text-slate-400">→</span>
+                </div>
+              </button>
+            </div>
           ))}
         </section>
       )}

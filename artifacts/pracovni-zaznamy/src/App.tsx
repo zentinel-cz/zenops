@@ -19,6 +19,7 @@ import AdminCodebooksPage from "@/pages/AdminCodebooksPage";
 import AdminAuditLogPage from "@/pages/AdminAuditLogPage";
 import NotFound from "@/pages/not-found";
 import FutureRolePage from "@/pages/FutureRolePage";
+import { ManagerDailyWorkflow } from "@/components/TeamDailyWorkflow";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -104,6 +105,11 @@ function AppRoutes() {
         <Route path="/admin/audit-log">
           <ProtectedRoute adminOnly>
             <AdminAuditLogPage />
+          </ProtectedRoute>
+        </Route>
+        <Route path="/admin/denni-zaznamy">
+          <ProtectedRoute adminOnly>
+            <ManagerDailyWorkflow />
           </ProtectedRoute>
         </Route>
         <Route component={NotFound} />

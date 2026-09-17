@@ -258,3 +258,84 @@ export function exportMowingExcel(
   const today = new Date().toISOString().slice(0, 10);
   XLSX.writeFile(wb, `seceni-seznam-${today}.xlsx`);
 }
+
+type TeamDailyExportRecord = {
+  id: number;
+  date: string;
+  location: string | null;
+  temperature: number | null;
+  status: "draft" | "open" | "closed";
+  createdAt: string;
+  updatedAt: string;
+  region: { name: string; code?: string | null } | null;
+  weather: { name: string } | null;
+  creator: { fullName: string } | null;
+  assignments: Array<{ workerId: number; firstName: string; lastName: string }>;
+  entries: Array<{
+    workerId: number;
+    fullName: string;
+    machineEntries: Array<{ machineId: number | ""; mthStart: number | ""; mthEnd: number | ""; mthTotal?: number | null; fuelConsumption: number | ""; refueling: number | "" }>;
+    vehicleEntries: Array<{ vehicleId: number | ""; kmStart: number | ""; kmEnd: number | ""; kmTotal?: number | null; refueling: number | "" }>;
+    note: string | null;
+    updatedAt: string;
+  }>;
+};
+
+export function exportTeamDailyExcel(
+  records: TeamDailyExportRecord[],
+  names: { machines: Array<{ id: number; name: string }>; vehicles: Array<{ id: number; name: string; licensePlate?: string | null }> },
+) {
+  const statusName = (status: TeamDailyExportRecord["status"]) => status === "draft" ? "Rozpracovaný" : status === "open" ? "Otevřený" : "Uzavřený";
+  const machineName = (id: number | "") => names.machines.find((item) => item.id === id)?.name ?? `Stroj #${id}`;
+  const vehicleName = (id: number | "") => {
+    const vehicle = names.vehicles.find((item) => item.id === id);
+    return vehicle ? `${vehicle.name}${vehicle.licensePlate ? ` (${vehicle.licensePlate})` : ""}` : `Auto #${id}`;
+  };
+
+  const summaryHeaders = ["ID", "Datum", "Revír", "Místo", "Vedoucí", "Stav", "Přiřazeno", "Vyplněno", "Počasí", "Teplota (°C)", "Vytvořeno", "Naposledy upraveno"];
+  const summaryRows = records.map((record) => [
+    record.id,
+    formatDate(record.date),
+    record.region?.name ?? "",
+    record.location ?? "",
+    record.creator?.fullName ?? "",
+    statusName(record.status),
+    record.assignments.length,
+    record.entries.length,
+    record.weather?.name ?? "",
+    record.temperature ?? "",
+    formatDateTime(record.createdAt),
+    formatDateTime(record.updatedAt),
+  ]);
+  const summarySheet = XLSX.utils.aoa_to_sheet([summaryHeaders, ...summaryRows]);
+  summarySheet["!cols"] = [{ wch: 7 }, { wch: 12 }, { wch: 24 }, { wch: 24 }, { wch: 24 }, { wch: 15 }, { wch: 12 }, { wch: 11 }, { wch: 16 }, { wch: 13 }, { wch: 19 }, { wch: 19 }];
+  summarySheet["!autofilter"] = { ref: `A1:L${Math.max(1, summaryRows.length + 1)}` };
+
+  const detailHeaders = ["ID záznamu", "Datum", "Revír", "Zaměstnanec", "Stav zápisu", "Stroje a MTH", "Spotřeba (l)", "Tankování strojů (l)", "Auta a km", "Tankování aut (l)", "Poznámka", "Zápis upraven"];
+  const detailRows = records.flatMap((record) => record.assignments.map((assignment) => {
+    const entry = record.entries.find((item) => item.workerId === assignment.workerId);
+    return [
+      record.id,
+      formatDate(record.date),
+      record.region?.name ?? "",
+      `${assignment.firstName} ${assignment.lastName}`,
+      entry ? "Vyplněno" : "Čeká na zápis",
+      entry?.machineEntries.map((item) => `${machineName(item.machineId)}: ${item.mthStart}–${item.mthEnd} MTH (${item.mthTotal ?? Number(item.mthEnd) - Number(item.mthStart)})`).join("; ") ?? "",
+      entry?.machineEntries.reduce((sum, item) => sum + (Number(item.fuelConsumption) || 0), 0) || "",
+      entry?.machineEntries.reduce((sum, item) => sum + (Number(item.refueling) || 0), 0) || "",
+      entry?.vehicleEntries.map((item) => `${vehicleName(item.vehicleId)}: ${item.kmStart}–${item.kmEnd} km (${item.kmTotal ?? Number(item.kmEnd) - Number(item.kmStart)})`).join("; ") ?? "",
+      entry?.vehicleEntries.reduce((sum, item) => sum + (Number(item.refueling) || 0), 0) || "",
+      entry?.note ?? "",
+      entry ? formatDateTime(entry.updatedAt) : "",
+    ];
+  }));
+  const detailSheet = XLSX.utils.aoa_to_sheet([detailHeaders, ...detailRows]);
+  detailSheet["!cols"] = [{ wch: 11 }, { wch: 12 }, { wch: 24 }, { wch: 26 }, { wch: 16 }, { wch: 44 }, { wch: 14 }, { wch: 21 }, { wch: 44 }, { wch: 18 }, { wch: 34 }, { wch: 19 }];
+  detailSheet["!autofilter"] = { ref: `A1:L${Math.max(1, detailRows.length + 1)}` };
+
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, summarySheet, "Přehled");
+  XLSX.utils.book_append_sheet(workbook, detailSheet, "Výkony zaměstnanců");
+  const month = records.map((record) => record.date.slice(0, 7)).filter((value, index, all) => all.indexOf(value) === index);
+  XLSX.writeFile(workbook, `ovecky-${month.length === 1 ? month[0] : new Date().toISOString().slice(0, 10)}.xlsx`);
+}

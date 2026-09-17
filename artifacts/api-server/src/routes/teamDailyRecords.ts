@@ -97,6 +97,7 @@ router.get("/team-daily-records/options", requireAuth, requireRole(["manager", "
 router.get("/team-daily-records", requireAuth, requireRole(["manager", "employee", "admin"]), async (req, res): Promise<void> => {
   const session = sessionOf(req);
   const archive = req.query.archive === "1" || req.query.archive === "true";
+  const all = session.userRole === "admin" && (req.query.all === "1" || req.query.all === "true");
   let records;
   if (session.userRole === "employee") {
     const user = await getUserWorker(session.userId);
@@ -108,13 +109,32 @@ router.get("/team-daily-records", requireAuth, requireRole(["manager", "employee
       .where(and(eq(teamDailyAssignmentsTable.workerId, user.workerId), isNull(teamDailyRecordsTable.deletedAt), eq(teamDailyRecordsTable.status, archive ? "closed" : "open")))
       .orderBy(desc(teamDailyRecordsTable.date), desc(teamDailyRecordsTable.id));
   } else {
-    const statusCondition = archive ? eq(teamDailyRecordsTable.status, "closed") : inArray(teamDailyRecordsTable.status, ["draft", "open"]);
+    const statusCondition = all ? undefined : archive ? eq(teamDailyRecordsTable.status, "closed") : inArray(teamDailyRecordsTable.status, ["draft", "open"]);
     const condition = session.userRole === "admin"
       ? and(isNull(teamDailyRecordsTable.deletedAt), statusCondition)
       : and(eq(teamDailyRecordsTable.createdByUserId, session.userId), isNull(teamDailyRecordsTable.deletedAt), statusCondition);
     records = (await db.select({ record: teamDailyRecordsTable }).from(teamDailyRecordsTable).where(condition).orderBy(desc(teamDailyRecordsTable.date), desc(teamDailyRecordsTable.id)));
   }
-  res.json(records.map((item) => item.record));
+  const plainRecords = records.map((item) => item.record);
+  if (plainRecords.length === 0) { res.json([]); return; }
+  const recordIds = plainRecords.map((record) => record.id);
+  const creatorIds = [...new Set(plainRecords.map((record) => record.createdByUserId))];
+  const [creators, assignments, entries] = await Promise.all([
+    db.select({ id: usersTable.id, fullName: usersTable.fullName }).from(usersTable).where(inArray(usersTable.id, creatorIds)),
+    db.select({ dailyRecordId: teamDailyAssignmentsTable.dailyRecordId }).from(teamDailyAssignmentsTable).where(inArray(teamDailyAssignmentsTable.dailyRecordId, recordIds)),
+    db.select({ dailyRecordId: teamDailyEntriesTable.dailyRecordId }).from(teamDailyEntriesTable).where(inArray(teamDailyEntriesTable.dailyRecordId, recordIds)),
+  ]);
+  const creatorNames = new Map(creators.map((creator) => [creator.id, creator.fullName]));
+  const assignmentCounts = new Map<number, number>();
+  const entryCounts = new Map<number, number>();
+  assignments.forEach(({ dailyRecordId }) => assignmentCounts.set(dailyRecordId, (assignmentCounts.get(dailyRecordId) ?? 0) + 1));
+  entries.forEach(({ dailyRecordId }) => entryCounts.set(dailyRecordId, (entryCounts.get(dailyRecordId) ?? 0) + 1));
+  res.json(plainRecords.map((record) => ({
+    ...record,
+    creatorName: creatorNames.get(record.createdByUserId) ?? null,
+    assignmentCount: assignmentCounts.get(record.id) ?? 0,
+    entryCount: entryCounts.get(record.id) ?? 0,
+  })));
 });
 
 router.post("/team-daily-records", requireAuth, requireRole(["manager", "admin"]), async (req, res): Promise<void> => {
@@ -171,6 +191,71 @@ router.get("/team-daily-records/:id", requireAuth, requireRole(["manager", "empl
 
   const visibleEntries = session.userRole === "employee" ? entries.filter((entry) => entry.workerId === access.workerId) : entries;
   res.json({ ...access.record, region: region[0] ?? null, weather: weather[0] ?? null, creator: creator[0] ?? null, assignments, entries: visibleEntries, myWorkerId: access.workerId });
+});
+
+router.put("/team-daily-records/:id", requireAuth, requireRole(["manager", "admin"]), async (req, res): Promise<void> => {
+  const session = sessionOf(req);
+  const id = routeId(req.params.id);
+  const access = await canReadRecord(id, session);
+  if (!access.record) { res.status(404).json({ error: "Denní záznam nebyl nalezen" }); return; }
+
+  const { date, regionId, location, weatherTypeId, temperature, workerIds } = req.body as {
+    date?: string; regionId?: number; location?: string | null; weatherTypeId?: number | null; temperature?: number | null; workerIds?: number[];
+  };
+  const uniqueWorkerIds = [...new Set((workerIds ?? []).map(Number).filter(Number.isInteger))];
+  if (!date || !Number.isInteger(Number(regionId)) || uniqueWorkerIds.length === 0) {
+    res.status(400).json({ error: "Datum, revír a alespoň jeden zaměstnanec jsou povinné" });
+    return;
+  }
+
+  const [region, validWorkers, currentAssignments, submittedEntries] = await Promise.all([
+    db.select({ id: regionsTable.id }).from(regionsTable).where(and(eq(regionsTable.id, Number(regionId)), eq(regionsTable.isActive, true), isNull(regionsTable.deletedAt))).limit(1),
+    db.select({ id: workersTable.id }).from(workersTable)
+      .innerJoin(usersTable, and(eq(usersTable.workerId, workersTable.id), eq(usersTable.role, "employee"), eq(usersTable.isActive, true), isNull(usersTable.deletedAt)))
+      .where(and(inArray(workersTable.id, uniqueWorkerIds), eq(workersTable.isActive, true), isNull(workersTable.deletedAt), isNull(workersTable.contractorCompanyId))),
+    db.select({ workerId: teamDailyAssignmentsTable.workerId }).from(teamDailyAssignmentsTable).where(eq(teamDailyAssignmentsTable.dailyRecordId, id)),
+    db.select({ workerId: teamDailyEntriesTable.workerId }).from(teamDailyEntriesTable).where(eq(teamDailyEntriesTable.dailyRecordId, id)),
+  ]);
+  if (!region[0]) { res.status(400).json({ error: "Vybraný revír není aktivní" }); return; }
+  if (validWorkers.length !== uniqueWorkerIds.length) { res.status(400).json({ error: "Některý zaměstnanec není aktivní nebo nemá zaměstnanecký účet" }); return; }
+
+  const currentWorkerIds = currentAssignments.map(({ workerId }) => workerId);
+  const removedWorkerIds = currentWorkerIds.filter((workerId) => !uniqueWorkerIds.includes(workerId));
+  const addedWorkerIds = uniqueWorkerIds.filter((workerId) => !currentWorkerIds.includes(workerId));
+  const submittedWorkerIds = new Set(submittedEntries.map(({ workerId }) => workerId));
+  if (removedWorkerIds.some((workerId) => submittedWorkerIds.has(workerId))) {
+    res.status(409).json({ error: "Nelze odebrat zaměstnance, který už uložil svůj zápis. Jeho data zůstávají chráněná." });
+    return;
+  }
+
+  const updated = await db.transaction(async (tx) => {
+    const [record] = await tx.update(teamDailyRecordsTable).set({
+      date,
+      regionId: Number(regionId),
+      location: location?.trim() || null,
+      weatherTypeId: weatherTypeId ? Number(weatherTypeId) : null,
+      temperature: optionalNumber(temperature),
+      updatedAt: new Date(),
+    }).where(eq(teamDailyRecordsTable.id, id)).returning();
+    if (removedWorkerIds.length) {
+      await tx.delete(teamDailyAssignmentsTable).where(and(eq(teamDailyAssignmentsTable.dailyRecordId, id), inArray(teamDailyAssignmentsTable.workerId, removedWorkerIds)));
+    }
+    if (addedWorkerIds.length) {
+      await tx.insert(teamDailyAssignmentsTable).values(addedWorkerIds.map((workerId) => ({ dailyRecordId: id, workerId })));
+    }
+    return record;
+  });
+
+  await logAudit({
+    userId: session.userId,
+    action: "update",
+    tableName: "team_daily_records",
+    recordId: id,
+    description: `Upraven denní záznam Ovečky; viditelnost pro ${uniqueWorkerIds.length} zaměstnanců`,
+    oldData: { date: access.record.date, regionId: access.record.regionId, location: access.record.location, weatherTypeId: access.record.weatherTypeId, temperature: access.record.temperature, workerIds: currentWorkerIds },
+    newData: { date, regionId: Number(regionId), location: location?.trim() || null, weatherTypeId: weatherTypeId ? Number(weatherTypeId) : null, temperature: optionalNumber(temperature), workerIds: uniqueWorkerIds },
+  });
+  res.json(updated);
 });
 
 router.patch("/team-daily-records/:id/status", requireAuth, requireRole(["manager", "admin"]), async (req, res): Promise<void> => {
