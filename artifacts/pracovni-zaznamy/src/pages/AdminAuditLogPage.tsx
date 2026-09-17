@@ -13,6 +13,7 @@ const TABLE_LABELS: Record<string, string> = {
   weather_types: "Počasí",
   team_daily_records: "Denní záznamy Ovečky",
   team_daily_entries: "Zápisy pracovníků Ovečky",
+  subcontractor_daily_records: "Denní záznamy subdodavatelů",
 };
 
 const ACTION_LABELS: Record<string, string> = {
@@ -53,6 +54,7 @@ function formatAuditText(value: string) {
 
 function formatAuditData(value: unknown, key?: string): unknown {
   if (key === "role" && value === "employee") return "Pracovník";
+  if (key === "role" && value === "subcontractor") return "Subdodavatel";
   if (typeof value === "string") return formatAuditText(value);
   if (Array.isArray(value)) return value.map((item) => formatAuditData(item));
   if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([nestedKey, nestedValue]) => [nestedKey, formatAuditData(nestedValue, nestedKey)]));

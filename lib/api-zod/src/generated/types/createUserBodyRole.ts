@@ -14,4 +14,5 @@ export const CreateUserBodyRole = {
   user: "user",
   employee: "employee",
   manager: "manager",
+  subcontractor: "subcontractor",
 } as const;

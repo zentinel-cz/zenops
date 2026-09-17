@@ -18,4 +18,5 @@ export const UpdateUserBodyRole = {
   user: "user",
   employee: "employee",
   manager: "manager",
+  subcontractor: "subcontractor",
 } as const;

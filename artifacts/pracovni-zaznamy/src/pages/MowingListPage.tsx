@@ -13,9 +13,11 @@ import { exportMowingExcel } from "@/lib/exportExcel";
 import { exportMowingListPdf } from "@/lib/exportPdf";
 import { MOWING_WORK_TYPE_OPTIONS, getOptionLabel } from "@/lib/recordOptions";
 import { ManagerDailyWorkflow } from "@/components/TeamDailyWorkflow";
+import { AdminSubcontractorDailyWorkflow } from "@/components/SubcontractorDailyWorkflow";
 
 export default function MowingListPage() {
   const [section, setSection] = useState<"records" | "daily">("records");
+  const [dailySection, setDailySection] = useState<"ovecky" | "subcontractors">("ovecky");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [regionId, setRegionId] = useState<number | null>(null);
@@ -62,12 +64,20 @@ export default function MowingListPage() {
   const sectionTabs = isAdmin && (
     <div className="flex flex-wrap gap-2 rounded-2xl border border-white/70 bg-white/75 p-2 shadow-sm">
       <button type="button" onClick={() => setSection("records")} className={`rounded-xl px-4 py-2.5 text-sm font-bold transition-colors ${section === "records" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}>Provozní záznamy</button>
-      <button type="button" onClick={() => setSection("daily")} className={`rounded-xl px-4 py-2.5 text-sm font-bold transition-colors ${section === "daily" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}>Denní záznamy pracovníků</button>
+      <button type="button" onClick={() => setSection("daily")} className={`rounded-xl px-4 py-2.5 text-sm font-bold transition-colors ${section === "daily" ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}>Denní záznamy</button>
     </div>
   );
 
   if (isAdmin && section === "daily") {
-    return <div className="space-y-5"><div><h1 className="font-display text-3xl font-bold text-slate-950">Sečení</h1><p className="mt-1 text-sm text-slate-500">Jedno místo pro Ovečky, kmenové pracovníky a subdodavatele.</p></div>{sectionTabs}<ManagerDailyWorkflow /></div>;
+    return <div className="space-y-5">
+      <div><h1 className="font-display text-3xl font-bold text-slate-950">Sečení</h1><p className="mt-1 text-sm text-slate-500">Jedno místo pro denní záznamy všech typů sečení.</p></div>
+      {sectionTabs}
+      <div className="flex flex-wrap gap-2 rounded-2xl border border-emerald-100 bg-emerald-50/70 p-2">
+        <button type="button" onClick={() => setDailySection("ovecky")} className={`rounded-xl px-4 py-2.5 text-sm font-bold transition-colors ${dailySection === "ovecky" ? "bg-emerald-700 text-white shadow-sm" : "text-emerald-900 hover:bg-emerald-100"}`}>Ovečky</button>
+        <button type="button" onClick={() => setDailySection("subcontractors")} className={`rounded-xl px-4 py-2.5 text-sm font-bold transition-colors ${dailySection === "subcontractors" ? "bg-emerald-700 text-white shadow-sm" : "text-emerald-900 hover:bg-emerald-100"}`}>Subdodavatelé</button>
+      </div>
+      {dailySection === "ovecky" ? <ManagerDailyWorkflow /> : <AdminSubcontractorDailyWorkflow />}
+    </div>;
   }
 
   return (

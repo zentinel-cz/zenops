@@ -1,5 +1,5 @@
 import type { QueryKey, UseMutationOptions, UseMutationResult, UseQueryOptions, UseQueryResult } from "@tanstack/react-query";
-import type { Accessory, AuditLogEntry, AuthResponse, ContractorCompany, CreateAccessoryBody, CreateContractorCompanyBody, CreateFellingRecordBody, CreateMachineBody, CreateMowingRecordBody, CreateRegionBody, CreateUserBody, CreateVehicleBody, CreateWeatherTypeBody, CreateWorkerBody, DashboardStats, ErrorResponse, FellingRecord, HealthStatus, ListAuditLogsParams, ListFellingRecordsParams, ListMowingRecordsParams, LoginBody, Machine, MachineLastMth, MessageResponse, MowingRecord, RecentRecords, Region, UpdateFellingRecordBody, UpdateMowingRecordBody, UpdateUserBody, User, Vehicle, WeatherType, Worker } from "./api.schemas";
+import type { Accessory, AuditLogEntry, AuthResponse, ContractorCompany, CreateAccessoryBody, CreateContractorCompanyBody, CreateFellingRecordBody, CreateMachineBody, CreateMowingRecordBody, CreateRegionBody, CreateUserBody, CreateVehicleBody, CreateWeatherTypeBody, CreateWorkerBody, DashboardStats, ErrorResponse, FellingRecord, HealthStatus, ListAuditLogsParams, ListFellingRecordsParams, ListMowingRecordsParams, ListSubcontractorDailyRecordsParams, LoginBody, Machine, MachineLastMth, MessageResponse, MowingRecord, RecentRecords, Region, SubcontractorDailyRecord, UpdateFellingRecordBody, UpdateMowingRecordBody, UpdateUserBody, UpsertSubcontractorDailyRecordBody, User, Vehicle, WeatherType, Worker } from "./api.schemas";
 import { customFetch } from "../custom-fetch";
 import type { ErrorType, BodyType } from "../custom-fetch";
 type AwaitedInput<T> = PromiseLike<T> | T;
@@ -1350,5 +1350,86 @@ export declare function useGetAuditLog<TData = Awaited<ReturnType<typeof getAudi
 }): UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
 };
+/**
+ * @summary Denní záznamy subdodavatelů pro vlastní firmu nebo admina
+ */
+export declare const getListSubcontractorDailyRecordsUrl: (params?: ListSubcontractorDailyRecordsParams) => string;
+export declare const listSubcontractorDailyRecords: (params?: ListSubcontractorDailyRecordsParams, options?: RequestInit) => Promise<SubcontractorDailyRecord[]>;
+export declare const getListSubcontractorDailyRecordsQueryKey: (params?: ListSubcontractorDailyRecordsParams) => readonly ["/api/subcontractor-daily-records", ...ListSubcontractorDailyRecordsParams[]];
+export declare const getListSubcontractorDailyRecordsQueryOptions: <TData = Awaited<ReturnType<typeof listSubcontractorDailyRecords>>, TError = ErrorType<unknown>>(params?: ListSubcontractorDailyRecordsParams, options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof listSubcontractorDailyRecords>>, TError, TData>;
+    request?: SecondParameter<typeof customFetch>;
+}) => UseQueryOptions<Awaited<ReturnType<typeof listSubcontractorDailyRecords>>, TError, TData> & {
+    queryKey: QueryKey;
+};
+export type ListSubcontractorDailyRecordsQueryResult = NonNullable<Awaited<ReturnType<typeof listSubcontractorDailyRecords>>>;
+export type ListSubcontractorDailyRecordsQueryError = ErrorType<unknown>;
+/**
+ * @summary Denní záznamy subdodavatelů pro vlastní firmu nebo admina
+ */
+export declare function useListSubcontractorDailyRecords<TData = Awaited<ReturnType<typeof listSubcontractorDailyRecords>>, TError = ErrorType<unknown>>(params?: ListSubcontractorDailyRecordsParams, options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof listSubcontractorDailyRecords>>, TError, TData>;
+    request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+};
+/**
+ * @summary Vytvořit denní záznam vlastní subdodavatelské firmy
+ */
+export declare const getCreateSubcontractorDailyRecordUrl: () => string;
+export declare const createSubcontractorDailyRecord: (upsertSubcontractorDailyRecordBody: UpsertSubcontractorDailyRecordBody, options?: RequestInit) => Promise<SubcontractorDailyRecord>;
+export declare const getCreateSubcontractorDailyRecordMutationOptions: <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof createSubcontractorDailyRecord>>, TError, {
+        data: BodyType<UpsertSubcontractorDailyRecordBody>;
+    }, TContext>;
+    request?: SecondParameter<typeof customFetch>;
+}) => UseMutationOptions<Awaited<ReturnType<typeof createSubcontractorDailyRecord>>, TError, {
+    data: BodyType<UpsertSubcontractorDailyRecordBody>;
+}, TContext>;
+export type CreateSubcontractorDailyRecordMutationResult = NonNullable<Awaited<ReturnType<typeof createSubcontractorDailyRecord>>>;
+export type CreateSubcontractorDailyRecordMutationBody = BodyType<UpsertSubcontractorDailyRecordBody>;
+export type CreateSubcontractorDailyRecordMutationError = ErrorType<unknown>;
+/**
+ * @summary Vytvořit denní záznam vlastní subdodavatelské firmy
+ */
+export declare const useCreateSubcontractorDailyRecord: <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof createSubcontractorDailyRecord>>, TError, {
+        data: BodyType<UpsertSubcontractorDailyRecordBody>;
+    }, TContext>;
+    request?: SecondParameter<typeof customFetch>;
+}) => UseMutationResult<Awaited<ReturnType<typeof createSubcontractorDailyRecord>>, TError, {
+    data: BodyType<UpsertSubcontractorDailyRecordBody>;
+}, TContext>;
+/**
+ * @summary Upravit vlastní denní záznam subdodavatele
+ */
+export declare const getUpdateSubcontractorDailyRecordUrl: (id: number) => string;
+export declare const updateSubcontractorDailyRecord: (id: number, upsertSubcontractorDailyRecordBody: UpsertSubcontractorDailyRecordBody, options?: RequestInit) => Promise<SubcontractorDailyRecord>;
+export declare const getUpdateSubcontractorDailyRecordMutationOptions: <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof updateSubcontractorDailyRecord>>, TError, {
+        id: number;
+        data: BodyType<UpsertSubcontractorDailyRecordBody>;
+    }, TContext>;
+    request?: SecondParameter<typeof customFetch>;
+}) => UseMutationOptions<Awaited<ReturnType<typeof updateSubcontractorDailyRecord>>, TError, {
+    id: number;
+    data: BodyType<UpsertSubcontractorDailyRecordBody>;
+}, TContext>;
+export type UpdateSubcontractorDailyRecordMutationResult = NonNullable<Awaited<ReturnType<typeof updateSubcontractorDailyRecord>>>;
+export type UpdateSubcontractorDailyRecordMutationBody = BodyType<UpsertSubcontractorDailyRecordBody>;
+export type UpdateSubcontractorDailyRecordMutationError = ErrorType<unknown>;
+/**
+ * @summary Upravit vlastní denní záznam subdodavatele
+ */
+export declare const useUpdateSubcontractorDailyRecord: <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof updateSubcontractorDailyRecord>>, TError, {
+        id: number;
+        data: BodyType<UpsertSubcontractorDailyRecordBody>;
+    }, TContext>;
+    request?: SecondParameter<typeof customFetch>;
+}) => UseMutationResult<Awaited<ReturnType<typeof updateSubcontractorDailyRecord>>, TError, {
+    id: number;
+    data: BodyType<UpsertSubcontractorDailyRecordBody>;
+}, TContext>;
 export {};
 //# sourceMappingURL=api.d.ts.map

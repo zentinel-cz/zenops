@@ -15,6 +15,8 @@ export interface UpdateUserBody {
   /** @nullable */
   workerId?: number | null;
   /** @nullable */
+  contractorCompanyId?: number | null;
+  /** @nullable */
   isActive?: boolean | null;
   /** @nullable */
   password?: string | null;

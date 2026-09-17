@@ -6,8 +6,9 @@ interface AuthUser {
   id: number;
   username: string;
   fullName: string;
-  role: "admin" | "user" | "employee" | "manager";
+  role: "admin" | "user" | "employee" | "manager" | "subcontractor";
   workerId?: number | null;
+  contractorCompanyId?: number | null;
   isActive: boolean;
 }
 

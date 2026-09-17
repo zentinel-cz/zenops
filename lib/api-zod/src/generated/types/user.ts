@@ -14,6 +14,8 @@ export interface User {
   role: UserRole;
   /** @nullable */
   workerId?: number | null;
+  /** @nullable */
+  contractorCompanyId?: number | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

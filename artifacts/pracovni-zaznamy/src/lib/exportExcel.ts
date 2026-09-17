@@ -339,3 +339,50 @@ export function exportTeamDailyExcel(
   const month = records.map((record) => record.date.slice(0, 7)).filter((value, index, all) => all.indexOf(value) === index);
   XLSX.writeFile(workbook, `ovecky-${month.length === 1 ? month[0] : new Date().toISOString().slice(0, 10)}.xlsx`);
 }
+
+type SubcontractorDailyExportRecord = {
+  id: number;
+  date: string;
+  companyName?: string;
+  location: string;
+  workerCount: number;
+  startTime: string;
+  endTime: string;
+  creatorName?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+function durationHours(startTime: string, endTime: string) {
+  const [startHour, startMinute] = startTime.split(":").map(Number);
+  const [endHour, endMinute] = endTime.split(":").map(Number);
+  return Math.max(0, (endHour * 60 + endMinute - startHour * 60 - startMinute) / 60);
+}
+
+export function exportSubcontractorDailyExcel(records: SubcontractorDailyExportRecord[]) {
+  const headers = ["ID", "Datum", "Subdodavatel", "Místo zakázky", "Počet lidí", "Od", "Do", "Hodiny", "Člověkohodiny", "Vložil", "Vytvořeno", "Upraveno"];
+  const rows = records.map((record) => {
+    const hours = durationHours(record.startTime, record.endTime);
+    return [
+      record.id,
+      formatDate(record.date),
+      record.companyName ?? "",
+      record.location,
+      record.workerCount,
+      record.startTime,
+      record.endTime,
+      hours,
+      hours * record.workerCount,
+      record.creatorName ?? "",
+      formatDateTime(record.createdAt),
+      formatDateTime(record.updatedAt),
+    ];
+  });
+  const sheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  sheet["!cols"] = [{ wch: 7 }, { wch: 12 }, { wch: 28 }, { wch: 32 }, { wch: 12 }, { wch: 8 }, { wch: 8 }, { wch: 11 }, { wch: 17 }, { wch: 24 }, { wch: 19 }, { wch: 19 }];
+  sheet["!autofilter"] = { ref: `A1:L${Math.max(1, rows.length + 1)}` };
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, sheet, "Subdodavatelé");
+  const months = records.map((record) => record.date.slice(0, 7)).filter((value, index, all) => all.indexOf(value) === index);
+  XLSX.writeFile(workbook, `subdodavatele-${months.length === 1 ? months[0] : new Date().toISOString().slice(0, 10)}.xlsx`);
+}

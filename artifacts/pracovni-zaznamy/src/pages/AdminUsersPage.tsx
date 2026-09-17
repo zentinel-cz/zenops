@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useListUsers, useCreateUser, useUpdateUser, useDeleteUser, getListUsersQueryKey, getListWorkersQueryKey, useListWorkers } from "@workspace/api-client-react";
+import { useListUsers, useCreateUser, useUpdateUser, useDeleteUser, getListUsersQueryKey, getListWorkersQueryKey, useListWorkers, useListContractorCompanies } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatDateTime } from "@/lib/utils";
 
@@ -7,15 +7,17 @@ interface UserForm {
   username: string;
   password: string;
   fullName: string;
-  role: "admin" | "user" | "employee" | "manager";
+  role: "admin" | "user" | "employee" | "manager" | "subcontractor";
   workerId: number | null;
+  contractorCompanyId: number | null;
   isActive: boolean;
 }
 
 interface EditUserForm {
   fullName: string;
-  role: "admin" | "user" | "employee" | "manager";
+  role: "admin" | "user" | "employee" | "manager" | "subcontractor";
   workerId: number | null;
+  contractorCompanyId: number | null;
   isActive: boolean;
   password: string;
 }
@@ -45,14 +47,15 @@ export default function AdminUsersPage() {
   const queryClient = useQueryClient();
   const { data: users, isLoading } = useListUsers();
   const { data: workers } = useListWorkers();
+  const { data: contractorCompanies } = useListContractorCompanies();
   const createMutation = useCreateUser();
   const updateMutation = useUpdateUser();
   const deleteMutation = useDeleteUser();
 
   const [showAdd, setShowAdd] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
-  const [form, setForm] = useState<UserForm>({ username: "", password: "", fullName: "", role: "employee", workerId: null, isActive: true });
-  const [editForm, setEditForm] = useState<EditUserForm>({ fullName: "", role: "employee", workerId: null, isActive: true, password: "" });
+  const [form, setForm] = useState<UserForm>({ username: "", password: "", fullName: "", role: "employee", workerId: null, contractorCompanyId: null, isActive: true });
+  const [editForm, setEditForm] = useState<EditUserForm>({ fullName: "", role: "employee", workerId: null, contractorCompanyId: null, isActive: true, password: "" });
   const [error, setError] = useState("");
   const [editError, setEditError] = useState("");
 
@@ -65,14 +68,14 @@ export default function AdminUsersPage() {
   const availableWorkers = (workers ?? []).filter((worker) => worker.isActive && (!(users ?? []).some((user) => user.workerId === worker.id) || users?.find((user) => user.id === editId)?.workerId === worker.id));
 
   const resetForm = () => {
-    setForm({ username: "", password: "", fullName: "", role: "employee", workerId: null, isActive: true });
+    setForm({ username: "", password: "", fullName: "", role: "employee", workerId: null, contractorCompanyId: null, isActive: true });
     setError("");
   };
 
   const openEdit = (id: number) => {
     const u = users?.find((x) => x.id === id);
     if (!u) return;
-    setEditForm({ fullName: u.fullName, role: u.role as UserForm["role"], workerId: u.workerId ?? null, isActive: u.isActive, password: "" });
+    setEditForm({ fullName: u.fullName, role: u.role as UserForm["role"], workerId: u.workerId ?? null, contractorCompanyId: u.contractorCompanyId ?? null, isActive: u.isActive, password: "" });
     setEditId(id);
     setEditError("");
   };
@@ -88,8 +91,9 @@ export default function AdminUsersPage() {
       setError("Heslo musí mít alespoň 6 znaků");
       return;
     }
+    if (form.role === "subcontractor" && !form.contractorCompanyId) { setError("Vyberte subdodavatelskou firmu"); return; }
     try {
-      await createMutation.mutateAsync({ data: { username: form.username.trim(), password: form.password, fullName: form.fullName.trim(), role: form.role, workerId: form.workerId } });
+      await createMutation.mutateAsync({ data: { username: form.username.trim(), password: form.password, fullName: form.fullName.trim(), role: form.role, workerId: form.workerId, contractorCompanyId: form.contractorCompanyId } });
       await invalidate();
       resetForm();
       setShowAdd(false);
@@ -103,11 +107,13 @@ export default function AdminUsersPage() {
     setEditError("");
     if (!editId || !editForm.fullName.trim()) { setEditError("Celé jméno je povinné"); return; }
     if (editForm.password && editForm.password.length < 6) { setEditError("Nové heslo musí mít alespoň 6 znaků"); return; }
+    if (editForm.role === "subcontractor" && !editForm.contractorCompanyId) { setEditError("Vyberte subdodavatelskou firmu"); return; }
     try {
       const data: Record<string, unknown> = {
         fullName: editForm.fullName.trim(),
         role: editForm.role,
         workerId: editForm.workerId,
+        contractorCompanyId: editForm.contractorCompanyId,
         isActive: editForm.isActive,
       };
       if (editForm.password) data.password = editForm.password;
@@ -125,7 +131,7 @@ export default function AdminUsersPage() {
     await invalidate();
   };
 
-  const roleLabel = (role: string) => role === "admin" ? "Admin" : role === "manager" ? "Vedoucí" : role === "employee" ? "Pracovník" : "Uživatel";
+  const roleLabel = (role: string) => role === "admin" ? "Admin" : role === "manager" ? "Vedoucí" : role === "employee" ? "Pracovník" : role === "subcontractor" ? "Subdodavatel" : "Uživatel";
   const roleBadgeClass = (role: string) =>
     role === "admin"
       ? "bg-primary/10 text-primary border border-primary/20"
@@ -187,14 +193,16 @@ export default function AdminUsersPage() {
             </div>
             <div>
               <label className={labelClass}>Role *</label>
-              <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as UserForm["role"], workerId: ["employee", "manager"].includes(e.target.value) ? form.workerId : null })} className={inputClass}>
+              <select value={form.role} onChange={(e) => { const role = e.target.value as UserForm["role"]; setForm({ ...form, role, workerId: ["employee", "manager"].includes(role) ? form.workerId : null, contractorCompanyId: role === "subcontractor" ? form.contractorCompanyId : null }); }} className={inputClass}>
                 <option value="employee">Pracovník</option>
                 <option value="manager">Vedoucí</option>
+                <option value="subcontractor">Subdodavatel</option>
                 <option value="user">Provozní uživatel</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
             {["employee", "manager"].includes(form.role) && <div className="sm:col-span-2"><label className={labelClass}>Pracovní profil</label><select value={form.workerId ?? ""} onChange={(e) => { const workerId = e.target.value ? Number(e.target.value) : null; const worker = workers?.find((item) => item.id === workerId); setForm({ ...form, workerId, fullName: worker ? `${worker.firstName} ${worker.lastName}` : form.fullName }); }} className={inputClass}><option value="">Vytvořit automaticky z celého jména</option>{availableWorkers.map((worker) => <option key={worker.id} value={worker.id}>Propojit existujícího: {worker.firstName} {worker.lastName}</option>)}</select><p className="mt-1 text-xs text-muted-foreground">Nový účet role Pracovník se automaticky uloží také mezi pracovní profily a ihned bude dostupný v denních záznamech.</p></div>}
+            {form.role === "subcontractor" && <div className="sm:col-span-2"><label className={labelClass}>Subdodavatelská firma *</label><select value={form.contractorCompanyId ?? ""} onChange={(e) => setForm({ ...form, contractorCompanyId: e.target.value ? Number(e.target.value) : null })} className={inputClass} required><option value="">-- Vyberte firmu --</option>{contractorCompanies?.filter((company) => company.isActive).map((company) => <option key={company.id} value={company.id}>{company.name}{company.companyId ? ` (IČO ${company.companyId})` : ""}</option>)}</select><p className="mt-1 text-xs text-muted-foreground">Účet uvidí a upraví pouze denní záznamy této firmy.</p></div>}
             <div className="sm:col-span-2 flex items-center gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} className="rounded" />
@@ -273,14 +281,16 @@ export default function AdminUsersPage() {
             </div>
             <div>
               <label className={labelClass}>Role</label>
-              <select value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value as UserForm["role"], workerId: ["employee", "manager"].includes(e.target.value) ? editForm.workerId : null })} className={inputClass}>
+              <select value={editForm.role} onChange={(e) => { const role = e.target.value as UserForm["role"]; setEditForm({ ...editForm, role, workerId: ["employee", "manager"].includes(role) ? editForm.workerId : null, contractorCompanyId: role === "subcontractor" ? editForm.contractorCompanyId : null }); }} className={inputClass}>
                 <option value="employee">Pracovník</option>
                 <option value="manager">Vedoucí</option>
+                <option value="subcontractor">Subdodavatel</option>
                 <option value="user">Provozní uživatel</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
             {["employee", "manager"].includes(editForm.role) && <div><label className={labelClass}>Pracovní profil</label><select value={editForm.workerId ?? ""} onChange={(e) => { const workerId = e.target.value ? Number(e.target.value) : null; const worker = workers?.find((item) => item.id === workerId); setEditForm({ ...editForm, workerId, fullName: worker ? `${worker.firstName} ${worker.lastName}` : editForm.fullName }); }} className={inputClass}><option value="">Vytvořit automaticky z celého jména</option>{availableWorkers.map((worker) => <option key={worker.id} value={worker.id}>Propojit existujícího: {worker.firstName} {worker.lastName}</option>)}</select></div>}
+            {editForm.role === "subcontractor" && <div><label className={labelClass}>Subdodavatelská firma *</label><select value={editForm.contractorCompanyId ?? ""} onChange={(e) => setEditForm({ ...editForm, contractorCompanyId: e.target.value ? Number(e.target.value) : null })} className={inputClass} required><option value="">-- Vyberte firmu --</option>{contractorCompanies?.filter((company) => company.isActive).map((company) => <option key={company.id} value={company.id}>{company.name}{company.companyId ? ` (IČO ${company.companyId})` : ""}</option>)}</select></div>}
             <div>
               <label className={labelClass}>Nové heslo (nechat prázdné = beze změny)</label>
               <input

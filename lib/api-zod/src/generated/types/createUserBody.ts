@@ -14,4 +14,6 @@ export interface CreateUserBody {
   role: CreateUserBodyRole;
   /** @nullable */
   workerId?: number | null;
+  /** @nullable */
+  contractorCompanyId?: number | null;
 }

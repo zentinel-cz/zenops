@@ -27,8 +27,9 @@ export const LoginResponse = zod.object({
     id: zod.number(),
     username: zod.string(),
     fullName: zod.string(),
-    role: zod.enum(["admin", "user", "employee", "manager"]),
+    role: zod.enum(["admin", "user", "employee", "manager", "subcontractor"]),
     workerId: zod.number().nullish(),
+    contractorCompanyId: zod.number().nullish(),
     isActive: zod.boolean(),
     createdAt: zod.string(),
     updatedAt: zod.string(),
@@ -50,8 +51,9 @@ export const GetMeResponse = zod.object({
   id: zod.number(),
   username: zod.string(),
   fullName: zod.string(),
-  role: zod.enum(["admin", "user", "employee", "manager"]),
+  role: zod.enum(["admin", "user", "employee", "manager", "subcontractor"]),
   workerId: zod.number().nullish(),
+  contractorCompanyId: zod.number().nullish(),
   isActive: zod.boolean(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -64,8 +66,9 @@ export const ListUsersResponseItem = zod.object({
   id: zod.number(),
   username: zod.string(),
   fullName: zod.string(),
-  role: zod.enum(["admin", "user", "employee", "manager"]),
+  role: zod.enum(["admin", "user", "employee", "manager", "subcontractor"]),
   workerId: zod.number().nullish(),
+  contractorCompanyId: zod.number().nullish(),
   isActive: zod.boolean(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -79,8 +82,9 @@ export const CreateUserBody = zod.object({
   username: zod.string(),
   password: zod.string(),
   fullName: zod.string(),
-  role: zod.enum(["admin", "user", "employee", "manager"]),
+  role: zod.enum(["admin", "user", "employee", "manager", "subcontractor"]),
   workerId: zod.number().nullish(),
+  contractorCompanyId: zod.number().nullish(),
 });
 
 /**
@@ -94,8 +98,9 @@ export const GetUserResponse = zod.object({
   id: zod.number(),
   username: zod.string(),
   fullName: zod.string(),
-  role: zod.enum(["admin", "user", "employee", "manager"]),
+  role: zod.enum(["admin", "user", "employee", "manager", "subcontractor"]),
   workerId: zod.number().nullish(),
+  contractorCompanyId: zod.number().nullish(),
   isActive: zod.boolean(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -116,10 +121,12 @@ export const UpdateUserBody = zod.object({
       zod.literal("user"),
       zod.literal("employee"),
       zod.literal("manager"),
+      zod.literal("subcontractor"),
       zod.literal(null),
     ])
     .nullish(),
   workerId: zod.number().nullish(),
+  contractorCompanyId: zod.number().nullish(),
   isActive: zod.boolean().nullish(),
   password: zod.string().nullish(),
 });
@@ -128,8 +135,9 @@ export const UpdateUserResponse = zod.object({
   id: zod.number(),
   username: zod.string(),
   fullName: zod.string(),
-  role: zod.enum(["admin", "user", "employee", "manager"]),
+  role: zod.enum(["admin", "user", "employee", "manager", "subcontractor"]),
   workerId: zod.number().nullish(),
+  contractorCompanyId: zod.number().nullish(),
   isActive: zod.boolean(),
   createdAt: zod.string(),
   updatedAt: zod.string(),
@@ -748,8 +756,9 @@ export const ListFellingRecordsResponseItem = zod.object({
     id: zod.number(),
     username: zod.string(),
     fullName: zod.string(),
-    role: zod.enum(["admin", "user", "employee", "manager"]),
+    role: zod.enum(["admin", "user", "employee", "manager", "subcontractor"]),
     workerId: zod.number().nullish(),
+    contractorCompanyId: zod.number().nullish(),
     isActive: zod.boolean(),
     createdAt: zod.string(),
     updatedAt: zod.string(),
@@ -1142,8 +1151,9 @@ export const GetFellingRecordResponse = zod.object({
     id: zod.number(),
     username: zod.string(),
     fullName: zod.string(),
-    role: zod.enum(["admin", "user", "employee", "manager"]),
+    role: zod.enum(["admin", "user", "employee", "manager", "subcontractor"]),
     workerId: zod.number().nullish(),
+    contractorCompanyId: zod.number().nullish(),
     isActive: zod.boolean(),
     createdAt: zod.string(),
     updatedAt: zod.string(),
@@ -1534,8 +1544,9 @@ export const UpdateFellingRecordResponse = zod.object({
     id: zod.number(),
     username: zod.string(),
     fullName: zod.string(),
-    role: zod.enum(["admin", "user", "employee", "manager"]),
+    role: zod.enum(["admin", "user", "employee", "manager", "subcontractor"]),
     workerId: zod.number().nullish(),
+    contractorCompanyId: zod.number().nullish(),
     isActive: zod.boolean(),
     createdAt: zod.string(),
     updatedAt: zod.string(),
@@ -1844,8 +1855,9 @@ export const ListMowingRecordsResponseItem = zod.object({
     id: zod.number(),
     username: zod.string(),
     fullName: zod.string(),
-    role: zod.enum(["admin", "user", "employee", "manager"]),
+    role: zod.enum(["admin", "user", "employee", "manager", "subcontractor"]),
     workerId: zod.number().nullish(),
+    contractorCompanyId: zod.number().nullish(),
     isActive: zod.boolean(),
     createdAt: zod.string(),
     updatedAt: zod.string(),
@@ -2323,8 +2335,9 @@ export const GetMowingRecordResponse = zod.object({
     id: zod.number(),
     username: zod.string(),
     fullName: zod.string(),
-    role: zod.enum(["admin", "user", "employee", "manager"]),
+    role: zod.enum(["admin", "user", "employee", "manager", "subcontractor"]),
     workerId: zod.number().nullish(),
+    contractorCompanyId: zod.number().nullish(),
     isActive: zod.boolean(),
     createdAt: zod.string(),
     updatedAt: zod.string(),
@@ -2802,8 +2815,9 @@ export const UpdateMowingRecordResponse = zod.object({
     id: zod.number(),
     username: zod.string(),
     fullName: zod.string(),
-    role: zod.enum(["admin", "user", "employee", "manager"]),
+    role: zod.enum(["admin", "user", "employee", "manager", "subcontractor"]),
     workerId: zod.number().nullish(),
+    contractorCompanyId: zod.number().nullish(),
     isActive: zod.boolean(),
     createdAt: zod.string(),
     updatedAt: zod.string(),
@@ -3026,4 +3040,78 @@ export const GetAuditLogResponse = zod.object({
   userId: zod.number().nullish(),
   userFullName: zod.string().nullish(),
   userUsername: zod.string().nullish(),
+});
+
+/**
+ * @summary Denní záznamy subdodavatelů pro vlastní firmu nebo admina
+ */
+export const listSubcontractorDailyRecordsQueryMonthRegExp = new RegExp(
+  "^\\d{4}-\\d{2}$",
+);
+
+export const ListSubcontractorDailyRecordsQueryParams = zod.object({
+  month: zod.coerce
+    .string()
+    .regex(listSubcontractorDailyRecordsQueryMonthRegExp)
+    .optional(),
+});
+
+export const ListSubcontractorDailyRecordsResponseItem = zod.object({
+  id: zod.number(),
+  date: zod.string(),
+  contractorCompanyId: zod.number(),
+  companyName: zod.string().optional(),
+  location: zod.string(),
+  workerCount: zod.number(),
+  startTime: zod.string(),
+  endTime: zod.string(),
+  createdByUserId: zod.number(),
+  creatorName: zod.string().optional(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
+});
+export const ListSubcontractorDailyRecordsResponse = zod.array(
+  ListSubcontractorDailyRecordsResponseItem,
+);
+
+/**
+ * @summary Vytvořit denní záznam vlastní subdodavatelské firmy
+ */
+
+export const CreateSubcontractorDailyRecordBody = zod.object({
+  date: zod.string(),
+  location: zod.string(),
+  workerCount: zod.number().min(1),
+  startTime: zod.string(),
+  endTime: zod.string(),
+});
+
+/**
+ * @summary Upravit vlastní denní záznam subdodavatele
+ */
+export const UpdateSubcontractorDailyRecordParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const UpdateSubcontractorDailyRecordBody = zod.object({
+  date: zod.string(),
+  location: zod.string(),
+  workerCount: zod.number().min(1),
+  startTime: zod.string(),
+  endTime: zod.string(),
+});
+
+export const UpdateSubcontractorDailyRecordResponse = zod.object({
+  id: zod.number(),
+  date: zod.string(),
+  contractorCompanyId: zod.number(),
+  companyName: zod.string().optional(),
+  location: zod.string(),
+  workerCount: zod.number(),
+  startTime: zod.string(),
+  endTime: zod.string(),
+  createdByUserId: zod.number(),
+  creatorName: zod.string().optional(),
+  createdAt: zod.string(),
+  updatedAt: zod.string(),
 });

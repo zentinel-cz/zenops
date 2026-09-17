@@ -19,6 +19,7 @@ import AdminCodebooksPage from "@/pages/AdminCodebooksPage";
 import AdminAuditLogPage from "@/pages/AdminAuditLogPage";
 import NotFound from "@/pages/not-found";
 import FutureRolePage from "@/pages/FutureRolePage";
+import { SubcontractorPortal } from "@/components/SubcontractorDailyWorkflow";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,6 +52,10 @@ function AppRoutes() {
 
   if (user && (user.role === "employee" || user.role === "manager")) {
     return <FutureRolePage />;
+  }
+
+  if (user?.role === "subcontractor") {
+    return <SubcontractorPortal />;
   }
 
   return (

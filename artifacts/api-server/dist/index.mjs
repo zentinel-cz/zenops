@@ -20485,27 +20485,27 @@ var require_router = __commonJS({
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
-    module.exports = Router12;
+    module.exports = Router13;
     module.exports.Route = Route;
-    function Router12(options) {
-      if (!(this instanceof Router12)) {
-        return new Router12(options);
+    function Router13(options) {
+      if (!(this instanceof Router13)) {
+        return new Router13(options);
       }
       const opts = options || {};
-      function router12(req, res, next) {
-        router12.handle(req, res, next);
+      function router13(req, res, next) {
+        router13.handle(req, res, next);
       }
-      Object.setPrototypeOf(router12, this);
-      router12.caseSensitive = opts.caseSensitive;
-      router12.mergeParams = opts.mergeParams;
-      router12.params = {};
-      router12.strict = opts.strict;
-      router12.stack = [];
-      return router12;
+      Object.setPrototypeOf(router13, this);
+      router13.caseSensitive = opts.caseSensitive;
+      router13.mergeParams = opts.mergeParams;
+      router13.params = {};
+      router13.strict = opts.strict;
+      router13.stack = [];
+      return router13;
     }
-    Router12.prototype = function() {
+    Router13.prototype = function() {
     };
-    Router12.prototype.param = function param(name, fn) {
+    Router13.prototype.param = function param(name, fn) {
       if (!name) {
         throw new TypeError("argument name is required");
       }
@@ -20525,7 +20525,7 @@ var require_router = __commonJS({
       params.push(fn);
       return this;
     };
-    Router12.prototype.handle = function handle(req, res, callback) {
+    Router13.prototype.handle = function handle(req, res, callback) {
       if (!callback) {
         throw new TypeError("argument callback is required");
       }
@@ -20652,7 +20652,7 @@ var require_router = __commonJS({
         }
       }
     };
-    Router12.prototype.use = function use(handler) {
+    Router13.prototype.use = function use(handler) {
       let offset = 0;
       let path2 = "/";
       if (typeof handler !== "function") {
@@ -20685,7 +20685,7 @@ var require_router = __commonJS({
       }
       return this;
     };
-    Router12.prototype.route = function route(path2) {
+    Router13.prototype.route = function route(path2) {
       const route2 = new Route(path2);
       const layer = new Layer(path2, {
         sensitive: this.caseSensitive,
@@ -20700,7 +20700,7 @@ var require_router = __commonJS({
       return route2;
     };
     methods.concat("all").forEach(function(method) {
-      Router12.prototype[method] = function(path2) {
+      Router13.prototype[method] = function(path2) {
         const route = this.route(path2);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
@@ -20883,13 +20883,13 @@ var require_application = __commonJS({
     var compileTrust = require_utils3().compileTrust;
     var resolve = __require("node:path").resolve;
     var once = require_once();
-    var Router12 = require_router();
+    var Router13 = require_router();
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var app2 = exports = module.exports = {};
     var trustProxyDefaultSymbol = "@@symbol:trust_proxy_default";
     app2.init = function init() {
-      var router12 = null;
+      var router13 = null;
       this.cache = /* @__PURE__ */ Object.create(null);
       this.engines = /* @__PURE__ */ Object.create(null);
       this.settings = /* @__PURE__ */ Object.create(null);
@@ -20898,13 +20898,13 @@ var require_application = __commonJS({
         configurable: true,
         enumerable: true,
         get: function getrouter() {
-          if (router12 === null) {
-            router12 = new Router12({
+          if (router13 === null) {
+            router13 = new Router13({
               caseSensitive: this.enabled("case sensitive routing"),
               strict: this.enabled("strict routing")
             });
           }
-          return router12;
+          return router13;
         }
       });
     };
@@ -20975,15 +20975,15 @@ var require_application = __commonJS({
       if (fns.length === 0) {
         throw new TypeError("app.use() requires a middleware function");
       }
-      var router12 = this.router;
+      var router13 = this.router;
       fns.forEach(function(fn2) {
         if (!fn2 || !fn2.handle || !fn2.set) {
-          return router12.use(path2, fn2);
+          return router13.use(path2, fn2);
         }
         debug(".use app under %s", path2);
         fn2.mountpath = path2;
         fn2.parent = this;
-        router12.use(path2, function mounted_app(req, res, next) {
+        router13.use(path2, function mounted_app(req, res, next) {
           var orig = req.app;
           fn2.handle(req, res, function(err) {
             Object.setPrototypeOf(req, orig.request);
@@ -23510,7 +23510,7 @@ var require_express = __commonJS({
     var EventEmitter = __require("node:events").EventEmitter;
     var mixin = require_merge_descriptors();
     var proto = require_application();
-    var Router12 = require_router();
+    var Router13 = require_router();
     var req = require_request();
     var res = require_response();
     exports = module.exports = createApplication;
@@ -23532,8 +23532,8 @@ var require_express = __commonJS({
     exports.application = proto;
     exports.request = req;
     exports.response = res;
-    exports.Route = Router12.Route;
-    exports.Router = Router12;
+    exports.Route = Router13.Route;
+    exports.Router = Router13;
     exports.json = bodyParser.json;
     exports.raw = bodyParser.raw;
     exports.static = require_serve_static();
@@ -34886,7 +34886,7 @@ var require_lib5 = __commonJS({
 });
 
 // src/app.ts
-var import_express12 = __toESM(require_express2(), 1);
+var import_express13 = __toESM(require_express2(), 1);
 var import_cors = __toESM(require_lib3(), 1);
 var import_pino_http = __toESM(require_logger(), 1);
 var import_express_session = __toESM(require_express_session(), 1);
@@ -34894,7 +34894,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 // src/routes/index.ts
-var import_express11 = __toESM(require_express2(), 1);
+var import_express12 = __toESM(require_express2(), 1);
 
 // src/routes/health.ts
 var import_express = __toESM(require_express2(), 1);
@@ -43634,6 +43634,7 @@ __export(schema_exports, {
   mowingRecordWorkersTable: () => mowingRecordWorkersTable,
   mowingRecordsTable: () => mowingRecordsTable,
   regionsTable: () => regionsTable,
+  subcontractorDailyRecordsTable: () => subcontractorDailyRecordsTable,
   teamDailyAssignmentsTable: () => teamDailyAssignmentsTable,
   teamDailyEntriesTable: () => teamDailyEntriesTable,
   teamDailyRecordsTable: () => teamDailyRecordsTable,
@@ -55079,8 +55080,9 @@ var usersTable = pgTable("users", {
   username: text("username").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   fullName: text("full_name").notNull(),
-  role: text("role", { enum: ["admin", "user", "employee", "manager"] }).notNull().default("user"),
+  role: text("role", { enum: ["admin", "user", "employee", "manager", "subcontractor"] }).notNull().default("user"),
   workerId: integer("worker_id").unique().references(() => workersTable.id),
+  contractorCompanyId: integer("contractor_company_id").references(() => contractorCompaniesTable.id),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => /* @__PURE__ */ new Date()),
@@ -55357,6 +55359,21 @@ var teamDailyEntriesTable = pgTable("team_daily_entries", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => /* @__PURE__ */ new Date())
 }, (table) => [unique("team_daily_entry_record_worker_unique").on(table.dailyRecordId, table.workerId)]);
 
+// ../../lib/db/src/schema/subcontractorDailyRecords.ts
+var subcontractorDailyRecordsTable = pgTable("subcontractor_daily_records", {
+  id: serial("id").primaryKey(),
+  date: date("date").notNull(),
+  contractorCompanyId: integer("contractor_company_id").notNull().references(() => contractorCompaniesTable.id),
+  location: text("location").notNull(),
+  workerCount: integer("worker_count").notNull(),
+  startTime: text("start_time").notNull(),
+  endTime: text("end_time").notNull(),
+  createdByUserId: integer("created_by_user_id").notNull().references(() => usersTable.id),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => /* @__PURE__ */ new Date()),
+  deletedAt: timestamp("deleted_at", { withTimezone: true })
+});
+
 // ../../lib/db/src/index.ts
 var { Pool: Pool3 } = esm_default;
 if (!process.env.DATABASE_URL) {
@@ -55429,6 +55446,7 @@ router2.post("/auth/login", async (req, res) => {
       fullName: user.fullName,
       role: user.role,
       workerId: user.workerId,
+      contractorCompanyId: user.contractorCompanyId,
       isActive: user.isActive,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt
@@ -55461,6 +55479,7 @@ router2.get("/auth/me", requireAuth, async (req, res) => {
     fullName: user.fullName,
     role: user.role,
     workerId: user.workerId,
+    contractorCompanyId: user.contractorCompanyId,
     isActive: user.isActive,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt
@@ -55496,6 +55515,7 @@ var userFields = {
   fullName: usersTable.fullName,
   role: usersTable.role,
   workerId: usersTable.workerId,
+  contractorCompanyId: usersTable.contractorCompanyId,
   isActive: usersTable.isActive,
   createdAt: usersTable.createdAt,
   updatedAt: usersTable.updatedAt
@@ -55508,7 +55528,7 @@ function splitFullName(fullName) {
   };
 }
 function roleDisplayName(role) {
-  return role === "employee" ? "Pracovn\xEDk" : role === "manager" ? "Vedouc\xED" : role === "admin" ? "Admin" : "U\u017Eivatel";
+  return role === "employee" ? "Pracovn\xEDk" : role === "manager" ? "Vedouc\xED" : role === "subcontractor" ? "Subdodavatel" : role === "admin" ? "Admin" : "U\u017Eivatel";
 }
 router3.get("/users", requireAdmin, async (_req, res) => {
   const users = await db.select(userFields).from(usersTable).where(isNull(usersTable.deletedAt)).orderBy(usersTable.fullName);
@@ -55516,16 +55536,16 @@ router3.get("/users", requireAdmin, async (_req, res) => {
 });
 router3.post("/users", requireAdmin, async (req, res) => {
   const session2 = req.session;
-  const { username, password, fullName, role, workerId } = req.body;
+  const { username, password, fullName, role, workerId, contractorCompanyId } = req.body;
   if (!username || !password || !fullName || !role) {
     res.status(400).json({ error: "V\u0161echna pole jsou povinn\xE1" });
     return;
   }
-  if (!["admin", "user", "employee", "manager"].includes(role)) {
+  if (!["admin", "user", "employee", "manager", "subcontractor"].includes(role)) {
     res.status(400).json({ error: "Neplatn\xE1 role" });
     return;
   }
-  if (workerId) {
+  if (["employee", "manager"].includes(role) && workerId) {
     const [worker] = await db.select({ id: workersTable.id }).from(workersTable).where(and(eq(workersTable.id, workerId), eq(workersTable.isActive, true), isNull(workersTable.deletedAt)));
     if (!worker) {
       res.status(400).json({ error: "Pracovn\xED profil neexistuje nebo nen\xED aktivn\xED" });
@@ -55537,20 +55557,32 @@ router3.post("/users", requireAdmin, async (req, res) => {
       return;
     }
   }
+  if (role === "subcontractor") {
+    if (!contractorCompanyId) {
+      res.status(400).json({ error: "Pro roli Subdodavatel vyberte firmu" });
+      return;
+    }
+    const [company] = await db.select({ id: contractorCompaniesTable.id }).from(contractorCompaniesTable).where(and(eq(contractorCompaniesTable.id, contractorCompanyId), eq(contractorCompaniesTable.isActive, true), isNull(contractorCompaniesTable.deletedAt))).limit(1);
+    if (!company) {
+      res.status(400).json({ error: "Subdodavatelsk\xE1 firma neexistuje nebo nen\xED aktivn\xED" });
+      return;
+    }
+  }
   const passwordHash = await bcryptjs_default.hash(password, 10);
   const user = await db.transaction(async (tx) => {
-    let linkedWorkerId = workerId ?? null;
+    let linkedWorkerId = ["employee", "manager"].includes(role) ? workerId ?? null : null;
     if (["employee", "manager"].includes(role) && !linkedWorkerId) {
       const workerName = splitFullName(fullName);
       const [worker] = await tx.insert(workersTable).values({ ...workerName, isActive: true }).returning({ id: workersTable.id });
       linkedWorkerId = worker.id;
     }
-    const [created] = await tx.insert(usersTable).values({ username, passwordHash, fullName: fullName.trim(), role, workerId: linkedWorkerId }).returning({
+    const [created] = await tx.insert(usersTable).values({ username, passwordHash, fullName: fullName.trim(), role, workerId: linkedWorkerId, contractorCompanyId: role === "subcontractor" ? contractorCompanyId : null }).returning({
       id: usersTable.id,
       username: usersTable.username,
       fullName: usersTable.fullName,
       role: usersTable.role,
       workerId: usersTable.workerId,
+      contractorCompanyId: usersTable.contractorCompanyId,
       isActive: usersTable.isActive,
       createdAt: usersTable.createdAt,
       updatedAt: usersTable.updatedAt
@@ -55563,7 +55595,7 @@ router3.post("/users", requireAdmin, async (req, res) => {
     tableName: "users",
     recordId: user.id,
     description: `Vytvo\u0159en u\u017Eivatel ${user.fullName} (${user.username}), role: ${roleDisplayName(user.role)}`,
-    newData: { username: user.username, fullName: user.fullName, role: user.role }
+    newData: { username: user.username, fullName: user.fullName, role: user.role, contractorCompanyId: user.contractorCompanyId }
   });
   res.status(201).json(user);
 });
@@ -55581,7 +55613,7 @@ router3.patch("/users/:id", requireAdmin, async (req, res) => {
   const session2 = req.session;
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(raw, 10);
-  const { fullName, role, isActive, password, workerId } = req.body;
+  const { fullName, role, isActive, password, workerId, contractorCompanyId } = req.body;
   const [before] = await db.select(userFields).from(usersTable).where(eq(usersTable.id, id)).limit(1);
   if (!before) {
     res.status(404).json({ error: "U\u017Eivatel nenalezen" });
@@ -55589,14 +55621,15 @@ router3.patch("/users/:id", requireAdmin, async (req, res) => {
   }
   const nextRole = role ?? before.role;
   const nextWorkerId = workerId !== void 0 ? workerId : before.workerId;
+  const nextContractorCompanyId = contractorCompanyId !== void 0 ? contractorCompanyId : before.contractorCompanyId;
   const updates = {};
   if (fullName != null) updates.fullName = fullName;
   if (role != null) updates.role = role;
-  if (role != null && !["admin", "user", "employee", "manager"].includes(role)) {
+  if (role != null && !["admin", "user", "employee", "manager", "subcontractor"].includes(role)) {
     res.status(400).json({ error: "Neplatn\xE1 role" });
     return;
   }
-  if (workerId !== void 0) {
+  if (workerId !== void 0 && ["employee", "manager"].includes(nextRole)) {
     if (workerId != null) {
       const [linked] = await db.select({ id: usersTable.id }).from(usersTable).where(and(eq(usersTable.workerId, workerId), isNull(usersTable.deletedAt)));
       if (linked && linked.id !== id) {
@@ -55605,6 +55638,22 @@ router3.patch("/users/:id", requireAdmin, async (req, res) => {
       }
     }
     updates.workerId = workerId;
+  }
+  if (nextRole === "subcontractor") {
+    if (!nextContractorCompanyId) {
+      res.status(400).json({ error: "Pro roli Subdodavatel vyberte firmu" });
+      return;
+    }
+    const [company] = await db.select({ id: contractorCompaniesTable.id }).from(contractorCompaniesTable).where(and(eq(contractorCompaniesTable.id, nextContractorCompanyId), eq(contractorCompaniesTable.isActive, true), isNull(contractorCompaniesTable.deletedAt))).limit(1);
+    if (!company) {
+      res.status(400).json({ error: "Subdodavatelsk\xE1 firma neexistuje nebo nen\xED aktivn\xED" });
+      return;
+    }
+    if (role != null || contractorCompanyId !== void 0) updates.contractorCompanyId = nextContractorCompanyId;
+    if (role === "subcontractor") updates.workerId = null;
+  } else {
+    if (role != null || contractorCompanyId !== void 0) updates.contractorCompanyId = null;
+    if (role != null && !["employee", "manager"].includes(nextRole)) updates.workerId = null;
   }
   if (isActive != null) updates.isActive = isActive;
   if (password) updates.passwordHash = await bcryptjs_default.hash(password, 10);
@@ -55632,6 +55681,7 @@ router3.patch("/users/:id", requireAdmin, async (req, res) => {
       fullName: usersTable.fullName,
       role: usersTable.role,
       workerId: usersTable.workerId,
+      contractorCompanyId: usersTable.contractorCompanyId,
       isActive: usersTable.isActive,
       createdAt: usersTable.createdAt,
       updatedAt: usersTable.updatedAt
@@ -55650,8 +55700,8 @@ router3.patch("/users/:id", requireAdmin, async (req, res) => {
     tableName: "users",
     recordId: user.id,
     description,
-    oldData: before ? { fullName: before.fullName, role: before.role, isActive: before.isActive } : null,
-    newData: { fullName: user.fullName, role: user.role, isActive: user.isActive }
+    oldData: before ? { fullName: before.fullName, role: before.role, workerId: before.workerId, contractorCompanyId: before.contractorCompanyId, isActive: before.isActive } : null,
+    newData: { fullName: user.fullName, role: user.role, workerId: user.workerId, contractorCompanyId: user.contractorCompanyId, isActive: user.isActive }
   });
   res.json(user);
 });
@@ -55663,7 +55713,7 @@ router3.delete("/users/:id", requireAdmin, async (req, res) => {
   if (before?.workerId) {
     await db.update(workersTable).set({ isActive: false }).where(eq(workersTable.id, before.workerId));
   }
-  const [user] = await db.update(usersTable).set({ deletedAt: /* @__PURE__ */ new Date(), deletedBy: session2.userId, workerId: null, isActive: false }).where(eq(usersTable.id, id)).returning({ id: usersTable.id });
+  const [user] = await db.update(usersTable).set({ deletedAt: /* @__PURE__ */ new Date(), deletedBy: session2.userId, workerId: null, contractorCompanyId: null, isActive: false }).where(eq(usersTable.id, id)).returning({ id: usersTable.id });
   if (!user) {
     res.status(404).json({ error: "U\u017Eivatel nenalezen" });
     return;
@@ -57627,19 +57677,158 @@ router10.put("/team-daily-records/:id/my-entry", requireAuth, requireRole(["empl
 });
 var teamDailyRecords_default = router10;
 
-// src/routes/index.ts
+// src/routes/subcontractorDailyRecords.ts
+var import_express11 = __toESM(require_express2(), 1);
 var router11 = (0, import_express11.Router)();
-router11.use(health_default);
-router11.use(auth_default);
-router11.use(users_default);
-router11.use(codebooks_default);
-router11.use(accessories_default);
-router11.use(fellingRecords_default);
-router11.use(mowingRecords_default);
-router11.use(dashboard_default);
-router11.use(auditLogs_default);
-router11.use(teamDailyRecords_default);
-var routes_default = router11;
+function sessionOf2(req) {
+  return req.session;
+}
+function requireRole2(roles) {
+  return (req, res, next) => {
+    if (!roles.includes(sessionOf2(req).userRole)) {
+      res.status(403).json({ error: "Pro tuto akci nem\xE1te opr\xE1vn\u011Bn\xED" });
+      return;
+    }
+    next();
+  };
+}
+function routeId2(value) {
+  return Number(Array.isArray(value) ? value[0] : value);
+}
+function validTime(value) {
+  return typeof value === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(value);
+}
+function validDate(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = /* @__PURE__ */ new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+}
+function monthRange(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}$/.test(value)) return null;
+  const [year, month] = value.split("-").map(Number);
+  if (month < 1 || month > 12) return null;
+  const next = new Date(Date.UTC(year, month, 1));
+  return { start: `${value}-01`, end: next.toISOString().slice(0, 10) };
+}
+async function currentUser(userId) {
+  const [user] = await db.select({ id: usersTable.id, role: usersTable.role, contractorCompanyId: usersTable.contractorCompanyId }).from(usersTable).where(and(eq(usersTable.id, userId), eq(usersTable.isActive, true), isNull(usersTable.deletedAt))).limit(1);
+  return user;
+}
+router11.get("/subcontractor-daily-records", requireAuth, requireRole2(["admin", "subcontractor"]), async (req, res) => {
+  const session2 = sessionOf2(req);
+  const user = await currentUser(session2.userId);
+  if (!user) {
+    res.status(401).json({ error: "Nep\u0159ihl\xE1\u0161en" });
+    return;
+  }
+  if (user.role !== "admin" && user.role !== "subcontractor") {
+    res.status(403).json({ error: "Pro tuto akci nem\xE1te opr\xE1vn\u011Bn\xED" });
+    return;
+  }
+  if (user.role === "subcontractor" && !user.contractorCompanyId) {
+    res.status(409).json({ error: "\xDA\u010Det nen\xED propojen\xFD se subdodavatelskou firmou" });
+    return;
+  }
+  const range = monthRange(req.query.month);
+  const conditions = [isNull(subcontractorDailyRecordsTable.deletedAt)];
+  if (user.role === "subcontractor") conditions.push(eq(subcontractorDailyRecordsTable.contractorCompanyId, user.contractorCompanyId));
+  if (range) conditions.push(gte(subcontractorDailyRecordsTable.date, range.start), lt(subcontractorDailyRecordsTable.date, range.end));
+  const records = await db.select({
+    id: subcontractorDailyRecordsTable.id,
+    date: subcontractorDailyRecordsTable.date,
+    contractorCompanyId: subcontractorDailyRecordsTable.contractorCompanyId,
+    companyName: contractorCompaniesTable.name,
+    location: subcontractorDailyRecordsTable.location,
+    workerCount: subcontractorDailyRecordsTable.workerCount,
+    startTime: subcontractorDailyRecordsTable.startTime,
+    endTime: subcontractorDailyRecordsTable.endTime,
+    createdByUserId: subcontractorDailyRecordsTable.createdByUserId,
+    creatorName: usersTable.fullName,
+    createdAt: subcontractorDailyRecordsTable.createdAt,
+    updatedAt: subcontractorDailyRecordsTable.updatedAt
+  }).from(subcontractorDailyRecordsTable).innerJoin(contractorCompaniesTable, eq(subcontractorDailyRecordsTable.contractorCompanyId, contractorCompaniesTable.id)).innerJoin(usersTable, eq(subcontractorDailyRecordsTable.createdByUserId, usersTable.id)).where(and(...conditions)).orderBy(desc(subcontractorDailyRecordsTable.date), desc(subcontractorDailyRecordsTable.id));
+  res.json(records);
+});
+router11.post("/subcontractor-daily-records", requireAuth, requireRole2(["subcontractor"]), async (req, res) => {
+  const session2 = sessionOf2(req);
+  const user = await currentUser(session2.userId);
+  if (!user || user.role !== "subcontractor") {
+    res.status(403).json({ error: "Z\xE1znam m\u016F\u017Ee vlo\u017Eit pouze subdodavatel" });
+    return;
+  }
+  if (!user.contractorCompanyId) {
+    res.status(409).json({ error: "\xDA\u010Det nen\xED propojen\xFD se subdodavatelskou firmou" });
+    return;
+  }
+  const { date: date6, location, workerCount, startTime, endTime } = req.body;
+  const count2 = Number(workerCount);
+  if (!validDate(date6) || typeof location !== "string" || !location.trim() || location.trim().length > 255 || !Number.isInteger(count2) || count2 < 1 || count2 > 1e3 || !validTime(startTime) || !validTime(endTime)) {
+    res.status(400).json({ error: "Vypl\u0148te datum, m\xEDsto zak\xE1zky, po\u010Det lid\xED a platn\xFD \u010Das od\u2013do" });
+    return;
+  }
+  if (endTime <= startTime) {
+    res.status(400).json({ error: "\u010Cas do mus\xED b\xFDt pozd\u011Bji ne\u017E \u010Das od" });
+    return;
+  }
+  const [record2] = await db.insert(subcontractorDailyRecordsTable).values({
+    date: date6,
+    contractorCompanyId: user.contractorCompanyId,
+    location: location.trim(),
+    workerCount: count2,
+    startTime,
+    endTime,
+    createdByUserId: session2.userId
+  }).returning();
+  await logAudit({ userId: session2.userId, action: "create", tableName: "subcontractor_daily_records", recordId: record2.id, description: `Subdodavatel vytvo\u0159il denn\xED z\xE1znam pro ${count2} lid\xED`, newData: { date: date6, contractorCompanyId: user.contractorCompanyId, location: location.trim(), workerCount: count2, startTime, endTime } });
+  res.status(201).json(record2);
+});
+router11.put("/subcontractor-daily-records/:id", requireAuth, requireRole2(["subcontractor"]), async (req, res) => {
+  const session2 = sessionOf2(req);
+  const id = routeId2(req.params.id);
+  const user = await currentUser(session2.userId);
+  if (!user || user.role !== "subcontractor") {
+    res.status(403).json({ error: "Z\xE1znam m\u016F\u017Ee upravit pouze subdodavatel" });
+    return;
+  }
+  if (!user.contractorCompanyId) {
+    res.status(409).json({ error: "\xDA\u010Det nen\xED propojen\xFD se subdodavatelskou firmou" });
+    return;
+  }
+  const [before] = await db.select().from(subcontractorDailyRecordsTable).where(and(eq(subcontractorDailyRecordsTable.id, id), eq(subcontractorDailyRecordsTable.createdByUserId, session2.userId), eq(subcontractorDailyRecordsTable.contractorCompanyId, user.contractorCompanyId), isNull(subcontractorDailyRecordsTable.deletedAt))).limit(1);
+  if (!before) {
+    res.status(404).json({ error: "Denn\xED z\xE1znam nebyl nalezen" });
+    return;
+  }
+  const { date: date6, location, workerCount, startTime, endTime } = req.body;
+  const count2 = Number(workerCount);
+  if (!validDate(date6) || typeof location !== "string" || !location.trim() || location.trim().length > 255 || !Number.isInteger(count2) || count2 < 1 || count2 > 1e3 || !validTime(startTime) || !validTime(endTime)) {
+    res.status(400).json({ error: "Vypl\u0148te datum, m\xEDsto zak\xE1zky, po\u010Det lid\xED a platn\xFD \u010Das od\u2013do" });
+    return;
+  }
+  if (endTime <= startTime) {
+    res.status(400).json({ error: "\u010Cas do mus\xED b\xFDt pozd\u011Bji ne\u017E \u010Das od" });
+    return;
+  }
+  const [record2] = await db.update(subcontractorDailyRecordsTable).set({ date: date6, location: location.trim(), workerCount: count2, startTime, endTime, updatedAt: /* @__PURE__ */ new Date() }).where(eq(subcontractorDailyRecordsTable.id, id)).returning();
+  await logAudit({ userId: session2.userId, action: "update", tableName: "subcontractor_daily_records", recordId: id, description: "Subdodavatel upravil sv\u016Fj denn\xED z\xE1znam", oldData: { date: before.date, location: before.location, workerCount: before.workerCount, startTime: before.startTime, endTime: before.endTime }, newData: { date: date6, location: location.trim(), workerCount: count2, startTime, endTime } });
+  res.json(record2);
+});
+var subcontractorDailyRecords_default = router11;
+
+// src/routes/index.ts
+var router12 = (0, import_express12.Router)();
+router12.use(health_default);
+router12.use(auth_default);
+router12.use(users_default);
+router12.use(codebooks_default);
+router12.use(accessories_default);
+router12.use(fellingRecords_default);
+router12.use(mowingRecords_default);
+router12.use(dashboard_default);
+router12.use(auditLogs_default);
+router12.use(teamDailyRecords_default);
+router12.use(subcontractorDailyRecords_default);
+var routes_default = router12;
 
 // src/lib/logger.ts
 var import_pino = __toESM(require_pino(), 1);
@@ -57660,7 +57849,7 @@ var logger = (0, import_pino.default)({
 });
 
 // src/app.ts
-var app = (0, import_express12.default)();
+var app = (0, import_express13.default)();
 var __filename = fileURLToPath(import.meta.url);
 var __dirname2 = path.dirname(__filename);
 var frontendDist = path.resolve(__dirname2, "../../pracovni-zaznamy/dist/public");
@@ -57688,8 +57877,8 @@ app.use((0, import_cors.default)({
   origin: true,
   credentials: true
 }));
-app.use(import_express12.default.json());
-app.use(import_express12.default.urlencoded({ extended: true }));
+app.use(import_express13.default.json());
+app.use(import_express13.default.urlencoded({ extended: true }));
 var sessionSecret = process.env.SESSION_SECRET ?? "pracovni-zaznamy-dev-secret-change-in-production";
 app.use(
   (0, import_express_session.default)({
@@ -57705,7 +57894,7 @@ app.use(
   })
 );
 app.use("/api", routes_default);
-app.use(import_express12.default.static(frontendDist));
+app.use(import_express13.default.static(frontendDist));
 app.get(/^(?!\/api(?:\/|$)).*/, (_req, res) => {
   res.sendFile(path.join(frontendDist, "index.html"));
 });

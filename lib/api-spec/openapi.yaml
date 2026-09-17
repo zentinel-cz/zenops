@@ -27,6 +27,8 @@ tags:
     description: Záznamy kácení
   - name: mowingRecords
     description: Záznamy sečení
+  - name: subcontractorDailyRecords
+    description: Denní záznamy subdodavatelů
   - name: dashboard
     description: Přehled a statistiky
 
@@ -1044,6 +1046,69 @@ paths:
               schema:
                 $ref: "#/components/schemas/AuditLogEntry"
 
+  /subcontractor-daily-records:
+    get:
+      operationId: listSubcontractorDailyRecords
+      tags: [subcontractorDailyRecords]
+      summary: Denní záznamy subdodavatelů pro vlastní firmu nebo admina
+      parameters:
+        - in: query
+          name: month
+          schema:
+            type: string
+            pattern: "^\\d{4}-\\d{2}$"
+      responses:
+        "200":
+          description: Seznam denních záznamů
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SubcontractorDailyRecord"
+    post:
+      operationId: createSubcontractorDailyRecord
+      tags: [subcontractorDailyRecords]
+      summary: Vytvořit denní záznam vlastní subdodavatelské firmy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertSubcontractorDailyRecordBody"
+      responses:
+        "201":
+          description: Záznam vytvořen
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubcontractorDailyRecord"
+
+  /subcontractor-daily-records/{id}:
+    put:
+      operationId: updateSubcontractorDailyRecord
+      tags: [subcontractorDailyRecords]
+      summary: Upravit vlastní denní záznam subdodavatele
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertSubcontractorDailyRecordBody"
+      responses:
+        "200":
+          description: Záznam upraven
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubcontractorDailyRecord"
+
 components:
   schemas:
     HealthStatus:
@@ -1103,8 +1168,10 @@ components:
           type: string
         role:
           type: string
-          enum: [admin, user, employee, manager]
+          enum: [admin, user, employee, manager, subcontractor]
         workerId:
+          type: ["integer", "null"]
+        contractorCompanyId:
           type: ["integer", "null"]
         isActive:
           type: boolean
@@ -1132,8 +1199,10 @@ components:
           type: string
         role:
           type: string
-          enum: [admin, user, employee, manager]
+          enum: [admin, user, employee, manager, subcontractor]
         workerId:
+          type: ["integer", "null"]
+        contractorCompanyId:
           type: ["integer", "null"]
       required:
         - username
@@ -1148,8 +1217,10 @@ components:
           type: ["string", "null"]
         role:
           type: ["string", "null"]
-          enum: [admin, user, employee, manager, null]
+          enum: [admin, user, employee, manager, subcontractor, null]
         workerId:
+          type: ["integer", "null"]
+        contractorCompanyId:
           type: ["integer", "null"]
         isActive:
           type: ["boolean", "null"]
@@ -1247,6 +1318,51 @@ components:
         isActive:
           type: boolean
       required: [name, isActive]
+
+    SubcontractorDailyRecord:
+      type: object
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        contractorCompanyId:
+          type: integer
+        companyName:
+          type: string
+        location:
+          type: string
+        workerCount:
+          type: integer
+        startTime:
+          type: string
+        endTime:
+          type: string
+        createdByUserId:
+          type: integer
+        creatorName:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, date, contractorCompanyId, location, workerCount, startTime, endTime, createdByUserId, createdAt, updatedAt]
+
+    UpsertSubcontractorDailyRecordBody:
+      type: object
+      properties:
+        date:
+          type: string
+        location:
+          type: string
+        workerCount:
+          type: integer
+          minimum: 1
+        startTime:
+          type: string
+        endTime:
+          type: string
+      required: [date, location, workerCount, startTime, endTime]
 
     Vehicle:
       type: object

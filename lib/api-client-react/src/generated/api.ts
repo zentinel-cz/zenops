@@ -38,6 +38,7 @@ import type {
   ListAuditLogsParams,
   ListFellingRecordsParams,
   ListMowingRecordsParams,
+  ListSubcontractorDailyRecordsParams,
   LoginBody,
   Machine,
   MachineLastMth,
@@ -45,9 +46,11 @@ import type {
   MowingRecord,
   RecentRecords,
   Region,
+  SubcontractorDailyRecord,
   UpdateFellingRecordBody,
   UpdateMowingRecordBody,
   UpdateUserBody,
+  UpsertSubcontractorDailyRecordBody,
   User,
   Vehicle,
   WeatherType,
@@ -4389,3 +4392,293 @@ export function useGetAuditLog<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Denní záznamy subdodavatelů pro vlastní firmu nebo admina
+ */
+export const getListSubcontractorDailyRecordsUrl = (
+  params?: ListSubcontractorDailyRecordsParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/subcontractor-daily-records?${stringifiedParams}`
+    : `/api/subcontractor-daily-records`;
+};
+
+export const listSubcontractorDailyRecords = async (
+  params?: ListSubcontractorDailyRecordsParams,
+  options?: RequestInit,
+): Promise<SubcontractorDailyRecord[]> => {
+  return customFetch<SubcontractorDailyRecord[]>(
+    getListSubcontractorDailyRecordsUrl(params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getListSubcontractorDailyRecordsQueryKey = (
+  params?: ListSubcontractorDailyRecordsParams,
+) => {
+  return [
+    `/api/subcontractor-daily-records`,
+    ...(params ? [params] : []),
+  ] as const;
+};
+
+export const getListSubcontractorDailyRecordsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listSubcontractorDailyRecords>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListSubcontractorDailyRecordsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listSubcontractorDailyRecords>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListSubcontractorDailyRecordsQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listSubcontractorDailyRecords>>
+  > = ({ signal }) =>
+    listSubcontractorDailyRecords(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listSubcontractorDailyRecords>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListSubcontractorDailyRecordsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listSubcontractorDailyRecords>>
+>;
+export type ListSubcontractorDailyRecordsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Denní záznamy subdodavatelů pro vlastní firmu nebo admina
+ */
+
+export function useListSubcontractorDailyRecords<
+  TData = Awaited<ReturnType<typeof listSubcontractorDailyRecords>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListSubcontractorDailyRecordsParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listSubcontractorDailyRecords>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListSubcontractorDailyRecordsQueryOptions(
+    params,
+    options,
+  );
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Vytvořit denní záznam vlastní subdodavatelské firmy
+ */
+export const getCreateSubcontractorDailyRecordUrl = () => {
+  return `/api/subcontractor-daily-records`;
+};
+
+export const createSubcontractorDailyRecord = async (
+  upsertSubcontractorDailyRecordBody: UpsertSubcontractorDailyRecordBody,
+  options?: RequestInit,
+): Promise<SubcontractorDailyRecord> => {
+  return customFetch<SubcontractorDailyRecord>(
+    getCreateSubcontractorDailyRecordUrl(),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(upsertSubcontractorDailyRecordBody),
+    },
+  );
+};
+
+export const getCreateSubcontractorDailyRecordMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createSubcontractorDailyRecord>>,
+    TError,
+    { data: BodyType<UpsertSubcontractorDailyRecordBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createSubcontractorDailyRecord>>,
+  TError,
+  { data: BodyType<UpsertSubcontractorDailyRecordBody> },
+  TContext
+> => {
+  const mutationKey = ["createSubcontractorDailyRecord"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createSubcontractorDailyRecord>>,
+    { data: BodyType<UpsertSubcontractorDailyRecordBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createSubcontractorDailyRecord(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateSubcontractorDailyRecordMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createSubcontractorDailyRecord>>
+>;
+export type CreateSubcontractorDailyRecordMutationBody =
+  BodyType<UpsertSubcontractorDailyRecordBody>;
+export type CreateSubcontractorDailyRecordMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Vytvořit denní záznam vlastní subdodavatelské firmy
+ */
+export const useCreateSubcontractorDailyRecord = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createSubcontractorDailyRecord>>,
+    TError,
+    { data: BodyType<UpsertSubcontractorDailyRecordBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createSubcontractorDailyRecord>>,
+  TError,
+  { data: BodyType<UpsertSubcontractorDailyRecordBody> },
+  TContext
+> => {
+  return useMutation(getCreateSubcontractorDailyRecordMutationOptions(options));
+};
+
+/**
+ * @summary Upravit vlastní denní záznam subdodavatele
+ */
+export const getUpdateSubcontractorDailyRecordUrl = (id: number) => {
+  return `/api/subcontractor-daily-records/${id}`;
+};
+
+export const updateSubcontractorDailyRecord = async (
+  id: number,
+  upsertSubcontractorDailyRecordBody: UpsertSubcontractorDailyRecordBody,
+  options?: RequestInit,
+): Promise<SubcontractorDailyRecord> => {
+  return customFetch<SubcontractorDailyRecord>(
+    getUpdateSubcontractorDailyRecordUrl(id),
+    {
+      ...options,
+      method: "PUT",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(upsertSubcontractorDailyRecordBody),
+    },
+  );
+};
+
+export const getUpdateSubcontractorDailyRecordMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateSubcontractorDailyRecord>>,
+    TError,
+    { id: number; data: BodyType<UpsertSubcontractorDailyRecordBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateSubcontractorDailyRecord>>,
+  TError,
+  { id: number; data: BodyType<UpsertSubcontractorDailyRecordBody> },
+  TContext
+> => {
+  const mutationKey = ["updateSubcontractorDailyRecord"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateSubcontractorDailyRecord>>,
+    { id: number; data: BodyType<UpsertSubcontractorDailyRecordBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateSubcontractorDailyRecord(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateSubcontractorDailyRecordMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateSubcontractorDailyRecord>>
+>;
+export type UpdateSubcontractorDailyRecordMutationBody =
+  BodyType<UpsertSubcontractorDailyRecordBody>;
+export type UpdateSubcontractorDailyRecordMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Upravit vlastní denní záznam subdodavatele
+ */
+export const useUpdateSubcontractorDailyRecord = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateSubcontractorDailyRecord>>,
+    TError,
+    { id: number; data: BodyType<UpsertSubcontractorDailyRecordBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateSubcontractorDailyRecord>>,
+  TError,
+  { id: number; data: BodyType<UpsertSubcontractorDailyRecordBody> },
+  TContext
+> => {
+  return useMutation(getUpdateSubcontractorDailyRecordMutationOptions(options));
+};

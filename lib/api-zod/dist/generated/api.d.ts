@@ -34,8 +34,9 @@ export declare const LoginResponse: zod.ZodObject<{
         id: zod.ZodNumber;
         username: zod.ZodString;
         fullName: zod.ZodString;
-        role: zod.ZodEnum<["admin", "user", "employee", "manager"]>;
+        role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
         workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+        contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         isActive: zod.ZodBoolean;
         createdAt: zod.ZodString;
         updatedAt: zod.ZodString;
@@ -43,46 +44,50 @@ export declare const LoginResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     }, {
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     }>;
     message: zod.ZodString;
 }, "strip", zod.ZodTypeAny, {
+    message: string;
     user: {
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     };
-    message: string;
 }, {
+    message: string;
     user: {
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     };
-    message: string;
 }>;
 /**
  * @summary Odhlášení uživatele
@@ -101,8 +106,9 @@ export declare const GetMeResponse: zod.ZodObject<{
     id: zod.ZodNumber;
     username: zod.ZodString;
     fullName: zod.ZodString;
-    role: zod.ZodEnum<["admin", "user", "employee", "manager"]>;
+    role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
     workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+    contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     isActive: zod.ZodBoolean;
     createdAt: zod.ZodString;
     updatedAt: zod.ZodString;
@@ -110,20 +116,22 @@ export declare const GetMeResponse: zod.ZodObject<{
     username: string;
     id: number;
     fullName: string;
-    role: "admin" | "user" | "employee" | "manager";
+    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
     workerId?: number | null | undefined;
+    contractorCompanyId?: number | null | undefined;
 }, {
     username: string;
     id: number;
     fullName: string;
-    role: "admin" | "user" | "employee" | "manager";
+    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
     workerId?: number | null | undefined;
+    contractorCompanyId?: number | null | undefined;
 }>;
 /**
  * @summary Seznam uživatelů (pouze admin)
@@ -132,8 +140,9 @@ export declare const ListUsersResponseItem: zod.ZodObject<{
     id: zod.ZodNumber;
     username: zod.ZodString;
     fullName: zod.ZodString;
-    role: zod.ZodEnum<["admin", "user", "employee", "manager"]>;
+    role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
     workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+    contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     isActive: zod.ZodBoolean;
     createdAt: zod.ZodString;
     updatedAt: zod.ZodString;
@@ -141,27 +150,30 @@ export declare const ListUsersResponseItem: zod.ZodObject<{
     username: string;
     id: number;
     fullName: string;
-    role: "admin" | "user" | "employee" | "manager";
+    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
     workerId?: number | null | undefined;
+    contractorCompanyId?: number | null | undefined;
 }, {
     username: string;
     id: number;
     fullName: string;
-    role: "admin" | "user" | "employee" | "manager";
+    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
     workerId?: number | null | undefined;
+    contractorCompanyId?: number | null | undefined;
 }>;
 export declare const ListUsersResponse: zod.ZodArray<zod.ZodObject<{
     id: zod.ZodNumber;
     username: zod.ZodString;
     fullName: zod.ZodString;
-    role: zod.ZodEnum<["admin", "user", "employee", "manager"]>;
+    role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
     workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+    contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     isActive: zod.ZodBoolean;
     createdAt: zod.ZodString;
     updatedAt: zod.ZodString;
@@ -169,20 +181,22 @@ export declare const ListUsersResponse: zod.ZodArray<zod.ZodObject<{
     username: string;
     id: number;
     fullName: string;
-    role: "admin" | "user" | "employee" | "manager";
+    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
     workerId?: number | null | undefined;
+    contractorCompanyId?: number | null | undefined;
 }, {
     username: string;
     id: number;
     fullName: string;
-    role: "admin" | "user" | "employee" | "manager";
+    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
     workerId?: number | null | undefined;
+    contractorCompanyId?: number | null | undefined;
 }>, "many">;
 /**
  * @summary Vytvořit uživatele (pouze admin)
@@ -191,20 +205,23 @@ export declare const CreateUserBody: zod.ZodObject<{
     username: zod.ZodString;
     password: zod.ZodString;
     fullName: zod.ZodString;
-    role: zod.ZodEnum<["admin", "user", "employee", "manager"]>;
+    role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
     workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+    contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
 }, "strip", zod.ZodTypeAny, {
     username: string;
     password: string;
     fullName: string;
-    role: "admin" | "user" | "employee" | "manager";
+    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
     workerId?: number | null | undefined;
+    contractorCompanyId?: number | null | undefined;
 }, {
     username: string;
     password: string;
     fullName: string;
-    role: "admin" | "user" | "employee" | "manager";
+    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
     workerId?: number | null | undefined;
+    contractorCompanyId?: number | null | undefined;
 }>;
 /**
  * @summary Získat uživatele
@@ -220,8 +237,9 @@ export declare const GetUserResponse: zod.ZodObject<{
     id: zod.ZodNumber;
     username: zod.ZodString;
     fullName: zod.ZodString;
-    role: zod.ZodEnum<["admin", "user", "employee", "manager"]>;
+    role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
     workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+    contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     isActive: zod.ZodBoolean;
     createdAt: zod.ZodString;
     updatedAt: zod.ZodString;
@@ -229,20 +247,22 @@ export declare const GetUserResponse: zod.ZodObject<{
     username: string;
     id: number;
     fullName: string;
-    role: "admin" | "user" | "employee" | "manager";
+    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
     workerId?: number | null | undefined;
+    contractorCompanyId?: number | null | undefined;
 }, {
     username: string;
     id: number;
     fullName: string;
-    role: "admin" | "user" | "employee" | "manager";
+    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
     workerId?: number | null | undefined;
+    contractorCompanyId?: number | null | undefined;
 }>;
 /**
  * @summary Upravit uživatele
@@ -256,29 +276,33 @@ export declare const UpdateUserParams: zod.ZodObject<{
 }>;
 export declare const UpdateUserBody: zod.ZodObject<{
     fullName: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
-    role: zod.ZodOptional<zod.ZodNullable<zod.ZodUnion<[zod.ZodLiteral<"admin">, zod.ZodLiteral<"user">, zod.ZodLiteral<"employee">, zod.ZodLiteral<"manager">, zod.ZodLiteral<null>]>>>;
+    role: zod.ZodOptional<zod.ZodNullable<zod.ZodUnion<[zod.ZodLiteral<"admin">, zod.ZodLiteral<"user">, zod.ZodLiteral<"employee">, zod.ZodLiteral<"manager">, zod.ZodLiteral<"subcontractor">, zod.ZodLiteral<null>]>>>;
     workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+    contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     isActive: zod.ZodOptional<zod.ZodNullable<zod.ZodBoolean>>;
     password: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
 }, "strip", zod.ZodTypeAny, {
     password?: string | null | undefined;
     fullName?: string | null | undefined;
-    role?: "admin" | "user" | "employee" | "manager" | null | undefined;
+    role?: "user" | "admin" | "employee" | "manager" | "subcontractor" | null | undefined;
     workerId?: number | null | undefined;
+    contractorCompanyId?: number | null | undefined;
     isActive?: boolean | null | undefined;
 }, {
     password?: string | null | undefined;
     fullName?: string | null | undefined;
-    role?: "admin" | "user" | "employee" | "manager" | null | undefined;
+    role?: "user" | "admin" | "employee" | "manager" | "subcontractor" | null | undefined;
     workerId?: number | null | undefined;
+    contractorCompanyId?: number | null | undefined;
     isActive?: boolean | null | undefined;
 }>;
 export declare const UpdateUserResponse: zod.ZodObject<{
     id: zod.ZodNumber;
     username: zod.ZodString;
     fullName: zod.ZodString;
-    role: zod.ZodEnum<["admin", "user", "employee", "manager"]>;
+    role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
     workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+    contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     isActive: zod.ZodBoolean;
     createdAt: zod.ZodString;
     updatedAt: zod.ZodString;
@@ -286,20 +310,22 @@ export declare const UpdateUserResponse: zod.ZodObject<{
     username: string;
     id: number;
     fullName: string;
-    role: "admin" | "user" | "employee" | "manager";
+    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
     workerId?: number | null | undefined;
+    contractorCompanyId?: number | null | undefined;
 }, {
     username: string;
     id: number;
     fullName: string;
-    role: "admin" | "user" | "employee" | "manager";
+    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
     workerId?: number | null | undefined;
+    contractorCompanyId?: number | null | undefined;
 }>;
 /**
  * @summary Smazat uživatele (soft delete)
@@ -343,8 +369,8 @@ export declare const ListWorkersResponseItem: zod.ZodObject<{
     defaultBrushcutter: boolean;
     defaultSlopeMower: boolean;
     defaultSubcontractor: boolean;
-    note?: string | null | undefined;
     contractorCompanyId?: number | null | undefined;
+    note?: string | null | undefined;
 }, {
     id: number;
     isActive: boolean;
@@ -355,8 +381,8 @@ export declare const ListWorkersResponseItem: zod.ZodObject<{
     defaultBrushcutter: boolean;
     defaultSlopeMower: boolean;
     defaultSubcontractor: boolean;
-    note?: string | null | undefined;
     contractorCompanyId?: number | null | undefined;
+    note?: string | null | undefined;
 }>;
 export declare const ListWorkersResponse: zod.ZodArray<zod.ZodObject<{
     id: zod.ZodNumber;
@@ -380,8 +406,8 @@ export declare const ListWorkersResponse: zod.ZodArray<zod.ZodObject<{
     defaultBrushcutter: boolean;
     defaultSlopeMower: boolean;
     defaultSubcontractor: boolean;
-    note?: string | null | undefined;
     contractorCompanyId?: number | null | undefined;
+    note?: string | null | undefined;
 }, {
     id: number;
     isActive: boolean;
@@ -392,8 +418,8 @@ export declare const ListWorkersResponse: zod.ZodArray<zod.ZodObject<{
     defaultBrushcutter: boolean;
     defaultSlopeMower: boolean;
     defaultSubcontractor: boolean;
-    note?: string | null | undefined;
     contractorCompanyId?: number | null | undefined;
+    note?: string | null | undefined;
 }>, "many">;
 /**
  * @summary Vytvořit pracovníka
@@ -411,19 +437,19 @@ export declare const CreateWorkerBody: zod.ZodObject<{
     isActive: boolean;
     firstName: string;
     lastName: string;
+    contractorCompanyId?: number | null | undefined;
     note?: string | null | undefined;
     defaultBrushcutter?: boolean | undefined;
     defaultSlopeMower?: boolean | undefined;
-    contractorCompanyId?: number | null | undefined;
     defaultSubcontractor?: boolean | undefined;
 }, {
     isActive: boolean;
     firstName: string;
     lastName: string;
+    contractorCompanyId?: number | null | undefined;
     note?: string | null | undefined;
     defaultBrushcutter?: boolean | undefined;
     defaultSlopeMower?: boolean | undefined;
-    contractorCompanyId?: number | null | undefined;
     defaultSubcontractor?: boolean | undefined;
 }>;
 /**
@@ -449,19 +475,19 @@ export declare const UpdateWorkerBody: zod.ZodObject<{
     isActive: boolean;
     firstName: string;
     lastName: string;
+    contractorCompanyId?: number | null | undefined;
     note?: string | null | undefined;
     defaultBrushcutter?: boolean | undefined;
     defaultSlopeMower?: boolean | undefined;
-    contractorCompanyId?: number | null | undefined;
     defaultSubcontractor?: boolean | undefined;
 }, {
     isActive: boolean;
     firstName: string;
     lastName: string;
+    contractorCompanyId?: number | null | undefined;
     note?: string | null | undefined;
     defaultBrushcutter?: boolean | undefined;
     defaultSlopeMower?: boolean | undefined;
-    contractorCompanyId?: number | null | undefined;
     defaultSubcontractor?: boolean | undefined;
 }>;
 export declare const UpdateWorkerResponse: zod.ZodObject<{
@@ -486,8 +512,8 @@ export declare const UpdateWorkerResponse: zod.ZodObject<{
     defaultBrushcutter: boolean;
     defaultSlopeMower: boolean;
     defaultSubcontractor: boolean;
-    note?: string | null | undefined;
     contractorCompanyId?: number | null | undefined;
+    note?: string | null | undefined;
 }, {
     id: number;
     isActive: boolean;
@@ -498,8 +524,8 @@ export declare const UpdateWorkerResponse: zod.ZodObject<{
     defaultBrushcutter: boolean;
     defaultSlopeMower: boolean;
     defaultSubcontractor: boolean;
-    note?: string | null | undefined;
     contractorCompanyId?: number | null | undefined;
+    note?: string | null | undefined;
 }>;
 /**
  * @summary Smazat pracovníka
@@ -1506,8 +1532,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -1518,8 +1544,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         workerId: number;
@@ -1537,8 +1563,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         workerId: number;
@@ -1556,8 +1582,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">;
     vehicleIds: zod.ZodArray<zod.ZodNumber, "many">;
@@ -1657,8 +1683,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -1669,8 +1695,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         machineId: number;
@@ -1715,8 +1741,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         machineId: number;
@@ -1761,8 +1787,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">;
     accessoryIds: zod.ZodArray<zod.ZodNumber, "many">;
@@ -1779,8 +1805,9 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
         id: zod.ZodNumber;
         username: zod.ZodString;
         fullName: zod.ZodString;
-        role: zod.ZodEnum<["admin", "user", "employee", "manager"]>;
+        role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
         workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+        contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         isActive: zod.ZodBoolean;
         createdAt: zod.ZodString;
         updatedAt: zod.ZodString;
@@ -1788,20 +1815,22 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     }, {
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     }>;
     region: zod.ZodObject<{
         id: zod.ZodNumber;
@@ -1894,8 +1923,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -1906,8 +1935,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     manualWorkers: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
@@ -1931,8 +1960,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -1943,8 +1972,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     machineWorkers: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
@@ -1968,8 +1997,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -1980,8 +2009,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     vehicles: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
@@ -2078,11 +2107,12 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     };
     date: string;
     id: number;
@@ -2109,8 +2139,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     vehicleIds: number[];
@@ -2158,8 +2188,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     accessoryIds: number[];
@@ -2190,8 +2220,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     manualWorkers: {
         id: number;
@@ -2203,8 +2233,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machineWorkers: {
         id: number;
@@ -2216,8 +2246,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     vehicles: {
         id: number;
@@ -2281,11 +2311,12 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     };
     date: string;
     id: number;
@@ -2312,8 +2343,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     vehicleIds: number[];
@@ -2361,8 +2392,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     accessoryIds: number[];
@@ -2393,8 +2424,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     manualWorkers: {
         id: number;
@@ -2406,8 +2437,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machineWorkers: {
         id: number;
@@ -2419,8 +2450,8 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     vehicles: {
         id: number;
@@ -2526,8 +2557,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -2538,8 +2569,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         workerId: number;
@@ -2557,8 +2588,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         workerId: number;
@@ -2576,8 +2607,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">;
     vehicleIds: zod.ZodArray<zod.ZodNumber, "many">;
@@ -2677,8 +2708,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -2689,8 +2720,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         machineId: number;
@@ -2735,8 +2766,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         machineId: number;
@@ -2781,8 +2812,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">;
     accessoryIds: zod.ZodArray<zod.ZodNumber, "many">;
@@ -2799,8 +2830,9 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
         username: zod.ZodString;
         fullName: zod.ZodString;
-        role: zod.ZodEnum<["admin", "user", "employee", "manager"]>;
+        role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
         workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+        contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         isActive: zod.ZodBoolean;
         createdAt: zod.ZodString;
         updatedAt: zod.ZodString;
@@ -2808,20 +2840,22 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     }, {
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     }>;
     region: zod.ZodObject<{
         id: zod.ZodNumber;
@@ -2914,8 +2948,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -2926,8 +2960,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     manualWorkers: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
@@ -2951,8 +2985,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -2963,8 +2997,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     machineWorkers: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
@@ -2988,8 +3022,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -3000,8 +3034,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     vehicles: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
@@ -3098,11 +3132,12 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     };
     date: string;
     id: number;
@@ -3129,8 +3164,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     vehicleIds: number[];
@@ -3178,8 +3213,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     accessoryIds: number[];
@@ -3210,8 +3245,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     manualWorkers: {
         id: number;
@@ -3223,8 +3258,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machineWorkers: {
         id: number;
@@ -3236,8 +3271,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     vehicles: {
         id: number;
@@ -3301,11 +3336,12 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     };
     date: string;
     id: number;
@@ -3332,8 +3368,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     vehicleIds: number[];
@@ -3381,8 +3417,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     accessoryIds: number[];
@@ -3413,8 +3449,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     manualWorkers: {
         id: number;
@@ -3426,8 +3462,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machineWorkers: {
         id: number;
@@ -3439,8 +3475,8 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     vehicles: {
         id: number;
@@ -3547,8 +3583,8 @@ export declare const CreateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -3559,8 +3595,8 @@ export declare const CreateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         workerId: number;
@@ -3578,8 +3614,8 @@ export declare const CreateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         workerId: number;
@@ -3597,8 +3633,8 @@ export declare const CreateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">;
     vehicleIds: zod.ZodArray<zod.ZodNumber, "many">;
@@ -3698,8 +3734,8 @@ export declare const CreateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -3710,8 +3746,8 @@ export declare const CreateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         machineId: number;
@@ -3756,8 +3792,8 @@ export declare const CreateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         machineId: number;
@@ -3802,8 +3838,8 @@ export declare const CreateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">;
     accessoryIds: zod.ZodArray<zod.ZodNumber, "many">;
@@ -3836,8 +3872,8 @@ export declare const CreateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     vehicleIds: number[];
@@ -3885,8 +3921,8 @@ export declare const CreateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     accessoryIds: number[];
@@ -3929,8 +3965,8 @@ export declare const CreateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     vehicleIds: number[];
@@ -3978,8 +4014,8 @@ export declare const CreateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     accessoryIds: number[];
@@ -4057,8 +4093,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -4069,8 +4105,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         workerId: number;
@@ -4088,8 +4124,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         workerId: number;
@@ -4107,8 +4143,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">;
     vehicleIds: zod.ZodArray<zod.ZodNumber, "many">;
@@ -4208,8 +4244,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -4220,8 +4256,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         machineId: number;
@@ -4266,8 +4302,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         machineId: number;
@@ -4312,8 +4348,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">;
     accessoryIds: zod.ZodArray<zod.ZodNumber, "many">;
@@ -4330,8 +4366,9 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
         id: zod.ZodNumber;
         username: zod.ZodString;
         fullName: zod.ZodString;
-        role: zod.ZodEnum<["admin", "user", "employee", "manager"]>;
+        role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
         workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+        contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         isActive: zod.ZodBoolean;
         createdAt: zod.ZodString;
         updatedAt: zod.ZodString;
@@ -4339,20 +4376,22 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     }, {
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     }>;
     region: zod.ZodObject<{
         id: zod.ZodNumber;
@@ -4445,8 +4484,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -4457,8 +4496,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     manualWorkers: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
@@ -4482,8 +4521,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -4494,8 +4533,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     machineWorkers: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
@@ -4519,8 +4558,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -4531,8 +4570,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     vehicles: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
@@ -4629,11 +4668,12 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     };
     date: string;
     id: number;
@@ -4660,8 +4700,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     vehicleIds: number[];
@@ -4709,8 +4749,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     accessoryIds: number[];
@@ -4741,8 +4781,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     manualWorkers: {
         id: number;
@@ -4754,8 +4794,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machineWorkers: {
         id: number;
@@ -4767,8 +4807,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     vehicles: {
         id: number;
@@ -4832,11 +4872,12 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     };
     date: string;
     id: number;
@@ -4863,8 +4904,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     vehicleIds: number[];
@@ -4912,8 +4953,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     accessoryIds: number[];
@@ -4944,8 +4985,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     manualWorkers: {
         id: number;
@@ -4957,8 +4998,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machineWorkers: {
         id: number;
@@ -4970,8 +5011,8 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     vehicles: {
         id: number;
@@ -5085,8 +5126,8 @@ export declare const UpdateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -5097,8 +5138,8 @@ export declare const UpdateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         workerId: number;
@@ -5116,8 +5157,8 @@ export declare const UpdateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         workerId: number;
@@ -5135,8 +5176,8 @@ export declare const UpdateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">>>;
     vehicleIds: zod.ZodOptional<zod.ZodNullable<zod.ZodArray<zod.ZodNumber, "many">>>;
@@ -5236,8 +5277,8 @@ export declare const UpdateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -5248,8 +5289,8 @@ export declare const UpdateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         machineId: number;
@@ -5294,8 +5335,8 @@ export declare const UpdateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         machineId: number;
@@ -5340,8 +5381,8 @@ export declare const UpdateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">>>;
     accessoryIds: zod.ZodOptional<zod.ZodNullable<zod.ZodArray<zod.ZodNumber, "many">>>;
@@ -5385,8 +5426,8 @@ export declare const UpdateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[] | null | undefined;
     vehicleIds?: number[] | null | undefined;
@@ -5434,8 +5475,8 @@ export declare const UpdateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[] | null | undefined;
     accessoryIds?: number[] | null | undefined;
@@ -5478,8 +5519,8 @@ export declare const UpdateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[] | null | undefined;
     vehicleIds?: number[] | null | undefined;
@@ -5527,8 +5568,8 @@ export declare const UpdateFellingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[] | null | undefined;
     accessoryIds?: number[] | null | undefined;
@@ -5585,8 +5626,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -5597,8 +5638,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         workerId: number;
@@ -5616,8 +5657,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         workerId: number;
@@ -5635,8 +5676,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">;
     vehicleIds: zod.ZodArray<zod.ZodNumber, "many">;
@@ -5736,8 +5777,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -5748,8 +5789,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         machineId: number;
@@ -5794,8 +5835,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         machineId: number;
@@ -5840,8 +5881,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">;
     accessoryIds: zod.ZodArray<zod.ZodNumber, "many">;
@@ -5858,8 +5899,9 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
         id: zod.ZodNumber;
         username: zod.ZodString;
         fullName: zod.ZodString;
-        role: zod.ZodEnum<["admin", "user", "employee", "manager"]>;
+        role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
         workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+        contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         isActive: zod.ZodBoolean;
         createdAt: zod.ZodString;
         updatedAt: zod.ZodString;
@@ -5867,20 +5909,22 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     }, {
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     }>;
     region: zod.ZodObject<{
         id: zod.ZodNumber;
@@ -5973,8 +6017,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -5985,8 +6029,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     manualWorkers: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
@@ -6010,8 +6054,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -6022,8 +6066,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     machineWorkers: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
@@ -6047,8 +6091,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -6059,8 +6103,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     vehicles: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
@@ -6157,11 +6201,12 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     };
     date: string;
     id: number;
@@ -6188,8 +6233,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     vehicleIds: number[];
@@ -6237,8 +6282,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     accessoryIds: number[];
@@ -6269,8 +6314,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     manualWorkers: {
         id: number;
@@ -6282,8 +6327,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machineWorkers: {
         id: number;
@@ -6295,8 +6340,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     vehicles: {
         id: number;
@@ -6360,11 +6405,12 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     };
     date: string;
     id: number;
@@ -6391,8 +6437,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     vehicleIds: number[];
@@ -6440,8 +6486,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     accessoryIds: number[];
@@ -6472,8 +6518,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     manualWorkers: {
         id: number;
@@ -6485,8 +6531,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machineWorkers: {
         id: number;
@@ -6498,8 +6544,8 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     vehicles: {
         id: number;
@@ -6715,8 +6761,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -6727,8 +6773,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         workerId: number;
@@ -6746,8 +6792,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         workerId: number;
@@ -6765,8 +6811,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">;
     machineIds: zod.ZodArray<zod.ZodNumber, "many">;
@@ -6865,8 +6911,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -6877,8 +6923,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         machineId: number;
@@ -6923,8 +6969,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         machineId: number;
@@ -6969,8 +7015,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">;
     accessoryIds: zod.ZodArray<zod.ZodNumber, "many">;
@@ -6991,8 +7037,9 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
         id: zod.ZodNumber;
         username: zod.ZodString;
         fullName: zod.ZodString;
-        role: zod.ZodEnum<["admin", "user", "employee", "manager"]>;
+        role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
         workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+        contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         isActive: zod.ZodBoolean;
         createdAt: zod.ZodString;
         updatedAt: zod.ZodString;
@@ -7000,20 +7047,22 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     }, {
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     }>;
     region: zod.ZodObject<{
         id: zod.ZodNumber;
@@ -7134,8 +7183,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -7146,8 +7195,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     manualWorkers: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
@@ -7171,8 +7220,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -7183,8 +7232,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     machineWorkers: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
@@ -7208,8 +7257,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -7220,8 +7269,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     contractorCompany: zod.ZodOptional<zod.ZodUnion<[zod.ZodObject<{
         id: zod.ZodNumber;
@@ -7315,11 +7364,12 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     };
     date: string;
     id: number;
@@ -7346,8 +7396,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     machineIds: number[];
@@ -7394,8 +7444,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     accessoryIds: number[];
@@ -7426,8 +7476,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     manualWorkers: {
         id: number;
@@ -7439,8 +7489,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machineWorkers: {
         id: number;
@@ -7452,8 +7502,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machines: {
         type: string;
@@ -7494,8 +7544,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
             licensePlate?: string | null | undefined;
         } | null | undefined;
     }[];
-    note?: string | null | undefined;
     contractorCompanyId?: number | null | undefined;
+    note?: string | null | undefined;
     mthEnd?: number | null | undefined;
     workType?: string | null | undefined;
     location?: string | null | undefined;
@@ -7554,11 +7604,12 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     };
     date: string;
     id: number;
@@ -7585,8 +7636,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     machineIds: number[];
@@ -7633,8 +7684,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     accessoryIds: number[];
@@ -7665,8 +7716,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     manualWorkers: {
         id: number;
@@ -7678,8 +7729,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machineWorkers: {
         id: number;
@@ -7691,8 +7742,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machines: {
         type: string;
@@ -7733,8 +7784,8 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
             licensePlate?: string | null | undefined;
         } | null | undefined;
     }[];
-    note?: string | null | undefined;
     contractorCompanyId?: number | null | undefined;
+    note?: string | null | undefined;
     mthEnd?: number | null | undefined;
     workType?: string | null | undefined;
     location?: string | null | undefined;
@@ -7909,8 +7960,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -7921,8 +7972,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         workerId: number;
@@ -7940,8 +7991,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         workerId: number;
@@ -7959,8 +8010,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">;
     machineIds: zod.ZodArray<zod.ZodNumber, "many">;
@@ -8059,8 +8110,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -8071,8 +8122,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         machineId: number;
@@ -8117,8 +8168,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         machineId: number;
@@ -8163,8 +8214,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">;
     accessoryIds: zod.ZodArray<zod.ZodNumber, "many">;
@@ -8185,8 +8236,9 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
         username: zod.ZodString;
         fullName: zod.ZodString;
-        role: zod.ZodEnum<["admin", "user", "employee", "manager"]>;
+        role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
         workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+        contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         isActive: zod.ZodBoolean;
         createdAt: zod.ZodString;
         updatedAt: zod.ZodString;
@@ -8194,20 +8246,22 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     }, {
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     }>;
     region: zod.ZodObject<{
         id: zod.ZodNumber;
@@ -8328,8 +8382,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -8340,8 +8394,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     manualWorkers: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
@@ -8365,8 +8419,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -8377,8 +8431,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     machineWorkers: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
@@ -8402,8 +8456,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -8414,8 +8468,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     contractorCompany: zod.ZodOptional<zod.ZodUnion<[zod.ZodObject<{
         id: zod.ZodNumber;
@@ -8509,11 +8563,12 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     };
     date: string;
     id: number;
@@ -8540,8 +8595,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     machineIds: number[];
@@ -8588,8 +8643,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     accessoryIds: number[];
@@ -8620,8 +8675,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     manualWorkers: {
         id: number;
@@ -8633,8 +8688,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machineWorkers: {
         id: number;
@@ -8646,8 +8701,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machines: {
         type: string;
@@ -8688,8 +8743,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             licensePlate?: string | null | undefined;
         } | null | undefined;
     }[];
-    note?: string | null | undefined;
     contractorCompanyId?: number | null | undefined;
+    note?: string | null | undefined;
     mthEnd?: number | null | undefined;
     workType?: string | null | undefined;
     location?: string | null | undefined;
@@ -8748,11 +8803,12 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     };
     date: string;
     id: number;
@@ -8779,8 +8835,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     machineIds: number[];
@@ -8827,8 +8883,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     accessoryIds: number[];
@@ -8859,8 +8915,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     manualWorkers: {
         id: number;
@@ -8872,8 +8928,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machineWorkers: {
         id: number;
@@ -8885,8 +8941,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machines: {
         type: string;
@@ -8927,8 +8983,8 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
             licensePlate?: string | null | undefined;
         } | null | undefined;
     }[];
-    note?: string | null | undefined;
     contractorCompanyId?: number | null | undefined;
+    note?: string | null | undefined;
     mthEnd?: number | null | undefined;
     workType?: string | null | undefined;
     location?: string | null | undefined;
@@ -9104,8 +9160,8 @@ export declare const CreateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -9116,8 +9172,8 @@ export declare const CreateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         workerId: number;
@@ -9135,8 +9191,8 @@ export declare const CreateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         workerId: number;
@@ -9154,8 +9210,8 @@ export declare const CreateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">;
     machineIds: zod.ZodArray<zod.ZodNumber, "many">;
@@ -9254,8 +9310,8 @@ export declare const CreateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -9266,8 +9322,8 @@ export declare const CreateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         machineId: number;
@@ -9312,8 +9368,8 @@ export declare const CreateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         machineId: number;
@@ -9358,8 +9414,8 @@ export declare const CreateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">;
     accessoryIds: zod.ZodArray<zod.ZodNumber, "many">;
@@ -9396,8 +9452,8 @@ export declare const CreateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     machineIds: number[];
@@ -9444,8 +9500,8 @@ export declare const CreateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     accessoryIds: number[];
@@ -9466,8 +9522,8 @@ export declare const CreateMowingRecordBody: zod.ZodObject<{
             licensePlate?: string | null | undefined;
         } | null | undefined;
     }[];
-    note?: string | null | undefined;
     contractorCompanyId?: number | null | undefined;
+    note?: string | null | undefined;
     mthEnd?: number | null | undefined;
     workType?: string | null | undefined;
     location?: string | null | undefined;
@@ -9516,8 +9572,8 @@ export declare const CreateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     machineIds: number[];
@@ -9564,8 +9620,8 @@ export declare const CreateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     accessoryIds: number[];
@@ -9586,8 +9642,8 @@ export declare const CreateMowingRecordBody: zod.ZodObject<{
             licensePlate?: string | null | undefined;
         } | null | undefined;
     }[];
-    note?: string | null | undefined;
     contractorCompanyId?: number | null | undefined;
+    note?: string | null | undefined;
     mthEnd?: number | null | undefined;
     workType?: string | null | undefined;
     location?: string | null | undefined;
@@ -9745,8 +9801,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -9757,8 +9813,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         workerId: number;
@@ -9776,8 +9832,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         workerId: number;
@@ -9795,8 +9851,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">;
     machineIds: zod.ZodArray<zod.ZodNumber, "many">;
@@ -9895,8 +9951,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -9907,8 +9963,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         machineId: number;
@@ -9953,8 +10009,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         machineId: number;
@@ -9999,8 +10055,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">;
     accessoryIds: zod.ZodArray<zod.ZodNumber, "many">;
@@ -10021,8 +10077,9 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
         id: zod.ZodNumber;
         username: zod.ZodString;
         fullName: zod.ZodString;
-        role: zod.ZodEnum<["admin", "user", "employee", "manager"]>;
+        role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
         workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+        contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         isActive: zod.ZodBoolean;
         createdAt: zod.ZodString;
         updatedAt: zod.ZodString;
@@ -10030,20 +10087,22 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     }, {
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     }>;
     region: zod.ZodObject<{
         id: zod.ZodNumber;
@@ -10164,8 +10223,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -10176,8 +10235,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     manualWorkers: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
@@ -10201,8 +10260,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -10213,8 +10272,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     machineWorkers: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
@@ -10238,8 +10297,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -10250,8 +10309,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     contractorCompany: zod.ZodOptional<zod.ZodUnion<[zod.ZodObject<{
         id: zod.ZodNumber;
@@ -10345,11 +10404,12 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     };
     date: string;
     id: number;
@@ -10376,8 +10436,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     machineIds: number[];
@@ -10424,8 +10484,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     accessoryIds: number[];
@@ -10456,8 +10516,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     manualWorkers: {
         id: number;
@@ -10469,8 +10529,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machineWorkers: {
         id: number;
@@ -10482,8 +10542,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machines: {
         type: string;
@@ -10524,8 +10584,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
             licensePlate?: string | null | undefined;
         } | null | undefined;
     }[];
-    note?: string | null | undefined;
     contractorCompanyId?: number | null | undefined;
+    note?: string | null | undefined;
     mthEnd?: number | null | undefined;
     workType?: string | null | undefined;
     location?: string | null | undefined;
@@ -10584,11 +10644,12 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     };
     date: string;
     id: number;
@@ -10615,8 +10676,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     machineIds: number[];
@@ -10663,8 +10724,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     accessoryIds: number[];
@@ -10695,8 +10756,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     manualWorkers: {
         id: number;
@@ -10708,8 +10769,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machineWorkers: {
         id: number;
@@ -10721,8 +10782,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machines: {
         type: string;
@@ -10763,8 +10824,8 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
             licensePlate?: string | null | undefined;
         } | null | undefined;
     }[];
-    note?: string | null | undefined;
     contractorCompanyId?: number | null | undefined;
+    note?: string | null | undefined;
     mthEnd?: number | null | undefined;
     workType?: string | null | undefined;
     location?: string | null | undefined;
@@ -10947,8 +11008,8 @@ export declare const UpdateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -10959,8 +11020,8 @@ export declare const UpdateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         workerId: number;
@@ -10978,8 +11039,8 @@ export declare const UpdateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         workerId: number;
@@ -10997,8 +11058,8 @@ export declare const UpdateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">>>;
     machineIds: zod.ZodOptional<zod.ZodNullable<zod.ZodArray<zod.ZodNumber, "many">>>;
@@ -11097,8 +11158,8 @@ export declare const UpdateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -11109,8 +11170,8 @@ export declare const UpdateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         machineId: number;
@@ -11155,8 +11216,8 @@ export declare const UpdateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         machineId: number;
@@ -11201,8 +11262,8 @@ export declare const UpdateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">>>;
     accessoryIds: zod.ZodOptional<zod.ZodNullable<zod.ZodArray<zod.ZodNumber, "many">>>;
@@ -11219,8 +11280,8 @@ export declare const UpdateMowingRecordBody: zod.ZodObject<{
     note: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
 }, "strip", zod.ZodTypeAny, {
     date?: string | null | undefined;
-    note?: string | null | undefined;
     contractorCompanyId?: number | null | undefined;
+    note?: string | null | undefined;
     mthEnd?: number | null | undefined;
     regionId?: number | null | undefined;
     workType?: string | null | undefined;
@@ -11251,8 +11312,8 @@ export declare const UpdateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[] | null | undefined;
     machineIds?: number[] | null | undefined;
@@ -11299,8 +11360,8 @@ export declare const UpdateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[] | null | undefined;
     mthStart?: number | null | undefined;
@@ -11339,8 +11400,8 @@ export declare const UpdateMowingRecordBody: zod.ZodObject<{
     brushcutterRefueling?: number | null | undefined;
 }, {
     date?: string | null | undefined;
-    note?: string | null | undefined;
     contractorCompanyId?: number | null | undefined;
+    note?: string | null | undefined;
     mthEnd?: number | null | undefined;
     regionId?: number | null | undefined;
     workType?: string | null | undefined;
@@ -11371,8 +11432,8 @@ export declare const UpdateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[] | null | undefined;
     machineIds?: number[] | null | undefined;
@@ -11419,8 +11480,8 @@ export declare const UpdateMowingRecordBody: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[] | null | undefined;
     mthStart?: number | null | undefined;
@@ -11578,8 +11639,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -11590,8 +11651,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         workerId: number;
@@ -11609,8 +11670,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         workerId: number;
@@ -11628,8 +11689,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">;
     machineIds: zod.ZodArray<zod.ZodNumber, "many">;
@@ -11728,8 +11789,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }, {
             id: number;
             isActive: boolean;
@@ -11740,8 +11801,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         }>, zod.ZodNull]>>;
     }, "strip", zod.ZodTypeAny, {
         machineId: number;
@@ -11786,8 +11847,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }, {
         machineId: number;
@@ -11832,8 +11893,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }>, "many">;
     accessoryIds: zod.ZodArray<zod.ZodNumber, "many">;
@@ -11854,8 +11915,9 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
         id: zod.ZodNumber;
         username: zod.ZodString;
         fullName: zod.ZodString;
-        role: zod.ZodEnum<["admin", "user", "employee", "manager"]>;
+        role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
         workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
+        contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         isActive: zod.ZodBoolean;
         createdAt: zod.ZodString;
         updatedAt: zod.ZodString;
@@ -11863,20 +11925,22 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     }, {
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     }>;
     region: zod.ZodObject<{
         id: zod.ZodNumber;
@@ -11997,8 +12061,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -12009,8 +12073,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     manualWorkers: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
@@ -12034,8 +12098,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -12046,8 +12110,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     machineWorkers: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
@@ -12071,8 +12135,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }, {
         id: number;
         isActive: boolean;
@@ -12083,8 +12147,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }>, "many">;
     contractorCompany: zod.ZodOptional<zod.ZodUnion<[zod.ZodObject<{
         id: zod.ZodNumber;
@@ -12178,11 +12242,12 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     };
     date: string;
     id: number;
@@ -12209,8 +12274,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     machineIds: number[];
@@ -12257,8 +12322,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     accessoryIds: number[];
@@ -12289,8 +12354,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     manualWorkers: {
         id: number;
@@ -12302,8 +12367,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machineWorkers: {
         id: number;
@@ -12315,8 +12380,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machines: {
         type: string;
@@ -12357,8 +12422,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
             licensePlate?: string | null | undefined;
         } | null | undefined;
     }[];
-    note?: string | null | undefined;
     contractorCompanyId?: number | null | undefined;
+    note?: string | null | undefined;
     mthEnd?: number | null | undefined;
     workType?: string | null | undefined;
     location?: string | null | undefined;
@@ -12417,11 +12482,12 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "admin" | "user" | "employee" | "manager";
+        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
         workerId?: number | null | undefined;
+        contractorCompanyId?: number | null | undefined;
     };
     date: string;
     id: number;
@@ -12448,8 +12514,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     machineIds: number[];
@@ -12496,8 +12562,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
             defaultBrushcutter: boolean;
             defaultSlopeMower: boolean;
             defaultSubcontractor: boolean;
-            note?: string | null | undefined;
             contractorCompanyId?: number | null | undefined;
+            note?: string | null | undefined;
         } | null | undefined;
     }[];
     accessoryIds: number[];
@@ -12528,8 +12594,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     manualWorkers: {
         id: number;
@@ -12541,8 +12607,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machineWorkers: {
         id: number;
@@ -12554,8 +12620,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
         defaultBrushcutter: boolean;
         defaultSlopeMower: boolean;
         defaultSubcontractor: boolean;
-        note?: string | null | undefined;
         contractorCompanyId?: number | null | undefined;
+        note?: string | null | undefined;
     }[];
     machines: {
         type: string;
@@ -12596,8 +12662,8 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
             licensePlate?: string | null | undefined;
         } | null | undefined;
     }[];
-    note?: string | null | undefined;
     contractorCompanyId?: number | null | undefined;
+    note?: string | null | undefined;
     mthEnd?: number | null | undefined;
     workType?: string | null | undefined;
     location?: string | null | undefined;
@@ -12881,5 +12947,187 @@ export declare const GetAuditLogResponse: zod.ZodObject<{
     oldData?: zod.objectInputType<{}, zod.ZodTypeAny, "passthrough"> | null | undefined;
     newData?: zod.objectInputType<{}, zod.ZodTypeAny, "passthrough"> | null | undefined;
     userUsername?: string | null | undefined;
+}>;
+/**
+ * @summary Denní záznamy subdodavatelů pro vlastní firmu nebo admina
+ */
+export declare const listSubcontractorDailyRecordsQueryMonthRegExp: RegExp;
+export declare const ListSubcontractorDailyRecordsQueryParams: zod.ZodObject<{
+    month: zod.ZodOptional<zod.ZodString>;
+}, "strip", zod.ZodTypeAny, {
+    month?: string | undefined;
+}, {
+    month?: string | undefined;
+}>;
+export declare const ListSubcontractorDailyRecordsResponseItem: zod.ZodObject<{
+    id: zod.ZodNumber;
+    date: zod.ZodString;
+    contractorCompanyId: zod.ZodNumber;
+    companyName: zod.ZodOptional<zod.ZodString>;
+    location: zod.ZodString;
+    workerCount: zod.ZodNumber;
+    startTime: zod.ZodString;
+    endTime: zod.ZodString;
+    createdByUserId: zod.ZodNumber;
+    creatorName: zod.ZodOptional<zod.ZodString>;
+    createdAt: zod.ZodString;
+    updatedAt: zod.ZodString;
+}, "strip", zod.ZodTypeAny, {
+    date: string;
+    id: number;
+    contractorCompanyId: number;
+    createdAt: string;
+    updatedAt: string;
+    location: string;
+    startTime: string;
+    endTime: string;
+    workerCount: number;
+    createdByUserId: number;
+    companyName?: string | undefined;
+    creatorName?: string | undefined;
+}, {
+    date: string;
+    id: number;
+    contractorCompanyId: number;
+    createdAt: string;
+    updatedAt: string;
+    location: string;
+    startTime: string;
+    endTime: string;
+    workerCount: number;
+    createdByUserId: number;
+    companyName?: string | undefined;
+    creatorName?: string | undefined;
+}>;
+export declare const ListSubcontractorDailyRecordsResponse: zod.ZodArray<zod.ZodObject<{
+    id: zod.ZodNumber;
+    date: zod.ZodString;
+    contractorCompanyId: zod.ZodNumber;
+    companyName: zod.ZodOptional<zod.ZodString>;
+    location: zod.ZodString;
+    workerCount: zod.ZodNumber;
+    startTime: zod.ZodString;
+    endTime: zod.ZodString;
+    createdByUserId: zod.ZodNumber;
+    creatorName: zod.ZodOptional<zod.ZodString>;
+    createdAt: zod.ZodString;
+    updatedAt: zod.ZodString;
+}, "strip", zod.ZodTypeAny, {
+    date: string;
+    id: number;
+    contractorCompanyId: number;
+    createdAt: string;
+    updatedAt: string;
+    location: string;
+    startTime: string;
+    endTime: string;
+    workerCount: number;
+    createdByUserId: number;
+    companyName?: string | undefined;
+    creatorName?: string | undefined;
+}, {
+    date: string;
+    id: number;
+    contractorCompanyId: number;
+    createdAt: string;
+    updatedAt: string;
+    location: string;
+    startTime: string;
+    endTime: string;
+    workerCount: number;
+    createdByUserId: number;
+    companyName?: string | undefined;
+    creatorName?: string | undefined;
+}>, "many">;
+/**
+ * @summary Vytvořit denní záznam vlastní subdodavatelské firmy
+ */
+export declare const CreateSubcontractorDailyRecordBody: zod.ZodObject<{
+    date: zod.ZodString;
+    location: zod.ZodString;
+    workerCount: zod.ZodNumber;
+    startTime: zod.ZodString;
+    endTime: zod.ZodString;
+}, "strip", zod.ZodTypeAny, {
+    date: string;
+    location: string;
+    startTime: string;
+    endTime: string;
+    workerCount: number;
+}, {
+    date: string;
+    location: string;
+    startTime: string;
+    endTime: string;
+    workerCount: number;
+}>;
+/**
+ * @summary Upravit vlastní denní záznam subdodavatele
+ */
+export declare const UpdateSubcontractorDailyRecordParams: zod.ZodObject<{
+    id: zod.ZodNumber;
+}, "strip", zod.ZodTypeAny, {
+    id: number;
+}, {
+    id: number;
+}>;
+export declare const UpdateSubcontractorDailyRecordBody: zod.ZodObject<{
+    date: zod.ZodString;
+    location: zod.ZodString;
+    workerCount: zod.ZodNumber;
+    startTime: zod.ZodString;
+    endTime: zod.ZodString;
+}, "strip", zod.ZodTypeAny, {
+    date: string;
+    location: string;
+    startTime: string;
+    endTime: string;
+    workerCount: number;
+}, {
+    date: string;
+    location: string;
+    startTime: string;
+    endTime: string;
+    workerCount: number;
+}>;
+export declare const UpdateSubcontractorDailyRecordResponse: zod.ZodObject<{
+    id: zod.ZodNumber;
+    date: zod.ZodString;
+    contractorCompanyId: zod.ZodNumber;
+    companyName: zod.ZodOptional<zod.ZodString>;
+    location: zod.ZodString;
+    workerCount: zod.ZodNumber;
+    startTime: zod.ZodString;
+    endTime: zod.ZodString;
+    createdByUserId: zod.ZodNumber;
+    creatorName: zod.ZodOptional<zod.ZodString>;
+    createdAt: zod.ZodString;
+    updatedAt: zod.ZodString;
+}, "strip", zod.ZodTypeAny, {
+    date: string;
+    id: number;
+    contractorCompanyId: number;
+    createdAt: string;
+    updatedAt: string;
+    location: string;
+    startTime: string;
+    endTime: string;
+    workerCount: number;
+    createdByUserId: number;
+    companyName?: string | undefined;
+    creatorName?: string | undefined;
+}, {
+    date: string;
+    id: number;
+    contractorCompanyId: number;
+    createdAt: string;
+    updatedAt: string;
+    location: string;
+    startTime: string;
+    endTime: string;
+    workerCount: number;
+    createdByUserId: number;
+    companyName?: string | undefined;
+    creatorName?: string | undefined;
 }>;
 //# sourceMappingURL=api.d.ts.map

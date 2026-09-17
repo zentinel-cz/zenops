@@ -24,6 +24,7 @@ export declare const UserRole: {
     readonly user: "user";
     readonly employee: "employee";
     readonly manager: "manager";
+    readonly subcontractor: "subcontractor";
 };
 export interface User {
     id: number;
@@ -32,6 +33,8 @@ export interface User {
     role: UserRole;
     /** @nullable */
     workerId?: number | null;
+    /** @nullable */
+    contractorCompanyId?: number | null;
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
@@ -46,6 +49,7 @@ export declare const CreateUserBodyRole: {
     readonly user: "user";
     readonly employee: "employee";
     readonly manager: "manager";
+    readonly subcontractor: "subcontractor";
 };
 export interface CreateUserBody {
     username: string;
@@ -54,6 +58,8 @@ export interface CreateUserBody {
     role: CreateUserBodyRole;
     /** @nullable */
     workerId?: number | null;
+    /** @nullable */
+    contractorCompanyId?: number | null;
 }
 /**
  * @nullable
@@ -64,6 +70,7 @@ export declare const UpdateUserBodyRole: {
     readonly user: "user";
     readonly employee: "employee";
     readonly manager: "manager";
+    readonly subcontractor: "subcontractor";
 };
 export interface UpdateUserBody {
     /** @nullable */
@@ -72,6 +79,8 @@ export interface UpdateUserBody {
     role?: UpdateUserBodyRole;
     /** @nullable */
     workerId?: number | null;
+    /** @nullable */
+    contractorCompanyId?: number | null;
     /** @nullable */
     isActive?: boolean | null;
     /** @nullable */
@@ -122,6 +131,28 @@ export interface CreateContractorCompanyBody {
     /** @nullable */
     note?: string | null;
     isActive: boolean;
+}
+export interface SubcontractorDailyRecord {
+    id: number;
+    date: string;
+    contractorCompanyId: number;
+    companyName?: string;
+    location: string;
+    workerCount: number;
+    startTime: string;
+    endTime: string;
+    createdByUserId: number;
+    creatorName?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+export interface UpsertSubcontractorDailyRecordBody {
+    date: string;
+    location: string;
+    /** @minimum 1 */
+    workerCount: number;
+    startTime: string;
+    endTime: string;
 }
 export interface Vehicle {
     id: number;
@@ -782,5 +813,11 @@ export type ListAuditLogsParams = {
     action?: string;
     dateFrom?: string;
     dateTo?: string;
+};
+export type ListSubcontractorDailyRecordsParams = {
+    /**
+     * @pattern ^\d{4}-\d{2}$
+     */
+    month?: string;
 };
 //# sourceMappingURL=api.schemas.d.ts.map
