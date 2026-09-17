@@ -9,8 +9,8 @@ type Options = { regions: Option[]; weatherTypes: Option[]; machines: Option[]; 
 type DailyRecord = { id: number; date: string; regionId: number; location: string | null; weatherTypeId: number | null; temperature: number | null; status: "draft" | "open" | "closed"; createdAt: string; updatedAt: string; creatorName?: string | null; assignmentCount?: number; entryCount?: number };
 type MachineEntry = { machineId: number | ""; accessoryId: number | ""; mthStart: number | ""; mthEnd: number | ""; mthTotal?: number | null; fuelConsumption: number | ""; refueling: number | "" };
 type VehicleEntry = { vehicleId: number | ""; kmStart: number | ""; kmEnd: number | ""; kmTotal?: number | null; refueling: number | "" };
-type EmployeeEntry = { id: number; workerId: number; fullName: string; machineEntries: MachineEntry[]; vehicleEntries: VehicleEntry[]; note: string | null; updatedAt: string };
-type Detail = DailyRecord & { region: Option | null; weather: Option | null; creator: { id: number; fullName: string } | null; assignments: Assignment[]; entries: EmployeeEntry[]; myWorkerId: number | null };
+type WorkerEntry = { id: number; workerId: number; fullName: string; machineEntries: MachineEntry[]; vehicleEntries: VehicleEntry[]; note: string | null; updatedAt: string };
+type Detail = DailyRecord & { region: Option | null; weather: Option | null; creator: { id: number; fullName: string } | null; assignments: Assignment[]; entries: WorkerEntry[]; myWorkerId: number | null };
 
 const panelClass = "rounded-[1.6rem] border border-white/75 bg-white/88 p-5 shadow-[0_18px_45px_rgba(11,36,56,0.09)] backdrop-blur-xl sm:p-6";
 const inputClass = "w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/15";
@@ -187,7 +187,7 @@ export function ManagerDailyWorkflow() {
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">{isAdmin ? "Administrace · Ovečky" : "Vedoucí · Ovečky"}</p>
           <h1 className="mt-1 font-display text-3xl font-bold text-slate-950">{isAdmin ? "Kontrola denních záznamů" : "Denní záznamy týmu"}</h1>
-          <p className="mt-2 text-sm text-slate-500">{isAdmin ? "Měsíční přehled všech vedoucích, kontrola vyplnění a výběrový export do Excelu." : "Připravte místo a podmínky, zaměstnanci následně doplní svou techniku."}</p>
+          <p className="mt-2 text-sm text-slate-500">{isAdmin ? "Měsíční přehled všech vedoucích, kontrola vyplnění a výběrový export do Excelu." : "Připravte místo a podmínky, pracovníci následně doplní svou techniku."}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {!isAdmin && <button type="button" onClick={() => { const next = !showArchive; setShowArchive(next); setDetail(null); setShowCreate(false); void refresh(next); }} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700">
@@ -214,7 +214,7 @@ export function ManagerDailyWorkflow() {
           </div>
           <div className="mt-4 flex flex-wrap gap-2">
             <button type="button" onClick={() => setSelectedIds(selectedVisibleIds.length === visibleRecords.length ? selectedIds.filter((id) => !visibleRecords.some((record) => record.id === id)) : [...new Set([...selectedIds, ...visibleRecords.map((record) => record.id)])])} className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold">{selectedVisibleIds.length === visibleRecords.length && visibleRecords.length ? "Zrušit výběr měsíce" : "Vybrat celý měsíc"}</button>
-            <span className="self-center text-xs text-slate-500">Do Excelu se uloží přehled i samostatný list s výkony jednotlivých zaměstnanců.</span>
+            <span className="self-center text-xs text-slate-500">Do Excelu se uloží přehled i samostatný list s výkony jednotlivých pracovníků.</span>
           </div>
         </section>
       )}
@@ -230,7 +230,7 @@ export function ManagerDailyWorkflow() {
             <div><label className={labelClass}>Teplota °C</label><input type="number" value={form.temperature} onChange={(e) => setForm({ ...form, temperature: e.target.value })} className={inputClass} /></div>
           </div>
           <div className="mt-5">
-            <label className={labelClass}>Zaměstnanci na záznamu *</label>
+            <label className={labelClass}>Pracovníci na záznamu *</label>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {options.workers.map((worker) => {
                 const checked = form.workerIds.includes(worker.id);
@@ -239,7 +239,7 @@ export function ManagerDailyWorkflow() {
             </div>
           </div>
           <div className="mt-5 flex flex-wrap items-center gap-4">
-            <label className="flex items-center gap-2 text-sm font-medium"><input type="radio" checked={form.status === "open"} onChange={() => setForm({ ...form, status: "open" })} /> Ihned otevřít zaměstnancům</label>
+            <label className="flex items-center gap-2 text-sm font-medium"><input type="radio" checked={form.status === "open"} onChange={() => setForm({ ...form, status: "open" })} /> Ihned otevřít pracovníkům</label>
             <label className="flex items-center gap-2 text-sm font-medium"><input type="radio" checked={form.status === "draft"} onChange={() => setForm({ ...form, status: "draft" })} /> Uložit jako rozpracovaný</label>
           </div>
           <button type="submit" className="mt-6 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white">Vytvořit denní záznam</button>
@@ -279,7 +279,7 @@ export function ManagerDailyWorkflow() {
                   const hasEntry = detail.entries.some((entry) => entry.workerId === worker.id);
                   return <label key={worker.id} className={`rounded-xl border p-3 text-sm font-medium ${hasEntry ? "cursor-not-allowed border-emerald-200 bg-emerald-50" : "cursor-pointer border-slate-200 bg-white"}`}><input type="checkbox" checked={checked} disabled={hasEntry} onChange={() => setEditForm((current) => ({ ...current, workerIds: checked ? current.workerIds.filter((id) => id !== worker.id) : [...current.workerIds, worker.id] }))} className="mr-2" />{worker.firstName} {worker.lastName}{hasEntry ? " · zápis uložen" : ""}</label>;
                 })}</div>
-                <p className="mt-2 text-xs text-slate-500">Zaměstnance s uloženým zápisem nelze odebrat, aby nedošlo ke ztrátě dat.</p>
+                <p className="mt-2 text-xs text-slate-500">Pracovníka s uloženým zápisem nelze odebrat, aby nedošlo ke ztrátě dat.</p>
               </div>
               <button type="submit" className="mt-5 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white">Uložit změny</button>
             </form>
@@ -334,7 +334,7 @@ function emptyVehicle(): VehicleEntry {
   return { vehicleId: "", kmStart: "", kmEnd: "", refueling: "" };
 }
 
-export function EmployeeDailyWorkflow({ onBack }: { onBack: () => void }) {
+export function WorkerDailyWorkflow({ onBack }: { onBack: () => void }) {
   const [options, setOptions] = useState<Options | null>(null);
   const [records, setRecords] = useState<DailyRecord[]>([]);
   const [detail, setDetail] = useState<Detail | null>(null);

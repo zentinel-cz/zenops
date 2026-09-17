@@ -160,7 +160,7 @@ export default function ManualMowingForm({ initialData, onSubmit, onCancel, onBa
 
   if (!kind) return (
     <div className="space-y-6"><div className={sectionClass}><p className={sectionTitle}>Ruční sečení</p><h2 className="text-xl font-bold">Vyberte typ denního záznamu</h2><div className="grid md:grid-cols-3 gap-4">
-      <button onClick={() => selectKind("core")} className="rounded-2xl border-2 border-primary/30 p-5 text-left"><b>Kmenoví zaměstnanci</b><span className="block text-sm text-muted-foreground mt-1">Křovinořezy a směny</span></button>
+      <button onClick={() => selectKind("core")} className="rounded-2xl border-2 border-primary/30 p-5 text-left"><b>Kmenoví pracovníci</b><span className="block text-sm text-muted-foreground mt-1">Křovinořezy a směny</span></button>
       <button onClick={() => selectKind("slope")} className="rounded-2xl border-2 border-primary/30 p-5 text-left"><b>Svahové sekačky</b><span className="block text-sm text-muted-foreground mt-1">MTH, auta a pracovníci</span></button>
       <button onClick={() => selectKind("subcontractor")} className="rounded-2xl border-2 border-primary/30 p-5 text-left"><b>Subdodavatel</b><span className="block text-sm text-muted-foreground mt-1">Křovinořezy, firmy a jejich pracovníci</span></button>
     </div></div><div className="flex gap-3"><button onClick={onBack ?? onCancel} className="px-5 py-3 rounded-xl border border-border">Zpět</button><button onClick={onCancel} className="px-5 py-3 rounded-xl bg-secondary">Zrušit</button></div></div>
@@ -168,7 +168,7 @@ export default function ManualMowingForm({ initialData, onSubmit, onCancel, onBa
 
   return <form onSubmit={handleSubmit} className="space-y-6">
     {error && <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-3 text-destructive">{error}</div>}
-    <div className={sectionClass}><div className="flex justify-between gap-3"><div><p className={sectionTitle}>Ruční sečení</p><h2 className="text-xl font-bold">{kind === "core" ? "Kmenoví zaměstnanci – křovinořezy" : kind === "slope" ? "Svahové sekačky" : "Křovinořezy subdodavatele"}</h2></div>{!initialData?.date && <button type="button" onClick={() => selectKind("")} className="text-primary">Změnit variantu</button>}</div></div>
+    <div className={sectionClass}><div className="flex justify-between gap-3"><div><p className={sectionTitle}>Ruční sečení</p><h2 className="text-xl font-bold">{kind === "core" ? "Kmenoví pracovníci – křovinořezy" : kind === "slope" ? "Svahové sekačky" : "Křovinořezy subdodavatele"}</h2></div>{!initialData?.date && <button type="button" onClick={() => selectKind("")} className="text-primary">Změnit variantu</button>}</div></div>
 
     {kind === "subcontractor" && <div className={sectionClass}><p className={sectionTitle}>Subdodavatelská firma</p><label className={labelClass}>Firma *</label><select value={contractorCompanyId || ""} onChange={(e) => { setContractorCompanyId(Number(e.target.value)); setWorkerEntries([]); defaultsApplied.current = false; }} className={inputClass}><option value="">-- Vyberte firmu --</option>{activeContractorCompanies.map((company) => <option key={company.id} value={company.id}>{company.name}{company.companyId ? ` (IČO ${company.companyId})` : ""}</option>)}</select>{!activeContractorCompanies.length && <p className="mt-2 text-sm text-muted-foreground">Nejdřív vytvořte firmu a její pracovníky v Číselnících.</p>}</div>}
 

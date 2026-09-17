@@ -335,7 +335,7 @@ export async function exportMowingPdf(record: {
     ["Typ práce", getOptionLabel(MOWING_WORK_TYPE_OPTIONS, record.workType) ?? "—"],
     ["Sekce", getOptionLabel(MOWING_SECTION_OPTIONS, record.mowingSection) ?? "—"],
     ["Druh sečení", getOptionLabel(MOWING_KIND_OPTIONS, record.mowingKind) ?? "—"],
-    ["Varianta ručního sečení", record.manualMowingKind === "core" ? "Kmenoví zaměstnanci – křovinořezy" : record.manualMowingKind === "slope" ? "Svahové sekačky" : record.manualMowingKind === "subcontractor" ? "Subdodavatel" : "—"],
+    ["Varianta ručního sečení", record.manualMowingKind === "core" ? "Kmenoví pracovníci – křovinořezy" : record.manualMowingKind === "slope" ? "Svahové sekačky" : record.manualMowingKind === "subcontractor" ? "Subdodavatel" : "—"],
     ["Subdodavatelská firma", record.contractorCompany ? `${record.contractorCompany.name}${record.contractorCompany.companyId ? ` (IČO ${record.contractorCompany.companyId})` : ""}` : "—"],
     ["Datum", formatDate(record.date)],
     ["Kraj / Revír", record.region.name],

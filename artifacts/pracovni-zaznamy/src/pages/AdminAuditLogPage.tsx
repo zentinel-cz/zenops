@@ -11,6 +11,8 @@ const TABLE_LABELS: Record<string, string> = {
   accessories: "Příslušenství",
   regions: "Revíry",
   weather_types: "Počasí",
+  team_daily_records: "Denní záznamy Ovečky",
+  team_daily_entries: "Zápisy pracovníků Ovečky",
 };
 
 const ACTION_LABELS: Record<string, string> = {
@@ -33,6 +35,28 @@ function formatDateTime(iso: string) {
   const hours = String(d.getHours()).padStart(2, "0");
   const minutes = String(d.getMinutes()).padStart(2, "0");
   return `${day}/${month}/${year} ${hours}:${minutes}`;
+}
+
+function formatAuditText(value: string) {
+  return value
+    .replaceAll("Zaměstnance", "Pracovníka")
+    .replaceAll("zaměstnance", "pracovníka")
+    .replaceAll("Zaměstnanecký", "Pracovní")
+    .replaceAll("zaměstnanecký", "pracovní")
+    .replaceAll("Zaměstnanci", "Pracovníci")
+    .replaceAll("zaměstnanci", "pracovníci")
+    .replaceAll("Zaměstnanec", "Pracovník")
+    .replaceAll("zaměstnanec", "pracovník")
+    .replaceAll("zaměstnanců", "pracovníků")
+    .replaceAll("zaměstnancům", "pracovníkům");
+}
+
+function formatAuditData(value: unknown, key?: string): unknown {
+  if (key === "role" && value === "employee") return "Pracovník";
+  if (typeof value === "string") return formatAuditText(value);
+  if (Array.isArray(value)) return value.map((item) => formatAuditData(item));
+  if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([nestedKey, nestedValue]) => [nestedKey, formatAuditData(nestedValue, nestedKey)]));
+  return value;
 }
 
 export default function AdminAuditLogPage() {
@@ -158,7 +182,7 @@ export default function AdminAuditLogPage() {
                           {log.recordId != null ? ` #${log.recordId}` : ""}
                         </span>
                         {" — "}
-                        {log.description}
+                        {formatAuditText(log.description)}
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5">
                         {log.userFullName ?? log.userUsername ?? `uid:${log.userId}`}
@@ -181,7 +205,7 @@ export default function AdminAuditLogPage() {
                       <div>
                         <p className="text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">Před</p>
                         <pre className="text-xs bg-red-50 border border-red-200 rounded-lg p-3 overflow-auto max-h-48 whitespace-pre-wrap break-words text-red-900">
-                          {JSON.stringify(log.oldData, null, 2)}
+                          {JSON.stringify(formatAuditData(log.oldData), null, 2)}
                         </pre>
                       </div>
                     )}
@@ -189,7 +213,7 @@ export default function AdminAuditLogPage() {
                       <div>
                         <p className="text-xs font-semibold text-muted-foreground mb-1.5 uppercase tracking-wide">Po</p>
                         <pre className="text-xs bg-green-50 border border-green-200 rounded-lg p-3 overflow-auto max-h-48 whitespace-pre-wrap break-words text-green-900">
-                          {JSON.stringify(log.newData, null, 2)}
+                          {JSON.stringify(formatAuditData(log.newData), null, 2)}
                         </pre>
                       </div>
                     )}

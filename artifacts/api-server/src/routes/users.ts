@@ -26,6 +26,10 @@ function splitFullName(fullName: string): { firstName: string; lastName: string 
   };
 }
 
+function roleDisplayName(role: string): string {
+  return role === "employee" ? "Pracovník" : role === "manager" ? "Vedoucí" : role === "admin" ? "Admin" : "Uživatel";
+}
+
 router.get("/users", requireAdmin, async (_req, res): Promise<void> => {
   const users = await db
     .select(userFields)
@@ -91,7 +95,7 @@ router.post("/users", requireAdmin, async (req, res): Promise<void> => {
     action: "create",
     tableName: "users",
     recordId: user.id,
-    description: `Vytvořen uživatel ${user.fullName} (${user.username}), role: ${user.role}`,
+    description: `Vytvořen uživatel ${user.fullName} (${user.username}), role: ${roleDisplayName(user.role)}`,
     newData: { username: user.username, fullName: user.fullName, role: user.role },
   });
 

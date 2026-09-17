@@ -125,7 +125,7 @@ export default function AdminUsersPage() {
     await invalidate();
   };
 
-  const roleLabel = (role: string) => role === "admin" ? "Admin" : role === "manager" ? "Vedoucí" : role === "employee" ? "Zaměstnanec" : "Uživatel";
+  const roleLabel = (role: string) => role === "admin" ? "Admin" : role === "manager" ? "Vedoucí" : role === "employee" ? "Pracovník" : "Uživatel";
   const roleBadgeClass = (role: string) =>
     role === "admin"
       ? "bg-primary/10 text-primary border border-primary/20"
@@ -188,13 +188,13 @@ export default function AdminUsersPage() {
             <div>
               <label className={labelClass}>Role *</label>
               <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as UserForm["role"], workerId: ["employee", "manager"].includes(e.target.value) ? form.workerId : null })} className={inputClass}>
-                <option value="employee">Zaměstnanec</option>
+                <option value="employee">Pracovník</option>
                 <option value="manager">Vedoucí</option>
                 <option value="user">Provozní uživatel</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
-            {["employee", "manager"].includes(form.role) && <div className="sm:col-span-2"><label className={labelClass}>Zaměstnanec / pracovní profil</label><select value={form.workerId ?? ""} onChange={(e) => { const workerId = e.target.value ? Number(e.target.value) : null; const worker = workers?.find((item) => item.id === workerId); setForm({ ...form, workerId, fullName: worker ? `${worker.firstName} ${worker.lastName}` : form.fullName }); }} className={inputClass}><option value="">Vytvořit automaticky z celého jména</option>{availableWorkers.map((worker) => <option key={worker.id} value={worker.id}>Propojit existujícího: {worker.firstName} {worker.lastName}</option>)}</select><p className="mt-1 text-xs text-muted-foreground">Nový zaměstnanec se automaticky uloží také mezi pracovníky a ihned bude dostupný v denních záznamech.</p></div>}
+            {["employee", "manager"].includes(form.role) && <div className="sm:col-span-2"><label className={labelClass}>Pracovní profil</label><select value={form.workerId ?? ""} onChange={(e) => { const workerId = e.target.value ? Number(e.target.value) : null; const worker = workers?.find((item) => item.id === workerId); setForm({ ...form, workerId, fullName: worker ? `${worker.firstName} ${worker.lastName}` : form.fullName }); }} className={inputClass}><option value="">Vytvořit automaticky z celého jména</option>{availableWorkers.map((worker) => <option key={worker.id} value={worker.id}>Propojit existujícího: {worker.firstName} {worker.lastName}</option>)}</select><p className="mt-1 text-xs text-muted-foreground">Nový účet role Pracovník se automaticky uloží také mezi pracovní profily a ihned bude dostupný v denních záznamech.</p></div>}
             <div className="sm:col-span-2 flex items-center gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} className="rounded" />
@@ -274,13 +274,13 @@ export default function AdminUsersPage() {
             <div>
               <label className={labelClass}>Role</label>
               <select value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value as UserForm["role"], workerId: ["employee", "manager"].includes(e.target.value) ? editForm.workerId : null })} className={inputClass}>
-                <option value="employee">Zaměstnanec</option>
+                <option value="employee">Pracovník</option>
                 <option value="manager">Vedoucí</option>
                 <option value="user">Provozní uživatel</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
-            {["employee", "manager"].includes(editForm.role) && <div><label className={labelClass}>Zaměstnanec / pracovní profil</label><select value={editForm.workerId ?? ""} onChange={(e) => { const workerId = e.target.value ? Number(e.target.value) : null; const worker = workers?.find((item) => item.id === workerId); setEditForm({ ...editForm, workerId, fullName: worker ? `${worker.firstName} ${worker.lastName}` : editForm.fullName }); }} className={inputClass}><option value="">Vytvořit automaticky z celého jména</option>{availableWorkers.map((worker) => <option key={worker.id} value={worker.id}>Propojit existujícího: {worker.firstName} {worker.lastName}</option>)}</select></div>}
+            {["employee", "manager"].includes(editForm.role) && <div><label className={labelClass}>Pracovní profil</label><select value={editForm.workerId ?? ""} onChange={(e) => { const workerId = e.target.value ? Number(e.target.value) : null; const worker = workers?.find((item) => item.id === workerId); setEditForm({ ...editForm, workerId, fullName: worker ? `${worker.firstName} ${worker.lastName}` : editForm.fullName }); }} className={inputClass}><option value="">Vytvořit automaticky z celého jména</option>{availableWorkers.map((worker) => <option key={worker.id} value={worker.id}>Propojit existujícího: {worker.firstName} {worker.lastName}</option>)}</select></div>}
             <div>
               <label className={labelClass}>Nové heslo (nechat prázdné = beze změny)</label>
               <input

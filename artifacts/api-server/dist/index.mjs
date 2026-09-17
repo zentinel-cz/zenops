@@ -55507,6 +55507,9 @@ function splitFullName(fullName) {
     lastName: parts.slice(1).join(" ") || "\u2014"
   };
 }
+function roleDisplayName(role) {
+  return role === "employee" ? "Pracovn\xEDk" : role === "manager" ? "Vedouc\xED" : role === "admin" ? "Admin" : "U\u017Eivatel";
+}
 router3.get("/users", requireAdmin, async (_req, res) => {
   const users = await db.select(userFields).from(usersTable).where(isNull(usersTable.deletedAt)).orderBy(usersTable.fullName);
   res.json(users);
@@ -55559,7 +55562,7 @@ router3.post("/users", requireAdmin, async (req, res) => {
     action: "create",
     tableName: "users",
     recordId: user.id,
-    description: `Vytvo\u0159en u\u017Eivatel ${user.fullName} (${user.username}), role: ${user.role}`,
+    description: `Vytvo\u0159en u\u017Eivatel ${user.fullName} (${user.username}), role: ${roleDisplayName(user.role)}`,
     newData: { username: user.username, fullName: user.fullName, role: user.role }
   });
   res.status(201).json(user);
@@ -56772,7 +56775,7 @@ router7.post("/mowing-records", requireOperationsAccess, async (req, res) => {
       return;
     }
     if (manualMowingKind === "core" && nextManualWorkerIds.length === 0) {
-      res.status(400).json({ error: "Vyberte alespo\u0148 jednoho kmenov\xE9ho zam\u011Bstnance" });
+      res.status(400).json({ error: "Vyberte alespo\u0148 jednoho kmenov\xE9ho pracovn\xEDka" });
       return;
     }
     if (manualMowingKind === "slope") {
@@ -57011,7 +57014,7 @@ router7.patch("/mowing-records/:id", requireOperationsAccess, async (req, res) =
       return;
     }
     if (nextManualMowingKind === "core" && nextManualWorkerIds.length === 0) {
-      res.status(400).json({ error: "Vyberte alespo\u0148 jednoho kmenov\xE9ho zam\u011Bstnance" });
+      res.status(400).json({ error: "Vyberte alespo\u0148 jednoho kmenov\xE9ho pracovn\xEDka" });
       return;
     }
     if (nextManualMowingKind === "slope") {
@@ -57415,7 +57418,7 @@ router10.post("/team-daily-records", requireAuth, requireRole(["manager", "admin
   const { date: date6, regionId, location, weatherTypeId, temperature, workerIds, status } = req.body;
   const uniqueWorkerIds = [...new Set((workerIds ?? []).map(Number).filter(Number.isInteger))];
   if (!date6 || !Number.isInteger(Number(regionId)) || uniqueWorkerIds.length === 0) {
-    res.status(400).json({ error: "Datum, rev\xEDr a alespo\u0148 jeden zam\u011Bstnanec jsou povinn\xE9" });
+    res.status(400).json({ error: "Datum, rev\xEDr a alespo\u0148 jeden pracovn\xEDk jsou povinn\xE9" });
     return;
   }
   if (!["draft", "open"].includes(status ?? "open")) {
@@ -57424,7 +57427,7 @@ router10.post("/team-daily-records", requireAuth, requireRole(["manager", "admin
   }
   const validWorkers = await db.select({ id: workersTable.id }).from(workersTable).innerJoin(usersTable, and(eq(usersTable.workerId, workersTable.id), eq(usersTable.role, "employee"), eq(usersTable.isActive, true), isNull(usersTable.deletedAt))).where(and(inArray(workersTable.id, uniqueWorkerIds), eq(workersTable.isActive, true), isNull(workersTable.deletedAt), isNull(workersTable.contractorCompanyId)));
   if (validWorkers.length !== uniqueWorkerIds.length) {
-    res.status(400).json({ error: "N\u011Bkter\xFD zam\u011Bstnanec nen\xED aktivn\xED nebo nem\xE1 zam\u011Bstnaneck\xFD \xFA\u010Det" });
+    res.status(400).json({ error: "N\u011Bkter\xFD pracovn\xEDk nen\xED aktivn\xED nebo nem\xE1 \xFA\u010Det s rol\xED Pracovn\xEDk" });
     return;
   }
   const record2 = await db.transaction(async (tx) => {
@@ -57441,7 +57444,7 @@ router10.post("/team-daily-records", requireAuth, requireRole(["manager", "admin
     await tx.insert(teamDailyAssignmentsTable).values(uniqueWorkerIds.map((workerId) => ({ dailyRecordId: created.id, workerId })));
     return created;
   });
-  await logAudit({ userId: session2.userId, action: "create", tableName: "team_daily_records", recordId: record2.id, description: `Vedouc\xED vytvo\u0159il denn\xED z\xE1znam Ove\u010Dky pro ${uniqueWorkerIds.length} zam\u011Bstnanc\u016F`, newData: { date: date6, regionId, location, weatherTypeId, temperature, workerIds: uniqueWorkerIds, status: record2.status } });
+  await logAudit({ userId: session2.userId, action: "create", tableName: "team_daily_records", recordId: record2.id, description: `Vedouc\xED vytvo\u0159il denn\xED z\xE1znam Ove\u010Dky pro ${uniqueWorkerIds.length} pracovn\xEDk\u016F`, newData: { date: date6, regionId, location, weatherTypeId, temperature, workerIds: uniqueWorkerIds, status: record2.status } });
   res.status(201).json(record2);
 });
 router10.get("/team-daily-records/:id", requireAuth, requireRole(["manager", "employee", "admin"]), async (req, res) => {
@@ -57473,7 +57476,7 @@ router10.put("/team-daily-records/:id", requireAuth, requireRole(["manager", "ad
   const { date: date6, regionId, location, weatherTypeId, temperature, workerIds } = req.body;
   const uniqueWorkerIds = [...new Set((workerIds ?? []).map(Number).filter(Number.isInteger))];
   if (!date6 || !Number.isInteger(Number(regionId)) || uniqueWorkerIds.length === 0) {
-    res.status(400).json({ error: "Datum, rev\xEDr a alespo\u0148 jeden zam\u011Bstnanec jsou povinn\xE9" });
+    res.status(400).json({ error: "Datum, rev\xEDr a alespo\u0148 jeden pracovn\xEDk jsou povinn\xE9" });
     return;
   }
   const [region, validWorkers, currentAssignments, submittedEntries] = await Promise.all([
@@ -57487,7 +57490,7 @@ router10.put("/team-daily-records/:id", requireAuth, requireRole(["manager", "ad
     return;
   }
   if (validWorkers.length !== uniqueWorkerIds.length) {
-    res.status(400).json({ error: "N\u011Bkter\xFD zam\u011Bstnanec nen\xED aktivn\xED nebo nem\xE1 zam\u011Bstnaneck\xFD \xFA\u010Det" });
+    res.status(400).json({ error: "N\u011Bkter\xFD pracovn\xEDk nen\xED aktivn\xED nebo nem\xE1 \xFA\u010Det s rol\xED Pracovn\xEDk" });
     return;
   }
   const currentWorkerIds = currentAssignments.map(({ workerId }) => workerId);
@@ -57495,7 +57498,7 @@ router10.put("/team-daily-records/:id", requireAuth, requireRole(["manager", "ad
   const addedWorkerIds = uniqueWorkerIds.filter((workerId) => !currentWorkerIds.includes(workerId));
   const submittedWorkerIds = new Set(submittedEntries.map(({ workerId }) => workerId));
   if (removedWorkerIds.some((workerId) => submittedWorkerIds.has(workerId))) {
-    res.status(409).json({ error: "Nelze odebrat zam\u011Bstnance, kter\xFD u\u017E ulo\u017Eil sv\u016Fj z\xE1pis. Jeho data z\u016Fst\xE1vaj\xED chr\xE1n\u011Bn\xE1." });
+    res.status(409).json({ error: "Nelze odebrat pracovn\xEDka, kter\xFD u\u017E ulo\u017Eil sv\u016Fj z\xE1pis. Jeho data z\u016Fst\xE1vaj\xED chr\xE1n\u011Bn\xE1." });
     return;
   }
   const updated = await db.transaction(async (tx) => {
@@ -57520,7 +57523,7 @@ router10.put("/team-daily-records/:id", requireAuth, requireRole(["manager", "ad
     action: "update",
     tableName: "team_daily_records",
     recordId: id,
-    description: `Upraven denn\xED z\xE1znam Ove\u010Dky; viditelnost pro ${uniqueWorkerIds.length} zam\u011Bstnanc\u016F`,
+    description: `Upraven denn\xED z\xE1znam Ove\u010Dky; viditelnost pro ${uniqueWorkerIds.length} pracovn\xEDk\u016F`,
     oldData: { date: access.record.date, regionId: access.record.regionId, location: access.record.location, weatherTypeId: access.record.weatherTypeId, temperature: access.record.temperature, workerIds: currentWorkerIds },
     newData: { date: date6, regionId: Number(regionId), location: location?.trim() || null, weatherTypeId: weatherTypeId ? Number(weatherTypeId) : null, temperature: optionalNumber(temperature), workerIds: uniqueWorkerIds }
   });
@@ -57619,7 +57622,7 @@ router10.put("/team-daily-records/:id/my-entry", requireAuth, requireRole(["empl
     target: [teamDailyEntriesTable.dailyRecordId, teamDailyEntriesTable.workerId],
     set: { userId: session2.userId, machineEntries, vehicleEntries, note: typeof req.body?.note === "string" ? req.body.note.trim() || null : null, submittedAt: /* @__PURE__ */ new Date(), updatedAt: /* @__PURE__ */ new Date() }
   }).returning();
-  await logAudit({ userId: session2.userId, action: "update", tableName: "team_daily_entries", recordId: entry.id, description: `Zam\u011Bstnanec ulo\u017Eil sv\u016Fj z\xE1pis k denn\xEDmu z\xE1znamu #${id}`, newData: { workerId: access.workerId, machineCount: machineEntries.length, vehicleCount: vehicleEntries.length } });
+  await logAudit({ userId: session2.userId, action: "update", tableName: "team_daily_entries", recordId: entry.id, description: `Pracovn\xEDk ulo\u017Eil sv\u016Fj z\xE1pis k denn\xEDmu z\xE1znamu #${id}`, newData: { workerId: access.workerId, machineCount: machineEntries.length, vehicleCount: vehicleEntries.length } });
   res.json(entry);
 });
 var teamDailyRecords_default = router10;

@@ -319,7 +319,7 @@ router.post("/mowing-records", requireOperationsAccess, async (req, res): Promis
   }
   if (mowingKind === "rucni") {
     if (session.userRole !== "admin") { res.status(403).json({ error: "Ruční sečení může evidovat pouze administrátor" }); return; }
-    if (manualMowingKind === "core" && nextManualWorkerIds.length === 0) { res.status(400).json({ error: "Vyberte alespoň jednoho kmenového zaměstnance" }); return; }
+    if (manualMowingKind === "core" && nextManualWorkerIds.length === 0) { res.status(400).json({ error: "Vyberte alespoň jednoho kmenového pracovníka" }); return; }
     if (manualMowingKind === "slope") {
       if (normalizedMachineMthEntries.length === 0) { res.status(400).json({ error: "Přidejte alespoň jednu svahovou sekačku" }); return; }
       if (normalizedMachineMthEntries.some((entry) => entry.mthStart == null || entry.mthEnd == null || entry.mthEnd < entry.mthStart)) { res.status(400).json({ error: "U každé svahové sekačky vyplňte platné motohodiny" }); return; }
@@ -570,7 +570,7 @@ router.patch("/mowing-records/:id", requireOperationsAccess, async (req, res): P
   }
   if (nextMowingKind === "rucni") {
     if (session.userRole !== "admin") { res.status(403).json({ error: "Ruční sečení může evidovat pouze administrátor" }); return; }
-    if (nextManualMowingKind === "core" && nextManualWorkerIds.length === 0) { res.status(400).json({ error: "Vyberte alespoň jednoho kmenového zaměstnance" }); return; }
+    if (nextManualMowingKind === "core" && nextManualWorkerIds.length === 0) { res.status(400).json({ error: "Vyberte alespoň jednoho kmenového pracovníka" }); return; }
     if (nextManualMowingKind === "slope") {
       if (normalizedMachineMthEntries.length === 0) { res.status(400).json({ error: "Přidejte alespoň jednu svahovou sekačku" }); return; }
       if (normalizedMachineMthEntries.some((entry) => entry.mthStart == null || entry.mthEnd == null || entry.mthEnd < entry.mthStart)) { res.status(400).json({ error: "U každé svahové sekačky vyplňte platné motohodiny" }); return; }

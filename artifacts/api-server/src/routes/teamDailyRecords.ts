@@ -144,7 +144,7 @@ router.post("/team-daily-records", requireAuth, requireRole(["manager", "admin"]
   };
   const uniqueWorkerIds = [...new Set((workerIds ?? []).map(Number).filter(Number.isInteger))];
   if (!date || !Number.isInteger(Number(regionId)) || uniqueWorkerIds.length === 0) {
-    res.status(400).json({ error: "Datum, revír a alespoň jeden zaměstnanec jsou povinné" });
+    res.status(400).json({ error: "Datum, revír a alespoň jeden pracovník jsou povinné" });
     return;
   }
   if (!['draft', 'open'].includes(status ?? 'open')) { res.status(400).json({ error: "Neplatný stav záznamu" }); return; }
@@ -154,7 +154,7 @@ router.post("/team-daily-records", requireAuth, requireRole(["manager", "admin"]
     .from(workersTable)
     .innerJoin(usersTable, and(eq(usersTable.workerId, workersTable.id), eq(usersTable.role, "employee"), eq(usersTable.isActive, true), isNull(usersTable.deletedAt)))
     .where(and(inArray(workersTable.id, uniqueWorkerIds), eq(workersTable.isActive, true), isNull(workersTable.deletedAt), isNull(workersTable.contractorCompanyId)));
-  if (validWorkers.length !== uniqueWorkerIds.length) { res.status(400).json({ error: "Některý zaměstnanec není aktivní nebo nemá zaměstnanecký účet" }); return; }
+  if (validWorkers.length !== uniqueWorkerIds.length) { res.status(400).json({ error: "Některý pracovník není aktivní nebo nemá účet s rolí Pracovník" }); return; }
 
   const record = await db.transaction(async (tx) => {
     const [created] = await tx.insert(teamDailyRecordsTable).values({
@@ -171,7 +171,7 @@ router.post("/team-daily-records", requireAuth, requireRole(["manager", "admin"]
     return created;
   });
 
-  await logAudit({ userId: session.userId, action: "create", tableName: "team_daily_records", recordId: record.id, description: `Vedoucí vytvořil denní záznam Ovečky pro ${uniqueWorkerIds.length} zaměstnanců`, newData: { date, regionId, location, weatherTypeId, temperature, workerIds: uniqueWorkerIds, status: record.status } });
+  await logAudit({ userId: session.userId, action: "create", tableName: "team_daily_records", recordId: record.id, description: `Vedoucí vytvořil denní záznam Ovečky pro ${uniqueWorkerIds.length} pracovníků`, newData: { date, regionId, location, weatherTypeId, temperature, workerIds: uniqueWorkerIds, status: record.status } });
   res.status(201).json(record);
 });
 
@@ -204,7 +204,7 @@ router.put("/team-daily-records/:id", requireAuth, requireRole(["manager", "admi
   };
   const uniqueWorkerIds = [...new Set((workerIds ?? []).map(Number).filter(Number.isInteger))];
   if (!date || !Number.isInteger(Number(regionId)) || uniqueWorkerIds.length === 0) {
-    res.status(400).json({ error: "Datum, revír a alespoň jeden zaměstnanec jsou povinné" });
+    res.status(400).json({ error: "Datum, revír a alespoň jeden pracovník jsou povinné" });
     return;
   }
 
@@ -217,14 +217,14 @@ router.put("/team-daily-records/:id", requireAuth, requireRole(["manager", "admi
     db.select({ workerId: teamDailyEntriesTable.workerId }).from(teamDailyEntriesTable).where(eq(teamDailyEntriesTable.dailyRecordId, id)),
   ]);
   if (!region[0]) { res.status(400).json({ error: "Vybraný revír není aktivní" }); return; }
-  if (validWorkers.length !== uniqueWorkerIds.length) { res.status(400).json({ error: "Některý zaměstnanec není aktivní nebo nemá zaměstnanecký účet" }); return; }
+  if (validWorkers.length !== uniqueWorkerIds.length) { res.status(400).json({ error: "Některý pracovník není aktivní nebo nemá účet s rolí Pracovník" }); return; }
 
   const currentWorkerIds = currentAssignments.map(({ workerId }) => workerId);
   const removedWorkerIds = currentWorkerIds.filter((workerId) => !uniqueWorkerIds.includes(workerId));
   const addedWorkerIds = uniqueWorkerIds.filter((workerId) => !currentWorkerIds.includes(workerId));
   const submittedWorkerIds = new Set(submittedEntries.map(({ workerId }) => workerId));
   if (removedWorkerIds.some((workerId) => submittedWorkerIds.has(workerId))) {
-    res.status(409).json({ error: "Nelze odebrat zaměstnance, který už uložil svůj zápis. Jeho data zůstávají chráněná." });
+    res.status(409).json({ error: "Nelze odebrat pracovníka, který už uložil svůj zápis. Jeho data zůstávají chráněná." });
     return;
   }
 
@@ -251,7 +251,7 @@ router.put("/team-daily-records/:id", requireAuth, requireRole(["manager", "admi
     action: "update",
     tableName: "team_daily_records",
     recordId: id,
-    description: `Upraven denní záznam Ovečky; viditelnost pro ${uniqueWorkerIds.length} zaměstnanců`,
+    description: `Upraven denní záznam Ovečky; viditelnost pro ${uniqueWorkerIds.length} pracovníků`,
     oldData: { date: access.record.date, regionId: access.record.regionId, location: access.record.location, weatherTypeId: access.record.weatherTypeId, temperature: access.record.temperature, workerIds: currentWorkerIds },
     newData: { date, regionId: Number(regionId), location: location?.trim() || null, weatherTypeId: weatherTypeId ? Number(weatherTypeId) : null, temperature: optionalNumber(temperature), workerIds: uniqueWorkerIds },
   });
@@ -335,7 +335,7 @@ router.put("/team-daily-records/:id/my-entry", requireAuth, requireRole(["employ
     set: { userId: session.userId, machineEntries, vehicleEntries, note: typeof req.body?.note === "string" ? req.body.note.trim() || null : null, submittedAt: new Date(), updatedAt: new Date() },
   }).returning();
 
-  await logAudit({ userId: session.userId, action: "update", tableName: "team_daily_entries", recordId: entry.id, description: `Zaměstnanec uložil svůj zápis k dennímu záznamu #${id}`, newData: { workerId: access.workerId, machineCount: machineEntries.length, vehicleCount: vehicleEntries.length } });
+  await logAudit({ userId: session.userId, action: "update", tableName: "team_daily_entries", recordId: entry.id, description: `Pracovník uložil svůj zápis k dennímu záznamu #${id}`, newData: { workerId: access.workerId, machineCount: machineEntries.length, vehicleCount: vehicleEntries.length } });
   res.json(entry);
 });
 

@@ -184,7 +184,7 @@ export default function MowingDetailPage() {
         <Row label="Typ práce" value={getOptionLabel(MOWING_WORK_TYPE_OPTIONS, record.workType)} />
         <Row label="Sekce" value={getOptionLabel(MOWING_SECTION_OPTIONS, record.mowingSection)} />
         <Row label="Druh sečení" value={getOptionLabel(MOWING_KIND_OPTIONS, record.mowingKind)} />
-        {record.mowingKind === "rucni" && <Row label="Varianta ručního sečení" value={record.manualMowingKind === "core" ? "Kmenoví zaměstnanci – křovinořezy" : record.manualMowingKind === "slope" ? "Svahové sekačky" : record.manualMowingKind === "subcontractor" ? "Subdodavatel" : null} />}
+        {record.mowingKind === "rucni" && <Row label="Varianta ručního sečení" value={record.manualMowingKind === "core" ? "Kmenoví pracovníci – křovinořezy" : record.manualMowingKind === "slope" ? "Svahové sekačky" : record.manualMowingKind === "subcontractor" ? "Subdodavatel" : null} />}
         {record.manualMowingKind === "subcontractor" && <Row label="Subdodavatelská firma" value={record.contractorCompany?.name} />}
         <Row label="Datum" value={formatDate(record.date)} />
         <Row label="Kraj / Revír" value={record.region.name} />

@@ -1,11 +1,11 @@
 import { useState, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { EmployeeDailyWorkflow, ManagerDailyWorkflow } from "@/components/TeamDailyWorkflow";
+import { WorkerDailyWorkflow, ManagerDailyWorkflow } from "@/components/TeamDailyWorkflow";
 
-type EmployeeSection = "sheep" | "core" | "subcontractor";
+type WorkerSection = "sheep" | "core" | "subcontractor";
 
 const sections: Array<{
-  id: EmployeeSection;
+  id: WorkerSection;
   title: string;
   subtitle: string;
   icon: ReactNode;
@@ -21,7 +21,7 @@ const sections: Array<{
   {
     id: "core",
     title: "Křováci – Kmenoví",
-    subtitle: "Kmenoví zaměstnanci",
+    subtitle: "Kmenoví pracovníci",
     icon: (
       <svg viewBox="0 0 64 64" className="h-12 w-12 text-emerald-800" fill="none" aria-hidden="true">
         <path d="M15 49 46 18" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
@@ -43,14 +43,14 @@ const sections: Array<{
   },
 ];
 
-function BrandHeader({ fullName, role, onLogout }: { fullName?: string; role: "Zaměstnanec" | "Vedoucí"; onLogout: () => void }) {
+function BrandHeader({ fullName, role, onLogout }: { fullName?: string; role: "Pracovník" | "Vedoucí"; onLogout: () => void }) {
   return (
     <header className="flex flex-col gap-4 rounded-[1.7rem] border border-white/70 bg-[linear-gradient(135deg,rgba(15,39,58,0.96),rgba(17,70,98,0.88))] p-5 text-white shadow-[0_20px_55px_rgba(7,24,38,0.24)] sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-3">
         <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-500 text-lg font-black shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]">Z</div>
         <div>
           <p className="font-display text-xl font-bold leading-none">Zenops</p>
-          <p className="mt-1 text-[11px] uppercase tracking-[0.22em] text-cyan-100/65">{role === "Vedoucí" ? "portál vedoucího" : "zaměstnanecký portál"}</p>
+          <p className="mt-1 text-[11px] uppercase tracking-[0.22em] text-cyan-100/65">{role === "Vedoucí" ? "portál vedoucího" : "portál pracovníka"}</p>
         </div>
       </div>
       <div className="flex items-center justify-between gap-4 sm:justify-end">
@@ -68,7 +68,7 @@ function BrandHeader({ fullName, role, onLogout }: { fullName?: string; role: "Z
 
 export default function FutureRolePage() {
   const { user, logout } = useAuth();
-  const [selected, setSelected] = useState<EmployeeSection | null>(null);
+  const [selected, setSelected] = useState<WorkerSection | null>(null);
 
   const isManager = user?.role === "manager";
   const current = sections.find((item) => item.id === selected);
@@ -79,7 +79,7 @@ export default function FutureRolePage() {
       <div className="zenops-orb zenops-orb-ice -right-20 top-20 h-80 w-80 opacity-60" />
 
       <div className="relative mx-auto flex min-h-[calc(100vh-2rem)] w-full max-w-6xl flex-col gap-6 sm:min-h-[calc(100vh-3rem)]">
-        <BrandHeader fullName={user?.fullName} role={isManager ? "Vedoucí" : "Zaměstnanec"} onLogout={() => void logout()} />
+        <BrandHeader fullName={user?.fullName} role={isManager ? "Vedoucí" : "Pracovník"} onLogout={() => void logout()} />
 
         <main className="flex flex-1 items-center justify-center py-4">
           {isManager ? <div className="w-full"><ManagerDailyWorkflow /></div> : !current ? (
@@ -106,7 +106,7 @@ export default function FutureRolePage() {
                 ))}
               </div>
             </section>
-          ) : current.id === "sheep" ? <div className="w-full"><EmployeeDailyWorkflow onBack={() => setSelected(null)} /></div> : (
+          ) : current.id === "sheep" ? <div className="w-full"><WorkerDailyWorkflow onBack={() => setSelected(null)} /></div> : (
             <section className="w-full max-w-2xl rounded-[2rem] border border-white/75 bg-white/88 p-7 text-center shadow-[0_24px_60px_rgba(11,36,56,0.12)] backdrop-blur-xl sm:p-10">
               <span className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl border border-slate-200 bg-slate-50 text-5xl">{current.icon}</span>
               <p className="mt-6 text-xs font-bold uppercase tracking-[0.22em] text-primary">Vybraná sekce</p>

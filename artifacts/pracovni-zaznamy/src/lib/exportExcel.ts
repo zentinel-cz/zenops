@@ -225,7 +225,7 @@ export function exportMowingExcel(
     r.startTime ?? "",
     r.endTime ?? "",
     r.weatherType?.name ?? "",
-    r.manualMowingKind === "core" ? "Kmenoví zaměstnanci – křovinořezy" : r.manualMowingKind === "slope" ? "Svahové sekačky" : r.manualMowingKind === "subcontractor" ? "Subdodavatel" : "",
+    r.manualMowingKind === "core" ? "Kmenoví pracovníci – křovinořezy" : r.manualMowingKind === "slope" ? "Svahové sekačky" : r.manualMowingKind === "subcontractor" ? "Subdodavatel" : "",
     r.contractorCompany ? `${r.contractorCompany.name}${r.contractorCompany.companyId ? ` (IČO ${r.contractorCompany.companyId})` : ""}` : "",
     formatVehicleEntries(r.vehicleEntries),
     r.workers.map((w) => `${w.firstName} ${w.lastName}`).join(", "),
@@ -311,7 +311,7 @@ export function exportTeamDailyExcel(
   summarySheet["!cols"] = [{ wch: 7 }, { wch: 12 }, { wch: 24 }, { wch: 24 }, { wch: 24 }, { wch: 15 }, { wch: 12 }, { wch: 11 }, { wch: 16 }, { wch: 13 }, { wch: 19 }, { wch: 19 }];
   summarySheet["!autofilter"] = { ref: `A1:L${Math.max(1, summaryRows.length + 1)}` };
 
-  const detailHeaders = ["ID záznamu", "Datum", "Revír", "Zaměstnanec", "Stav zápisu", "Stroje a MTH", "Spotřeba (l)", "Tankování strojů (l)", "Auta a km", "Tankování aut (l)", "Poznámka", "Zápis upraven"];
+  const detailHeaders = ["ID záznamu", "Datum", "Revír", "Pracovník", "Stav zápisu", "Stroje a MTH", "Spotřeba (l)", "Tankování strojů (l)", "Auta a km", "Tankování aut (l)", "Poznámka", "Zápis upraven"];
   const detailRows = records.flatMap((record) => record.assignments.map((assignment) => {
     const entry = record.entries.find((item) => item.workerId === assignment.workerId);
     return [
@@ -335,7 +335,7 @@ export function exportTeamDailyExcel(
 
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, summarySheet, "Přehled");
-  XLSX.utils.book_append_sheet(workbook, detailSheet, "Výkony zaměstnanců");
+  XLSX.utils.book_append_sheet(workbook, detailSheet, "Výkony pracovníků");
   const month = records.map((record) => record.date.slice(0, 7)).filter((value, index, all) => all.indexOf(value) === index);
   XLSX.writeFile(workbook, `ovecky-${month.length === 1 ? month[0] : new Date().toISOString().slice(0, 10)}.xlsx`);
 }

@@ -266,7 +266,7 @@ function WorkersTab() {
               <label className={labelClass}>Poznámka</label>
               <input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} className={inputClass} placeholder="Volitelná poznámka" />
             </div>
-            <div className="sm:col-span-2"><label className={labelClass}>Zařazení pracovníka</label><select value={form.contractorCompanyId ?? ""} onChange={(e) => setForm({ ...form, contractorCompanyId: e.target.value ? Number(e.target.value) : null, defaultSubcontractor: false })} className={inputClass}><option value="">Kmenový zaměstnanec</option>{(contractorCompanies ?? []).filter((company) => company.isActive).map((company) => <option key={company.id} value={company.id}>Subdodavatel: {company.name}</option>)}</select></div>
+            <div className="sm:col-span-2"><label className={labelClass}>Zařazení pracovníka</label><select value={form.contractorCompanyId ?? ""} onChange={(e) => setForm({ ...form, contractorCompanyId: e.target.value ? Number(e.target.value) : null, defaultSubcontractor: false })} className={inputClass}><option value="">Kmenový pracovník</option>{(contractorCompanies ?? []).filter((company) => company.isActive).map((company) => <option key={company.id} value={company.id}>Subdodavatel: {company.name}</option>)}</select></div>
             {!form.contractorCompanyId ? <><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.defaultBrushcutter} onChange={(e) => setForm({ ...form, defaultBrushcutter: e.target.checked })} />Výchozí pro křovinořezy</label><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.defaultSlopeMower} onChange={(e) => setForm({ ...form, defaultSlopeMower: e.target.checked })} />Výchozí pro svahové sekačky</label></> : <label className="sm:col-span-2 flex items-center gap-2 text-sm"><input type="checkbox" checked={form.defaultSubcontractor} onChange={(e) => setForm({ ...form, defaultSubcontractor: e.target.checked })} />Výchozí pracovník této firmy</label>}
             <div className="sm:col-span-2 flex gap-2">
               <button type="submit" disabled={createMutation.isPending} className="px-4 py-2 bg-primary text-primary-foreground rounded text-sm font-medium hover:opacity-90 disabled:opacity-60">
@@ -279,7 +279,7 @@ function WorkersTab() {
       )}
 
       <CodebookTable
-        items={workers?.filter((w) => w.isActive !== false).map((w) => ({ id: w.id, name: `${w.firstName} ${w.lastName}`, subtitle: [w.contractorCompanyId ? `Firma: ${contractorCompanies?.find((company) => company.id === w.contractorCompanyId)?.name ?? "neznámá"}` : "Kmenový zaměstnanec", w.note, w.defaultBrushcutter ? "Křovinořezy" : "", w.defaultSlopeMower ? "Svahové sekačky" : "", w.defaultSubcontractor ? "Výchozí pro firmu" : ""].filter(Boolean).join(" • ") || undefined, isActive: w.isActive })) ?? []}
+        items={workers?.filter((w) => w.isActive !== false).map((w) => ({ id: w.id, name: `${w.firstName} ${w.lastName}`, subtitle: [w.contractorCompanyId ? `Firma: ${contractorCompanies?.find((company) => company.id === w.contractorCompanyId)?.name ?? "neznámá"}` : "Kmenový pracovník", w.note, w.defaultBrushcutter ? "Křovinořezy" : "", w.defaultSlopeMower ? "Svahové sekačky" : "", w.defaultSubcontractor ? "Výchozí pro firmu" : ""].filter(Boolean).join(" • ") || undefined, isActive: w.isActive })) ?? []}
         isLoading={isLoading}
         onEdit={openEdit}
         onToggle={async (id, isActive) => { const worker = workers?.find((item) => item.id === id); if (!worker) return; await updateMutation.mutateAsync({ id, data: { firstName: worker.firstName, lastName: worker.lastName, isActive: !isActive } as never }); await invalidate(); }}
@@ -305,7 +305,7 @@ function WorkersTab() {
               <label className={labelClass}>Poznámka</label>
               <input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} className={inputClass} />
             </div>
-            <div><label className={labelClass}>Zařazení pracovníka</label><select value={form.contractorCompanyId ?? ""} onChange={(e) => setForm({ ...form, contractorCompanyId: e.target.value ? Number(e.target.value) : null, defaultSubcontractor: false })} className={inputClass}><option value="">Kmenový zaměstnanec</option>{(contractorCompanies ?? []).filter((company) => company.isActive).map((company) => <option key={company.id} value={company.id}>Subdodavatel: {company.name}</option>)}</select></div>
+            <div><label className={labelClass}>Zařazení pracovníka</label><select value={form.contractorCompanyId ?? ""} onChange={(e) => setForm({ ...form, contractorCompanyId: e.target.value ? Number(e.target.value) : null, defaultSubcontractor: false })} className={inputClass}><option value="">Kmenový pracovník</option>{(contractorCompanies ?? []).filter((company) => company.isActive).map((company) => <option key={company.id} value={company.id}>Subdodavatel: {company.name}</option>)}</select></div>
             <div className="flex items-center gap-2">
               <input type="checkbox" id="worker-active" checked={form.isActive} onChange={(e) => setForm({ ...form, isActive: e.target.checked })} className="rounded" />
               <label htmlFor="worker-active" className="text-sm text-foreground">Aktivní</label>
