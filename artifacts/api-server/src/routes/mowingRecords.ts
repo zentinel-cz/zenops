@@ -45,7 +45,7 @@ function sessionOf(req: unknown): MowingSession {
 function requireMowingAccess(req: Request, res: Response, next: NextFunction): void {
   const session = sessionOf(req);
   if (!session?.userId) { res.status(401).json({ error: "Nepřihlášen" }); return; }
-  if (!session.userRole || !["admin", "manager", "brushcutter"].includes(session.userRole)) {
+  if (session.userRole !== "admin") {
     res.status(403).json({ error: "Tato část aplikace pro vaši roli není zpřístupněna" });
     return;
   }
@@ -93,7 +93,7 @@ function getFallbackMachineMthEntries(record: typeof mowingRecordsTable.$inferSe
   })) satisfies MachineMthEntryPayload[];
 }
 
-async function buildMowingRecord(record: typeof mowingRecordsTable.$inferSelect) {
+export async function buildMowingRecord(record: typeof mowingRecordsTable.$inferSelect) {
   const [user] = await db
     .select({ id: usersTable.id, username: usersTable.username, fullName: usersTable.fullName, role: usersTable.role, isActive: usersTable.isActive, createdAt: usersTable.createdAt, updatedAt: usersTable.updatedAt })
     .from(usersTable)
@@ -178,6 +178,7 @@ async function buildMowingRecord(record: typeof mowingRecordsTable.$inferSelect)
     fuelConsumption: sumMachineValue(resolvedMachineMthEntries, "fuelConsumption") ?? parseDbNumber(record.fuelConsumption),
     refueling: sumMachineValue(resolvedMachineMthEntries, "refueling") ?? parseDbNumber(record.refueling),
     brushcutterRefueling: parseDbNumber(record.brushcutterRefueling),
+    performanceValue: parseDbNumber(record.performanceValue),
     dayHours: parseDbNumber(record.dayHours),
     nightHours: parseDbNumber(record.nightHours),
     laborHours: parseDbNumber(record.laborHours),

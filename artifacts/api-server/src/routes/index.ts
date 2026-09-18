@@ -10,6 +10,7 @@ import dashboardRouter from "./dashboard";
 import auditLogsRouter from "./auditLogs";
 import teamDailyRecordsRouter from "./teamDailyRecords";
 import subcontractorDailyRecordsRouter from "./subcontractorDailyRecords";
+import coreMowingRecordsRouter from "./coreMowingRecords";
 
 const router: IRouter = Router();
 
@@ -24,5 +25,6 @@ router.use(dashboardRouter);
 router.use(auditLogsRouter);
 router.use(teamDailyRecordsRouter);
 router.use(subcontractorDailyRecordsRouter);
+router.use(coreMowingRecordsRouter);
 
 export default router;

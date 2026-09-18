@@ -489,6 +489,73 @@ export interface UpdateFellingRecordBody {
     /** @nullable */
     note?: string | null;
 }
+export type CoreMowingRecordBodyCoreWorkType = (typeof CoreMowingRecordBodyCoreWorkType)[keyof typeof CoreMowingRecordBodyCoreWorkType];
+export declare const CoreMowingRecordBodyCoreWorkType: {
+    readonly vyzinani: "vyzinani";
+    readonly seceni_burene: "seceni_burene";
+    readonly cisteni_porostu: "cisteni_porostu";
+    readonly udrzba_cest: "udrzba_cest";
+    readonly ostatni: "ostatni";
+};
+/**
+ * @nullable
+ */
+export type CoreMowingRecordBodyPerformanceUnit = (typeof CoreMowingRecordBodyPerformanceUnit)[keyof typeof CoreMowingRecordBodyPerformanceUnit] | null;
+export declare const CoreMowingRecordBodyPerformanceUnit: {
+    readonly ha: "ha";
+    readonly m2: "m2";
+    readonly hod: "hod";
+};
+export interface CoreMowingRecordBody {
+    date: string;
+    regionId: number;
+    location: string;
+    startTime: string;
+    endTime: string;
+    /** @minimum 0 */
+    breakMinutes: number;
+    coreWorkType: CoreMowingRecordBodyCoreWorkType;
+    /**
+     * @minimum 0
+     * @nullable
+     */
+    performanceValue?: number | null;
+    /** @nullable */
+    performanceUnit?: CoreMowingRecordBodyPerformanceUnit;
+    /** @nullable */
+    machineId?: number | null;
+    /** @nullable */
+    mthStart?: number | null;
+    /** @nullable */
+    mthEnd?: number | null;
+    /** @nullable */
+    fuelConsumption?: number | null;
+    /** @nullable */
+    brushcutterRefueling?: number | null;
+    /** @nullable */
+    serviceNote?: string | null;
+    vehicleEntries: VehicleEntry[];
+    /** @nullable */
+    note?: string | null;
+}
+export type CoreMowingStatusBodyStatus = (typeof CoreMowingStatusBodyStatus)[keyof typeof CoreMowingStatusBodyStatus];
+export declare const CoreMowingStatusBodyStatus: {
+    readonly draft: "draft";
+    readonly submitted: "submitted";
+    readonly approved: "approved";
+};
+export interface CoreMowingStatusBody {
+    status: CoreMowingStatusBodyStatus;
+}
+/**
+ * @nullable
+ */
+export type MowingRecordCoreStatus = (typeof MowingRecordCoreStatus)[keyof typeof MowingRecordCoreStatus] | null;
+export declare const MowingRecordCoreStatus: {
+    readonly draft: "draft";
+    readonly submitted: "submitted";
+    readonly approved: "approved";
+};
 export interface MowingRecord {
     id: number;
     date: string;
@@ -553,6 +620,24 @@ export interface MowingRecord {
     vehicleRefueling?: number | null;
     /** @nullable */
     brushcutterRefueling?: number | null;
+    /** @nullable */
+    breakMinutes?: number | null;
+    /** @nullable */
+    coreWorkType?: string | null;
+    /** @nullable */
+    performanceValue?: number | null;
+    /** @nullable */
+    performanceUnit?: string | null;
+    /** @nullable */
+    serviceNote?: string | null;
+    /** @nullable */
+    coreStatus?: MowingRecordCoreStatus;
+    /** @nullable */
+    coreSubmittedAt?: string | null;
+    /** @nullable */
+    coreApprovedAt?: string | null;
+    /** @nullable */
+    coreApprovedBy?: number | null;
     /** @nullable */
     trafficMarking?: string | null;
     /** @nullable */

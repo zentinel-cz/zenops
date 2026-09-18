@@ -536,6 +536,89 @@ export interface UpdateFellingRecordBody {
   note?: string | null;
 }
 
+export type CoreMowingRecordBodyCoreWorkType =
+  (typeof CoreMowingRecordBodyCoreWorkType)[keyof typeof CoreMowingRecordBodyCoreWorkType];
+
+export const CoreMowingRecordBodyCoreWorkType = {
+  vyzinani: "vyzinani",
+  seceni_burene: "seceni_burene",
+  cisteni_porostu: "cisteni_porostu",
+  udrzba_cest: "udrzba_cest",
+  ostatni: "ostatni",
+} as const;
+
+/**
+ * @nullable
+ */
+export type CoreMowingRecordBodyPerformanceUnit =
+  | (typeof CoreMowingRecordBodyPerformanceUnit)[keyof typeof CoreMowingRecordBodyPerformanceUnit]
+  | null;
+
+export const CoreMowingRecordBodyPerformanceUnit = {
+  ha: "ha",
+  m2: "m2",
+  hod: "hod",
+} as const;
+
+export interface CoreMowingRecordBody {
+  date: string;
+  regionId: number;
+  location: string;
+  startTime: string;
+  endTime: string;
+  /** @minimum 0 */
+  breakMinutes: number;
+  coreWorkType: CoreMowingRecordBodyCoreWorkType;
+  /**
+   * @minimum 0
+   * @nullable
+   */
+  performanceValue?: number | null;
+  /** @nullable */
+  performanceUnit?: CoreMowingRecordBodyPerformanceUnit;
+  /** @nullable */
+  machineId?: number | null;
+  /** @nullable */
+  mthStart?: number | null;
+  /** @nullable */
+  mthEnd?: number | null;
+  /** @nullable */
+  fuelConsumption?: number | null;
+  /** @nullable */
+  brushcutterRefueling?: number | null;
+  /** @nullable */
+  serviceNote?: string | null;
+  vehicleEntries: VehicleEntry[];
+  /** @nullable */
+  note?: string | null;
+}
+
+export type CoreMowingStatusBodyStatus =
+  (typeof CoreMowingStatusBodyStatus)[keyof typeof CoreMowingStatusBodyStatus];
+
+export const CoreMowingStatusBodyStatus = {
+  draft: "draft",
+  submitted: "submitted",
+  approved: "approved",
+} as const;
+
+export interface CoreMowingStatusBody {
+  status: CoreMowingStatusBodyStatus;
+}
+
+/**
+ * @nullable
+ */
+export type MowingRecordCoreStatus =
+  | (typeof MowingRecordCoreStatus)[keyof typeof MowingRecordCoreStatus]
+  | null;
+
+export const MowingRecordCoreStatus = {
+  draft: "draft",
+  submitted: "submitted",
+  approved: "approved",
+} as const;
+
 export interface MowingRecord {
   id: number;
   date: string;
@@ -600,6 +683,24 @@ export interface MowingRecord {
   vehicleRefueling?: number | null;
   /** @nullable */
   brushcutterRefueling?: number | null;
+  /** @nullable */
+  breakMinutes?: number | null;
+  /** @nullable */
+  coreWorkType?: string | null;
+  /** @nullable */
+  performanceValue?: number | null;
+  /** @nullable */
+  performanceUnit?: string | null;
+  /** @nullable */
+  serviceNote?: string | null;
+  /** @nullable */
+  coreStatus?: MowingRecordCoreStatus;
+  /** @nullable */
+  coreSubmittedAt?: string | null;
+  /** @nullable */
+  coreApprovedAt?: string | null;
+  /** @nullable */
+  coreApprovedBy?: number | null;
   /** @nullable */
   trafficMarking?: string | null;
   /** @nullable */

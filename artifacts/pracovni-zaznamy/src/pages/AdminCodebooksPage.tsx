@@ -517,7 +517,7 @@ function MachinesTab() {
                 <option value="ostatní">Ostatní</option>
               </select>
             </div>
-            <div><label className={labelClass}>Zařazení pro ruční sečení</label><select value={form.mowingCategory} onChange={(e) => setForm({ ...form, mowingCategory: e.target.value })} className={inputClass}><option value="">Běžný stroj</option><option value="slope_mower">Svahová sekačka</option></select></div>
+            <div><label className={labelClass}>Zařazení pro ruční sečení</label><select value={form.mowingCategory} onChange={(e) => setForm({ ...form, mowingCategory: e.target.value })} className={inputClass}><option value="">Běžný stroj</option><option value="slope_mower">Svahová sekačka</option><option value="brushcutter">Křovinořez</option></select></div>
             <div>
               <label className={labelClass}>Poznámka</label>
               <input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} className={inputClass} placeholder="Volitelně" />
@@ -547,7 +547,7 @@ function MachinesTab() {
       )}
 
       <CodebookTable
-        items={machines?.filter((m) => m.isActive !== false).map((m) => ({ id: m.id, name: m.name, badge: m.mowingCategory === "slope_mower" ? "Svahová sekačka" : m.type, subtitle: m.note ?? undefined, isActive: m.isActive })) ?? []}
+        items={machines?.filter((m) => m.isActive !== false).map((m) => ({ id: m.id, name: m.name, badge: m.mowingCategory === "slope_mower" ? "Svahová sekačka" : m.mowingCategory === "brushcutter" ? "Křovinořez" : m.type, subtitle: m.note ?? undefined, isActive: m.isActive })) ?? []}
         isLoading={isLoading}
         onEdit={openEdit}
         onToggle={async (id, isActive) => { await updateMutation.mutateAsync({ id, data: { name: "", type: "", isActive: !isActive } as never }); await invalidate(); }}
@@ -580,7 +580,7 @@ function MachinesTab() {
                 <input value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} className={inputClass} />
               </div>
             </div>
-            <div><label className={labelClass}>Zařazení pro ruční sečení</label><select value={form.mowingCategory} onChange={(e) => setForm({ ...form, mowingCategory: e.target.value })} className={inputClass}><option value="">Běžný stroj</option><option value="slope_mower">Svahová sekačka</option></select></div>
+            <div><label className={labelClass}>Zařazení pro ruční sečení</label><select value={form.mowingCategory} onChange={(e) => setForm({ ...form, mowingCategory: e.target.value })} className={inputClass}><option value="">Běžný stroj</option><option value="slope_mower">Svahová sekačka</option><option value="brushcutter">Křovinořez</option></select></div>
             <div>
               <label className={labelClass}>Výchozí příslušenství</label>
               <select value={form.defaultAccessoryId ?? ""} onChange={(e) => setForm({ ...form, defaultAccessoryId: e.target.value ? Number(e.target.value) : null })} className={inputClass}>

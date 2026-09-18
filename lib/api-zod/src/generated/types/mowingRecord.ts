@@ -9,6 +9,7 @@ import type { Accessory } from "./accessory";
 import type { ContractorCompany } from "./contractorCompany";
 import type { Machine } from "./machine";
 import type { MachineMthEntry } from "./machineMthEntry";
+import type { MowingRecordCoreStatus } from "./mowingRecordCoreStatus";
 import type { Region } from "./region";
 import type { User } from "./user";
 import type { Vehicle } from "./vehicle";
@@ -81,6 +82,24 @@ export interface MowingRecord {
   vehicleRefueling?: number | null;
   /** @nullable */
   brushcutterRefueling?: number | null;
+  /** @nullable */
+  breakMinutes?: number | null;
+  /** @nullable */
+  coreWorkType?: string | null;
+  /** @nullable */
+  performanceValue?: number | null;
+  /** @nullable */
+  performanceUnit?: string | null;
+  /** @nullable */
+  serviceNote?: string | null;
+  /** @nullable */
+  coreStatus?: MowingRecordCoreStatus;
+  /** @nullable */
+  coreSubmittedAt?: string | null;
+  /** @nullable */
+  coreApprovedAt?: string | null;
+  /** @nullable */
+  coreApprovedBy?: number | null;
   /** @nullable */
   trafficMarking?: string | null;
   /** @nullable */

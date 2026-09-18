@@ -1046,6 +1046,88 @@ paths:
               schema:
                 $ref: "#/components/schemas/AuditLogEntry"
 
+  /core-mowing-records:
+    get:
+      operationId: listCoreMowingRecords
+      tags: [mowingRecords]
+      summary: Vlastní nebo vedoucím spravované záznamy Křováků
+      responses:
+        "200":
+          description: Seznam záznamů Křováků
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MowingRecord"
+    post:
+      operationId: createCoreMowingRecord
+      tags: [mowingRecords]
+      summary: Vytvořit rozpracovaný záznam Křováka
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CoreMowingRecordBody"
+      responses:
+        "201":
+          description: Záznam vytvořen
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MowingRecord"
+
+  /core-mowing-records/{id}:
+    put:
+      operationId: updateCoreMowingRecord
+      tags: [mowingRecords]
+      summary: Upravit záznam Křováka
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CoreMowingRecordBody"
+      responses:
+        "200":
+          description: Záznam upraven
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MowingRecord"
+
+  /core-mowing-records/{id}/status:
+    patch:
+      operationId: updateCoreMowingRecordStatus
+      tags: [mowingRecords]
+      summary: Odevzdat, schválit nebo znovu otevřít záznam Křováka
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CoreMowingStatusBody"
+      responses:
+        "200":
+          description: Stav změněn
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MowingRecord"
+
   /subcontractor-daily-records:
     get:
       operationId: listSubcontractorDailyRecords
@@ -1995,6 +2077,59 @@ components:
         note:
           type: ["string", "null"]
 
+    CoreMowingRecordBody:
+      type: object
+      properties:
+        date:
+          type: string
+        regionId:
+          type: integer
+        location:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: string
+        breakMinutes:
+          type: integer
+          minimum: 0
+        coreWorkType:
+          type: string
+          enum: [vyzinani, seceni_burene, cisteni_porostu, udrzba_cest, ostatni]
+        performanceValue:
+          type: ["number", "null"]
+          minimum: 0
+        performanceUnit:
+          type: ["string", "null"]
+          enum: [ha, m2, hod, null]
+        machineId:
+          type: ["integer", "null"]
+        mthStart:
+          type: ["number", "null"]
+        mthEnd:
+          type: ["number", "null"]
+        fuelConsumption:
+          type: ["number", "null"]
+        brushcutterRefueling:
+          type: ["number", "null"]
+        serviceNote:
+          type: ["string", "null"]
+        vehicleEntries:
+          type: array
+          items:
+            $ref: "#/components/schemas/VehicleEntry"
+        note:
+          type: ["string", "null"]
+      required: [date, regionId, location, startTime, endTime, breakMinutes, coreWorkType, vehicleEntries]
+
+    CoreMowingStatusBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [draft, submitted, approved]
+      required: [status]
+
     MowingRecord:
       type: object
       properties:
@@ -2092,6 +2227,25 @@ components:
           type: ["number", "null"]
         brushcutterRefueling:
           type: ["number", "null"]
+        breakMinutes:
+          type: ["integer", "null"]
+        coreWorkType:
+          type: ["string", "null"]
+        performanceValue:
+          type: ["number", "null"]
+        performanceUnit:
+          type: ["string", "null"]
+        serviceNote:
+          type: ["string", "null"]
+        coreStatus:
+          type: ["string", "null"]
+          enum: [draft, submitted, approved, null]
+        coreSubmittedAt:
+          type: ["string", "null"]
+        coreApprovedAt:
+          type: ["string", "null"]
+        coreApprovedBy:
+          type: ["integer", "null"]
         trafficMarking:
           type: ["string", "null"]
         note:

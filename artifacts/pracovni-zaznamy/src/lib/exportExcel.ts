@@ -186,6 +186,12 @@ export function exportMowingExcel(
     fuelConsumption?: number | null;
     refueling?: number | null;
     brushcutterRefueling?: number | null;
+    breakMinutes?: number | null;
+    coreWorkType?: string | null;
+    performanceValue?: number | null;
+    performanceUnit?: string | null;
+    serviceNote?: string | null;
+    coreStatus?: string | null;
     note?: string | null;
     createdAt: string;
     updatedAt: string;
@@ -211,7 +217,12 @@ export function exportMowingExcel(
     "Spotřeba (l)",
     "Tankování (l)",
     "Tankování křovinořezů (l)",
-    "Poznámka / Porucha",
+    "Přestávka (min)",
+    "Druh práce Křováka",
+    "Výkon",
+    "Stav Křováka",
+    "Servisní poznámka",
+    "Poznámka",
     "Vytvořeno",
     "Upraveno",
   ];
@@ -236,6 +247,11 @@ export function exportMowingExcel(
     r.fuelConsumption != null ? Number(r.fuelConsumption) : "",
     r.refueling != null ? Number(r.refueling) : "",
     r.brushcutterRefueling != null ? Number(r.brushcutterRefueling) : "",
+    r.breakMinutes ?? "",
+    r.coreWorkType === "vyzinani" ? "Vyžínání" : r.coreWorkType === "seceni_burene" ? "Sečení buřeně" : r.coreWorkType === "cisteni_porostu" ? "Čištění porostu" : r.coreWorkType === "udrzba_cest" ? "Údržba cest" : r.coreWorkType === "ostatni" ? "Ostatní" : "",
+    r.performanceValue != null ? `${r.performanceValue} ${r.performanceUnit === "m2" ? "m²" : r.performanceUnit === "hod" ? "hod." : r.performanceUnit ?? ""}` : "",
+    r.coreStatus === "approved" ? "Schváleno" : r.coreStatus === "submitted" ? "Odevzdáno" : r.coreStatus === "draft" ? "Rozpracováno" : "",
+    r.serviceNote ?? "",
     r.note ?? "",
     formatDateTime(r.createdAt),
     formatDateTime(r.updatedAt),
@@ -248,8 +264,8 @@ export function exportMowingExcel(
     { wch: 8 }, { wch: 8 }, { wch: 14 }, { wch: 20 }, { wch: 12 },
     { wch: 30 }, { wch: 32 }, { wch: 32 }, { wch: 20 },
     { wch: 14 },
-    { wch: 12 }, { wch: 12 }, { wch: 30 },
-    { wch: 18 }, { wch: 18 },
+    { wch: 12 }, { wch: 12 }, { wch: 18 }, { wch: 18 }, { wch: 14 },
+    { wch: 24 }, { wch: 30 }, { wch: 18 }, { wch: 18 },
   ];
 
   const wb = XLSX.utils.book_new();

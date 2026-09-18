@@ -194,6 +194,7 @@ export default function MowingDetailPage() {
 
       <Section title="Pracovní doba & Počasí">
         <Row label="Čas" value={timeRange} />
+        {record.manualMowingKind === "core" && <><Row label="Přestávka" value={record.breakMinutes != null ? `${record.breakMinutes} min` : null} /><Row label="Odpracováno" value={record.laborHours != null ? `${record.laborHours} hod.` : null} /></>}
         <Row label="Počasí" value={record.weatherTypes?.length ? record.weatherTypes.map((item) => item.name).join(", ") : record.weatherType?.name} />
         <Row label="Teplota" value={record.temperature != null ? `${record.temperature} °C` : null} />
       </Section>
@@ -213,7 +214,16 @@ export default function MowingDetailPage() {
         <Row label="Tankování stroje" value={record.refueling != null ? `${record.refueling} l` : null} />
       </Section>}
 
-      {record.manualMowingKind === "core" && <Section title="Křovinořezy"><Row label="Tankování" value={record.brushcutterRefueling != null ? `${record.brushcutterRefueling} l` : null} /></Section>}
+      {record.manualMowingKind === "core" && <Section title="Křovák – práce a technika">
+        <Row label="Stav" value={record.coreStatus === "approved" ? "Schváleno" : record.coreStatus === "submitted" ? "Odevzdáno" : "Rozpracováno"} />
+        <Row label="Druh práce" value={record.coreWorkType === "vyzinani" ? "Vyžínání" : record.coreWorkType === "seceni_burene" ? "Sečení buřeně" : record.coreWorkType === "cisteni_porostu" ? "Čištění porostu" : record.coreWorkType === "udrzba_cest" ? "Údržba cest" : record.coreWorkType === "ostatni" ? "Ostatní" : null} />
+        <Row label="Výkon" value={record.performanceValue != null ? `${record.performanceValue} ${record.performanceUnit === "m2" ? "m²" : record.performanceUnit === "hod" ? "hod." : record.performanceUnit ?? ""}` : null} />
+        <Row label="Křovinořez" value={record.machines.length ? record.machines.map((machine) => machine.name).join(", ") : null} />
+        <Row label="MTH" value={record.mthStart != null || record.mthEnd != null ? `${record.mthStart ?? "—"} → ${record.mthEnd ?? "—"}${record.mthTotal != null ? ` (${record.mthTotal} hod.)` : ""}` : null} />
+        <Row label="Spotřeba paliva" value={record.fuelConsumption != null ? `${record.fuelConsumption} l` : null} />
+        <Row label="Tankování" value={record.brushcutterRefueling != null ? `${record.brushcutterRefueling} l` : null} />
+        <Row label="Závada / servis" value={record.serviceNote} />
+      </Section>}
 
       <Section title="Auto denního záznamu">
         <Row label="Jízdy aut" value={<span className="whitespace-pre-line">{vehicleSummary}</span>} />

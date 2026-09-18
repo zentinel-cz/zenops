@@ -1,5 +1,5 @@
 import type { QueryKey, UseMutationOptions, UseMutationResult, UseQueryOptions, UseQueryResult } from "@tanstack/react-query";
-import type { Accessory, AuditLogEntry, AuthResponse, ContractorCompany, CreateAccessoryBody, CreateContractorCompanyBody, CreateFellingRecordBody, CreateMachineBody, CreateMowingRecordBody, CreateRegionBody, CreateUserBody, CreateVehicleBody, CreateWeatherTypeBody, CreateWorkerBody, DashboardStats, ErrorResponse, FellingRecord, HealthStatus, ListAuditLogsParams, ListFellingRecordsParams, ListMowingRecordsParams, ListSubcontractorDailyRecordsParams, LoginBody, Machine, MachineLastMth, MessageResponse, MowingRecord, RecentRecords, Region, SubcontractorDailyRecord, UpdateFellingRecordBody, UpdateMowingRecordBody, UpdateUserBody, UpsertSubcontractorDailyRecordBody, User, Vehicle, WeatherType, Worker } from "./api.schemas";
+import type { Accessory, AuditLogEntry, AuthResponse, ContractorCompany, CoreMowingRecordBody, CoreMowingStatusBody, CreateAccessoryBody, CreateContractorCompanyBody, CreateFellingRecordBody, CreateMachineBody, CreateMowingRecordBody, CreateRegionBody, CreateUserBody, CreateVehicleBody, CreateWeatherTypeBody, CreateWorkerBody, DashboardStats, ErrorResponse, FellingRecord, HealthStatus, ListAuditLogsParams, ListFellingRecordsParams, ListMowingRecordsParams, ListSubcontractorDailyRecordsParams, LoginBody, Machine, MachineLastMth, MessageResponse, MowingRecord, RecentRecords, Region, SubcontractorDailyRecord, UpdateFellingRecordBody, UpdateMowingRecordBody, UpdateUserBody, UpsertSubcontractorDailyRecordBody, User, Vehicle, WeatherType, Worker } from "./api.schemas";
 import { customFetch } from "../custom-fetch";
 import type { ErrorType, BodyType } from "../custom-fetch";
 type AwaitedInput<T> = PromiseLike<T> | T;
@@ -1350,6 +1350,118 @@ export declare function useGetAuditLog<TData = Awaited<ReturnType<typeof getAudi
 }): UseQueryResult<TData, TError> & {
     queryKey: QueryKey;
 };
+/**
+ * @summary Vlastní nebo vedoucím spravované záznamy Křováků
+ */
+export declare const getListCoreMowingRecordsUrl: () => string;
+export declare const listCoreMowingRecords: (options?: RequestInit) => Promise<MowingRecord[]>;
+export declare const getListCoreMowingRecordsQueryKey: () => readonly ["/api/core-mowing-records"];
+export declare const getListCoreMowingRecordsQueryOptions: <TData = Awaited<ReturnType<typeof listCoreMowingRecords>>, TError = ErrorType<unknown>>(options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof listCoreMowingRecords>>, TError, TData>;
+    request?: SecondParameter<typeof customFetch>;
+}) => UseQueryOptions<Awaited<ReturnType<typeof listCoreMowingRecords>>, TError, TData> & {
+    queryKey: QueryKey;
+};
+export type ListCoreMowingRecordsQueryResult = NonNullable<Awaited<ReturnType<typeof listCoreMowingRecords>>>;
+export type ListCoreMowingRecordsQueryError = ErrorType<unknown>;
+/**
+ * @summary Vlastní nebo vedoucím spravované záznamy Křováků
+ */
+export declare function useListCoreMowingRecords<TData = Awaited<ReturnType<typeof listCoreMowingRecords>>, TError = ErrorType<unknown>>(options?: {
+    query?: UseQueryOptions<Awaited<ReturnType<typeof listCoreMowingRecords>>, TError, TData>;
+    request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+};
+/**
+ * @summary Vytvořit rozpracovaný záznam Křováka
+ */
+export declare const getCreateCoreMowingRecordUrl: () => string;
+export declare const createCoreMowingRecord: (coreMowingRecordBody: CoreMowingRecordBody, options?: RequestInit) => Promise<MowingRecord>;
+export declare const getCreateCoreMowingRecordMutationOptions: <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof createCoreMowingRecord>>, TError, {
+        data: BodyType<CoreMowingRecordBody>;
+    }, TContext>;
+    request?: SecondParameter<typeof customFetch>;
+}) => UseMutationOptions<Awaited<ReturnType<typeof createCoreMowingRecord>>, TError, {
+    data: BodyType<CoreMowingRecordBody>;
+}, TContext>;
+export type CreateCoreMowingRecordMutationResult = NonNullable<Awaited<ReturnType<typeof createCoreMowingRecord>>>;
+export type CreateCoreMowingRecordMutationBody = BodyType<CoreMowingRecordBody>;
+export type CreateCoreMowingRecordMutationError = ErrorType<unknown>;
+/**
+ * @summary Vytvořit rozpracovaný záznam Křováka
+ */
+export declare const useCreateCoreMowingRecord: <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof createCoreMowingRecord>>, TError, {
+        data: BodyType<CoreMowingRecordBody>;
+    }, TContext>;
+    request?: SecondParameter<typeof customFetch>;
+}) => UseMutationResult<Awaited<ReturnType<typeof createCoreMowingRecord>>, TError, {
+    data: BodyType<CoreMowingRecordBody>;
+}, TContext>;
+/**
+ * @summary Upravit záznam Křováka
+ */
+export declare const getUpdateCoreMowingRecordUrl: (id: number) => string;
+export declare const updateCoreMowingRecord: (id: number, coreMowingRecordBody: CoreMowingRecordBody, options?: RequestInit) => Promise<MowingRecord>;
+export declare const getUpdateCoreMowingRecordMutationOptions: <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof updateCoreMowingRecord>>, TError, {
+        id: number;
+        data: BodyType<CoreMowingRecordBody>;
+    }, TContext>;
+    request?: SecondParameter<typeof customFetch>;
+}) => UseMutationOptions<Awaited<ReturnType<typeof updateCoreMowingRecord>>, TError, {
+    id: number;
+    data: BodyType<CoreMowingRecordBody>;
+}, TContext>;
+export type UpdateCoreMowingRecordMutationResult = NonNullable<Awaited<ReturnType<typeof updateCoreMowingRecord>>>;
+export type UpdateCoreMowingRecordMutationBody = BodyType<CoreMowingRecordBody>;
+export type UpdateCoreMowingRecordMutationError = ErrorType<unknown>;
+/**
+ * @summary Upravit záznam Křováka
+ */
+export declare const useUpdateCoreMowingRecord: <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof updateCoreMowingRecord>>, TError, {
+        id: number;
+        data: BodyType<CoreMowingRecordBody>;
+    }, TContext>;
+    request?: SecondParameter<typeof customFetch>;
+}) => UseMutationResult<Awaited<ReturnType<typeof updateCoreMowingRecord>>, TError, {
+    id: number;
+    data: BodyType<CoreMowingRecordBody>;
+}, TContext>;
+/**
+ * @summary Odevzdat, schválit nebo znovu otevřít záznam Křováka
+ */
+export declare const getUpdateCoreMowingRecordStatusUrl: (id: number) => string;
+export declare const updateCoreMowingRecordStatus: (id: number, coreMowingStatusBody: CoreMowingStatusBody, options?: RequestInit) => Promise<MowingRecord>;
+export declare const getUpdateCoreMowingRecordStatusMutationOptions: <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof updateCoreMowingRecordStatus>>, TError, {
+        id: number;
+        data: BodyType<CoreMowingStatusBody>;
+    }, TContext>;
+    request?: SecondParameter<typeof customFetch>;
+}) => UseMutationOptions<Awaited<ReturnType<typeof updateCoreMowingRecordStatus>>, TError, {
+    id: number;
+    data: BodyType<CoreMowingStatusBody>;
+}, TContext>;
+export type UpdateCoreMowingRecordStatusMutationResult = NonNullable<Awaited<ReturnType<typeof updateCoreMowingRecordStatus>>>;
+export type UpdateCoreMowingRecordStatusMutationBody = BodyType<CoreMowingStatusBody>;
+export type UpdateCoreMowingRecordStatusMutationError = ErrorType<unknown>;
+/**
+ * @summary Odevzdat, schválit nebo znovu otevřít záznam Křováka
+ */
+export declare const useUpdateCoreMowingRecordStatus: <TError = ErrorType<unknown>, TContext = unknown>(options?: {
+    mutation?: UseMutationOptions<Awaited<ReturnType<typeof updateCoreMowingRecordStatus>>, TError, {
+        id: number;
+        data: BodyType<CoreMowingStatusBody>;
+    }, TContext>;
+    request?: SecondParameter<typeof customFetch>;
+}) => UseMutationResult<Awaited<ReturnType<typeof updateCoreMowingRecordStatus>>, TError, {
+    id: number;
+    data: BodyType<CoreMowingStatusBody>;
+}, TContext>;
 /**
  * @summary Denní záznamy subdodavatelů pro vlastní firmu nebo admina
  */

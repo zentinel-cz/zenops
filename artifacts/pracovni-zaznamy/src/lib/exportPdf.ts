@@ -318,6 +318,12 @@ export async function exportMowingPdf(record: {
   vehicleKmTotal?: number | null;
   vehicleRefueling?: number | null;
   brushcutterRefueling?: number | null;
+  breakMinutes?: number | null;
+  coreWorkType?: string | null;
+  performanceValue?: number | null;
+  performanceUnit?: string | null;
+  serviceNote?: string | null;
+  coreStatus?: string | null;
   trafficMarking?: string | null;
   note?: string | null;
   createdAt: string;
@@ -347,6 +353,8 @@ export async function exportMowingPdf(record: {
     ["Pracovní doba", record.startTime && record.endTime
       ? `${record.startTime} – ${record.endTime}`
       : record.startTime ?? record.endTime ?? "—"],
+    ["Přestávka", record.breakMinutes != null ? `${record.breakMinutes} min` : "—"],
+    ["Odpracováno", record.laborHours != null ? `${record.laborHours} hod.` : "—"],
     ["Počasí", record.weatherTypes?.length ? record.weatherTypes.map((item) => item.name).join(", ") : record.weatherType?.name ?? "—"],
     ["Teplota", record.temperature != null ? `${record.temperature} °C` : "—"],
   ]);
@@ -365,6 +373,15 @@ export async function exportMowingPdf(record: {
     ["Základní sestavy", formatMachineMthEntries(record.machineMthEntries)],
     ["Celkové MTH", record.mthTotal != null ? `${record.mthTotal} hod` : "—"],
   ]);
+
+  if (record.manualMowingKind === "core") {
+    y = addSection(doc, y, "Křovák – práce a schválení", [
+      ["Stav", record.coreStatus === "approved" ? "Schváleno" : record.coreStatus === "submitted" ? "Odevzdáno" : "Rozpracováno"],
+      ["Druh práce", record.coreWorkType === "vyzinani" ? "Vyžínání" : record.coreWorkType === "seceni_burene" ? "Sečení buřeně" : record.coreWorkType === "cisteni_porostu" ? "Čištění porostu" : record.coreWorkType === "udrzba_cest" ? "Údržba cest" : record.coreWorkType === "ostatni" ? "Ostatní" : "—"],
+      ["Výkon", record.performanceValue != null ? `${record.performanceValue} ${record.performanceUnit === "m2" ? "m²" : record.performanceUnit === "hod" ? "hod." : record.performanceUnit ?? ""}` : "—"],
+      ["Závada / servis", record.serviceNote ?? "—"],
+    ]);
+  }
 
   y = addSection(doc, y, "Provozní hodnoty", [
     ["Jízdy aut", formatVehicleEntries(record.vehicleEntries)],

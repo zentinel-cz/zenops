@@ -20485,27 +20485,27 @@ var require_router = __commonJS({
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
-    module.exports = Router13;
+    module.exports = Router14;
     module.exports.Route = Route;
-    function Router13(options) {
-      if (!(this instanceof Router13)) {
-        return new Router13(options);
+    function Router14(options) {
+      if (!(this instanceof Router14)) {
+        return new Router14(options);
       }
       const opts = options || {};
-      function router13(req, res, next) {
-        router13.handle(req, res, next);
+      function router14(req, res, next) {
+        router14.handle(req, res, next);
       }
-      Object.setPrototypeOf(router13, this);
-      router13.caseSensitive = opts.caseSensitive;
-      router13.mergeParams = opts.mergeParams;
-      router13.params = {};
-      router13.strict = opts.strict;
-      router13.stack = [];
-      return router13;
+      Object.setPrototypeOf(router14, this);
+      router14.caseSensitive = opts.caseSensitive;
+      router14.mergeParams = opts.mergeParams;
+      router14.params = {};
+      router14.strict = opts.strict;
+      router14.stack = [];
+      return router14;
     }
-    Router13.prototype = function() {
+    Router14.prototype = function() {
     };
-    Router13.prototype.param = function param(name, fn) {
+    Router14.prototype.param = function param(name, fn) {
       if (!name) {
         throw new TypeError("argument name is required");
       }
@@ -20525,7 +20525,7 @@ var require_router = __commonJS({
       params.push(fn);
       return this;
     };
-    Router13.prototype.handle = function handle(req, res, callback) {
+    Router14.prototype.handle = function handle(req, res, callback) {
       if (!callback) {
         throw new TypeError("argument callback is required");
       }
@@ -20652,7 +20652,7 @@ var require_router = __commonJS({
         }
       }
     };
-    Router13.prototype.use = function use(handler) {
+    Router14.prototype.use = function use(handler) {
       let offset = 0;
       let path2 = "/";
       if (typeof handler !== "function") {
@@ -20685,7 +20685,7 @@ var require_router = __commonJS({
       }
       return this;
     };
-    Router13.prototype.route = function route(path2) {
+    Router14.prototype.route = function route(path2) {
       const route2 = new Route(path2);
       const layer = new Layer(path2, {
         sensitive: this.caseSensitive,
@@ -20700,7 +20700,7 @@ var require_router = __commonJS({
       return route2;
     };
     methods.concat("all").forEach(function(method) {
-      Router13.prototype[method] = function(path2) {
+      Router14.prototype[method] = function(path2) {
         const route = this.route(path2);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
@@ -20883,13 +20883,13 @@ var require_application = __commonJS({
     var compileTrust = require_utils3().compileTrust;
     var resolve = __require("node:path").resolve;
     var once = require_once();
-    var Router13 = require_router();
+    var Router14 = require_router();
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var app2 = exports = module.exports = {};
     var trustProxyDefaultSymbol = "@@symbol:trust_proxy_default";
     app2.init = function init() {
-      var router13 = null;
+      var router14 = null;
       this.cache = /* @__PURE__ */ Object.create(null);
       this.engines = /* @__PURE__ */ Object.create(null);
       this.settings = /* @__PURE__ */ Object.create(null);
@@ -20898,13 +20898,13 @@ var require_application = __commonJS({
         configurable: true,
         enumerable: true,
         get: function getrouter() {
-          if (router13 === null) {
-            router13 = new Router13({
+          if (router14 === null) {
+            router14 = new Router14({
               caseSensitive: this.enabled("case sensitive routing"),
               strict: this.enabled("strict routing")
             });
           }
-          return router13;
+          return router14;
         }
       });
     };
@@ -20975,15 +20975,15 @@ var require_application = __commonJS({
       if (fns.length === 0) {
         throw new TypeError("app.use() requires a middleware function");
       }
-      var router13 = this.router;
+      var router14 = this.router;
       fns.forEach(function(fn2) {
         if (!fn2 || !fn2.handle || !fn2.set) {
-          return router13.use(path2, fn2);
+          return router14.use(path2, fn2);
         }
         debug(".use app under %s", path2);
         fn2.mountpath = path2;
         fn2.parent = this;
-        router13.use(path2, function mounted_app(req, res, next) {
+        router14.use(path2, function mounted_app(req, res, next) {
           var orig = req.app;
           fn2.handle(req, res, function(err) {
             Object.setPrototypeOf(req, orig.request);
@@ -23510,7 +23510,7 @@ var require_express = __commonJS({
     var EventEmitter = __require("node:events").EventEmitter;
     var mixin = require_merge_descriptors();
     var proto = require_application();
-    var Router13 = require_router();
+    var Router14 = require_router();
     var req = require_request();
     var res = require_response();
     exports = module.exports = createApplication;
@@ -23532,8 +23532,8 @@ var require_express = __commonJS({
     exports.application = proto;
     exports.request = req;
     exports.response = res;
-    exports.Route = Router13.Route;
-    exports.Router = Router13;
+    exports.Route = Router14.Route;
+    exports.Router = Router14;
     exports.json = bodyParser.json;
     exports.raw = bodyParser.raw;
     exports.static = require_serve_static();
@@ -34886,7 +34886,7 @@ var require_lib5 = __commonJS({
 });
 
 // src/app.ts
-var import_express13 = __toESM(require_express2(), 1);
+var import_express14 = __toESM(require_express2(), 1);
 var import_cors = __toESM(require_lib3(), 1);
 var import_pino_http = __toESM(require_logger(), 1);
 var import_express_session = __toESM(require_express_session(), 1);
@@ -34894,7 +34894,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 // src/routes/index.ts
-var import_express12 = __toESM(require_express2(), 1);
+var import_express13 = __toESM(require_express2(), 1);
 
 // src/routes/health.ts
 var import_express = __toESM(require_express2(), 1);
@@ -55289,6 +55289,15 @@ var mowingRecordsTable = pgTable("mowing_records", {
   vehicleKmTotal: numeric("vehicle_km_total", { precision: 10, scale: 2 }),
   vehicleRefueling: numeric("vehicle_refueling", { precision: 10, scale: 2 }),
   brushcutterRefueling: numeric("brushcutter_refueling", { precision: 10, scale: 2 }),
+  breakMinutes: integer("break_minutes"),
+  coreWorkType: text("core_work_type"),
+  performanceValue: numeric("performance_value", { precision: 10, scale: 2 }),
+  performanceUnit: text("performance_unit"),
+  serviceNote: text("service_note"),
+  coreStatus: text("core_status"),
+  coreSubmittedAt: timestamp("core_submitted_at", { withTimezone: true }),
+  coreApprovedAt: timestamp("core_approved_at", { withTimezone: true }),
+  coreApprovedBy: integer("core_approved_by").references(() => usersTable.id),
   trafficMarking: text("traffic_marking"),
   note: text("note"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -56606,7 +56615,7 @@ function requireMowingAccess(req, res, next) {
     res.status(401).json({ error: "Nep\u0159ihl\xE1\u0161en" });
     return;
   }
-  if (!session2.userRole || !["admin", "manager", "brushcutter"].includes(session2.userRole)) {
+  if (session2.userRole !== "admin") {
     res.status(403).json({ error: "Tato \u010D\xE1st aplikace pro va\u0161i roli nen\xED zp\u0159\xEDstupn\u011Bna" });
     return;
   }
@@ -56697,6 +56706,7 @@ async function buildMowingRecord(record2) {
     fuelConsumption: sumMachineValue(resolvedMachineMthEntries, "fuelConsumption") ?? parseDbNumber(record2.fuelConsumption),
     refueling: sumMachineValue(resolvedMachineMthEntries, "refueling") ?? parseDbNumber(record2.refueling),
     brushcutterRefueling: parseDbNumber(record2.brushcutterRefueling),
+    performanceValue: parseDbNumber(record2.performanceValue),
     dayHours: parseDbNumber(record2.dayHours),
     nightHours: parseDbNumber(record2.nightHours),
     laborHours: parseDbNumber(record2.laborHours),
@@ -56795,7 +56805,7 @@ router7.post("/mowing-records", requireMowingAccess, async (req, res) => {
     assignedAverage,
     dayHours,
     nightHours,
-    laborHours,
+    laborHours: laborHours2,
     vehicleKmStart,
     vehicleKmEnd,
     vehicleKmTotal,
@@ -56956,7 +56966,7 @@ router7.post("/mowing-records", requireMowingAccess, async (req, res) => {
     assignedAverage: assignedAverage ?? null,
     dayHours: dayHours != null ? String(dayHours) : null,
     nightHours: nightHours != null ? String(nightHours) : null,
-    laborHours: laborHours != null ? String(laborHours) : null,
+    laborHours: laborHours2 != null ? String(laborHours2) : null,
     vehicleKmStart: singleVehicleEntry?.kmStart != null ? String(singleVehicleEntry.kmStart) : null,
     vehicleKmEnd: singleVehicleEntry?.kmEnd != null ? String(singleVehicleEntry.kmEnd) : null,
     vehicleKmTotal: aggregateVehicleKm != null ? String(aggregateVehicleKm) : null,
@@ -57062,7 +57072,7 @@ router7.patch("/mowing-records/:id", requireMowingAccess, async (req, res) => {
     assignedAverage,
     dayHours,
     nightHours,
-    laborHours,
+    laborHours: laborHours2,
     vehicleKmStart,
     vehicleKmEnd,
     vehicleKmTotal,
@@ -57254,7 +57264,7 @@ router7.patch("/mowing-records/:id", requireMowingAccess, async (req, res) => {
   if (assignedAverage !== void 0) updates.assignedAverage = assignedAverage;
   if (dayHours !== void 0) updates.dayHours = dayHours != null ? String(dayHours) : null;
   if (nightHours !== void 0) updates.nightHours = nightHours != null ? String(nightHours) : null;
-  if (laborHours !== void 0) updates.laborHours = laborHours != null ? String(laborHours) : null;
+  if (laborHours2 !== void 0) updates.laborHours = laborHours2 != null ? String(laborHours2) : null;
   if (vehicleEntries === void 0 && vehicleKmStart !== void 0) updates.vehicleKmStart = vehicleKmStart != null ? String(vehicleKmStart) : null;
   if (vehicleEntries === void 0 && vehicleKmEnd !== void 0) updates.vehicleKmEnd = vehicleKmEnd != null ? String(vehicleKmEnd) : null;
   if (vehicleEntries === void 0 && vehicleKmTotal !== void 0) updates.vehicleKmTotal = vehicleKmTotal != null ? String(vehicleKmTotal) : null;
@@ -57910,20 +57920,304 @@ router11.put("/subcontractor-daily-records/:id", requireAuth, requireRole2(["sub
 });
 var subcontractorDailyRecords_default = router11;
 
-// src/routes/index.ts
+// src/routes/coreMowingRecords.ts
+var import_express12 = __toESM(require_express2(), 1);
 var router12 = (0, import_express12.Router)();
-router12.use(health_default);
-router12.use(auth_default);
-router12.use(users_default);
-router12.use(codebooks_default);
-router12.use(accessories_default);
-router12.use(fellingRecords_default);
-router12.use(mowingRecords_default);
-router12.use(dashboard_default);
-router12.use(auditLogs_default);
-router12.use(teamDailyRecords_default);
-router12.use(subcontractorDailyRecords_default);
-var routes_default = router12;
+var workTypes = /* @__PURE__ */ new Set(["vyzinani", "seceni_burene", "cisteni_porostu", "udrzba_cest", "ostatni"]);
+var performanceUnits = /* @__PURE__ */ new Set(["ha", "m2", "hod"]);
+function sessionOf4(req) {
+  return req.session;
+}
+function requireCoreAccess(req, res, next) {
+  const session2 = sessionOf4(req);
+  if (!session2?.userId) {
+    res.status(401).json({ error: "Nep\u0159ihl\xE1\u0161en" });
+    return;
+  }
+  if (!["admin", "manager", "brushcutter"].includes(session2.userRole)) {
+    res.status(403).json({ error: "Tato \u010D\xE1st aplikace pro va\u0161i roli nen\xED zp\u0159\xEDstupn\u011Bna" });
+    return;
+  }
+  next();
+}
+function routeId3(value) {
+  return Number(Array.isArray(value) ? value[0] : value);
+}
+function cleanText(value) {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
+}
+function nonNegative2(value) {
+  if (value == null) return null;
+  return Number.isFinite(value) && value >= 0 ? value : Number.NaN;
+}
+function laborHours(startTime, endTime, breakMinutes) {
+  const parse3 = (value) => {
+    const match = /^(\d{2}):(\d{2})$/.exec(value);
+    if (!match) return null;
+    const hours = Number(match[1]);
+    const minutes = Number(match[2]);
+    if (hours > 23 || minutes > 59) return null;
+    return hours * 60 + minutes;
+  };
+  const start = parse3(startTime);
+  const rawEnd = parse3(endTime);
+  if (start == null || rawEnd == null) return null;
+  const end = rawEnd <= start ? rawEnd + 24 * 60 : rawEnd;
+  const worked = end - start - breakMinutes;
+  return worked > 0 ? Math.round(worked / 60 * 100) / 100 : null;
+}
+async function linkedBrushcutter(userId) {
+  const [row] = await db.select({ workerId: usersTable.workerId, fullName: usersTable.fullName }).from(usersTable).where(and(eq(usersTable.id, userId), eq(usersTable.role, "brushcutter"), eq(usersTable.isActive, true), isNull(usersTable.deletedAt))).limit(1);
+  return row;
+}
+async function validatePayload(payload, ownerUserId) {
+  const owner = await linkedBrushcutter(ownerUserId);
+  if (!owner?.workerId) return { error: "\xDA\u010Det K\u0159ov\xE1ka nen\xED propojen\xFD s aktivn\xEDm pracovn\xEDm profilem" };
+  const date6 = payload.date?.slice(0, 10) ?? "";
+  const regionId = Number(payload.regionId);
+  const location = cleanText(payload.location);
+  const startTime = payload.startTime ?? "";
+  const endTime = payload.endTime ?? "";
+  const breakMinutes = nonNegative2(payload.breakMinutes) ?? 0;
+  const coreWorkType = payload.coreWorkType ?? "";
+  const performanceValue = nonNegative2(payload.performanceValue);
+  const performanceUnit = payload.performanceUnit ?? null;
+  const machineId = payload.machineId ? Number(payload.machineId) : null;
+  const mthStart = nonNegative2(payload.mthStart);
+  const mthEnd = nonNegative2(payload.mthEnd);
+  const fuelConsumption = nonNegative2(payload.fuelConsumption);
+  const brushcutterRefueling = nonNegative2(payload.brushcutterRefueling);
+  const vehicleEntries = normalizeVehicleEntries(payload.vehicleEntries ?? []);
+  const hours = laborHours(startTime, endTime, breakMinutes);
+  if (!date6 || !regionId || !location || !startTime || !endTime || !coreWorkType) return { error: "Vypl\u0148te datum, rev\xEDr, m\xEDsto, za\u010D\xE1tek, konec a druh pr\xE1ce" };
+  if (!workTypes.has(coreWorkType)) return { error: "Vyberte platn\xFD druh pr\xE1ce" };
+  if (!Number.isFinite(breakMinutes) || hours == null) return { error: "Zadejte platnou pracovn\xED dobu a p\u0159est\xE1vku" };
+  if (performanceValue != null && (!Number.isFinite(performanceValue) || !performanceUnit || !performanceUnits.has(performanceUnit))) return { error: "K v\xFDkonu vyberte platnou jednotku" };
+  if (performanceValue == null && performanceUnit) return { error: "K jednotce dopl\u0148te hodnotu v\xFDkonu" };
+  if ([mthStart, mthEnd, fuelConsumption, brushcutterRefueling].some((value) => value != null && !Number.isFinite(value))) return { error: "Technick\xE9 hodnoty nesm\xED b\xFDt z\xE1porn\xE9" };
+  if (mthStart != null && mthEnd != null && mthEnd < mthStart) return { error: "Kone\u010Dn\xFD stav motohodin nesm\xED b\xFDt ni\u017E\u0161\xED ne\u017E po\u010D\xE1te\u010Dn\xED" };
+  if (vehicleEntries.some((entry) => !entry.vehicleId || entry.kmStart != null && entry.kmEnd != null && entry.kmEnd < entry.kmStart || (entry.refueling ?? 0) < 0)) return { error: "Dopl\u0148te platn\xE9 \xFAdaje j\xEDzd aut" };
+  const [region] = await db.select({ id: regionsTable.id }).from(regionsTable).where(and(eq(regionsTable.id, regionId), eq(regionsTable.isActive, true), isNull(regionsTable.deletedAt))).limit(1);
+  if (!region) return { error: "Vybran\xFD rev\xEDr nen\xED aktivn\xED" };
+  if (machineId) {
+    const [machine] = await db.select({ id: machinesTable.id }).from(machinesTable).where(and(eq(machinesTable.id, machineId), eq(machinesTable.mowingCategory, "brushcutter"), eq(machinesTable.isActive, true), isNull(machinesTable.deletedAt))).limit(1);
+    if (!machine) return { error: "Vybran\xFD k\u0159ovino\u0159ez nen\xED aktivn\xED nebo nen\xED spr\xE1vn\u011B za\u0159azen\xFD" };
+  }
+  if (vehicleEntries.length) {
+    const ids = [...new Set(vehicleEntries.map((entry) => entry.vehicleId))];
+    const vehicles = await db.select({ id: vehiclesTable.id }).from(vehiclesTable).where(and(inArray(vehiclesTable.id, ids), eq(vehiclesTable.isActive, true), isNull(vehiclesTable.deletedAt)));
+    if (vehicles.length !== ids.length) return { error: "N\u011Bkter\xE9 vybran\xE9 vozidlo nen\xED aktivn\xED" };
+  }
+  return {
+    value: {
+      date: date6,
+      regionId,
+      location,
+      startTime,
+      endTime,
+      breakMinutes,
+      coreWorkType,
+      performanceValue,
+      performanceUnit: performanceValue == null ? null : performanceUnit,
+      machineId,
+      mthStart,
+      mthEnd,
+      mthTotal: mthStart != null && mthEnd != null ? Math.round((mthEnd - mthStart) * 100) / 100 : null,
+      fuelConsumption,
+      brushcutterRefueling,
+      serviceNote: cleanText(payload.serviceNote),
+      note: cleanText(payload.note),
+      vehicleEntries,
+      vehicleKmTotal: vehicleEntries.length ? Math.round(vehicleEntries.reduce((sum2, entry) => sum2 + (entry.kmTotal ?? 0), 0) * 100) / 100 : null,
+      vehicleRefueling: vehicleEntries.length ? Math.round(vehicleEntries.reduce((sum2, entry) => sum2 + (entry.refueling ?? 0), 0) * 100) / 100 : null,
+      workerId: owner.workerId,
+      laborHours: hours
+    }
+  };
+}
+async function getCoreRecord(id) {
+  const [record2] = await db.select().from(mowingRecordsTable).where(and(eq(mowingRecordsTable.id, id), eq(mowingRecordsTable.mowingKind, "rucni"), eq(mowingRecordsTable.manualMowingKind, "core"), isNull(mowingRecordsTable.deletedAt))).limit(1);
+  return record2;
+}
+async function canManagerAccess(record2) {
+  const [owner] = await db.select({ role: usersTable.role }).from(usersTable).where(eq(usersTable.id, record2.userId)).limit(1);
+  return owner?.role === "brushcutter";
+}
+router12.get("/core-mowing-records", requireCoreAccess, async (req, res) => {
+  const session2 = sessionOf4(req);
+  const conditions = [eq(mowingRecordsTable.mowingKind, "rucni"), eq(mowingRecordsTable.manualMowingKind, "core"), isNull(mowingRecordsTable.deletedAt)];
+  if (session2.userRole === "brushcutter") conditions.push(eq(mowingRecordsTable.userId, session2.userId));
+  if (session2.userRole === "manager") {
+    const owners = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.role, "brushcutter"));
+    if (!owners.length) {
+      res.json([]);
+      return;
+    }
+    conditions.push(inArray(mowingRecordsTable.userId, owners.map((owner) => owner.id)));
+  }
+  const records = await db.select().from(mowingRecordsTable).where(and(...conditions)).orderBy(mowingRecordsTable.date);
+  res.json(await Promise.all(records.map(buildMowingRecord)));
+});
+router12.post("/core-mowing-records", requireCoreAccess, async (req, res) => {
+  const session2 = sessionOf4(req);
+  if (session2.userRole !== "brushcutter") {
+    res.status(403).json({ error: "Denn\xED z\xE1znam m\u016F\u017Ee vytvo\u0159it pouze K\u0159ov\xE1k" });
+    return;
+  }
+  const validated = await validatePayload(req.body, session2.userId);
+  if ("error" in validated) {
+    res.status(400).json({ error: validated.error });
+    return;
+  }
+  const value = validated.value;
+  const record2 = await db.transaction(async (tx) => {
+    const [created] = await tx.insert(mowingRecordsTable).values({
+      date: value.date,
+      userId: session2.userId,
+      regionId: value.regionId,
+      workType: "seceni",
+      mowingSection: "manual",
+      mowingKind: "rucni",
+      manualMowingKind: "core",
+      location: value.location,
+      startTime: value.startTime,
+      endTime: value.endTime,
+      breakMinutes: value.breakMinutes,
+      coreWorkType: value.coreWorkType,
+      performanceValue: value.performanceValue == null ? null : String(value.performanceValue),
+      performanceUnit: value.performanceUnit,
+      mthStart: value.mthStart == null ? null : String(value.mthStart),
+      mthEnd: value.mthEnd == null ? null : String(value.mthEnd),
+      mthTotal: value.mthTotal == null ? null : String(value.mthTotal),
+      fuelConsumption: value.fuelConsumption == null ? null : String(value.fuelConsumption),
+      brushcutterRefueling: value.brushcutterRefueling == null ? null : String(value.brushcutterRefueling),
+      manualWorkerIds: serializeIdList([value.workerId]),
+      machineWorkerIds: serializeIdList([]),
+      workerTimeEntries: serializeJsonArray([{ workerId: value.workerId, category: "manual", shiftType: "custom", startTime: value.startTime, endTime: value.endTime }]),
+      machineMthEntries: serializeJsonArray(value.machineId ? [{ machineId: value.machineId, operatorId: value.workerId, mthStart: value.mthStart, mthEnd: value.mthEnd, mthTotal: value.mthTotal, fuelConsumption: value.fuelConsumption, refueling: value.brushcutterRefueling }] : []),
+      vehicleEntries: serializeJsonArray(value.vehicleEntries),
+      vehicleKmTotal: value.vehicleKmTotal == null ? null : String(value.vehicleKmTotal),
+      vehicleRefueling: value.vehicleRefueling == null ? null : String(value.vehicleRefueling),
+      laborHours: String(value.laborHours),
+      serviceNote: value.serviceNote,
+      note: value.note,
+      coreStatus: "draft"
+    }).returning();
+    await tx.insert(mowingRecordWorkersTable).values({ mowingRecordId: created.id, workerId: value.workerId });
+    if (value.machineId) await tx.insert(mowingRecordMachinesTable).values({ mowingRecordId: created.id, machineId: value.machineId });
+    return created;
+  });
+  await logAudit({ userId: session2.userId, action: "create", tableName: "mowing_records", recordId: record2.id, description: `K\u0159ov\xE1k vytvo\u0159il denn\xED z\xE1znam ${record2.date} \u2013 ${record2.location}`, newData: record2 });
+  res.status(201).json(await buildMowingRecord(record2));
+});
+router12.put("/core-mowing-records/:id", requireCoreAccess, async (req, res) => {
+  const session2 = sessionOf4(req);
+  const id = routeId3(req.params.id);
+  const existing = await getCoreRecord(id);
+  if (!existing) {
+    res.status(404).json({ error: "Z\xE1znam nenalezen" });
+    return;
+  }
+  if (!await canManagerAccess(existing)) {
+    res.status(403).json({ error: "Tento z\xE1znam nepat\u0159\xED K\u0159ov\xE1kovi" });
+    return;
+  }
+  if (session2.userRole === "brushcutter" && (existing.userId !== session2.userId || (existing.coreStatus ?? "draft") !== "draft")) {
+    res.status(403).json({ error: "K\u0159ov\xE1k m\u016F\u017Ee upravit pouze sv\u016Fj rozpracovan\xFD z\xE1znam" });
+    return;
+  }
+  const validated = await validatePayload(req.body, existing.userId);
+  if ("error" in validated) {
+    res.status(400).json({ error: validated.error });
+    return;
+  }
+  const value = validated.value;
+  const record2 = await db.transaction(async (tx) => {
+    const [updated] = await tx.update(mowingRecordsTable).set({
+      date: value.date,
+      regionId: value.regionId,
+      location: value.location,
+      startTime: value.startTime,
+      endTime: value.endTime,
+      breakMinutes: value.breakMinutes,
+      coreWorkType: value.coreWorkType,
+      performanceValue: value.performanceValue == null ? null : String(value.performanceValue),
+      performanceUnit: value.performanceUnit,
+      mthStart: value.mthStart == null ? null : String(value.mthStart),
+      mthEnd: value.mthEnd == null ? null : String(value.mthEnd),
+      mthTotal: value.mthTotal == null ? null : String(value.mthTotal),
+      fuelConsumption: value.fuelConsumption == null ? null : String(value.fuelConsumption),
+      brushcutterRefueling: value.brushcutterRefueling == null ? null : String(value.brushcutterRefueling),
+      manualWorkerIds: serializeIdList([value.workerId]),
+      machineWorkerIds: serializeIdList([]),
+      workerTimeEntries: serializeJsonArray([{ workerId: value.workerId, category: "manual", shiftType: "custom", startTime: value.startTime, endTime: value.endTime }]),
+      machineMthEntries: serializeJsonArray(value.machineId ? [{ machineId: value.machineId, operatorId: value.workerId, mthStart: value.mthStart, mthEnd: value.mthEnd, mthTotal: value.mthTotal, fuelConsumption: value.fuelConsumption, refueling: value.brushcutterRefueling }] : []),
+      vehicleEntries: serializeJsonArray(value.vehicleEntries),
+      vehicleKmTotal: value.vehicleKmTotal == null ? null : String(value.vehicleKmTotal),
+      vehicleRefueling: value.vehicleRefueling == null ? null : String(value.vehicleRefueling),
+      laborHours: String(value.laborHours),
+      serviceNote: value.serviceNote,
+      note: value.note
+    }).where(eq(mowingRecordsTable.id, id)).returning();
+    await tx.delete(mowingRecordMachinesTable).where(eq(mowingRecordMachinesTable.mowingRecordId, id));
+    if (value.machineId) await tx.insert(mowingRecordMachinesTable).values({ mowingRecordId: id, machineId: value.machineId });
+    return updated;
+  });
+  await logAudit({ userId: session2.userId, action: "update", tableName: "mowing_records", recordId: id, description: `${session2.userRole === "brushcutter" ? "K\u0159ov\xE1k" : "Vedouc\xED"} upravil denn\xED z\xE1znam ${record2.date} \u2013 ${record2.location}`, oldData: existing, newData: record2 });
+  res.json(await buildMowingRecord(record2));
+});
+router12.patch("/core-mowing-records/:id/status", requireCoreAccess, async (req, res) => {
+  const session2 = sessionOf4(req);
+  const id = routeId3(req.params.id);
+  const nextStatus = req.body.status;
+  const existing = await getCoreRecord(id);
+  if (!existing) {
+    res.status(404).json({ error: "Z\xE1znam nenalezen" });
+    return;
+  }
+  if (!await canManagerAccess(existing)) {
+    res.status(403).json({ error: "Tento z\xE1znam nepat\u0159\xED K\u0159ov\xE1kovi" });
+    return;
+  }
+  const currentStatus = existing.coreStatus ?? "draft";
+  if (session2.userRole === "brushcutter") {
+    if (existing.userId !== session2.userId || currentStatus !== "draft" || nextStatus !== "submitted") {
+      res.status(403).json({ error: "K\u0159ov\xE1k m\u016F\u017Ee pouze odevzdat sv\u016Fj rozpracovan\xFD z\xE1znam" });
+      return;
+    }
+  } else if (!(nextStatus === "approved" && currentStatus === "submitted") && !(nextStatus === "draft" && ["submitted", "approved"].includes(currentStatus))) {
+    res.status(400).json({ error: "Neplatn\xE1 zm\u011Bna stavu" });
+    return;
+  }
+  const now = /* @__PURE__ */ new Date();
+  const [record2] = await db.update(mowingRecordsTable).set({
+    coreStatus: nextStatus,
+    coreSubmittedAt: nextStatus === "submitted" ? now : nextStatus === "draft" ? null : existing.coreSubmittedAt,
+    coreApprovedAt: nextStatus === "approved" ? now : null,
+    coreApprovedBy: nextStatus === "approved" ? session2.userId : null
+  }).where(eq(mowingRecordsTable.id, id)).returning();
+  const labels = { draft: "Rozpracov\xE1no", submitted: "Odevzd\xE1no", approved: "Schv\xE1leno" };
+  await logAudit({ userId: session2.userId, action: "update", tableName: "mowing_records", recordId: id, description: `Stav denn\xEDho z\xE1znamu K\u0159ov\xE1ka zm\u011Bn\u011Bn: ${labels[currentStatus]} \u2192 ${labels[nextStatus]}`, oldData: { coreStatus: currentStatus }, newData: { coreStatus: nextStatus, coreSubmittedAt: record2.coreSubmittedAt, coreApprovedAt: record2.coreApprovedAt, coreApprovedBy: record2.coreApprovedBy } });
+  res.json(await buildMowingRecord(record2));
+});
+var coreMowingRecords_default = router12;
+
+// src/routes/index.ts
+var router13 = (0, import_express13.Router)();
+router13.use(health_default);
+router13.use(auth_default);
+router13.use(users_default);
+router13.use(codebooks_default);
+router13.use(accessories_default);
+router13.use(fellingRecords_default);
+router13.use(mowingRecords_default);
+router13.use(dashboard_default);
+router13.use(auditLogs_default);
+router13.use(teamDailyRecords_default);
+router13.use(subcontractorDailyRecords_default);
+router13.use(coreMowingRecords_default);
+var routes_default = router13;
 
 // src/lib/logger.ts
 var import_pino = __toESM(require_pino(), 1);
@@ -57944,7 +58238,7 @@ var logger = (0, import_pino.default)({
 });
 
 // src/app.ts
-var app = (0, import_express13.default)();
+var app = (0, import_express14.default)();
 var __filename = fileURLToPath(import.meta.url);
 var __dirname2 = path.dirname(__filename);
 var frontendDist = path.resolve(__dirname2, "../../pracovni-zaznamy/dist/public");
@@ -57972,8 +58266,8 @@ app.use((0, import_cors.default)({
   origin: true,
   credentials: true
 }));
-app.use(import_express13.default.json());
-app.use(import_express13.default.urlencoded({ extended: true }));
+app.use(import_express14.default.json());
+app.use(import_express14.default.urlencoded({ extended: true }));
 var sessionSecret = process.env.SESSION_SECRET ?? "pracovni-zaznamy-dev-secret-change-in-production";
 app.use(
   (0, import_express_session.default)({
@@ -57989,7 +58283,7 @@ app.use(
   })
 );
 app.use("/api", routes_default);
-app.use(import_express13.default.static(frontendDist));
+app.use(import_express14.default.static(frontendDist));
 app.get(/^(?!\/api(?:\/|$)).*/, (_req, res) => {
   res.sendFile(path.join(frontendDist, "index.html"));
 });
