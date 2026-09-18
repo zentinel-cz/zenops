@@ -28,7 +28,7 @@ export function requireOperationsAccess(req: Request, res: Response, next: NextF
     res.status(401).json({ error: "Nepřihlášen" });
     return;
   }
-  if (!session.userRole || !["admin", "user"].includes(session.userRole)) {
+  if (session.userRole !== "admin") {
     res.status(403).json({ error: "Tato část aplikace pro vaši roli zatím není zpřístupněna" });
     return;
   }

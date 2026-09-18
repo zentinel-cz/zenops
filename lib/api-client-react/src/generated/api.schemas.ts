@@ -26,10 +26,10 @@ export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
 export const UserRole = {
   admin: "admin",
-  user: "user",
   employee: "employee",
   manager: "manager",
   subcontractor: "subcontractor",
+  brushcutter: "brushcutter",
 } as const;
 
 export interface User {
@@ -56,10 +56,10 @@ export type CreateUserBodyRole =
 
 export const CreateUserBodyRole = {
   admin: "admin",
-  user: "user",
   employee: "employee",
   manager: "manager",
   subcontractor: "subcontractor",
+  brushcutter: "brushcutter",
 } as const;
 
 export interface CreateUserBody {
@@ -82,10 +82,10 @@ export type UpdateUserBodyRole =
 
 export const UpdateUserBodyRole = {
   admin: "admin",
-  user: "user",
   employee: "employee",
   manager: "manager",
   subcontractor: "subcontractor",
+  brushcutter: "brushcutter",
 } as const;
 
 export interface UpdateUserBody {

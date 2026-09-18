@@ -18,7 +18,7 @@ import { logAudit } from "../lib/auditLog";
 
 const router = Router();
 
-type Role = "admin" | "user" | "employee" | "manager";
+type Role = "admin" | "employee" | "manager" | "brushcutter";
 type SessionData = { userId: number; userRole: Role };
 
 function sessionOf(req: unknown): SessionData {
@@ -72,8 +72,9 @@ async function canReadRecord(recordId: number, session: SessionData) {
   return assignment ? { record, workerId: user.workerId } : { record: null, workerId: null };
 }
 
-router.get("/team-daily-records/options", requireAuth, requireRole(["manager", "employee", "admin"]), async (req, res): Promise<void> => {
+router.get("/team-daily-records/options", requireAuth, requireRole(["manager", "employee", "brushcutter", "admin"]), async (req, res): Promise<void> => {
   const session = sessionOf(req);
+  const corePurpose = req.query.purpose === "core";
   const [regions, weatherTypes, machines, accessories, vehicles] = await Promise.all([
     db.select({ id: regionsTable.id, name: regionsTable.name, code: regionsTable.code }).from(regionsTable).where(and(eq(regionsTable.isActive, true), isNull(regionsTable.deletedAt))).orderBy(regionsTable.name),
     db.select({ id: weatherTypesTable.id, name: weatherTypesTable.name, icon: weatherTypesTable.icon }).from(weatherTypesTable).where(and(eq(weatherTypesTable.isActive, true), isNull(weatherTypesTable.deletedAt))).orderBy(weatherTypesTable.name),
@@ -86,10 +87,10 @@ router.get("/team-daily-records/options", requireAuth, requireRole(["manager", "
     ? await db
       .select({ id: workersTable.id, firstName: workersTable.firstName, lastName: workersTable.lastName, isActive: workersTable.isActive, contractorCompanyId: workersTable.contractorCompanyId, defaultBrushcutter: workersTable.defaultBrushcutter })
       .from(workersTable)
-      .innerJoin(usersTable, and(eq(usersTable.workerId, workersTable.id), eq(usersTable.role, "employee"), eq(usersTable.isActive, true), isNull(usersTable.deletedAt)))
+      .innerJoin(usersTable, and(eq(usersTable.workerId, workersTable.id), eq(usersTable.role, corePurpose ? "brushcutter" : "employee"), eq(usersTable.isActive, true), isNull(usersTable.deletedAt)))
       .where(and(eq(workersTable.isActive, true), isNull(workersTable.deletedAt), isNull(workersTable.contractorCompanyId)))
       .orderBy(workersTable.lastName, workersTable.firstName)
-    : session.userRole === "employee"
+    : (session.userRole === "employee" && !corePurpose) || (session.userRole === "brushcutter" && corePurpose)
       ? await db
         .select({ id: workersTable.id, firstName: workersTable.firstName, lastName: workersTable.lastName, isActive: workersTable.isActive, contractorCompanyId: workersTable.contractorCompanyId, defaultBrushcutter: workersTable.defaultBrushcutter })
         .from(usersTable)

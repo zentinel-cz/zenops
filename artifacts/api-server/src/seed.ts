@@ -136,8 +136,8 @@ async function main() {
     .insert(usersTable)
     .values([
       { username: "admin", passwordHash: adminHash, fullName: "Správce Systému", role: "admin" },
-      { username: "jannovak", passwordHash: testHash, fullName: "Jan Novák", role: "user" },
-      { username: "petrsvoboda", passwordHash: petrHash, fullName: "Petr Svoboda", role: "user" },
+      { username: "jannovak", passwordHash: testHash, fullName: "Jan Novák", role: "employee" },
+      { username: "petrsvoboda", passwordHash: petrHash, fullName: "Petr Svoboda", role: "employee" },
     ])
     .returning();
 

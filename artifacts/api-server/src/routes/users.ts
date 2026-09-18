@@ -28,7 +28,7 @@ function splitFullName(fullName: string): { firstName: string; lastName: string 
 }
 
 function roleDisplayName(role: string): string {
-  return role === "employee" ? "Pracovník" : role === "manager" ? "Vedoucí" : role === "subcontractor" ? "Subdodavatel" : role === "admin" ? "Admin" : "Uživatel";
+  return role === "employee" ? "Pracovník" : role === "manager" ? "Vedoucí" : role === "subcontractor" ? "Subdodavatel" : role === "brushcutter" ? "Křovák" : role === "admin" ? "Admin" : "Neznámá role";
 }
 
 router.get("/users", requireAdmin, async (_req, res): Promise<void> => {
@@ -55,8 +55,8 @@ router.post("/users", requireAdmin, async (req, res): Promise<void> => {
     res.status(400).json({ error: "Všechna pole jsou povinná" });
     return;
   }
-  if (!["admin", "user", "employee", "manager", "subcontractor"].includes(role)) { res.status(400).json({ error: "Neplatná role" }); return; }
-  if (["employee", "manager"].includes(role) && workerId) {
+  if (!["admin", "employee", "manager", "subcontractor", "brushcutter"].includes(role)) { res.status(400).json({ error: "Neplatná role" }); return; }
+  if (["employee", "manager", "brushcutter"].includes(role) && workerId) {
     const [worker] = await db.select({ id: workersTable.id }).from(workersTable).where(and(eq(workersTable.id, workerId), eq(workersTable.isActive, true), isNull(workersTable.deletedAt)));
     if (!worker) { res.status(400).json({ error: "Pracovní profil neexistuje nebo není aktivní" }); return; }
     const [linked] = await db.select({ id: usersTable.id }).from(usersTable).where(and(eq(usersTable.workerId, workerId), isNull(usersTable.deletedAt)));
@@ -71,8 +71,8 @@ router.post("/users", requireAdmin, async (req, res): Promise<void> => {
   const passwordHash = await bcrypt.hash(password, 10);
 
   const user = await db.transaction(async (tx) => {
-    let linkedWorkerId = ["employee", "manager"].includes(role) ? workerId ?? null : null;
-    if (["employee", "manager"].includes(role) && !linkedWorkerId) {
+    let linkedWorkerId = ["employee", "manager", "brushcutter"].includes(role) ? workerId ?? null : null;
+    if (["employee", "manager", "brushcutter"].includes(role) && !linkedWorkerId) {
       const workerName = splitFullName(fullName);
       const [worker] = await tx
         .insert(workersTable)
@@ -83,7 +83,7 @@ router.post("/users", requireAdmin, async (req, res): Promise<void> => {
 
     const [created] = await tx
       .insert(usersTable)
-      .values({ username, passwordHash, fullName: fullName.trim(), role: role as "admin" | "user" | "employee" | "manager" | "subcontractor", workerId: linkedWorkerId, contractorCompanyId: role === "subcontractor" ? contractorCompanyId : null })
+      .values({ username, passwordHash, fullName: fullName.trim(), role: role as "admin" | "employee" | "manager" | "subcontractor" | "brushcutter", workerId: linkedWorkerId, contractorCompanyId: role === "subcontractor" ? contractorCompanyId : null })
       .returning({
         id: usersTable.id,
         username: usersTable.username,
@@ -150,8 +150,8 @@ router.patch("/users/:id", requireAdmin, async (req, res): Promise<void> => {
   const updates: Record<string, unknown> = {};
   if (fullName != null) updates.fullName = fullName;
   if (role != null) updates.role = role;
-  if (role != null && !["admin", "user", "employee", "manager", "subcontractor"].includes(role)) { res.status(400).json({ error: "Neplatná role" }); return; }
-  if (workerId !== undefined && ["employee", "manager"].includes(nextRole)) {
+  if (role != null && !["admin", "employee", "manager", "subcontractor", "brushcutter"].includes(role)) { res.status(400).json({ error: "Neplatná role" }); return; }
+  if (workerId !== undefined && ["employee", "manager", "brushcutter"].includes(nextRole)) {
     if (workerId != null) {
       const [linked] = await db.select({ id: usersTable.id }).from(usersTable).where(and(eq(usersTable.workerId, workerId), isNull(usersTable.deletedAt)));
       if (linked && linked.id !== id) { res.status(409).json({ error: "Tento pracovník již má uživatelský účet" }); return; }
@@ -166,7 +166,7 @@ router.patch("/users/:id", requireAdmin, async (req, res): Promise<void> => {
     if (role === "subcontractor") updates.workerId = null;
   } else {
     if (role != null || contractorCompanyId !== undefined) updates.contractorCompanyId = null;
-    if (role != null && !["employee", "manager"].includes(nextRole)) updates.workerId = null;
+    if (role != null && !["employee", "manager", "brushcutter"].includes(nextRole)) updates.workerId = null;
   }
   if (isActive != null) updates.isActive = isActive;
   if (password) updates.passwordHash = await bcrypt.hash(password, 10);
@@ -178,14 +178,14 @@ router.patch("/users/:id", requireAdmin, async (req, res): Promise<void> => {
 
   const user = await db.transaction(async (tx) => {
     let linkedWorkerId = nextWorkerId;
-    if (["employee", "manager"].includes(nextRole) && !linkedWorkerId) {
+    if (["employee", "manager", "brushcutter"].includes(nextRole) && !linkedWorkerId) {
       const workerName = splitFullName(fullName ?? before.fullName);
       const [worker] = await tx.insert(workersTable).values({ ...workerName, isActive: isActive ?? before.isActive }).returning({ id: workersTable.id });
       linkedWorkerId = worker.id;
       updates.workerId = linkedWorkerId;
     }
 
-    if (linkedWorkerId && ["employee", "manager"].includes(nextRole)) {
+    if (linkedWorkerId && ["employee", "manager", "brushcutter"].includes(nextRole)) {
       const workerUpdates: Record<string, unknown> = {};
       if (fullName != null) Object.assign(workerUpdates, splitFullName(fullName));
       if (isActive != null) workerUpdates.isActive = isActive;

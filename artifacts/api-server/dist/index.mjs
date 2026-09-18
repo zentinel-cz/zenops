@@ -55080,7 +55080,7 @@ var usersTable = pgTable("users", {
   username: text("username").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   fullName: text("full_name").notNull(),
-  role: text("role", { enum: ["admin", "user", "employee", "manager", "subcontractor"] }).notNull().default("user"),
+  role: text("role", { enum: ["admin", "employee", "manager", "subcontractor", "brushcutter"] }).notNull().default("employee"),
   workerId: integer("worker_id").unique().references(() => workersTable.id),
   contractorCompanyId: integer("contractor_company_id").references(() => contractorCompaniesTable.id),
   isActive: boolean("is_active").notNull().default(true),
@@ -55411,7 +55411,7 @@ function requireOperationsAccess(req, res, next) {
     res.status(401).json({ error: "Nep\u0159ihl\xE1\u0161en" });
     return;
   }
-  if (!session2.userRole || !["admin", "user"].includes(session2.userRole)) {
+  if (session2.userRole !== "admin") {
     res.status(403).json({ error: "Tato \u010D\xE1st aplikace pro va\u0161i roli zat\xEDm nen\xED zp\u0159\xEDstupn\u011Bna" });
     return;
   }
@@ -55528,7 +55528,7 @@ function splitFullName(fullName) {
   };
 }
 function roleDisplayName(role) {
-  return role === "employee" ? "Pracovn\xEDk" : role === "manager" ? "Vedouc\xED" : role === "subcontractor" ? "Subdodavatel" : role === "admin" ? "Admin" : "U\u017Eivatel";
+  return role === "employee" ? "Pracovn\xEDk" : role === "manager" ? "Vedouc\xED" : role === "subcontractor" ? "Subdodavatel" : role === "brushcutter" ? "K\u0159ov\xE1k" : role === "admin" ? "Admin" : "Nezn\xE1m\xE1 role";
 }
 router3.get("/users", requireAdmin, async (_req, res) => {
   const users = await db.select(userFields).from(usersTable).where(isNull(usersTable.deletedAt)).orderBy(usersTable.fullName);
@@ -55541,11 +55541,11 @@ router3.post("/users", requireAdmin, async (req, res) => {
     res.status(400).json({ error: "V\u0161echna pole jsou povinn\xE1" });
     return;
   }
-  if (!["admin", "user", "employee", "manager", "subcontractor"].includes(role)) {
+  if (!["admin", "employee", "manager", "subcontractor", "brushcutter"].includes(role)) {
     res.status(400).json({ error: "Neplatn\xE1 role" });
     return;
   }
-  if (["employee", "manager"].includes(role) && workerId) {
+  if (["employee", "manager", "brushcutter"].includes(role) && workerId) {
     const [worker] = await db.select({ id: workersTable.id }).from(workersTable).where(and(eq(workersTable.id, workerId), eq(workersTable.isActive, true), isNull(workersTable.deletedAt)));
     if (!worker) {
       res.status(400).json({ error: "Pracovn\xED profil neexistuje nebo nen\xED aktivn\xED" });
@@ -55570,8 +55570,8 @@ router3.post("/users", requireAdmin, async (req, res) => {
   }
   const passwordHash = await bcryptjs_default.hash(password, 10);
   const user = await db.transaction(async (tx) => {
-    let linkedWorkerId2 = ["employee", "manager"].includes(role) ? workerId ?? null : null;
-    if (["employee", "manager"].includes(role) && !linkedWorkerId2) {
+    let linkedWorkerId2 = ["employee", "manager", "brushcutter"].includes(role) ? workerId ?? null : null;
+    if (["employee", "manager", "brushcutter"].includes(role) && !linkedWorkerId2) {
       const workerName = splitFullName(fullName);
       const [worker] = await tx.insert(workersTable).values({ ...workerName, isActive: true }).returning({ id: workersTable.id });
       linkedWorkerId2 = worker.id;
@@ -55625,11 +55625,11 @@ router3.patch("/users/:id", requireAdmin, async (req, res) => {
   const updates = {};
   if (fullName != null) updates.fullName = fullName;
   if (role != null) updates.role = role;
-  if (role != null && !["admin", "user", "employee", "manager", "subcontractor"].includes(role)) {
+  if (role != null && !["admin", "employee", "manager", "subcontractor", "brushcutter"].includes(role)) {
     res.status(400).json({ error: "Neplatn\xE1 role" });
     return;
   }
-  if (workerId !== void 0 && ["employee", "manager"].includes(nextRole)) {
+  if (workerId !== void 0 && ["employee", "manager", "brushcutter"].includes(nextRole)) {
     if (workerId != null) {
       const [linked] = await db.select({ id: usersTable.id }).from(usersTable).where(and(eq(usersTable.workerId, workerId), isNull(usersTable.deletedAt)));
       if (linked && linked.id !== id) {
@@ -55653,7 +55653,7 @@ router3.patch("/users/:id", requireAdmin, async (req, res) => {
     if (role === "subcontractor") updates.workerId = null;
   } else {
     if (role != null || contractorCompanyId !== void 0) updates.contractorCompanyId = null;
-    if (role != null && !["employee", "manager"].includes(nextRole)) updates.workerId = null;
+    if (role != null && !["employee", "manager", "brushcutter"].includes(nextRole)) updates.workerId = null;
   }
   if (isActive != null) updates.isActive = isActive;
   if (password) updates.passwordHash = await bcryptjs_default.hash(password, 10);
@@ -55663,13 +55663,13 @@ router3.patch("/users/:id", requireAdmin, async (req, res) => {
   }
   const user = await db.transaction(async (tx) => {
     let linkedWorkerId2 = nextWorkerId;
-    if (["employee", "manager"].includes(nextRole) && !linkedWorkerId2) {
+    if (["employee", "manager", "brushcutter"].includes(nextRole) && !linkedWorkerId2) {
       const workerName = splitFullName(fullName ?? before.fullName);
       const [worker] = await tx.insert(workersTable).values({ ...workerName, isActive: isActive ?? before.isActive }).returning({ id: workersTable.id });
       linkedWorkerId2 = worker.id;
       updates.workerId = linkedWorkerId2;
     }
-    if (linkedWorkerId2 && ["employee", "manager"].includes(nextRole)) {
+    if (linkedWorkerId2 && ["employee", "manager", "brushcutter"].includes(nextRole)) {
       const workerUpdates = {};
       if (fullName != null) Object.assign(workerUpdates, splitFullName(fullName));
       if (isActive != null) workerUpdates.isActive = isActive;
@@ -56606,7 +56606,7 @@ function requireMowingAccess(req, res, next) {
     res.status(401).json({ error: "Nep\u0159ihl\xE1\u0161en" });
     return;
   }
-  if (!session2.userRole || !["admin", "user", "employee"].includes(session2.userRole)) {
+  if (!session2.userRole || !["admin", "manager", "brushcutter"].includes(session2.userRole)) {
     res.status(403).json({ error: "Tato \u010D\xE1st aplikace pro va\u0161i roli nen\xED zp\u0159\xEDstupn\u011Bna" });
     return;
   }
@@ -56615,6 +56615,10 @@ function requireMowingAccess(req, res, next) {
 async function linkedWorkerId(userId) {
   const [user] = await db.select({ workerId: usersTable.workerId }).from(usersTable).where(and(eq(usersTable.id, userId), eq(usersTable.isActive, true), isNull(usersTable.deletedAt))).limit(1);
   return user?.workerId ?? null;
+}
+async function activeUserRole(userId) {
+  const [user] = await db.select({ role: usersTable.role }).from(usersTable).where(and(eq(usersTable.id, userId), eq(usersTable.isActive, true), isNull(usersTable.deletedAt))).limit(1);
+  return user?.role ?? null;
 }
 function getFallbackWorkerTimeEntries2(record2, workerIds, manualWorkerIds, machineWorkerIds) {
   return workerIds.map((workerId) => ({
@@ -56738,13 +56742,19 @@ router7.get("/mowing-records", requireMowingAccess, async (req, res) => {
   const dateTo = queryString(req.query.dateTo);
   const regionId = queryString(req.query.regionId);
   const conditions = [isNull(mowingRecordsTable.deletedAt)];
-  if (session2.userRole !== "admin") {
+  if (session2.userRole === "brushcutter") {
     conditions.push(eq(mowingRecordsTable.userId, session2.userId));
+    conditions.push(eq(mowingRecordsTable.mowingKind, "rucni"), eq(mowingRecordsTable.manualMowingKind, "core"));
+  } else if (session2.userRole === "manager") {
+    const brushcutterUsers = await db.select({ id: usersTable.id }).from(usersTable).where(and(eq(usersTable.role, "brushcutter"), eq(usersTable.isActive, true), isNull(usersTable.deletedAt)));
+    if (brushcutterUsers.length === 0) {
+      res.json([]);
+      return;
+    }
+    conditions.push(inArray(mowingRecordsTable.userId, brushcutterUsers.map((user) => user.id)));
+    conditions.push(eq(mowingRecordsTable.mowingKind, "rucni"), eq(mowingRecordsTable.manualMowingKind, "core"));
   } else if (filterUserId) {
     conditions.push(eq(mowingRecordsTable.userId, parseInt(filterUserId, 10)));
-  }
-  if (session2.userRole === "employee") {
-    conditions.push(eq(mowingRecordsTable.mowingKind, "rucni"), eq(mowingRecordsTable.manualMowingKind, "core"));
   }
   if (dateFrom) conditions.push(gte(mowingRecordsTable.date, dateFrom));
   if (dateTo) conditions.push(lte(mowingRecordsTable.date, dateTo));
@@ -56798,8 +56808,12 @@ router7.post("/mowing-records", requireMowingAccess, async (req, res) => {
     res.status(400).json({ error: "Datum a rev\xEDr jsou povinn\xE9" });
     return;
   }
-  if (session2.userRole === "employee" && (mowingKind !== "rucni" || manualMowingKind !== "core")) {
-    res.status(403).json({ error: "Pracovn\xEDk m\u016F\u017Ee vytvo\u0159it pouze vlastn\xED kmenov\xFD z\xE1znam" });
+  if (session2.userRole === "manager") {
+    res.status(403).json({ error: "Vedouc\xED m\u016F\u017Ee z\xE1znamy K\u0159ov\xE1k\u016F upravovat, nikoli vytv\xE1\u0159et" });
+    return;
+  }
+  if (session2.userRole === "brushcutter" && (mowingKind !== "rucni" || manualMowingKind !== "core")) {
+    res.status(403).json({ error: "K\u0159ov\xE1k m\u016F\u017Ee vytvo\u0159it pouze vlastn\xED kmenov\xFD z\xE1znam" });
     return;
   }
   const normalizedWorkerTimeEntries = normalizeWorkerTimeEntries(workerTimeEntries ?? []);
@@ -56846,19 +56860,19 @@ router7.post("/mowing-records", requireMowingAccess, async (req, res) => {
     }
   }
   if (mowingKind === "rucni") {
-    const employeeCore = session2.userRole === "employee" && manualMowingKind === "core";
-    if (session2.userRole !== "admin" && !employeeCore) {
+    const brushcutterCore = session2.userRole === "brushcutter" && manualMowingKind === "core";
+    if (session2.userRole !== "admin" && !brushcutterCore) {
       res.status(403).json({ error: "Tento typ ru\u010Dn\xEDho se\u010Den\xED nem\xE1te opr\xE1vn\u011Bn\xED evidovat" });
       return;
     }
-    if (employeeCore) {
+    if (brushcutterCore) {
       const workerId = await linkedWorkerId(session2.userId);
       if (!workerId) {
         res.status(409).json({ error: "\xDA\u010Det nen\xED propojen\xFD s pracovn\xEDm profilem" });
         return;
       }
       if (nextManualWorkerIds.length !== 1 || nextManualWorkerIds[0] !== workerId || mergedWorkerIds.some((id) => id !== workerId) || nextMachineWorkerIds.length > 0) {
-        res.status(403).json({ error: "Pracovn\xEDk m\u016F\u017Ee evidovat pouze sv\u016Fj vlastn\xED kmenov\xFD z\xE1znam" });
+        res.status(403).json({ error: "K\u0159ov\xE1k m\u016F\u017Ee evidovat pouze sv\u016Fj vlastn\xED kmenov\xFD z\xE1znam" });
         return;
       }
     }
@@ -56979,12 +56993,18 @@ router7.get("/mowing-records/:id", requireMowingAccess, async (req, res) => {
     res.status(404).json({ error: "Z\xE1znam nenalezen" });
     return;
   }
-  if (session2.userRole !== "admin" && record2.userId !== session2.userId) {
+  if (session2.userRole === "manager") {
+    const creatorRole = await activeUserRole(record2.userId);
+    if (creatorRole !== "brushcutter" || record2.mowingKind !== "rucni" || record2.manualMowingKind !== "core") {
+      res.status(403).json({ error: "Vedouc\xED m\u016F\u017Ee zobrazit pouze denn\xED z\xE1znamy K\u0159ov\xE1k\u016F" });
+      return;
+    }
+  } else if (session2.userRole !== "admin" && record2.userId !== session2.userId) {
     res.status(403).json({ error: "Nedostate\u010Dn\xE1 opr\xE1vn\u011Bn\xED" });
     return;
   }
-  if (session2.userRole === "employee" && (record2.mowingKind !== "rucni" || record2.manualMowingKind !== "core")) {
-    res.status(403).json({ error: "Pracovn\xEDk m\u016F\u017Ee zobrazit pouze vlastn\xED kmenov\xE9 z\xE1znamy" });
+  if (session2.userRole === "brushcutter" && (record2.mowingKind !== "rucni" || record2.manualMowingKind !== "core")) {
+    res.status(403).json({ error: "K\u0159ov\xE1k m\u016F\u017Ee zobrazit pouze vlastn\xED kmenov\xE9 z\xE1znamy" });
     return;
   }
   res.json(await buildMowingRecord(record2));
@@ -56997,12 +57017,18 @@ router7.patch("/mowing-records/:id", requireMowingAccess, async (req, res) => {
     res.status(404).json({ error: "Z\xE1znam nenalezen" });
     return;
   }
-  if (session2.userRole !== "admin" && existing.userId !== session2.userId) {
+  if (session2.userRole === "manager") {
+    const creatorRole = await activeUserRole(existing.userId);
+    if (creatorRole !== "brushcutter" || existing.mowingKind !== "rucni" || existing.manualMowingKind !== "core") {
+      res.status(403).json({ error: "Vedouc\xED m\u016F\u017Ee upravit pouze denn\xED z\xE1znamy K\u0159ov\xE1k\u016F" });
+      return;
+    }
+  } else if (session2.userRole !== "admin" && existing.userId !== session2.userId) {
     res.status(403).json({ error: "Nedostate\u010Dn\xE1 opr\xE1vn\u011Bn\xED" });
     return;
   }
-  if (session2.userRole === "employee" && (existing.mowingKind !== "rucni" || existing.manualMowingKind !== "core")) {
-    res.status(403).json({ error: "Pracovn\xEDk m\u016F\u017Ee upravit pouze vlastn\xED kmenov\xE9 z\xE1znamy" });
+  if (session2.userRole === "brushcutter" && (existing.mowingKind !== "rucni" || existing.manualMowingKind !== "core")) {
+    res.status(403).json({ error: "K\u0159ov\xE1k m\u016F\u017Ee upravit pouze vlastn\xED kmenov\xE9 z\xE1znamy" });
     return;
   }
   const {
@@ -57082,8 +57108,8 @@ router7.patch("/mowing-records/:id", requireMowingAccess, async (req, res) => {
   const nextMowingKind = mowingKind !== void 0 ? mowingKind : existing.mowingKind;
   const nextManualMowingKind = manualMowingKind !== void 0 ? manualMowingKind : existing.manualMowingKind;
   const nextContractorCompanyId = contractorCompanyId !== void 0 ? contractorCompanyId : existing.contractorCompanyId;
-  if (session2.userRole === "employee" && (nextMowingKind !== "rucni" || nextManualMowingKind !== "core")) {
-    res.status(403).json({ error: "Pracovn\xEDk nem\u016F\u017Ee zm\u011Bnit typ kmenov\xE9ho z\xE1znamu" });
+  if (["brushcutter", "manager"].includes(session2.userRole) && (nextMowingKind !== "rucni" || nextManualMowingKind !== "core")) {
+    res.status(403).json({ error: "Typ kmenov\xE9ho z\xE1znamu nelze zm\u011Bnit" });
     return;
   }
   if (nextMowingKind === "strojni") {
@@ -57109,19 +57135,21 @@ router7.patch("/mowing-records/:id", requireMowingAccess, async (req, res) => {
     }
   }
   if (nextMowingKind === "rucni") {
-    const employeeCore = session2.userRole === "employee" && nextManualMowingKind === "core";
-    if (session2.userRole !== "admin" && !employeeCore) {
+    const brushcutterCore = session2.userRole === "brushcutter" && nextManualMowingKind === "core";
+    const managerCore = session2.userRole === "manager" && nextManualMowingKind === "core";
+    if (session2.userRole !== "admin" && !brushcutterCore && !managerCore) {
       res.status(403).json({ error: "Tento typ ru\u010Dn\xEDho se\u010Den\xED nem\xE1te opr\xE1vn\u011Bn\xED evidovat" });
       return;
     }
-    if (employeeCore) {
-      const workerId = await linkedWorkerId(session2.userId);
+    if (brushcutterCore || managerCore) {
+      const ownerUserId = brushcutterCore ? session2.userId : existing.userId;
+      const workerId = await linkedWorkerId(ownerUserId);
       if (!workerId) {
-        res.status(409).json({ error: "\xDA\u010Det nen\xED propojen\xFD s pracovn\xEDm profilem" });
+        res.status(409).json({ error: "\xDA\u010Det K\u0159ov\xE1ka nen\xED propojen\xFD s pracovn\xEDm profilem" });
         return;
       }
       if (nextManualWorkerIds.length !== 1 || nextManualWorkerIds[0] !== workerId || resolvedWorkerIds.some((id2) => id2 !== workerId) || resolvedMachineWorkerIds.length > 0) {
-        res.status(403).json({ error: "Pracovn\xEDk m\u016F\u017Ee evidovat pouze sv\u016Fj vlastn\xED kmenov\xFD z\xE1znam" });
+        res.status(403).json({ error: "Kmenov\xFD z\xE1znam mus\xED z\u016Fstat p\u0159i\u0159azen\xFD p\u016Fvodn\xEDmu K\u0159ov\xE1kovi" });
         return;
       }
     }
@@ -57277,8 +57305,8 @@ router7.delete("/mowing-records/:id", requireMowingAccess, async (req, res) => {
     res.status(403).json({ error: "Nedostate\u010Dn\xE1 opr\xE1vn\u011Bn\xED" });
     return;
   }
-  if (session2.userRole === "employee" && (existing.mowingKind !== "rucni" || existing.manualMowingKind !== "core")) {
-    res.status(403).json({ error: "Pracovn\xEDk m\u016F\u017Ee smazat pouze vlastn\xED kmenov\xE9 z\xE1znamy" });
+  if (session2.userRole === "brushcutter" && (existing.mowingKind !== "rucni" || existing.manualMowingKind !== "core")) {
+    res.status(403).json({ error: "K\u0159ov\xE1k m\u016F\u017Ee smazat pouze vlastn\xED kmenov\xE9 z\xE1znamy" });
     return;
   }
   await db.update(mowingRecordsTable).set({ deletedAt: /* @__PURE__ */ new Date(), deletedBy: session2.userId }).where(eq(mowingRecordsTable.id, id));
@@ -57476,8 +57504,9 @@ async function canReadRecord(recordId, session2) {
   const [assignment] = await db.select({ id: teamDailyAssignmentsTable.id }).from(teamDailyAssignmentsTable).where(and(eq(teamDailyAssignmentsTable.dailyRecordId, recordId), eq(teamDailyAssignmentsTable.workerId, user.workerId))).limit(1);
   return assignment ? { record: record2, workerId: user.workerId } : { record: null, workerId: null };
 }
-router10.get("/team-daily-records/options", requireAuth, requireRole(["manager", "employee", "admin"]), async (req, res) => {
+router10.get("/team-daily-records/options", requireAuth, requireRole(["manager", "employee", "brushcutter", "admin"]), async (req, res) => {
   const session2 = sessionOf2(req);
+  const corePurpose = req.query.purpose === "core";
   const [regions, weatherTypes, machines, accessories, vehicles] = await Promise.all([
     db.select({ id: regionsTable.id, name: regionsTable.name, code: regionsTable.code }).from(regionsTable).where(and(eq(regionsTable.isActive, true), isNull(regionsTable.deletedAt))).orderBy(regionsTable.name),
     db.select({ id: weatherTypesTable.id, name: weatherTypesTable.name, icon: weatherTypesTable.icon }).from(weatherTypesTable).where(and(eq(weatherTypesTable.isActive, true), isNull(weatherTypesTable.deletedAt))).orderBy(weatherTypesTable.name),
@@ -57485,7 +57514,7 @@ router10.get("/team-daily-records/options", requireAuth, requireRole(["manager",
     db.select({ id: accessoriesTable.id, name: accessoriesTable.name, type: accessoriesTable.type }).from(accessoriesTable).where(and(eq(accessoriesTable.isActive, true), isNull(accessoriesTable.deletedAt))).orderBy(accessoriesTable.name),
     db.select({ id: vehiclesTable.id, name: vehiclesTable.name, licensePlate: vehiclesTable.licensePlate }).from(vehiclesTable).where(and(eq(vehiclesTable.isActive, true), isNull(vehiclesTable.deletedAt))).orderBy(vehiclesTable.name)
   ]);
-  const workers = session2.userRole === "manager" || session2.userRole === "admin" ? await db.select({ id: workersTable.id, firstName: workersTable.firstName, lastName: workersTable.lastName, isActive: workersTable.isActive, contractorCompanyId: workersTable.contractorCompanyId, defaultBrushcutter: workersTable.defaultBrushcutter }).from(workersTable).innerJoin(usersTable, and(eq(usersTable.workerId, workersTable.id), eq(usersTable.role, "employee"), eq(usersTable.isActive, true), isNull(usersTable.deletedAt))).where(and(eq(workersTable.isActive, true), isNull(workersTable.deletedAt), isNull(workersTable.contractorCompanyId))).orderBy(workersTable.lastName, workersTable.firstName) : session2.userRole === "employee" ? await db.select({ id: workersTable.id, firstName: workersTable.firstName, lastName: workersTable.lastName, isActive: workersTable.isActive, contractorCompanyId: workersTable.contractorCompanyId, defaultBrushcutter: workersTable.defaultBrushcutter }).from(usersTable).innerJoin(workersTable, eq(usersTable.workerId, workersTable.id)).where(and(eq(usersTable.id, session2.userId), eq(usersTable.isActive, true), isNull(usersTable.deletedAt), eq(workersTable.isActive, true), isNull(workersTable.deletedAt), isNull(workersTable.contractorCompanyId))).limit(1) : [];
+  const workers = session2.userRole === "manager" || session2.userRole === "admin" ? await db.select({ id: workersTable.id, firstName: workersTable.firstName, lastName: workersTable.lastName, isActive: workersTable.isActive, contractorCompanyId: workersTable.contractorCompanyId, defaultBrushcutter: workersTable.defaultBrushcutter }).from(workersTable).innerJoin(usersTable, and(eq(usersTable.workerId, workersTable.id), eq(usersTable.role, corePurpose ? "brushcutter" : "employee"), eq(usersTable.isActive, true), isNull(usersTable.deletedAt))).where(and(eq(workersTable.isActive, true), isNull(workersTable.deletedAt), isNull(workersTable.contractorCompanyId))).orderBy(workersTable.lastName, workersTable.firstName) : session2.userRole === "employee" && !corePurpose || session2.userRole === "brushcutter" && corePurpose ? await db.select({ id: workersTable.id, firstName: workersTable.firstName, lastName: workersTable.lastName, isActive: workersTable.isActive, contractorCompanyId: workersTable.contractorCompanyId, defaultBrushcutter: workersTable.defaultBrushcutter }).from(usersTable).innerJoin(workersTable, eq(usersTable.workerId, workersTable.id)).where(and(eq(usersTable.id, session2.userId), eq(usersTable.isActive, true), isNull(usersTable.deletedAt), eq(workersTable.isActive, true), isNull(workersTable.deletedAt), isNull(workersTable.contractorCompanyId))).limit(1) : [];
   res.json({ regions, weatherTypes, machines, accessories, vehicles, workers });
 });
 router10.get("/team-daily-records", requireAuth, requireRole(["manager", "employee", "admin"]), async (req, res) => {

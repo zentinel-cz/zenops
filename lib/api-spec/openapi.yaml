@@ -1168,7 +1168,7 @@ components:
           type: string
         role:
           type: string
-          enum: [admin, user, employee, manager, subcontractor]
+          enum: [admin, employee, manager, subcontractor, brushcutter]
         workerId:
           type: ["integer", "null"]
         contractorCompanyId:
@@ -1199,7 +1199,7 @@ components:
           type: string
         role:
           type: string
-          enum: [admin, user, employee, manager, subcontractor]
+          enum: [admin, employee, manager, subcontractor, brushcutter]
         workerId:
           type: ["integer", "null"]
         contractorCompanyId:
@@ -1217,7 +1217,7 @@ components:
           type: ["string", "null"]
         role:
           type: ["string", "null"]
-          enum: [admin, user, employee, manager, subcontractor, null]
+          enum: [admin, employee, manager, subcontractor, brushcutter, null]
         workerId:
           type: ["integer", "null"]
         contractorCompanyId:

@@ -55,6 +55,7 @@ function formatAuditText(value: string) {
 function formatAuditData(value: unknown, key?: string): unknown {
   if (key === "role" && value === "employee") return "Pracovník";
   if (key === "role" && value === "subcontractor") return "Subdodavatel";
+  if (key === "role" && value === "brushcutter") return "Křovák";
   if (typeof value === "string") return formatAuditText(value);
   if (Array.isArray(value)) return value.map((item) => formatAuditData(item));
   if (value && typeof value === "object") return Object.fromEntries(Object.entries(value).map(([nestedKey, nestedValue]) => [nestedKey, formatAuditData(nestedValue, nestedKey)]));

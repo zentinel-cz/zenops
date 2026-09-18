@@ -15,8 +15,8 @@ export type UpdateUserBodyRole =
 
 export const UpdateUserBodyRole = {
   admin: "admin",
-  user: "user",
   employee: "employee",
   manager: "manager",
   subcontractor: "subcontractor",
+  brushcutter: "brushcutter",
 } as const;

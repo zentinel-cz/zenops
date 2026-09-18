@@ -45,7 +45,7 @@ function sessionOf(req: unknown): MowingSession {
 function requireMowingAccess(req: Request, res: Response, next: NextFunction): void {
   const session = sessionOf(req);
   if (!session?.userId) { res.status(401).json({ error: "Nepřihlášen" }); return; }
-  if (!session.userRole || !["admin", "user", "employee"].includes(session.userRole)) {
+  if (!session.userRole || !["admin", "manager", "brushcutter"].includes(session.userRole)) {
     res.status(403).json({ error: "Tato část aplikace pro vaši roli není zpřístupněna" });
     return;
   }
@@ -57,6 +57,13 @@ async function linkedWorkerId(userId: number): Promise<number | null> {
     .where(and(eq(usersTable.id, userId), eq(usersTable.isActive, true), isNull(usersTable.deletedAt)))
     .limit(1);
   return user?.workerId ?? null;
+}
+
+async function activeUserRole(userId: number): Promise<string | null> {
+  const [user] = await db.select({ role: usersTable.role }).from(usersTable)
+    .where(and(eq(usersTable.id, userId), eq(usersTable.isActive, true), isNull(usersTable.deletedAt)))
+    .limit(1);
+  return user?.role ?? null;
 }
 
 function getFallbackWorkerTimeEntries(record: typeof mowingRecordsTable.$inferSelect, workerIds: number[], manualWorkerIds: number[], machineWorkerIds: number[]) {
@@ -219,14 +226,16 @@ router.get("/mowing-records", requireMowingAccess, async (req, res): Promise<voi
 
   const conditions = [isNull(mowingRecordsTable.deletedAt)];
 
-  if (session.userRole !== "admin") {
+  if (session.userRole === "brushcutter") {
     conditions.push(eq(mowingRecordsTable.userId, session.userId));
+    conditions.push(eq(mowingRecordsTable.mowingKind, "rucni"), eq(mowingRecordsTable.manualMowingKind, "core"));
+  } else if (session.userRole === "manager") {
+    const brushcutterUsers = await db.select({ id: usersTable.id }).from(usersTable).where(and(eq(usersTable.role, "brushcutter"), eq(usersTable.isActive, true), isNull(usersTable.deletedAt)));
+    if (brushcutterUsers.length === 0) { res.json([]); return; }
+    conditions.push(inArray(mowingRecordsTable.userId, brushcutterUsers.map((user) => user.id)));
+    conditions.push(eq(mowingRecordsTable.mowingKind, "rucni"), eq(mowingRecordsTable.manualMowingKind, "core"));
   } else if (filterUserId) {
     conditions.push(eq(mowingRecordsTable.userId, parseInt(filterUserId, 10)));
-  }
-
-  if (session.userRole === "employee") {
-    conditions.push(eq(mowingRecordsTable.mowingKind, "rucni"), eq(mowingRecordsTable.manualMowingKind, "core"));
   }
 
   if (dateFrom) conditions.push(gte(mowingRecordsTable.date, dateFrom));
@@ -298,8 +307,12 @@ router.post("/mowing-records", requireMowingAccess, async (req, res): Promise<vo
     res.status(400).json({ error: "Datum a revír jsou povinné" });
     return;
   }
-  if (session.userRole === "employee" && (mowingKind !== "rucni" || manualMowingKind !== "core")) {
-    res.status(403).json({ error: "Pracovník může vytvořit pouze vlastní kmenový záznam" });
+  if (session.userRole === "manager") {
+    res.status(403).json({ error: "Vedoucí může záznamy Křováků upravovat, nikoli vytvářet" });
+    return;
+  }
+  if (session.userRole === "brushcutter" && (mowingKind !== "rucni" || manualMowingKind !== "core")) {
+    res.status(403).json({ error: "Křovák může vytvořit pouze vlastní kmenový záznam" });
     return;
   }
 
@@ -348,13 +361,13 @@ router.post("/mowing-records", requireMowingAccess, async (req, res): Promise<vo
     }
   }
   if (mowingKind === "rucni") {
-    const employeeCore = session.userRole === "employee" && manualMowingKind === "core";
-    if (session.userRole !== "admin" && !employeeCore) { res.status(403).json({ error: "Tento typ ručního sečení nemáte oprávnění evidovat" }); return; }
-    if (employeeCore) {
+    const brushcutterCore = session.userRole === "brushcutter" && manualMowingKind === "core";
+    if (session.userRole !== "admin" && !brushcutterCore) { res.status(403).json({ error: "Tento typ ručního sečení nemáte oprávnění evidovat" }); return; }
+    if (brushcutterCore) {
       const workerId = await linkedWorkerId(session.userId);
       if (!workerId) { res.status(409).json({ error: "Účet není propojený s pracovním profilem" }); return; }
       if (nextManualWorkerIds.length !== 1 || nextManualWorkerIds[0] !== workerId || mergedWorkerIds.some((id) => id !== workerId) || nextMachineWorkerIds.length > 0) {
-        res.status(403).json({ error: "Pracovník může evidovat pouze svůj vlastní kmenový záznam" }); return;
+        res.status(403).json({ error: "Křovák může evidovat pouze svůj vlastní kmenový záznam" }); return;
       }
     }
     if (manualMowingKind === "core" && nextManualWorkerIds.length === 0) { res.status(400).json({ error: "Vyberte alespoň jednoho kmenového pracovníka" }); return; }
@@ -449,11 +462,16 @@ router.get("/mowing-records/:id", requireMowingAccess, async (req, res): Promise
   const [record] = await db.select().from(mowingRecordsTable).where(and(eq(mowingRecordsTable.id, id), isNull(mowingRecordsTable.deletedAt)));
   if (!record) { res.status(404).json({ error: "Záznam nenalezen" }); return; }
 
-  if (session.userRole !== "admin" && record.userId !== session.userId) {
+  if (session.userRole === "manager") {
+    const creatorRole = await activeUserRole(record.userId);
+    if (creatorRole !== "brushcutter" || record.mowingKind !== "rucni" || record.manualMowingKind !== "core") {
+      res.status(403).json({ error: "Vedoucí může zobrazit pouze denní záznamy Křováků" }); return;
+    }
+  } else if (session.userRole !== "admin" && record.userId !== session.userId) {
     res.status(403).json({ error: "Nedostatečná oprávnění" }); return;
   }
-  if (session.userRole === "employee" && (record.mowingKind !== "rucni" || record.manualMowingKind !== "core")) {
-    res.status(403).json({ error: "Pracovník může zobrazit pouze vlastní kmenové záznamy" }); return;
+  if (session.userRole === "brushcutter" && (record.mowingKind !== "rucni" || record.manualMowingKind !== "core")) {
+    res.status(403).json({ error: "Křovák může zobrazit pouze vlastní kmenové záznamy" }); return;
   }
 
   res.json(await buildMowingRecord(record));
@@ -466,11 +484,16 @@ router.patch("/mowing-records/:id", requireMowingAccess, async (req, res): Promi
   const [existing] = await db.select().from(mowingRecordsTable).where(and(eq(mowingRecordsTable.id, id), isNull(mowingRecordsTable.deletedAt)));
   if (!existing) { res.status(404).json({ error: "Záznam nenalezen" }); return; }
 
-  if (session.userRole !== "admin" && existing.userId !== session.userId) {
+  if (session.userRole === "manager") {
+    const creatorRole = await activeUserRole(existing.userId);
+    if (creatorRole !== "brushcutter" || existing.mowingKind !== "rucni" || existing.manualMowingKind !== "core") {
+      res.status(403).json({ error: "Vedoucí může upravit pouze denní záznamy Křováků" }); return;
+    }
+  } else if (session.userRole !== "admin" && existing.userId !== session.userId) {
     res.status(403).json({ error: "Nedostatečná oprávnění" }); return;
   }
-  if (session.userRole === "employee" && (existing.mowingKind !== "rucni" || existing.manualMowingKind !== "core")) {
-    res.status(403).json({ error: "Pracovník může upravit pouze vlastní kmenové záznamy" }); return;
+  if (session.userRole === "brushcutter" && (existing.mowingKind !== "rucni" || existing.manualMowingKind !== "core")) {
+    res.status(403).json({ error: "Křovák může upravit pouze vlastní kmenové záznamy" }); return;
   }
 
   const {
@@ -590,8 +613,8 @@ router.patch("/mowing-records/:id", requireMowingAccess, async (req, res): Promi
   const nextManualMowingKind = manualMowingKind !== undefined ? manualMowingKind : existing.manualMowingKind;
   const nextContractorCompanyId = contractorCompanyId !== undefined ? contractorCompanyId : existing.contractorCompanyId;
 
-  if (session.userRole === "employee" && (nextMowingKind !== "rucni" || nextManualMowingKind !== "core")) {
-    res.status(403).json({ error: "Pracovník nemůže změnit typ kmenového záznamu" });
+  if (["brushcutter", "manager"].includes(session.userRole) && (nextMowingKind !== "rucni" || nextManualMowingKind !== "core")) {
+    res.status(403).json({ error: "Typ kmenového záznamu nelze změnit" });
     return;
   }
 
@@ -618,13 +641,15 @@ router.patch("/mowing-records/:id", requireMowingAccess, async (req, res): Promi
     }
   }
   if (nextMowingKind === "rucni") {
-    const employeeCore = session.userRole === "employee" && nextManualMowingKind === "core";
-    if (session.userRole !== "admin" && !employeeCore) { res.status(403).json({ error: "Tento typ ručního sečení nemáte oprávnění evidovat" }); return; }
-    if (employeeCore) {
-      const workerId = await linkedWorkerId(session.userId);
-      if (!workerId) { res.status(409).json({ error: "Účet není propojený s pracovním profilem" }); return; }
+    const brushcutterCore = session.userRole === "brushcutter" && nextManualMowingKind === "core";
+    const managerCore = session.userRole === "manager" && nextManualMowingKind === "core";
+    if (session.userRole !== "admin" && !brushcutterCore && !managerCore) { res.status(403).json({ error: "Tento typ ručního sečení nemáte oprávnění evidovat" }); return; }
+    if (brushcutterCore || managerCore) {
+      const ownerUserId = brushcutterCore ? session.userId : existing.userId;
+      const workerId = await linkedWorkerId(ownerUserId);
+      if (!workerId) { res.status(409).json({ error: "Účet Křováka není propojený s pracovním profilem" }); return; }
       if (nextManualWorkerIds.length !== 1 || nextManualWorkerIds[0] !== workerId || resolvedWorkerIds.some((id) => id !== workerId) || resolvedMachineWorkerIds.length > 0) {
-        res.status(403).json({ error: "Pracovník může evidovat pouze svůj vlastní kmenový záznam" }); return;
+        res.status(403).json({ error: "Kmenový záznam musí zůstat přiřazený původnímu Křovákovi" }); return;
       }
     }
     if (nextManualMowingKind === "core" && nextManualWorkerIds.length === 0) { res.status(400).json({ error: "Vyberte alespoň jednoho kmenového pracovníka" }); return; }
@@ -756,8 +781,8 @@ router.delete("/mowing-records/:id", requireMowingAccess, async (req, res): Prom
   if (session.userRole !== "admin" && existing.userId !== session.userId) {
     res.status(403).json({ error: "Nedostatečná oprávnění" }); return;
   }
-  if (session.userRole === "employee" && (existing.mowingKind !== "rucni" || existing.manualMowingKind !== "core")) {
-    res.status(403).json({ error: "Pracovník může smazat pouze vlastní kmenové záznamy" }); return;
+  if (session.userRole === "brushcutter" && (existing.mowingKind !== "rucni" || existing.manualMowingKind !== "core")) {
+    res.status(403).json({ error: "Křovák může smazat pouze vlastní kmenové záznamy" }); return;
   }
 
   await db.update(mowingRecordsTable).set({ deletedAt: new Date(), deletedBy: session.userId }).where(eq(mowingRecordsTable.id, id));

@@ -50,7 +50,7 @@ function AppRoutes() {
     return <LoginPage />;
   }
 
-  if (user && (user.role === "employee" || user.role === "manager")) {
+  if (user && (user.role === "employee" || user.role === "manager" || user.role === "brushcutter")) {
     return <FutureRolePage />;
   }
 

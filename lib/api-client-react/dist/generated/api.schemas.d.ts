@@ -21,10 +21,10 @@ export interface LoginBody {
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 export declare const UserRole: {
     readonly admin: "admin";
-    readonly user: "user";
     readonly employee: "employee";
     readonly manager: "manager";
     readonly subcontractor: "subcontractor";
+    readonly brushcutter: "brushcutter";
 };
 export interface User {
     id: number;
@@ -46,10 +46,10 @@ export interface AuthResponse {
 export type CreateUserBodyRole = (typeof CreateUserBodyRole)[keyof typeof CreateUserBodyRole];
 export declare const CreateUserBodyRole: {
     readonly admin: "admin";
-    readonly user: "user";
     readonly employee: "employee";
     readonly manager: "manager";
     readonly subcontractor: "subcontractor";
+    readonly brushcutter: "brushcutter";
 };
 export interface CreateUserBody {
     username: string;
@@ -67,10 +67,10 @@ export interface CreateUserBody {
 export type UpdateUserBodyRole = (typeof UpdateUserBodyRole)[keyof typeof UpdateUserBodyRole] | null;
 export declare const UpdateUserBodyRole: {
     readonly admin: "admin";
-    readonly user: "user";
     readonly employee: "employee";
     readonly manager: "manager";
     readonly subcontractor: "subcontractor";
+    readonly brushcutter: "brushcutter";
 };
 export interface UpdateUserBody {
     /** @nullable */

@@ -9,7 +9,7 @@ export const usersTable = pgTable("users", {
   username: text("username").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   fullName: text("full_name").notNull(),
-  role: text("role", { enum: ["admin", "user", "employee", "manager", "subcontractor"] }).notNull().default("user"),
+  role: text("role", { enum: ["admin", "employee", "manager", "subcontractor", "brushcutter"] }).notNull().default("employee"),
   workerId: integer("worker_id").unique().references(() => workersTable.id),
   contractorCompanyId: integer("contractor_company_id").references(() => contractorCompaniesTable.id),
   isActive: boolean("is_active").notNull().default(true),

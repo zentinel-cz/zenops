@@ -334,7 +334,7 @@ function emptyVehicle(): VehicleEntry {
   return { vehicleId: "", kmStart: "", kmEnd: "", refueling: "" };
 }
 
-export function WorkerDailyWorkflow({ onBack }: { onBack: () => void }) {
+export function WorkerDailyWorkflow({ onBack }: { onBack?: () => void }) {
   const [options, setOptions] = useState<Options | null>(null);
   const [records, setRecords] = useState<DailyRecord[]>([]);
   const [detail, setDetail] = useState<Detail | null>(null);
@@ -409,7 +409,7 @@ export function WorkerDailyWorkflow({ onBack }: { onBack: () => void }) {
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Ovečky</p><h1 className="mt-1 font-display text-3xl font-bold">Moje denní záznamy</h1><p className="mt-2 text-sm text-slate-500">Vyberte záznam připravený vedoucím.</p></div>
-        <div className="flex flex-wrap gap-2"><button type="button" onClick={() => void switchArchive()} className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold">{showArchive ? "← Aktivní záznamy" : "Archiv uzavřených"}</button><button onClick={onBack} className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold">← Zpět</button></div>
+        <div className="flex flex-wrap gap-2"><button type="button" onClick={() => void switchArchive()} className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold">{showArchive ? "← Aktivní záznamy" : "Archiv uzavřených"}</button>{onBack && <button onClick={onBack} className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold">← Zpět</button>}</div>
       </div>
       {error && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
       <div className="grid gap-3">

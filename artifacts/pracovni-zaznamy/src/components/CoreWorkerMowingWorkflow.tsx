@@ -42,7 +42,7 @@ function recordToForm(record: MowingRecord): Partial<MowingFormData> {
   };
 }
 
-export default function CoreWorkerMowingWorkflow({ onBack }: { onBack: () => void }) {
+export default function CoreWorkerMowingWorkflow({ onBack, managerMode = false }: { onBack?: () => void; managerMode?: boolean }) {
   const queryClient = useQueryClient();
   const { data: records = [], isLoading } = useListMowingRecords(undefined, { query: { queryKey: getListMowingRecordsQueryKey(), staleTime: 0, refetchOnMount: "always" } });
   const createMutation = useCreateMowingRecord();
@@ -54,7 +54,7 @@ export default function CoreWorkerMowingWorkflow({ onBack }: { onBack: () => voi
   const [success, setSuccess] = useState("");
 
   useEffect(() => {
-    fetch("/api/team-daily-records/options", { credentials: "include" })
+    fetch("/api/team-daily-records/options?purpose=core", { credentials: "include" })
       .then(async (response) => {
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.error || "Číselníky se nepodařilo načíst");
@@ -101,13 +101,13 @@ export default function CoreWorkerMowingWorkflow({ onBack }: { onBack: () => voi
 
   return <section className="w-full space-y-5">
     <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div><p className="text-xs font-bold uppercase tracking-[0.22em] text-emerald-700">Křováci · Kmenoví</p><h1 className="mt-1 font-display text-3xl font-bold text-slate-950">Moje denní záznamy</h1><p className="mt-2 text-sm text-slate-500">Směna, lokalita, počasí, křovinořezy a jízdy aut.</p></div>
-      <div className="flex flex-wrap gap-2"><button type="button" onClick={onBack} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700">← Druhy práce</button><button type="button" disabled={!options} onClick={() => { setShowForm(true); setError(""); setSuccess(""); }} className="rounded-xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white shadow-lg disabled:opacity-40">+ Nový záznam</button></div>
+      <div><p className="text-xs font-bold uppercase tracking-[0.22em] text-emerald-700">Křováci · Kmenoví</p><h1 className="mt-1 font-display text-3xl font-bold text-slate-950">{managerMode ? "Denní záznamy Křováků" : "Moje denní záznamy"}</h1><p className="mt-2 text-sm text-slate-500">{managerMode ? "Kontrola a úprava záznamů Křováků." : "Směna, lokalita, počasí, křovinořezy a jízdy aut."}</p></div>
+      <div className="flex flex-wrap gap-2">{onBack && <button type="button" onClick={onBack} className="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-700">← Zpět</button>}{!managerMode && <button type="button" disabled={!options} onClick={() => { setShowForm(true); setError(""); setSuccess(""); }} className="rounded-xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white shadow-lg disabled:opacity-40">+ Nový záznam</button>}</div>
     </div>
     {error && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-medium text-red-700">{error}</div>}
     {success && <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm font-medium text-emerald-800">{success}</div>}
     <div className={panelClass}>
-      {isLoading ? <p className="text-sm text-slate-500">Načítám záznamy…</p> : records.length === 0 ? <p className="rounded-xl bg-slate-50 p-6 text-center text-sm text-slate-500">Zatím nemáte žádný kmenový denní záznam.</p> : <div className="space-y-3">{records.map((record) => {
+      {isLoading ? <p className="text-sm text-slate-500">Načítám záznamy…</p> : records.length === 0 ? <p className="rounded-xl bg-slate-50 p-6 text-center text-sm text-slate-500">{managerMode ? "Žádný Křovák zatím nevytvořil denní záznam." : "Zatím nemáte žádný kmenový denní záznam."}</p> : <div className="space-y-3">{records.map((record) => {
         const shift = record.workerTimeEntries[0];
         return <article key={record.id} className="flex flex-col gap-3 rounded-xl border border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between"><div><p className="font-bold text-slate-950">{formatDate(record.date)} · {record.region.name}</p><p className="mt-1 text-sm text-slate-600">{record.location || "Místo neuvedeno"}{shift?.startTime && shift?.endTime ? ` · ${shift.startTime}–${shift.endTime}` : ""}{record.vehicleEntries.length ? ` · ${record.vehicleEntries.length} jízd` : ""}</p><p className="mt-1 text-xs text-slate-400">Vytvořeno {formatDateTime(record.createdAt)}</p></div><button type="button" onClick={() => { setEditing(record); setError(""); setSuccess(""); }} className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800">Upravit</button></article>;
       })}</div>}

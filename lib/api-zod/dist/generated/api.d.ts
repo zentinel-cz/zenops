@@ -34,7 +34,7 @@ export declare const LoginResponse: zod.ZodObject<{
         id: zod.ZodNumber;
         username: zod.ZodString;
         fullName: zod.ZodString;
-        role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
+        role: zod.ZodEnum<["admin", "employee", "manager", "subcontractor", "brushcutter"]>;
         workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         isActive: zod.ZodBoolean;
@@ -44,7 +44,7 @@ export declare const LoginResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -54,7 +54,7 @@ export declare const LoginResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -68,7 +68,7 @@ export declare const LoginResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -81,7 +81,7 @@ export declare const LoginResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -106,7 +106,7 @@ export declare const GetMeResponse: zod.ZodObject<{
     id: zod.ZodNumber;
     username: zod.ZodString;
     fullName: zod.ZodString;
-    role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
+    role: zod.ZodEnum<["admin", "employee", "manager", "subcontractor", "brushcutter"]>;
     workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     isActive: zod.ZodBoolean;
@@ -116,7 +116,7 @@ export declare const GetMeResponse: zod.ZodObject<{
     username: string;
     id: number;
     fullName: string;
-    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+    role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
@@ -126,7 +126,7 @@ export declare const GetMeResponse: zod.ZodObject<{
     username: string;
     id: number;
     fullName: string;
-    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+    role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
@@ -140,7 +140,7 @@ export declare const ListUsersResponseItem: zod.ZodObject<{
     id: zod.ZodNumber;
     username: zod.ZodString;
     fullName: zod.ZodString;
-    role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
+    role: zod.ZodEnum<["admin", "employee", "manager", "subcontractor", "brushcutter"]>;
     workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     isActive: zod.ZodBoolean;
@@ -150,7 +150,7 @@ export declare const ListUsersResponseItem: zod.ZodObject<{
     username: string;
     id: number;
     fullName: string;
-    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+    role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
@@ -160,7 +160,7 @@ export declare const ListUsersResponseItem: zod.ZodObject<{
     username: string;
     id: number;
     fullName: string;
-    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+    role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
@@ -171,7 +171,7 @@ export declare const ListUsersResponse: zod.ZodArray<zod.ZodObject<{
     id: zod.ZodNumber;
     username: zod.ZodString;
     fullName: zod.ZodString;
-    role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
+    role: zod.ZodEnum<["admin", "employee", "manager", "subcontractor", "brushcutter"]>;
     workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     isActive: zod.ZodBoolean;
@@ -181,7 +181,7 @@ export declare const ListUsersResponse: zod.ZodArray<zod.ZodObject<{
     username: string;
     id: number;
     fullName: string;
-    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+    role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
@@ -191,7 +191,7 @@ export declare const ListUsersResponse: zod.ZodArray<zod.ZodObject<{
     username: string;
     id: number;
     fullName: string;
-    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+    role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
@@ -205,21 +205,21 @@ export declare const CreateUserBody: zod.ZodObject<{
     username: zod.ZodString;
     password: zod.ZodString;
     fullName: zod.ZodString;
-    role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
+    role: zod.ZodEnum<["admin", "employee", "manager", "subcontractor", "brushcutter"]>;
     workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
 }, "strip", zod.ZodTypeAny, {
     username: string;
     password: string;
     fullName: string;
-    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+    role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
     workerId?: number | null | undefined;
     contractorCompanyId?: number | null | undefined;
 }, {
     username: string;
     password: string;
     fullName: string;
-    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+    role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
     workerId?: number | null | undefined;
     contractorCompanyId?: number | null | undefined;
 }>;
@@ -237,7 +237,7 @@ export declare const GetUserResponse: zod.ZodObject<{
     id: zod.ZodNumber;
     username: zod.ZodString;
     fullName: zod.ZodString;
-    role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
+    role: zod.ZodEnum<["admin", "employee", "manager", "subcontractor", "brushcutter"]>;
     workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     isActive: zod.ZodBoolean;
@@ -247,7 +247,7 @@ export declare const GetUserResponse: zod.ZodObject<{
     username: string;
     id: number;
     fullName: string;
-    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+    role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
@@ -257,7 +257,7 @@ export declare const GetUserResponse: zod.ZodObject<{
     username: string;
     id: number;
     fullName: string;
-    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+    role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
@@ -276,7 +276,7 @@ export declare const UpdateUserParams: zod.ZodObject<{
 }>;
 export declare const UpdateUserBody: zod.ZodObject<{
     fullName: zod.ZodOptional<zod.ZodNullable<zod.ZodString>>;
-    role: zod.ZodOptional<zod.ZodNullable<zod.ZodUnion<[zod.ZodLiteral<"admin">, zod.ZodLiteral<"user">, zod.ZodLiteral<"employee">, zod.ZodLiteral<"manager">, zod.ZodLiteral<"subcontractor">, zod.ZodLiteral<null>]>>>;
+    role: zod.ZodOptional<zod.ZodNullable<zod.ZodUnion<[zod.ZodLiteral<"admin">, zod.ZodLiteral<"employee">, zod.ZodLiteral<"manager">, zod.ZodLiteral<"subcontractor">, zod.ZodLiteral<"brushcutter">, zod.ZodLiteral<null>]>>>;
     workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     isActive: zod.ZodOptional<zod.ZodNullable<zod.ZodBoolean>>;
@@ -284,14 +284,14 @@ export declare const UpdateUserBody: zod.ZodObject<{
 }, "strip", zod.ZodTypeAny, {
     password?: string | null | undefined;
     fullName?: string | null | undefined;
-    role?: "user" | "admin" | "employee" | "manager" | "subcontractor" | null | undefined;
+    role?: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter" | null | undefined;
     workerId?: number | null | undefined;
     contractorCompanyId?: number | null | undefined;
     isActive?: boolean | null | undefined;
 }, {
     password?: string | null | undefined;
     fullName?: string | null | undefined;
-    role?: "user" | "admin" | "employee" | "manager" | "subcontractor" | null | undefined;
+    role?: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter" | null | undefined;
     workerId?: number | null | undefined;
     contractorCompanyId?: number | null | undefined;
     isActive?: boolean | null | undefined;
@@ -300,7 +300,7 @@ export declare const UpdateUserResponse: zod.ZodObject<{
     id: zod.ZodNumber;
     username: zod.ZodString;
     fullName: zod.ZodString;
-    role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
+    role: zod.ZodEnum<["admin", "employee", "manager", "subcontractor", "brushcutter"]>;
     workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
     isActive: zod.ZodBoolean;
@@ -310,7 +310,7 @@ export declare const UpdateUserResponse: zod.ZodObject<{
     username: string;
     id: number;
     fullName: string;
-    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+    role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
@@ -320,7 +320,7 @@ export declare const UpdateUserResponse: zod.ZodObject<{
     username: string;
     id: number;
     fullName: string;
-    role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+    role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
@@ -1805,7 +1805,7 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
         id: zod.ZodNumber;
         username: zod.ZodString;
         fullName: zod.ZodString;
-        role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
+        role: zod.ZodEnum<["admin", "employee", "manager", "subcontractor", "brushcutter"]>;
         workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         isActive: zod.ZodBoolean;
@@ -1815,7 +1815,7 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -1825,7 +1825,7 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -2107,7 +2107,7 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -2311,7 +2311,7 @@ export declare const ListFellingRecordsResponseItem: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -2830,7 +2830,7 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
         username: zod.ZodString;
         fullName: zod.ZodString;
-        role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
+        role: zod.ZodEnum<["admin", "employee", "manager", "subcontractor", "brushcutter"]>;
         workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         isActive: zod.ZodBoolean;
@@ -2840,7 +2840,7 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -2850,7 +2850,7 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -3132,7 +3132,7 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -3336,7 +3336,7 @@ export declare const ListFellingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -4366,7 +4366,7 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
         id: zod.ZodNumber;
         username: zod.ZodString;
         fullName: zod.ZodString;
-        role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
+        role: zod.ZodEnum<["admin", "employee", "manager", "subcontractor", "brushcutter"]>;
         workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         isActive: zod.ZodBoolean;
@@ -4376,7 +4376,7 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -4386,7 +4386,7 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -4668,7 +4668,7 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -4872,7 +4872,7 @@ export declare const GetFellingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -5899,7 +5899,7 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
         id: zod.ZodNumber;
         username: zod.ZodString;
         fullName: zod.ZodString;
-        role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
+        role: zod.ZodEnum<["admin", "employee", "manager", "subcontractor", "brushcutter"]>;
         workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         isActive: zod.ZodBoolean;
@@ -5909,7 +5909,7 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -5919,7 +5919,7 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -6201,7 +6201,7 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -6405,7 +6405,7 @@ export declare const UpdateFellingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -7037,7 +7037,7 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
         id: zod.ZodNumber;
         username: zod.ZodString;
         fullName: zod.ZodString;
-        role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
+        role: zod.ZodEnum<["admin", "employee", "manager", "subcontractor", "brushcutter"]>;
         workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         isActive: zod.ZodBoolean;
@@ -7047,7 +7047,7 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -7057,7 +7057,7 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -7364,7 +7364,7 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -7604,7 +7604,7 @@ export declare const ListMowingRecordsResponseItem: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -8236,7 +8236,7 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         id: zod.ZodNumber;
         username: zod.ZodString;
         fullName: zod.ZodString;
-        role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
+        role: zod.ZodEnum<["admin", "employee", "manager", "subcontractor", "brushcutter"]>;
         workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         isActive: zod.ZodBoolean;
@@ -8246,7 +8246,7 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -8256,7 +8256,7 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -8563,7 +8563,7 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -8803,7 +8803,7 @@ export declare const ListMowingRecordsResponse: zod.ZodArray<zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -10077,7 +10077,7 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
         id: zod.ZodNumber;
         username: zod.ZodString;
         fullName: zod.ZodString;
-        role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
+        role: zod.ZodEnum<["admin", "employee", "manager", "subcontractor", "brushcutter"]>;
         workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         isActive: zod.ZodBoolean;
@@ -10087,7 +10087,7 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -10097,7 +10097,7 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -10404,7 +10404,7 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -10644,7 +10644,7 @@ export declare const GetMowingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -11915,7 +11915,7 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
         id: zod.ZodNumber;
         username: zod.ZodString;
         fullName: zod.ZodString;
-        role: zod.ZodEnum<["admin", "user", "employee", "manager", "subcontractor"]>;
+        role: zod.ZodEnum<["admin", "employee", "manager", "subcontractor", "brushcutter"]>;
         workerId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         contractorCompanyId: zod.ZodOptional<zod.ZodNullable<zod.ZodNumber>>;
         isActive: zod.ZodBoolean;
@@ -11925,7 +11925,7 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -11935,7 +11935,7 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -12242,7 +12242,7 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
@@ -12482,7 +12482,7 @@ export declare const UpdateMowingRecordResponse: zod.ZodObject<{
         username: string;
         id: number;
         fullName: string;
-        role: "user" | "admin" | "employee" | "manager" | "subcontractor";
+        role: "admin" | "employee" | "manager" | "subcontractor" | "brushcutter";
         isActive: boolean;
         createdAt: string;
         updatedAt: string;
