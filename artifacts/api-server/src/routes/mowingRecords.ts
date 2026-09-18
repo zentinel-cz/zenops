@@ -1,6 +1,5 @@
-import { Router } from "express";
+import { Router, type NextFunction, type Request, type Response } from "express";
 import { eq, isNull, and, gte, lte, inArray } from "drizzle-orm";
-import { requireOperationsAccess } from "../middlewares/auth";
 import { logAudit } from "../lib/auditLog";
 import { queryString } from "../lib/query";
 import {
@@ -36,6 +35,29 @@ import {
 } from "@workspace/db";
 
 const router = Router();
+
+type MowingSession = { userId: number; userRole: string };
+
+function sessionOf(req: unknown): MowingSession {
+  return (req as { session: MowingSession }).session;
+}
+
+function requireMowingAccess(req: Request, res: Response, next: NextFunction): void {
+  const session = sessionOf(req);
+  if (!session?.userId) { res.status(401).json({ error: "Nepřihlášen" }); return; }
+  if (!session.userRole || !["admin", "user", "employee"].includes(session.userRole)) {
+    res.status(403).json({ error: "Tato část aplikace pro vaši roli není zpřístupněna" });
+    return;
+  }
+  next();
+}
+
+async function linkedWorkerId(userId: number): Promise<number | null> {
+  const [user] = await db.select({ workerId: usersTable.workerId }).from(usersTable)
+    .where(and(eq(usersTable.id, userId), eq(usersTable.isActive, true), isNull(usersTable.deletedAt)))
+    .limit(1);
+  return user?.workerId ?? null;
+}
 
 function getFallbackWorkerTimeEntries(record: typeof mowingRecordsTable.$inferSelect, workerIds: number[], manualWorkerIds: number[], machineWorkerIds: number[]) {
   return workerIds.map((workerId) => ({
@@ -188,8 +210,8 @@ async function buildMowingRecord(record: typeof mowingRecordsTable.$inferSelect)
   };
 }
 
-router.get("/mowing-records", requireOperationsAccess, async (req, res): Promise<void> => {
-  const session = (req as unknown as { session: { userId: number; userRole: string } }).session;
+router.get("/mowing-records", requireMowingAccess, async (req, res): Promise<void> => {
+  const session = sessionOf(req);
   const filterUserId = queryString(req.query.userId);
   const dateFrom = queryString(req.query.dateFrom);
   const dateTo = queryString(req.query.dateTo);
@@ -201,6 +223,10 @@ router.get("/mowing-records", requireOperationsAccess, async (req, res): Promise
     conditions.push(eq(mowingRecordsTable.userId, session.userId));
   } else if (filterUserId) {
     conditions.push(eq(mowingRecordsTable.userId, parseInt(filterUserId, 10)));
+  }
+
+  if (session.userRole === "employee") {
+    conditions.push(eq(mowingRecordsTable.mowingKind, "rucni"), eq(mowingRecordsTable.manualMowingKind, "core"));
   }
 
   if (dateFrom) conditions.push(gte(mowingRecordsTable.date, dateFrom));
@@ -216,8 +242,8 @@ router.get("/mowing-records", requireOperationsAccess, async (req, res): Promise
   res.json(await Promise.all(records.map(buildMowingRecord)));
 });
 
-router.post("/mowing-records", requireOperationsAccess, async (req, res): Promise<void> => {
-  const session = (req as unknown as { session: { userId: number; userRole: string } }).session;
+router.post("/mowing-records", requireMowingAccess, async (req, res): Promise<void> => {
+  const session = sessionOf(req);
   const {
     date, regionId, workType, mowingSection, mowingKind, manualMowingKind, contractorCompanyId, location, startTime, endTime,
     weatherTypeId, weatherTypeIds, temperature, vehicleId, vehicleEntries,
@@ -272,6 +298,10 @@ router.post("/mowing-records", requireOperationsAccess, async (req, res): Promis
     res.status(400).json({ error: "Datum a revír jsou povinné" });
     return;
   }
+  if (session.userRole === "employee" && (mowingKind !== "rucni" || manualMowingKind !== "core")) {
+    res.status(403).json({ error: "Pracovník může vytvořit pouze vlastní kmenový záznam" });
+    return;
+  }
 
   const normalizedWorkerTimeEntries = normalizeWorkerTimeEntries(workerTimeEntries ?? []);
   const normalizedMachineMthEntries = normalizeMachineMthEntries(machineMthEntries ?? []);
@@ -318,7 +348,15 @@ router.post("/mowing-records", requireOperationsAccess, async (req, res): Promis
     }
   }
   if (mowingKind === "rucni") {
-    if (session.userRole !== "admin") { res.status(403).json({ error: "Ruční sečení může evidovat pouze administrátor" }); return; }
+    const employeeCore = session.userRole === "employee" && manualMowingKind === "core";
+    if (session.userRole !== "admin" && !employeeCore) { res.status(403).json({ error: "Tento typ ručního sečení nemáte oprávnění evidovat" }); return; }
+    if (employeeCore) {
+      const workerId = await linkedWorkerId(session.userId);
+      if (!workerId) { res.status(409).json({ error: "Účet není propojený s pracovním profilem" }); return; }
+      if (nextManualWorkerIds.length !== 1 || nextManualWorkerIds[0] !== workerId || mergedWorkerIds.some((id) => id !== workerId) || nextMachineWorkerIds.length > 0) {
+        res.status(403).json({ error: "Pracovník může evidovat pouze svůj vlastní kmenový záznam" }); return;
+      }
+    }
     if (manualMowingKind === "core" && nextManualWorkerIds.length === 0) { res.status(400).json({ error: "Vyberte alespoň jednoho kmenového pracovníka" }); return; }
     if (manualMowingKind === "slope") {
       if (normalizedMachineMthEntries.length === 0) { res.status(400).json({ error: "Přidejte alespoň jednu svahovou sekačku" }); return; }
@@ -404,8 +442,8 @@ router.post("/mowing-records", requireOperationsAccess, async (req, res): Promis
   res.status(201).json(full);
 });
 
-router.get("/mowing-records/:id", requireOperationsAccess, async (req, res): Promise<void> => {
-  const session = (req as unknown as { session: { userId: number; userRole: string } }).session;
+router.get("/mowing-records/:id", requireMowingAccess, async (req, res): Promise<void> => {
+  const session = sessionOf(req);
   const id = parseInt(queryString(req.params.id) ?? "", 10);
 
   const [record] = await db.select().from(mowingRecordsTable).where(and(eq(mowingRecordsTable.id, id), isNull(mowingRecordsTable.deletedAt)));
@@ -414,12 +452,15 @@ router.get("/mowing-records/:id", requireOperationsAccess, async (req, res): Pro
   if (session.userRole !== "admin" && record.userId !== session.userId) {
     res.status(403).json({ error: "Nedostatečná oprávnění" }); return;
   }
+  if (session.userRole === "employee" && (record.mowingKind !== "rucni" || record.manualMowingKind !== "core")) {
+    res.status(403).json({ error: "Pracovník může zobrazit pouze vlastní kmenové záznamy" }); return;
+  }
 
   res.json(await buildMowingRecord(record));
 });
 
-router.patch("/mowing-records/:id", requireOperationsAccess, async (req, res): Promise<void> => {
-  const session = (req as unknown as { session: { userId: number; userRole: string } }).session;
+router.patch("/mowing-records/:id", requireMowingAccess, async (req, res): Promise<void> => {
+  const session = sessionOf(req);
   const id = parseInt(queryString(req.params.id) ?? "", 10);
 
   const [existing] = await db.select().from(mowingRecordsTable).where(and(eq(mowingRecordsTable.id, id), isNull(mowingRecordsTable.deletedAt)));
@@ -427,6 +468,9 @@ router.patch("/mowing-records/:id", requireOperationsAccess, async (req, res): P
 
   if (session.userRole !== "admin" && existing.userId !== session.userId) {
     res.status(403).json({ error: "Nedostatečná oprávnění" }); return;
+  }
+  if (session.userRole === "employee" && (existing.mowingKind !== "rucni" || existing.manualMowingKind !== "core")) {
+    res.status(403).json({ error: "Pracovník může upravit pouze vlastní kmenové záznamy" }); return;
   }
 
   const {
@@ -546,6 +590,11 @@ router.patch("/mowing-records/:id", requireOperationsAccess, async (req, res): P
   const nextManualMowingKind = manualMowingKind !== undefined ? manualMowingKind : existing.manualMowingKind;
   const nextContractorCompanyId = contractorCompanyId !== undefined ? contractorCompanyId : existing.contractorCompanyId;
 
+  if (session.userRole === "employee" && (nextMowingKind !== "rucni" || nextManualMowingKind !== "core")) {
+    res.status(403).json({ error: "Pracovník nemůže změnit typ kmenového záznamu" });
+    return;
+  }
+
   if (nextMowingKind === "strojni") {
     if (normalizedMachineMthEntries.length === 0) {
       res.status(400).json({ error: "Pro strojní sečení přidejte alespoň jeden traktor" });
@@ -569,7 +618,15 @@ router.patch("/mowing-records/:id", requireOperationsAccess, async (req, res): P
     }
   }
   if (nextMowingKind === "rucni") {
-    if (session.userRole !== "admin") { res.status(403).json({ error: "Ruční sečení může evidovat pouze administrátor" }); return; }
+    const employeeCore = session.userRole === "employee" && nextManualMowingKind === "core";
+    if (session.userRole !== "admin" && !employeeCore) { res.status(403).json({ error: "Tento typ ručního sečení nemáte oprávnění evidovat" }); return; }
+    if (employeeCore) {
+      const workerId = await linkedWorkerId(session.userId);
+      if (!workerId) { res.status(409).json({ error: "Účet není propojený s pracovním profilem" }); return; }
+      if (nextManualWorkerIds.length !== 1 || nextManualWorkerIds[0] !== workerId || resolvedWorkerIds.some((id) => id !== workerId) || resolvedMachineWorkerIds.length > 0) {
+        res.status(403).json({ error: "Pracovník může evidovat pouze svůj vlastní kmenový záznam" }); return;
+      }
+    }
     if (nextManualMowingKind === "core" && nextManualWorkerIds.length === 0) { res.status(400).json({ error: "Vyberte alespoň jednoho kmenového pracovníka" }); return; }
     if (nextManualMowingKind === "slope") {
       if (normalizedMachineMthEntries.length === 0) { res.status(400).json({ error: "Přidejte alespoň jednu svahovou sekačku" }); return; }
@@ -689,8 +746,8 @@ router.patch("/mowing-records/:id", requireOperationsAccess, async (req, res): P
   res.json(full);
 });
 
-router.delete("/mowing-records/:id", requireOperationsAccess, async (req, res): Promise<void> => {
-  const session = (req as unknown as { session: { userId: number; userRole: string } }).session;
+router.delete("/mowing-records/:id", requireMowingAccess, async (req, res): Promise<void> => {
+  const session = sessionOf(req);
   const id = parseInt(queryString(req.params.id) ?? "", 10);
 
   const [existing] = await db.select().from(mowingRecordsTable).where(and(eq(mowingRecordsTable.id, id), isNull(mowingRecordsTable.deletedAt)));
@@ -698,6 +755,9 @@ router.delete("/mowing-records/:id", requireOperationsAccess, async (req, res): 
 
   if (session.userRole !== "admin" && existing.userId !== session.userId) {
     res.status(403).json({ error: "Nedostatečná oprávnění" }); return;
+  }
+  if (session.userRole === "employee" && (existing.mowingKind !== "rucni" || existing.manualMowingKind !== "core")) {
+    res.status(403).json({ error: "Pracovník může smazat pouze vlastní kmenové záznamy" }); return;
   }
 
   await db.update(mowingRecordsTable).set({ deletedAt: new Date(), deletedBy: session.userId }).where(eq(mowingRecordsTable.id, id));

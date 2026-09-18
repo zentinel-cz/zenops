@@ -84,12 +84,19 @@ router.get("/team-daily-records/options", requireAuth, requireRole(["manager", "
 
   const workers = session.userRole === "manager" || session.userRole === "admin"
     ? await db
-      .select({ id: workersTable.id, firstName: workersTable.firstName, lastName: workersTable.lastName })
+      .select({ id: workersTable.id, firstName: workersTable.firstName, lastName: workersTable.lastName, isActive: workersTable.isActive, contractorCompanyId: workersTable.contractorCompanyId, defaultBrushcutter: workersTable.defaultBrushcutter })
       .from(workersTable)
       .innerJoin(usersTable, and(eq(usersTable.workerId, workersTable.id), eq(usersTable.role, "employee"), eq(usersTable.isActive, true), isNull(usersTable.deletedAt)))
       .where(and(eq(workersTable.isActive, true), isNull(workersTable.deletedAt), isNull(workersTable.contractorCompanyId)))
       .orderBy(workersTable.lastName, workersTable.firstName)
-    : [];
+    : session.userRole === "employee"
+      ? await db
+        .select({ id: workersTable.id, firstName: workersTable.firstName, lastName: workersTable.lastName, isActive: workersTable.isActive, contractorCompanyId: workersTable.contractorCompanyId, defaultBrushcutter: workersTable.defaultBrushcutter })
+        .from(usersTable)
+        .innerJoin(workersTable, eq(usersTable.workerId, workersTable.id))
+        .where(and(eq(usersTable.id, session.userId), eq(usersTable.isActive, true), isNull(usersTable.deletedAt), eq(workersTable.isActive, true), isNull(workersTable.deletedAt), isNull(workersTable.contractorCompanyId)))
+        .limit(1)
+      : [];
 
   res.json({ regions, weatherTypes, machines, accessories, vehicles, workers });
 });

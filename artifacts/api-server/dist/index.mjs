@@ -55570,13 +55570,13 @@ router3.post("/users", requireAdmin, async (req, res) => {
   }
   const passwordHash = await bcryptjs_default.hash(password, 10);
   const user = await db.transaction(async (tx) => {
-    let linkedWorkerId = ["employee", "manager"].includes(role) ? workerId ?? null : null;
-    if (["employee", "manager"].includes(role) && !linkedWorkerId) {
+    let linkedWorkerId2 = ["employee", "manager"].includes(role) ? workerId ?? null : null;
+    if (["employee", "manager"].includes(role) && !linkedWorkerId2) {
       const workerName = splitFullName(fullName);
       const [worker] = await tx.insert(workersTable).values({ ...workerName, isActive: true }).returning({ id: workersTable.id });
-      linkedWorkerId = worker.id;
+      linkedWorkerId2 = worker.id;
     }
-    const [created] = await tx.insert(usersTable).values({ username, passwordHash, fullName: fullName.trim(), role, workerId: linkedWorkerId, contractorCompanyId: role === "subcontractor" ? contractorCompanyId : null }).returning({
+    const [created] = await tx.insert(usersTable).values({ username, passwordHash, fullName: fullName.trim(), role, workerId: linkedWorkerId2, contractorCompanyId: role === "subcontractor" ? contractorCompanyId : null }).returning({
       id: usersTable.id,
       username: usersTable.username,
       fullName: usersTable.fullName,
@@ -55662,18 +55662,18 @@ router3.patch("/users/:id", requireAdmin, async (req, res) => {
     return;
   }
   const user = await db.transaction(async (tx) => {
-    let linkedWorkerId = nextWorkerId;
-    if (["employee", "manager"].includes(nextRole) && !linkedWorkerId) {
+    let linkedWorkerId2 = nextWorkerId;
+    if (["employee", "manager"].includes(nextRole) && !linkedWorkerId2) {
       const workerName = splitFullName(fullName ?? before.fullName);
       const [worker] = await tx.insert(workersTable).values({ ...workerName, isActive: isActive ?? before.isActive }).returning({ id: workersTable.id });
-      linkedWorkerId = worker.id;
-      updates.workerId = linkedWorkerId;
+      linkedWorkerId2 = worker.id;
+      updates.workerId = linkedWorkerId2;
     }
-    if (linkedWorkerId && ["employee", "manager"].includes(nextRole)) {
+    if (linkedWorkerId2 && ["employee", "manager"].includes(nextRole)) {
       const workerUpdates = {};
       if (fullName != null) Object.assign(workerUpdates, splitFullName(fullName));
       if (isActive != null) workerUpdates.isActive = isActive;
-      if (Object.keys(workerUpdates).length) await tx.update(workersTable).set(workerUpdates).where(eq(workersTable.id, linkedWorkerId));
+      if (Object.keys(workerUpdates).length) await tx.update(workersTable).set(workerUpdates).where(eq(workersTable.id, linkedWorkerId2));
     }
     const [updated] = await tx.update(usersTable).set(updates).where(eq(usersTable.id, id)).returning({
       id: usersTable.id,
@@ -56597,6 +56597,25 @@ var fellingRecords_default = router6;
 // src/routes/mowingRecords.ts
 var import_express7 = __toESM(require_express2(), 1);
 var router7 = (0, import_express7.Router)();
+function sessionOf(req) {
+  return req.session;
+}
+function requireMowingAccess(req, res, next) {
+  const session2 = sessionOf(req);
+  if (!session2?.userId) {
+    res.status(401).json({ error: "Nep\u0159ihl\xE1\u0161en" });
+    return;
+  }
+  if (!session2.userRole || !["admin", "user", "employee"].includes(session2.userRole)) {
+    res.status(403).json({ error: "Tato \u010D\xE1st aplikace pro va\u0161i roli nen\xED zp\u0159\xEDstupn\u011Bna" });
+    return;
+  }
+  next();
+}
+async function linkedWorkerId(userId) {
+  const [user] = await db.select({ workerId: usersTable.workerId }).from(usersTable).where(and(eq(usersTable.id, userId), eq(usersTable.isActive, true), isNull(usersTable.deletedAt))).limit(1);
+  return user?.workerId ?? null;
+}
 function getFallbackWorkerTimeEntries2(record2, workerIds, manualWorkerIds, machineWorkerIds) {
   return workerIds.map((workerId) => ({
     workerId,
@@ -56712,8 +56731,8 @@ async function buildMowingRecord(record2) {
     accessories
   };
 }
-router7.get("/mowing-records", requireOperationsAccess, async (req, res) => {
-  const session2 = req.session;
+router7.get("/mowing-records", requireMowingAccess, async (req, res) => {
+  const session2 = sessionOf(req);
   const filterUserId = queryString(req.query.userId);
   const dateFrom = queryString(req.query.dateFrom);
   const dateTo = queryString(req.query.dateTo);
@@ -56724,14 +56743,17 @@ router7.get("/mowing-records", requireOperationsAccess, async (req, res) => {
   } else if (filterUserId) {
     conditions.push(eq(mowingRecordsTable.userId, parseInt(filterUserId, 10)));
   }
+  if (session2.userRole === "employee") {
+    conditions.push(eq(mowingRecordsTable.mowingKind, "rucni"), eq(mowingRecordsTable.manualMowingKind, "core"));
+  }
   if (dateFrom) conditions.push(gte(mowingRecordsTable.date, dateFrom));
   if (dateTo) conditions.push(lte(mowingRecordsTable.date, dateTo));
   if (regionId) conditions.push(eq(mowingRecordsTable.regionId, parseInt(regionId, 10)));
   const records = await db.select().from(mowingRecordsTable).where(and(...conditions)).orderBy(mowingRecordsTable.date);
   res.json(await Promise.all(records.map(buildMowingRecord)));
 });
-router7.post("/mowing-records", requireOperationsAccess, async (req, res) => {
-  const session2 = req.session;
+router7.post("/mowing-records", requireMowingAccess, async (req, res) => {
+  const session2 = sessionOf(req);
   const {
     date: date6,
     regionId,
@@ -56774,6 +56796,10 @@ router7.post("/mowing-records", requireOperationsAccess, async (req, res) => {
   } = req.body;
   if (!date6 || !regionId) {
     res.status(400).json({ error: "Datum a rev\xEDr jsou povinn\xE9" });
+    return;
+  }
+  if (session2.userRole === "employee" && (mowingKind !== "rucni" || manualMowingKind !== "core")) {
+    res.status(403).json({ error: "Pracovn\xEDk m\u016F\u017Ee vytvo\u0159it pouze vlastn\xED kmenov\xFD z\xE1znam" });
     return;
   }
   const normalizedWorkerTimeEntries = normalizeWorkerTimeEntries(workerTimeEntries ?? []);
@@ -56820,9 +56846,21 @@ router7.post("/mowing-records", requireOperationsAccess, async (req, res) => {
     }
   }
   if (mowingKind === "rucni") {
-    if (session2.userRole !== "admin") {
-      res.status(403).json({ error: "Ru\u010Dn\xED se\u010Den\xED m\u016F\u017Ee evidovat pouze administr\xE1tor" });
+    const employeeCore = session2.userRole === "employee" && manualMowingKind === "core";
+    if (session2.userRole !== "admin" && !employeeCore) {
+      res.status(403).json({ error: "Tento typ ru\u010Dn\xEDho se\u010Den\xED nem\xE1te opr\xE1vn\u011Bn\xED evidovat" });
       return;
+    }
+    if (employeeCore) {
+      const workerId = await linkedWorkerId(session2.userId);
+      if (!workerId) {
+        res.status(409).json({ error: "\xDA\u010Det nen\xED propojen\xFD s pracovn\xEDm profilem" });
+        return;
+      }
+      if (nextManualWorkerIds.length !== 1 || nextManualWorkerIds[0] !== workerId || mergedWorkerIds.some((id) => id !== workerId) || nextMachineWorkerIds.length > 0) {
+        res.status(403).json({ error: "Pracovn\xEDk m\u016F\u017Ee evidovat pouze sv\u016Fj vlastn\xED kmenov\xFD z\xE1znam" });
+        return;
+      }
     }
     if (manualMowingKind === "core" && nextManualWorkerIds.length === 0) {
       res.status(400).json({ error: "Vyberte alespo\u0148 jednoho kmenov\xE9ho pracovn\xEDka" });
@@ -56933,8 +56971,8 @@ router7.post("/mowing-records", requireOperationsAccess, async (req, res) => {
   });
   res.status(201).json(full);
 });
-router7.get("/mowing-records/:id", requireOperationsAccess, async (req, res) => {
-  const session2 = req.session;
+router7.get("/mowing-records/:id", requireMowingAccess, async (req, res) => {
+  const session2 = sessionOf(req);
   const id = parseInt(queryString(req.params.id) ?? "", 10);
   const [record2] = await db.select().from(mowingRecordsTable).where(and(eq(mowingRecordsTable.id, id), isNull(mowingRecordsTable.deletedAt)));
   if (!record2) {
@@ -56945,10 +56983,14 @@ router7.get("/mowing-records/:id", requireOperationsAccess, async (req, res) => 
     res.status(403).json({ error: "Nedostate\u010Dn\xE1 opr\xE1vn\u011Bn\xED" });
     return;
   }
+  if (session2.userRole === "employee" && (record2.mowingKind !== "rucni" || record2.manualMowingKind !== "core")) {
+    res.status(403).json({ error: "Pracovn\xEDk m\u016F\u017Ee zobrazit pouze vlastn\xED kmenov\xE9 z\xE1znamy" });
+    return;
+  }
   res.json(await buildMowingRecord(record2));
 });
-router7.patch("/mowing-records/:id", requireOperationsAccess, async (req, res) => {
-  const session2 = req.session;
+router7.patch("/mowing-records/:id", requireMowingAccess, async (req, res) => {
+  const session2 = sessionOf(req);
   const id = parseInt(queryString(req.params.id) ?? "", 10);
   const [existing] = await db.select().from(mowingRecordsTable).where(and(eq(mowingRecordsTable.id, id), isNull(mowingRecordsTable.deletedAt)));
   if (!existing) {
@@ -56957,6 +56999,10 @@ router7.patch("/mowing-records/:id", requireOperationsAccess, async (req, res) =
   }
   if (session2.userRole !== "admin" && existing.userId !== session2.userId) {
     res.status(403).json({ error: "Nedostate\u010Dn\xE1 opr\xE1vn\u011Bn\xED" });
+    return;
+  }
+  if (session2.userRole === "employee" && (existing.mowingKind !== "rucni" || existing.manualMowingKind !== "core")) {
+    res.status(403).json({ error: "Pracovn\xEDk m\u016F\u017Ee upravit pouze vlastn\xED kmenov\xE9 z\xE1znamy" });
     return;
   }
   const {
@@ -57036,6 +57082,10 @@ router7.patch("/mowing-records/:id", requireOperationsAccess, async (req, res) =
   const nextMowingKind = mowingKind !== void 0 ? mowingKind : existing.mowingKind;
   const nextManualMowingKind = manualMowingKind !== void 0 ? manualMowingKind : existing.manualMowingKind;
   const nextContractorCompanyId = contractorCompanyId !== void 0 ? contractorCompanyId : existing.contractorCompanyId;
+  if (session2.userRole === "employee" && (nextMowingKind !== "rucni" || nextManualMowingKind !== "core")) {
+    res.status(403).json({ error: "Pracovn\xEDk nem\u016F\u017Ee zm\u011Bnit typ kmenov\xE9ho z\xE1znamu" });
+    return;
+  }
   if (nextMowingKind === "strojni") {
     if (normalizedMachineMthEntries.length === 0) {
       res.status(400).json({ error: "Pro strojn\xED se\u010Den\xED p\u0159idejte alespo\u0148 jeden traktor" });
@@ -57059,9 +57109,21 @@ router7.patch("/mowing-records/:id", requireOperationsAccess, async (req, res) =
     }
   }
   if (nextMowingKind === "rucni") {
-    if (session2.userRole !== "admin") {
-      res.status(403).json({ error: "Ru\u010Dn\xED se\u010Den\xED m\u016F\u017Ee evidovat pouze administr\xE1tor" });
+    const employeeCore = session2.userRole === "employee" && nextManualMowingKind === "core";
+    if (session2.userRole !== "admin" && !employeeCore) {
+      res.status(403).json({ error: "Tento typ ru\u010Dn\xEDho se\u010Den\xED nem\xE1te opr\xE1vn\u011Bn\xED evidovat" });
       return;
+    }
+    if (employeeCore) {
+      const workerId = await linkedWorkerId(session2.userId);
+      if (!workerId) {
+        res.status(409).json({ error: "\xDA\u010Det nen\xED propojen\xFD s pracovn\xEDm profilem" });
+        return;
+      }
+      if (nextManualWorkerIds.length !== 1 || nextManualWorkerIds[0] !== workerId || resolvedWorkerIds.some((id2) => id2 !== workerId) || resolvedMachineWorkerIds.length > 0) {
+        res.status(403).json({ error: "Pracovn\xEDk m\u016F\u017Ee evidovat pouze sv\u016Fj vlastn\xED kmenov\xFD z\xE1znam" });
+        return;
+      }
     }
     if (nextManualMowingKind === "core" && nextManualWorkerIds.length === 0) {
       res.status(400).json({ error: "Vyberte alespo\u0148 jednoho kmenov\xE9ho pracovn\xEDka" });
@@ -57203,8 +57265,8 @@ router7.patch("/mowing-records/:id", requireOperationsAccess, async (req, res) =
   });
   res.json(full);
 });
-router7.delete("/mowing-records/:id", requireOperationsAccess, async (req, res) => {
-  const session2 = req.session;
+router7.delete("/mowing-records/:id", requireMowingAccess, async (req, res) => {
+  const session2 = sessionOf(req);
   const id = parseInt(queryString(req.params.id) ?? "", 10);
   const [existing] = await db.select().from(mowingRecordsTable).where(and(eq(mowingRecordsTable.id, id), isNull(mowingRecordsTable.deletedAt)));
   if (!existing) {
@@ -57213,6 +57275,10 @@ router7.delete("/mowing-records/:id", requireOperationsAccess, async (req, res) 
   }
   if (session2.userRole !== "admin" && existing.userId !== session2.userId) {
     res.status(403).json({ error: "Nedostate\u010Dn\xE1 opr\xE1vn\u011Bn\xED" });
+    return;
+  }
+  if (session2.userRole === "employee" && (existing.mowingKind !== "rucni" || existing.manualMowingKind !== "core")) {
+    res.status(403).json({ error: "Pracovn\xEDk m\u016F\u017Ee smazat pouze vlastn\xED kmenov\xE9 z\xE1znamy" });
     return;
   }
   await db.update(mowingRecordsTable).set({ deletedAt: /* @__PURE__ */ new Date(), deletedBy: session2.userId }).where(eq(mowingRecordsTable.id, id));
@@ -57370,7 +57436,7 @@ var auditLogs_default = router9;
 // src/routes/teamDailyRecords.ts
 var import_express10 = __toESM(require_express2(), 1);
 var router10 = (0, import_express10.Router)();
-function sessionOf(req) {
+function sessionOf2(req) {
   return req.session;
 }
 function routeId(value) {
@@ -57378,7 +57444,7 @@ function routeId(value) {
 }
 function requireRole(roles) {
   return (req, res, next) => {
-    const session2 = sessionOf(req);
+    const session2 = sessionOf2(req);
     if (!roles.includes(session2.userRole)) {
       res.status(403).json({ error: "Pro tuto akci nem\xE1te opr\xE1vn\u011Bn\xED" });
       return;
@@ -57411,7 +57477,7 @@ async function canReadRecord(recordId, session2) {
   return assignment ? { record: record2, workerId: user.workerId } : { record: null, workerId: null };
 }
 router10.get("/team-daily-records/options", requireAuth, requireRole(["manager", "employee", "admin"]), async (req, res) => {
-  const session2 = sessionOf(req);
+  const session2 = sessionOf2(req);
   const [regions, weatherTypes, machines, accessories, vehicles] = await Promise.all([
     db.select({ id: regionsTable.id, name: regionsTable.name, code: regionsTable.code }).from(regionsTable).where(and(eq(regionsTable.isActive, true), isNull(regionsTable.deletedAt))).orderBy(regionsTable.name),
     db.select({ id: weatherTypesTable.id, name: weatherTypesTable.name, icon: weatherTypesTable.icon }).from(weatherTypesTable).where(and(eq(weatherTypesTable.isActive, true), isNull(weatherTypesTable.deletedAt))).orderBy(weatherTypesTable.name),
@@ -57419,11 +57485,11 @@ router10.get("/team-daily-records/options", requireAuth, requireRole(["manager",
     db.select({ id: accessoriesTable.id, name: accessoriesTable.name, type: accessoriesTable.type }).from(accessoriesTable).where(and(eq(accessoriesTable.isActive, true), isNull(accessoriesTable.deletedAt))).orderBy(accessoriesTable.name),
     db.select({ id: vehiclesTable.id, name: vehiclesTable.name, licensePlate: vehiclesTable.licensePlate }).from(vehiclesTable).where(and(eq(vehiclesTable.isActive, true), isNull(vehiclesTable.deletedAt))).orderBy(vehiclesTable.name)
   ]);
-  const workers = session2.userRole === "manager" || session2.userRole === "admin" ? await db.select({ id: workersTable.id, firstName: workersTable.firstName, lastName: workersTable.lastName }).from(workersTable).innerJoin(usersTable, and(eq(usersTable.workerId, workersTable.id), eq(usersTable.role, "employee"), eq(usersTable.isActive, true), isNull(usersTable.deletedAt))).where(and(eq(workersTable.isActive, true), isNull(workersTable.deletedAt), isNull(workersTable.contractorCompanyId))).orderBy(workersTable.lastName, workersTable.firstName) : [];
+  const workers = session2.userRole === "manager" || session2.userRole === "admin" ? await db.select({ id: workersTable.id, firstName: workersTable.firstName, lastName: workersTable.lastName, isActive: workersTable.isActive, contractorCompanyId: workersTable.contractorCompanyId, defaultBrushcutter: workersTable.defaultBrushcutter }).from(workersTable).innerJoin(usersTable, and(eq(usersTable.workerId, workersTable.id), eq(usersTable.role, "employee"), eq(usersTable.isActive, true), isNull(usersTable.deletedAt))).where(and(eq(workersTable.isActive, true), isNull(workersTable.deletedAt), isNull(workersTable.contractorCompanyId))).orderBy(workersTable.lastName, workersTable.firstName) : session2.userRole === "employee" ? await db.select({ id: workersTable.id, firstName: workersTable.firstName, lastName: workersTable.lastName, isActive: workersTable.isActive, contractorCompanyId: workersTable.contractorCompanyId, defaultBrushcutter: workersTable.defaultBrushcutter }).from(usersTable).innerJoin(workersTable, eq(usersTable.workerId, workersTable.id)).where(and(eq(usersTable.id, session2.userId), eq(usersTable.isActive, true), isNull(usersTable.deletedAt), eq(workersTable.isActive, true), isNull(workersTable.deletedAt), isNull(workersTable.contractorCompanyId))).limit(1) : [];
   res.json({ regions, weatherTypes, machines, accessories, vehicles, workers });
 });
 router10.get("/team-daily-records", requireAuth, requireRole(["manager", "employee", "admin"]), async (req, res) => {
-  const session2 = sessionOf(req);
+  const session2 = sessionOf2(req);
   const archive = req.query.archive === "1" || req.query.archive === "true";
   const all = session2.userRole === "admin" && (req.query.all === "1" || req.query.all === "true");
   let records;
@@ -57464,7 +57530,7 @@ router10.get("/team-daily-records", requireAuth, requireRole(["manager", "employ
   })));
 });
 router10.post("/team-daily-records", requireAuth, requireRole(["manager", "admin"]), async (req, res) => {
-  const session2 = sessionOf(req);
+  const session2 = sessionOf2(req);
   const { date: date6, regionId, location, weatherTypeId, temperature, workerIds, status } = req.body;
   const uniqueWorkerIds = [...new Set((workerIds ?? []).map(Number).filter(Number.isInteger))];
   if (!date6 || !Number.isInteger(Number(regionId)) || uniqueWorkerIds.length === 0) {
@@ -57498,7 +57564,7 @@ router10.post("/team-daily-records", requireAuth, requireRole(["manager", "admin
   res.status(201).json(record2);
 });
 router10.get("/team-daily-records/:id", requireAuth, requireRole(["manager", "employee", "admin"]), async (req, res) => {
-  const session2 = sessionOf(req);
+  const session2 = sessionOf2(req);
   const id = routeId(req.params.id);
   const access = await canReadRecord(id, session2);
   if (!access.record) {
@@ -57516,7 +57582,7 @@ router10.get("/team-daily-records/:id", requireAuth, requireRole(["manager", "em
   res.json({ ...access.record, region: region[0] ?? null, weather: weather[0] ?? null, creator: creator[0] ?? null, assignments, entries: visibleEntries, myWorkerId: access.workerId });
 });
 router10.put("/team-daily-records/:id", requireAuth, requireRole(["manager", "admin"]), async (req, res) => {
-  const session2 = sessionOf(req);
+  const session2 = sessionOf2(req);
   const id = routeId(req.params.id);
   const access = await canReadRecord(id, session2);
   if (!access.record) {
@@ -57580,7 +57646,7 @@ router10.put("/team-daily-records/:id", requireAuth, requireRole(["manager", "ad
   res.json(updated);
 });
 router10.patch("/team-daily-records/:id/status", requireAuth, requireRole(["manager", "admin"]), async (req, res) => {
-  const session2 = sessionOf(req);
+  const session2 = sessionOf2(req);
   const id = routeId(req.params.id);
   const status = String(req.body?.status ?? "");
   if (!["draft", "open", "closed"].includes(status)) {
@@ -57597,7 +57663,7 @@ router10.patch("/team-daily-records/:id/status", requireAuth, requireRole(["mana
   res.json(record2);
 });
 router10.put("/team-daily-records/:id/my-entry", requireAuth, requireRole(["employee"]), async (req, res) => {
-  const session2 = sessionOf(req);
+  const session2 = sessionOf2(req);
   const id = routeId(req.params.id);
   const access = await canReadRecord(id, session2);
   if (!access.record || !access.workerId) {
@@ -57680,12 +57746,12 @@ var teamDailyRecords_default = router10;
 // src/routes/subcontractorDailyRecords.ts
 var import_express11 = __toESM(require_express2(), 1);
 var router11 = (0, import_express11.Router)();
-function sessionOf2(req) {
+function sessionOf3(req) {
   return req.session;
 }
 function requireRole2(roles) {
   return (req, res, next) => {
-    if (!roles.includes(sessionOf2(req).userRole)) {
+    if (!roles.includes(sessionOf3(req).userRole)) {
       res.status(403).json({ error: "Pro tuto akci nem\xE1te opr\xE1vn\u011Bn\xED" });
       return;
     }
@@ -57715,7 +57781,7 @@ async function currentUser(userId) {
   return user;
 }
 router11.get("/subcontractor-daily-records", requireAuth, requireRole2(["admin", "subcontractor"]), async (req, res) => {
-  const session2 = sessionOf2(req);
+  const session2 = sessionOf3(req);
   const user = await currentUser(session2.userId);
   if (!user) {
     res.status(401).json({ error: "Nep\u0159ihl\xE1\u0161en" });
@@ -57750,7 +57816,7 @@ router11.get("/subcontractor-daily-records", requireAuth, requireRole2(["admin",
   res.json(records);
 });
 router11.post("/subcontractor-daily-records", requireAuth, requireRole2(["subcontractor"]), async (req, res) => {
-  const session2 = sessionOf2(req);
+  const session2 = sessionOf3(req);
   const user = await currentUser(session2.userId);
   if (!user || user.role !== "subcontractor") {
     res.status(403).json({ error: "Z\xE1znam m\u016F\u017Ee vlo\u017Eit pouze subdodavatel" });
@@ -57783,7 +57849,7 @@ router11.post("/subcontractor-daily-records", requireAuth, requireRole2(["subcon
   res.status(201).json(record2);
 });
 router11.put("/subcontractor-daily-records/:id", requireAuth, requireRole2(["subcontractor"]), async (req, res) => {
-  const session2 = sessionOf2(req);
+  const session2 = sessionOf3(req);
   const id = routeId2(req.params.id);
   const user = await currentUser(session2.userId);
   if (!user || user.role !== "subcontractor") {

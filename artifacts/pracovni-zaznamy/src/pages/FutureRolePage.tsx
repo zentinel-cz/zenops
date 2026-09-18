@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { WorkerDailyWorkflow, ManagerDailyWorkflow } from "@/components/TeamDailyWorkflow";
+import CoreWorkerMowingWorkflow from "@/components/CoreWorkerMowingWorkflow";
 
 type WorkerSection = "sheep" | "core" | "subcontractor";
 
@@ -106,7 +107,7 @@ export default function FutureRolePage() {
                 ))}
               </div>
             </section>
-          ) : current.id === "sheep" ? <div className="w-full"><WorkerDailyWorkflow onBack={() => setSelected(null)} /></div> : (
+          ) : current.id === "sheep" ? <div className="w-full"><WorkerDailyWorkflow onBack={() => setSelected(null)} /></div> : current.id === "core" ? <CoreWorkerMowingWorkflow onBack={() => setSelected(null)} /> : (
             <section className="w-full max-w-2xl rounded-[2rem] border border-white/75 bg-white/88 p-7 text-center shadow-[0_24px_60px_rgba(11,36,56,0.12)] backdrop-blur-xl sm:p-10">
               <span className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl border border-slate-200 bg-slate-50 text-5xl">{current.icon}</span>
               <p className="mt-6 text-xs font-bold uppercase tracking-[0.22em] text-primary">Vybraná sekce</p>

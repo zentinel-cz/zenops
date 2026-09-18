@@ -1,5 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useListContractorCompanies, useListMachines, useListRegions, useListVehicles, useListWeatherTypes, useListWorkers } from "@workspace/api-client-react";
+import {
+  getListContractorCompaniesQueryKey,
+  getListMachinesQueryKey,
+  getListRegionsQueryKey,
+  getListVehiclesQueryKey,
+  getListWeatherTypesQueryKey,
+  getListWorkersQueryKey,
+  useListContractorCompanies,
+  useListMachines,
+  useListRegions,
+  useListVehicles,
+  useListWeatherTypes,
+  useListWorkers,
+} from "@workspace/api-client-react";
 import { useAuth } from "@/lib/auth-context";
 import { todayISO } from "@/lib/utils";
 import { calculateMachineMthTotal, sumMachineMthTotals, sumMachineValue, uniqueIds, type MachineMthEntry, type VehicleEntry, type WorkerTimeEntry } from "@/lib/recordEntries";
@@ -11,24 +24,41 @@ interface Props {
   onCancel: () => void;
   onBack?: () => void;
   isLoading?: boolean;
+  coreWorkerMode?: boolean;
+  optionData?: ManualMowingOptionData;
 }
+
+export type ManualMowingOptionData = {
+  workers: Array<{ id: number; firstName: string; lastName: string; isActive?: boolean; contractorCompanyId?: number | null; defaultBrushcutter?: boolean; defaultSlopeMower?: boolean; defaultSubcontractor?: boolean }>;
+  contractorCompanies?: Array<{ id: number; name: string; companyId?: string | null; isActive?: boolean }>;
+  vehicles: Array<{ id: number; name: string; licensePlate?: string | null; isActive?: boolean; defaultSlopeMower?: boolean }>;
+  machines?: Array<{ id: number; name: string; type?: string | null; mowingCategory?: string | null; isActive?: boolean }>;
+  regions: Array<{ id: number; name: string; isActive?: boolean }>;
+  weatherTypes: Array<{ id: number; name: string; isActive?: boolean }>;
+};
 
 const inputClass = "w-full px-4 py-3 border border-input rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-base";
 const labelClass = "block text-sm font-semibold text-foreground mb-2";
 const sectionClass = "zenops-form-shell rounded-[1.7rem] p-5 md:p-6 xl:p-7 space-y-5";
 const sectionTitle = "text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4";
 
-export default function ManualMowingForm({ initialData, onSubmit, onCancel, onBack, isLoading }: Props) {
+export default function ManualMowingForm({ initialData, onSubmit, onCancel, onBack, isLoading, coreWorkerMode = false, optionData }: Props) {
   const { isAdmin } = useAuth();
-  const { data: workers } = useListWorkers();
-  const { data: contractorCompanies } = useListContractorCompanies();
-  const { data: vehicles } = useListVehicles();
-  const { data: machines } = useListMachines();
-  const { data: regions } = useListRegions();
-  const { data: weatherTypes } = useListWeatherTypes();
+  const workerQuery = useListWorkers({ query: { enabled: !optionData, queryKey: getListWorkersQueryKey() } });
+  const contractorQuery = useListContractorCompanies({ query: { enabled: !optionData, queryKey: getListContractorCompaniesQueryKey() } });
+  const vehicleQuery = useListVehicles({ query: { enabled: !optionData, queryKey: getListVehiclesQueryKey() } });
+  const machineQuery = useListMachines({ query: { enabled: !optionData, queryKey: getListMachinesQueryKey() } });
+  const regionQuery = useListRegions({ query: { enabled: !optionData, queryKey: getListRegionsQueryKey() } });
+  const weatherQuery = useListWeatherTypes({ query: { enabled: !optionData, queryKey: getListWeatherTypesQueryKey() } });
+  const workers = optionData?.workers ?? workerQuery.data;
+  const contractorCompanies = optionData?.contractorCompanies ?? contractorQuery.data;
+  const vehicles = optionData?.vehicles ?? vehicleQuery.data;
+  const machines = optionData?.machines ?? machineQuery.data;
+  const regions = optionData?.regions ?? regionQuery.data;
+  const weatherTypes = optionData?.weatherTypes ?? weatherQuery.data;
   const defaultsApplied = useRef(false);
 
-  const [kind, setKind] = useState(initialData?.manualMowingKind ?? "");
+  const [kind, setKind] = useState(coreWorkerMode ? "core" : initialData?.manualMowingKind ?? "");
   const [contractorCompanyId, setContractorCompanyId] = useState(initialData?.contractorCompanyId ?? 0);
   const [date, setDate] = useState(initialData?.date ?? todayISO());
   const [regionId, setRegionId] = useState(initialData?.regionId ?? 0);
@@ -55,7 +85,7 @@ export default function ManualMowingForm({ initialData, onSubmit, onCancel, onBa
   useEffect(() => {
     if (defaultsApplied.current || initialData?.date || !kind || !workers || !vehicles || (kind === "subcontractor" && !contractorCompanyId)) return;
     defaultsApplied.current = true;
-    const defaultWorkers = activeWorkers.filter((worker) => kind === "core" ? worker.defaultBrushcutter : kind === "slope" ? worker.defaultSlopeMower : worker.defaultSubcontractor);
+    const defaultWorkers = coreWorkerMode ? activeWorkers : activeWorkers.filter((worker) => kind === "core" ? worker.defaultBrushcutter : kind === "slope" ? worker.defaultSlopeMower : worker.defaultSubcontractor);
     setWorkerEntries(defaultWorkers.map((worker) => ({
       workerId: worker.id,
       category: "manual",
@@ -66,7 +96,7 @@ export default function ManualMowingForm({ initialData, onSubmit, onCancel, onBa
     if (kind === "slope") {
       setVehicleEntries(activeVehicles.filter((vehicle) => vehicle.defaultSlopeMower).map((vehicle) => ({ vehicleId: vehicle.id, kmStart: null, kmEnd: null, kmTotal: null, refueling: null })));
     }
-  }, [kind, contractorCompanyId, workers, vehicles]);
+  }, [kind, contractorCompanyId, workers, vehicles, coreWorkerMode]);
 
   const selectKind = (value: string) => {
     defaultsApplied.current = false;
@@ -156,7 +186,7 @@ export default function ManualMowingForm({ initialData, onSubmit, onCancel, onBa
     });
   };
 
-  if (!isAdmin) return <div className={sectionClass}><h2 className="text-xl font-bold">Ruční sečení</h2><p>Tuto část může evidovat pouze administrátor.</p><button onClick={onCancel} className="px-4 py-2 rounded-xl bg-secondary">Zpět</button></div>;
+  if (!isAdmin && !coreWorkerMode) return <div className={sectionClass}><h2 className="text-xl font-bold">Ruční sečení</h2><p>Tuto část může evidovat pouze administrátor.</p><button onClick={onCancel} className="px-4 py-2 rounded-xl bg-secondary">Zpět</button></div>;
 
   if (!kind) return (
     <div className="space-y-6"><div className={sectionClass}><p className={sectionTitle}>Ruční sečení</p><h2 className="text-xl font-bold">Vyberte typ denního záznamu</h2><div className="grid md:grid-cols-3 gap-4">
@@ -168,7 +198,7 @@ export default function ManualMowingForm({ initialData, onSubmit, onCancel, onBa
 
   return <form onSubmit={handleSubmit} className="space-y-6">
     {error && <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-3 text-destructive">{error}</div>}
-    <div className={sectionClass}><div className="flex justify-between gap-3"><div><p className={sectionTitle}>Ruční sečení</p><h2 className="text-xl font-bold">{kind === "core" ? "Kmenoví pracovníci – křovinořezy" : kind === "slope" ? "Svahové sekačky" : "Křovinořezy subdodavatele"}</h2></div>{!initialData?.date && <button type="button" onClick={() => selectKind("")} className="text-primary">Změnit variantu</button>}</div></div>
+    <div className={sectionClass}><div className="flex justify-between gap-3"><div><p className={sectionTitle}>Ruční sečení</p><h2 className="text-xl font-bold">{kind === "core" ? "Kmenoví pracovníci – křovinořezy" : kind === "slope" ? "Svahové sekačky" : "Křovinořezy subdodavatele"}</h2></div>{!coreWorkerMode && !initialData?.date && <button type="button" onClick={() => selectKind("")} className="text-primary">Změnit variantu</button>}</div></div>
 
     {kind === "subcontractor" && <div className={sectionClass}><p className={sectionTitle}>Subdodavatelská firma</p><label className={labelClass}>Firma *</label><select value={contractorCompanyId || ""} onChange={(e) => { setContractorCompanyId(Number(e.target.value)); setWorkerEntries([]); defaultsApplied.current = false; }} className={inputClass}><option value="">-- Vyberte firmu --</option>{activeContractorCompanies.map((company) => <option key={company.id} value={company.id}>{company.name}{company.companyId ? ` (IČO ${company.companyId})` : ""}</option>)}</select>{!activeContractorCompanies.length && <p className="mt-2 text-sm text-muted-foreground">Nejdřív vytvořte firmu a její pracovníky v Číselnících.</p>}</div>}
 
