@@ -1,13 +1,13 @@
 import { Router } from "express";
 import { db, accessoriesTable } from "@workspace/db";
 import { eq, isNull } from "drizzle-orm";
-import { requireAdmin } from "../middlewares/auth";
+import { requireAdmin, requireOperationsAccess } from "../middlewares/auth";
 import { logAudit } from "../lib/auditLog";
 import { queryString } from "../lib/query";
 
 const router = Router();
 
-router.get("/accessories", requireAdmin, async (_req, res): Promise<void> => {
+router.get("/accessories", requireOperationsAccess, async (_req, res): Promise<void> => {
   const items = await db
     .select()
     .from(accessoriesTable)
