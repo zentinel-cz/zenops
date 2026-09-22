@@ -11,8 +11,8 @@ const TABLE_LABELS: Record<string, string> = {
   accessories: "Příslušenství",
   regions: "Revíry",
   weather_types: "Počasí",
-  team_daily_records: "Denní záznamy Ovečky",
-  team_daily_entries: "Zápisy pracovníků Ovečky",
+  team_daily_records: "Denní záznamy strojního sečení",
+  team_daily_entries: "Zápisy pracovníků strojního sečení",
   subcontractor_daily_records: "Denní záznamy subdodavatelů",
 };
 

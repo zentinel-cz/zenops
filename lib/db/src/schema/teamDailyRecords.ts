@@ -7,7 +7,7 @@ import { weatherTypesTable } from "./weatherTypes";
 export const teamDailyRecordsTable = pgTable("team_daily_records", {
   id: serial("id").primaryKey(),
   date: date("date").notNull(),
-  workCategory: text("work_category").notNull().default("sheep"),
+  workCategory: text("work_category").notNull().default("machine_mowing"),
   regionId: integer("region_id").notNull().references(() => regionsTable.id),
   location: text("location"),
   weatherTypeId: integer("weather_type_id").references(() => weatherTypesTable.id),

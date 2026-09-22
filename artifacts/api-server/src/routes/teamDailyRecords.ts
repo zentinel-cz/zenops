@@ -167,7 +167,7 @@ router.post("/team-daily-records", requireAuth, requireRole(["manager", "admin"]
   const record = await db.transaction(async (tx) => {
     const [created] = await tx.insert(teamDailyRecordsTable).values({
       date,
-      workCategory: "sheep",
+      workCategory: "machine_mowing",
       regionId: Number(regionId),
       location: location?.trim() || null,
       weatherTypeId: weatherTypeId ? Number(weatherTypeId) : null,
@@ -179,7 +179,7 @@ router.post("/team-daily-records", requireAuth, requireRole(["manager", "admin"]
     return created;
   });
 
-  await logAudit({ userId: session.userId, action: "create", tableName: "team_daily_records", recordId: record.id, description: `Vedoucí vytvořil denní záznam Ovečky pro ${uniqueWorkerIds.length} pracovníků`, newData: { date, regionId, location, weatherTypeId, temperature, workerIds: uniqueWorkerIds, status: record.status } });
+  await logAudit({ userId: session.userId, action: "create", tableName: "team_daily_records", recordId: record.id, description: `Vedoucí vytvořil denní záznam strojního sečení pro ${uniqueWorkerIds.length} pracovníků`, newData: { date, regionId, location, weatherTypeId, temperature, workerIds: uniqueWorkerIds, status: record.status } });
   res.status(201).json(record);
 });
 
@@ -259,7 +259,7 @@ router.put("/team-daily-records/:id", requireAuth, requireRole(["manager", "admi
     action: "update",
     tableName: "team_daily_records",
     recordId: id,
-    description: `Upraven denní záznam Ovečky; viditelnost pro ${uniqueWorkerIds.length} pracovníků`,
+    description: `Upraven denní záznam strojního sečení; viditelnost pro ${uniqueWorkerIds.length} pracovníků`,
     oldData: { date: access.record.date, regionId: access.record.regionId, location: access.record.location, weatherTypeId: access.record.weatherTypeId, temperature: access.record.temperature, workerIds: currentWorkerIds },
     newData: { date, regionId: Number(regionId), location: location?.trim() || null, weatherTypeId: weatherTypeId ? Number(weatherTypeId) : null, temperature: optionalNumber(temperature), workerIds: uniqueWorkerIds },
   });

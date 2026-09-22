@@ -185,7 +185,7 @@ export function ManagerDailyWorkflow() {
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">{isAdmin ? "Administrace · Ovečky" : "Vedoucí · Ovečky"}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">{isAdmin ? "Administrace · Strojní sečení" : "Vedoucí · Strojní sečení"}</p>
           <h1 className="mt-1 font-display text-3xl font-bold text-slate-950">{isAdmin ? "Kontrola denních záznamů" : "Denní záznamy týmu"}</h1>
           <p className="mt-2 text-sm text-slate-500">{isAdmin ? "Měsíční přehled všech vedoucích, kontrola vyplnění a výběrový export do Excelu." : "Připravte místo a podmínky, pracovníci následně doplní svou techniku."}</p>
         </div>
@@ -221,7 +221,7 @@ export function ManagerDailyWorkflow() {
 
       {showCreate && options && (
         <form onSubmit={createRecord} className={panelClass}>
-          <h2 className="font-display text-xl font-bold">Nový záznam Ovečky</h2>
+          <h2 className="font-display text-xl font-bold">Nový záznam strojního sečení</h2>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <div><label className={labelClass}>Datum *</label><input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className={inputClass} required /></div>
             <div><label className={labelClass}>Revír *</label><select value={form.regionId} onChange={(e) => setForm({ ...form, regionId: e.target.value })} className={inputClass} required><option value="">-- Vyberte revír --</option>{options.regions.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></div>
@@ -408,7 +408,7 @@ export function WorkerDailyWorkflow({ onBack }: { onBack?: () => void }) {
   if (!detail) return (
     <div className="space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Ovečky</p><h1 className="mt-1 font-display text-3xl font-bold">Moje denní záznamy</h1><p className="mt-2 text-sm text-slate-500">Vyberte záznam připravený vedoucím.</p></div>
+        <div><p className="text-xs font-bold uppercase tracking-[0.2em] text-primary">Strojní sečení</p><h1 className="mt-1 font-display text-3xl font-bold">Moje denní záznamy</h1><p className="mt-2 text-sm text-slate-500">Vyberte záznam připravený vedoucím.</p></div>
         <div className="flex flex-wrap gap-2"><button type="button" onClick={() => void switchArchive()} className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold">{showArchive ? "← Aktivní záznamy" : "Archiv uzavřených"}</button>{onBack && <button onClick={onBack} className="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-bold">← Zpět</button>}</div>
       </div>
       {error && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}

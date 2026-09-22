@@ -23,7 +23,7 @@ const WORK_SECTIONS: Array<{
   { id: "felling", label: "Kácení", shortLabel: "Kácení", description: "Denní záznamy práce a techniky", accent: "from-orange-500 to-rose-600" },
 ];
 
-function WorkChooser({ selected, onSelect, manager }: { selected: WorkSection | null; onSelect: (section: WorkSection) => void; manager: boolean }) {
+function WorkChooser({ selected, onSelect, manager, sections = WORK_SECTIONS }: { selected: WorkSection | null; onSelect: (section: WorkSection) => void; manager: boolean; sections?: typeof WORK_SECTIONS }) {
   return (
     <section className="space-y-4">
       <div>
@@ -32,7 +32,7 @@ function WorkChooser({ selected, onSelect, manager }: { selected: WorkSection | 
         <p className="mt-2 text-sm text-slate-500">{manager ? "Vyberte sekci pro založení nebo správu denního záznamu." : "Vyberte druh práce pro dnešní zápis."}</p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {WORK_SECTIONS.map((item) => {
+        {sections.map((item) => {
           const isSelected = selected === item.id;
           return (
             <button
@@ -108,6 +108,7 @@ export default function FutureRolePage() {
   const [workSection, setWorkSection] = useState<WorkSection | null>(null);
   const role: PortalRole = user?.role === "manager" ? "Vedoucí" : user?.role === "brushcutter" ? "Křovák" : "Pracovník";
   const manager = user?.role === "manager";
+  const sections = user?.role === "brushcutter" ? WORK_SECTIONS.filter((section) => section.id === "core") : WORK_SECTIONS;
 
   return (
     <div className="zenops-shell zenops-grid relative min-h-screen overflow-hidden px-4 py-4 sm:px-6 sm:py-6">
@@ -117,7 +118,7 @@ export default function FutureRolePage() {
         <BrandHeader fullName={user?.fullName} role={role} onLogout={() => void logout()} />
         <main className="flex flex-1 justify-center py-4">
           <div className="w-full space-y-6">
-            <WorkChooser selected={workSection} onSelect={setWorkSection} manager={manager} />
+            <WorkChooser selected={workSection} onSelect={setWorkSection} manager={manager} sections={sections} />
             {workSection && <div className="flex items-center gap-3"><div className="h-px flex-1 bg-slate-200/80" /><button type="button" onClick={() => setWorkSection(null)} className="rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-white">Zpět na výběr</button><div className="h-px flex-1 bg-slate-200/80" /></div>}
             {workSection === "machine-mowing" && (manager ? <ManagerDailyWorkflow /> : <WorkerDailyWorkflow />)}
             {workSection === "core" && (manager ? <CoreWorkerMowingWorkflow managerMode /> : user?.role === "brushcutter" ? <CoreWorkerMowingWorkflow /> : <EmptyWorkSection title="Křováci kmenoví" manager={false} />)}
