@@ -2,6 +2,10 @@
 
 Webová aplikace pro digitalizaci každodenních pracovních záznamů v lese. Umožňuje evidenci **kácení** a **sečení**, správu číselníků, audit log změn a exporty do PDF/Excel.
 
+## Uživatelská dokumentace
+
+Aktuální návod k obsluze, vysvětlení rolí a pracovních postupů je v souboru [docs/uzivatelska-prirucka.md](docs/uzivatelska-prirucka.md). Příručka je živá dokumentace a musí se aktualizovat ve stejném commitu s každou změnou chování systému.
+
 ## Co aplikace dělá
 
 - **Evidence kácení** — záznamy s pracovníky, vozidly, stroji, příslušenstvím, MTH a spotřebou paliva
