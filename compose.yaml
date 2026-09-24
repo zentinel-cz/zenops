@@ -1,0 +1,36 @@
+name: zenops
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-zenops}
+      POSTGRES_USER: ${POSTGRES_USER:-zenops}
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      TZ: ${TZ:-Europe/Prague}
+    secrets:
+      - postgres_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+networks:
+  backend:
+    internal: true
+
+volumes:
+  postgres_data:
+    name: zenops-postgres-data
+
+secrets:
+  postgres_password:
+    file: /etc/zenops/v1-db-password
+

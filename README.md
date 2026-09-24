@@ -32,3 +32,17 @@ reporting and monthly closures.
 
 Do not invent missing business rules. Record unresolved decisions in
 `docs/open-questions.md`.
+
+## Current implementation status
+
+The repository currently contains the authoritative specification and
+pre-build infrastructure only. PostgreSQL can be prepared with `compose.yaml`,
+but no frontend, backend, schema migration or production application has been
+implemented yet.
+
+Preparation documents:
+
+- `docs/architecture/implementation-plan.md`
+- `docs/architecture/database-schema-v1.md`
+- `docs/architecture/legacy-notes-review.md`
+- `docs/operations/prebuild-readiness.md`
