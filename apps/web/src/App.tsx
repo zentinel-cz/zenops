@@ -4,6 +4,7 @@ import { EmployeePanel } from "./EmployeePanel";
 import { WorkDayPanel } from "./WorkDayPanel";
 import { ProjectDayPanel } from "./ProjectDayPanel";
 import { AssetPanel } from "./AssetPanel";
+import { ApprovalPanel } from "./ApprovalPanel";
 
 type AuthState = { status: "loading" } | { status: "guest" } | { status: "authenticated"; user: SessionUser };
 
@@ -25,6 +26,7 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
   const canManageProjects = user.permissions.includes("project.close");
   const canManageEmployees = user.permissions.includes("employee.manage");
   const canManageAssets = user.permissions.includes("asset.manage");
+  const canApprove = user.permissions.includes("approval.project.manage") || user.permissions.includes("approval.admin.manage");
 
   const loadProjects = () => fetch(canManageProjects ? "/api/projects" : "/api/projects/open", { credentials: "include" })
     .then(async (response) => response.ok ? response.json() as Promise<{ projects: ProjectSummary[] }> : Promise.reject())
@@ -99,6 +101,7 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
       {!showProjectForm && projectError && <p className="dashboard-error" role="alert">{projectError}</p>}
       <WorkDayPanel projects={projects} assetVersion={assetVersion} />
       <ProjectDayPanel user={user} projects={projects} />
+      {canApprove && <ApprovalPanel />}
       {canManageAssets && <AssetPanel onChanged={async () => setAssetVersion((value) => value + 1)} />}
       {canManageEmployees && <EmployeePanel user={user} />}
     </main>

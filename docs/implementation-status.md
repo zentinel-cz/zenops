@@ -70,7 +70,7 @@ Completed:
 - mobile-first worker dashboard forms and timeline
 - integration coverage for night work, activity rules, overlap and submission
 
-Approval/return behavior remains milestone 8 and is not silently simulated.
+Approval/return behavior is implemented in milestone 8 below.
 
 ## Milestone 4 — ProjectDay and work metadata — complete
 
@@ -96,3 +96,15 @@ Approval/return behavior remains milestone 8 and is not silently simulated.
 - responsive Leader/Admin catalogue creation UI
 - worker machine/MTH/fuel/attachment form attached to a draft WorkEntry
 - machine usage rendered in the WorkDay timeline
+
+## Milestone 8 — approval workflow — core complete
+
+- current project Leader sees submitted work performed by other workers
+- Leader approves or returns each WorkEntry independently
+- returned WorkEntry requires a reason and unlocks the owning WorkDay
+- already approved entries remain locked when returned work is resubmitted
+- Leader's own submitted work is routed to Admin instead of self-approval
+- WorkDay aggregates `SUBMITTED`, `PARTIALLY_APPROVED`, `RETURNED` and `APPROVED`
+- approval decisions are append-only and mirrored into the audit trail
+- responsive approval queue for Leader/Admin
+- PostgreSQL integration coverage for partial approval, return and resubmission

@@ -149,18 +149,24 @@ export function registerWorkDayRoutes(app: FastifyInstance, db: Database, requir
     const updated = await db.begin(async (transaction) => {
       const rows = await transaction<Array<{ count: number }>>`select count(*)::int as count from work_entries where work_day_id = ${workDay.id}`;
       if (rows[0]!.count === 0) return null;
-      const [result] = await transaction`
-        update work_days set state = 'SUBMITTED', submitted_at = now(), updated_at = now()
-        where id = ${workDay.id} and state in ('DRAFT', 'RETURNED') returning id, state, submitted_at
+      const [locked] = await transaction`
+        select id from work_days where id = ${workDay.id} and state in ('DRAFT', 'RETURNED') for update
       `;
-      if (result) {
+      if (locked) {
         await transaction`update work_entries set state = 'SUBMITTED', updated_at = now() where work_day_id = ${workDay.id} and state in ('DRAFT', 'RETURNED')`;
+        const states = await transaction<Array<{ state: string }>>`select state from work_entries where work_day_id = ${workDay.id}`;
+        const aggregate = states.some((item) => item.state === 'APPROVED') ? 'PARTIALLY_APPROVED' : 'SUBMITTED';
+        const [result] = await transaction`
+          update work_days set state = ${aggregate}, submitted_at = now(), updated_at = now()
+          where id = ${workDay.id} returning id, state, submitted_at
+        `;
         await transaction`
           insert into audit_logs (actor_user_id, action, entity_type, entity_id, after_data)
-          values (${request.sessionUser!.id}, 'WORKDAY_SUBMITTED', 'WORK_DAY', ${workDay.id}, ${transaction.json(result)})
+          values (${request.sessionUser!.id}, 'WORKDAY_SUBMITTED', 'WORK_DAY', ${workDay.id}, ${transaction.json(result!)})
         `;
+        return result;
       }
-      return result;
+      return null;
     });
     if (!updated) return reply.code(409).send({ error: "Pracovní den bez práce nebo v tomto stavu nelze odeslat." });
     return { workDay: updated };
@@ -173,7 +179,7 @@ export function registerWorkDayRoutes(app: FastifyInstance, db: Database, requir
       delete from work_entries we using work_days wd
       where we.id = ${params.data.entryId} and we.work_day_id = ${params.data.workDayId}
         and wd.id = we.work_day_id and wd.employee_id = ${request.sessionUser!.employeeId}
-        and wd.state in ('DRAFT', 'RETURNED') returning we.id
+        and wd.state in ('DRAFT', 'RETURNED') and we.state in ('DRAFT', 'RETURNED') returning we.id
     `;
     if (!removed[0]) return reply.code(404).send({ error: "Pracovní úsek nelze odstranit." });
     return reply.code(204).send();

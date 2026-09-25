@@ -24,12 +24,14 @@ Přístup vytváří Admin. Neexistuje žádný společný ani výchozí účet.
 
 Má možnosti Pracovníka a navíc může založit projekt. Při založení vyplní kód,
 název, místo, vedoucího, datum zahájení a případně označení BESIP. Kód projektu
-se ukládá velkými písmeny a musí být jedinečný.
+se ukládá velkými písmeny a musí být jedinečný. Vedoucí schvaluje jednotlivé
+pracovní úseky ostatních pracovníků na projektech, které aktuálně vede.
 
 ### Admin
 
 Má globální oprávnění. Na dashboardu vidí otevřené i uzavřené projekty a může
-je uzavřít nebo znovu otevřít. Dále spravuje zaměstnance a jejich přístupy.
+je uzavřít nebo znovu otevřít. Dále spravuje zaměstnance a jejich přístupy a
+schvaluje vlastní práci Vedoucích, aby nikdo neschvaloval sám sebe.
 
 ## Projekty
 
@@ -55,7 +57,20 @@ je uzavřít nebo znovu otevřít. Dále spravuje zaměstnance a jejich přístu
 
 Práce ani přestávky se nesmějí časově překrývat. Uzavřený projekt nelze použít
 pro nový úsek. Po odeslání je pracovní den uzamčen pro běžné úpravy a čeká na
-pozdější projektové schválení.
+projektové schválení.
+
+## Schvalování práce — Vedoucí a Admin
+
+1. V části **Práce ke schválení** otevřete čekající pracovní úsek.
+2. Zkontrolujte pracovníka, projekt, druh práce a vykázaný čas.
+3. Správný úsek potvrďte tlačítkem **Schválit**.
+4. Chybný úsek vraťte a povinně napište konkrétní důvod.
+
+Vedoucí vidí práci ostatních pracovníků pouze na projektech, které právě vede.
+Vlastní práci Vedoucího schvaluje Admin. Každý úsek se posuzuje samostatně:
+část dne tedy může být schválena a část vrácena. Pracovník upraví pouze vrácené
+úseky a den znovu odešle; již schválené úseky zůstávají uzamčené. Rozhodnutí se
+uchovávají jako neměnná historie a nelze je zpětně přepsat ani smazat.
 
 ## Denní údaje projektu — Vedoucí a Admin
 
@@ -77,7 +92,8 @@ Aktuálně přihlášený Admin nemůže deaktivovat sám sebe.
 
 ## Audit a bezpečnost
 
-- Vytvoření zaměstnance a projektu i všechny změny aktivního stavu se auditují.
+- Vytvoření zaměstnance a projektu, změny aktivního stavu i schvalovací
+  rozhodnutí se auditují.
 - Hesla jsou ukládána jako Argon2id hash, nikoli čitelně.
 - Přihlášení používá serverovou relaci v bezpečné HTTP-only cookie.
 - Oprávnění kontroluje backend; skrytí tlačítka v rozhraní není jediná ochrana.

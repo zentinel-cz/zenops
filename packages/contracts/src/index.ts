@@ -138,3 +138,8 @@ export const createAttachmentSchema = z.object({
   typeName: z.string().trim().min(2).max(100),
   uniquelyTracked: z.boolean().default(true),
 });
+
+export const approvalDecisionSchema = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("APPROVED") }),
+  z.object({ action: z.literal("RETURNED"), reason: z.string().trim().min(3).max(1000) }),
+]);

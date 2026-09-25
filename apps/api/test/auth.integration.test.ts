@@ -31,6 +31,8 @@ integration("authentication integration", () => {
   let projectId = "";
   let machineId = "";
   let attachmentId = "";
+  let submittedWorkDayId = "";
+  let submittedEntryIds: string[] = [];
 
   beforeAll(async () => {
     const migrationDirectory = resolve(process.cwd(), "migrations");
@@ -272,6 +274,7 @@ integration("authentication integration", () => {
     });
     expect(created.statusCode, created.body).toBe(201);
     const workDayId = created.json().workDay.id as string;
+    submittedWorkDayId = workDayId;
 
     const missingActivity = await app.inject({
       method: "POST", url: `/api/workdays/${workDayId}/entries`, headers: { origin, cookie: cookie! },
@@ -311,6 +314,7 @@ integration("authentication integration", () => {
       payload: { projectId, workTypeCode: "MACHINE_MOWING", startAt: "2026-09-26T03:00:00Z", endAt: "2026-09-26T04:00:00Z" },
     });
     const secondEntryId = secondEntry.json().entry.id as string;
+    submittedEntryIds = [entryId, secondEntryId];
     const secondUsage = await app.inject({
       method: "POST", url: `/api/workdays/${workDayId}/entries/${secondEntryId}/machine`, headers: { origin, cookie: cookie! },
       payload: { machineId, startMth: 12, endMth: 13, attachmentIds: [attachmentId] },
@@ -330,5 +334,67 @@ integration("authentication integration", () => {
       payload: { startAt: "2026-09-26T03:00:00Z", endAt: "2026-09-26T03:15:00Z" },
     });
     expect(locked.statusCode).toBe(409);
+  });
+
+  it("lets the current Leader approve or return submitted worker entries", async () => {
+    const login = await app.inject({
+      method: "POST", url: "/api/auth/login", headers: { origin },
+      payload: { email: "leader@zenops.test", password },
+    });
+    const setCookie = login.headers["set-cookie"];
+    const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
+    const cookie = cookieHeader?.split(";", 1)[0];
+
+    const pending = await app.inject({ method: "GET", url: "/api/approvals/pending", headers: { cookie: cookie! } });
+    expect(pending.statusCode, pending.body).toBe(200);
+    expect(pending.json().entries.map((item: { id: string }) => item.id)).toEqual(expect.arrayContaining(submittedEntryIds));
+
+    const approved = await app.inject({
+      method: "POST", url: `/api/approvals/${submittedEntryIds[0]}/decision`, headers: { origin, cookie: cookie! },
+      payload: { action: "APPROVED" },
+    });
+    expect(approved.statusCode, approved.body).toBe(200);
+    expect(approved.json().decision).toMatchObject({ state: "APPROVED", workDayState: "PARTIALLY_APPROVED" });
+
+    const missingReason = await app.inject({
+      method: "POST", url: `/api/approvals/${submittedEntryIds[1]}/decision`, headers: { origin, cookie: cookie! },
+      payload: { action: "RETURNED" },
+    });
+    expect(missingReason.statusCode).toBe(400);
+
+    const returned = await app.inject({
+      method: "POST", url: `/api/approvals/${submittedEntryIds[1]}/decision`, headers: { origin, cookie: cookie! },
+      payload: { action: "RETURNED", reason: "Doplňte prosím vykázaný čas." },
+    });
+    expect(returned.statusCode, returned.body).toBe(200);
+    expect(returned.json().decision).toMatchObject({ state: "RETURNED", workDayState: "RETURNED" });
+
+    const [stored] = await db<Array<{ state: string; count: number }>>`
+      select wd.state, count(a.id)::int as count from work_days wd
+      join work_entries we on we.work_day_id = wd.id join approvals a on a.work_entry_id = we.id
+      where wd.id = ${submittedWorkDayId} group by wd.state
+    `;
+    expect(stored).toEqual({ state: "RETURNED", count: 2 });
+    await expect(async () => {
+      await db`update approvals set reason = 'Nelze měnit' where work_entry_id = ${submittedEntryIds[1]!}`;
+    }).rejects.toThrow();
+  });
+
+  it("resubmits only returned entries while preserving approved work", async () => {
+    const login = await app.inject({
+      method: "POST", url: "/api/auth/login", headers: { origin }, payload: { email: "worker@zenops.test", password },
+    });
+    const setCookie = login.headers["set-cookie"];
+    const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
+    const cookie = cookieHeader?.split(";", 1)[0];
+    const submitted = await app.inject({
+      method: "POST", url: `/api/workdays/${submittedWorkDayId}/submit`, headers: { origin, cookie: cookie! },
+    });
+    expect(submitted.statusCode, submitted.body).toBe(200);
+    expect(submitted.json().workDay.state).toBe("PARTIALLY_APPROVED");
+    const entries = await db<Array<{ id: string; state: string }>>`
+      select id, state from work_entries where id in (${submittedEntryIds[0]!}, ${submittedEntryIds[1]!}) order by id
+    `;
+    expect(entries.map((item) => item.state).sort()).toEqual(["APPROVED", "SUBMITTED"]);
   });
 });
