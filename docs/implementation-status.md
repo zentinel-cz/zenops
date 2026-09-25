@@ -2,6 +2,18 @@
 
 Last updated: 2026-09-25
 
+## Preview deployment
+
+- approved preview is deployed at `https://zenops.zentinel.cz`
+- API, web and PostgreSQL containers pass their health checks
+- Caddy reaches the web container through the isolated `zenops_frontend` network
+- the web port remains bound to host loopback and PostgreSQL has no published port
+- HTTPS, HTTP redirect, unauthenticated 401 and the first Admin login were verified
+- first Admin account exists without any credential stored in Git or documentation
+- pre-deployment PostgreSQL backup was created and restore-list validation passed
+- milestones 9–11 remain development work; this is an explicitly approved preview,
+  not a declaration that all V1 milestones are complete
+
 ## Milestone 1 — foundation and authentication — complete
 
 Completed:
@@ -27,8 +39,8 @@ Verified:
 - database has no seeded/default account
 - application services are not running in production
 
-Deployment gate: the first administrator will be created only during an
-explicitly approved deployment. This is not seeded into source or migrations.
+The first administrator was created during the explicitly approved preview
+deployment. It remains outside source code and migrations.
 
 ## Milestone 2 — master data and projects — in progress
 
