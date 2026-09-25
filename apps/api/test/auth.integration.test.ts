@@ -172,6 +172,28 @@ integration("authentication integration", () => {
     });
     expect(loaded.statusCode).toBe(200);
     expect(loaded.json().projectDay.note).toBe("Mokrá vozovka");
+
+    const fuel = await app.inject({
+      method: "PUT", url: `/api/projects/${projectId}/day/fuel?date=2026-09-25`, headers: { origin, cookie: cookie! },
+      payload: { category: "BRUSHCUTTER", fuelConsumed: 12.5, fuelRefuelled: 15, note: "Společná směna" },
+    });
+    expect(fuel.statusCode, fuel.body).toBe(200);
+    const correctedFuel = await app.inject({
+      method: "PUT", url: `/api/projects/${projectId}/day/fuel?date=2026-09-25`, headers: { origin, cookie: cookie! },
+      payload: { category: "BRUSHCUTTER", fuelConsumed: 13, fuelRefuelled: 15, note: "Opravená spotřeba" },
+    });
+    expect(correctedFuel.statusCode, correctedFuel.body).toBe(200);
+    const fuelLoaded = await app.inject({
+      method: "GET", url: `/api/projects/${projectId}/day?date=2026-09-25`, headers: { cookie: cookie! },
+    });
+    expect(fuelLoaded.json().fuelRecords).toContainEqual(expect.objectContaining({
+      category: "BRUSHCUTTER", fuelConsumed: "13.00", recordedByName: "Test Vedoucí",
+    }));
+    const [fuelStorage] = await db<Array<{ records: number; audits: number }>>`
+      select (select count(*)::int from project_fuel_records) as records,
+        (select count(*)::int from audit_logs where action = 'PROJECT_FUEL_SAVED') as audits
+    `;
+    expect(fuelStorage).toEqual({ records: 1, audits: 2 });
   });
 
   it("allows Leader to create machine, attachment and vehicle catalogue items", async () => {

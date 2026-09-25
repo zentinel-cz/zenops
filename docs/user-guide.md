@@ -79,6 +79,13 @@ poznámku pro dnešní den. Údaje se vedou jen jednou za projekt a datum, nikol
 zvlášť u každého pracovníka. Vedoucí smí upravit pouze projekt, který aktuálně
 vede; Admin může spravovat všechny projekty. Uložení i změna se auditují.
 
+Ve stejném formuláři může Vedoucí nebo Admin zapsat společnou spotřebu a
+tankování paliva pro křovinořezy. Tento údaj patří projektu a dni, nikoli
+jednotlivému pracovníkovi. Pro stejný projekt, datum a kategorii existuje jen
+jeden aktuální záznam; při opravě se původní a nový stav uchovají v auditu.
+Systém eviduje také zaměstnance, který údaj naposledy zapsal, ale ten není
+vlastníkem společného palivového záznamu.
+
 ## Zaměstnanci a účty — Admin
 
 1. V sekci **Zaměstnanci** zvolte **Nový zaměstnanec**.

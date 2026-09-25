@@ -112,6 +112,15 @@ export const projectDaySchema = z.object({
   note: z.string().trim().max(2000).nullable().optional(),
 });
 
+export const projectFuelSchema = z.object({
+  category: z.literal("BRUSHCUTTER"),
+  fuelConsumed: z.number().min(0).max(100000).nullable().optional(),
+  fuelRefuelled: z.number().min(0).max(100000).nullable().optional(),
+  note: z.string().trim().max(1000).nullable().optional(),
+}).refine((value) => value.fuelConsumed != null || value.fuelRefuelled != null, {
+  message: "Vyplňte spotřebu nebo tankování.", path: ["fuelConsumed"],
+});
+
 export const createMachineSchema = z.object({
   code: z.string().trim().min(1).max(40).transform((value) => value.toUpperCase()),
   name: z.string().trim().min(2).max(160),

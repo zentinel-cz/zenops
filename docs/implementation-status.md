@@ -110,6 +110,18 @@ Approval/return behavior is implemented in milestone 8 below.
 - trip and passengers rendered in the WorkDay timeline
 - PostgreSQL integration coverage for shared participants and vehicle overlap
 
+## Milestone 7 — operational fuel — complete
+
+- physical-machine consumption and refuelling remain stored per machine usage
+- shared brushcutter fuel belongs to one ProjectDay/category, not an employee
+- current project Leader/Admin can create and correct the shared record
+- employee identity is retained as recorder without becoming data owner
+- duplicate project/day/category records are prevented by database uniqueness
+- consumed and refuelled values remain separate and non-negative
+- every create/correction writes immutable before/after audit data
+- responsive ProjectDay fuel form displays the single current shared record
+- PostgreSQL integration coverage proves upsert uniqueness and audit history
+
 ## Milestone 8 — approval workflow — core complete
 
 - current project Leader sees submitted work performed by other workers
