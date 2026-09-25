@@ -97,6 +97,19 @@ Approval/return behavior is implemented in milestone 8 below.
 - worker machine/MTH/fuel/attachment form attached to a draft WorkEntry
 - machine usage rendered in the WorkDay timeline
 
+## Milestone 6 — vehicles and shared trips — core complete
+
+- separate active vehicle catalogue with unique code and registration number
+- Leader/Admin vehicle creation with immutable audit event
+- driver-owned trip attached to the driver's editable WorkDay
+- one shared trip with explicit driver and optional passenger participants
+- mileage, consumed fuel and refuelled fuel stored only once by the driver
+- database exclusion constraint prevents overlapping use of one vehicle
+- active-employee validation and self-passenger prevention
+- responsive vehicle catalogue and driver trip form
+- trip and passengers rendered in the WorkDay timeline
+- PostgreSQL integration coverage for shared participants and vehicle overlap
+
 ## Milestone 8 — approval workflow — core complete
 
 - current project Leader sees submitted work performed by other workers

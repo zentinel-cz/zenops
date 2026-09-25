@@ -34,7 +34,25 @@ async function getWorkDayDetail(db: Database, workDayId: string, employeeId: str
   const breaks = await db`
     select id, start_at, end_at from break_entries where work_day_id = ${workDayId} order by start_at
   `;
-  return { ...workDay, entries, breaks };
+  const vehicleTrips = await db`
+    select vt.id, vt.start_at, vt.end_at, vt.start_odometer_km, vt.end_odometer_km,
+      vt.fuel_consumed, vt.fuel_refuelled, vt.note, v.id as vehicle_id, v.code as vehicle_code,
+      v.name as vehicle_name, v.registration_number,
+      coalesce(json_agg(json_build_object('id', e.id, 'displayName', e.display_name) order by e.display_name)
+        filter (where vtp.role = 'PASSENGER'), '[]') as passengers
+    from vehicle_trips vt join vehicles v on v.id = vt.vehicle_id
+    join work_days driver_wd on driver_wd.id = vt.driver_work_day_id
+    left join vehicle_trip_participants vtp on vtp.vehicle_trip_id = vt.id
+    left join employees e on e.id = vtp.employee_id
+    where vt.driver_work_day_id = ${workDayId} or (
+      driver_wd.work_date = ${workDay.workDate} and exists (
+        select 1 from vehicle_trip_participants mine
+        where mine.vehicle_trip_id = vt.id and mine.employee_id = ${employeeId} and mine.role = 'PASSENGER'
+      )
+    )
+    group by vt.id, v.id order by vt.start_at
+  `;
+  return { ...workDay, entries, breaks, vehicleTrips };
 }
 
 export function registerWorkDayRoutes(app: FastifyInstance, db: Database, requireTrustedOrigin: AuthorizationHook): void {
@@ -69,7 +87,7 @@ export function registerWorkDayRoutes(app: FastifyInstance, db: Database, requir
         `;
         return created;
       });
-      return reply.code(201).send({ workDay: { ...workDay, entries: [], breaks: [] } });
+      return reply.code(201).send({ workDay: { ...workDay, entries: [], breaks: [], vehicleTrips: [] } });
     } catch (error) {
       if (typeof error === "object" && error && "code" in error && error.code === "23505") {
         return reply.code(409).send({ error: "Pracovní den pro toto datum již existuje." });

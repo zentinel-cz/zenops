@@ -1,11 +1,11 @@
-import { createAttachmentSchema, createMachineSchema, machineUsageSchema } from "@zenops/contracts";
+import { createAttachmentSchema, createMachineSchema, createVehicleSchema, machineUsageSchema } from "@zenops/contracts";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { requirePermission, type AuthorizationHook } from "./authorization.js";
 import type { Database } from "./db.js";
 
 export function registerAssetRoutes(app: FastifyInstance, db: Database, requireTrustedOrigin: AuthorizationHook): void {
-  app.get("/api/assets", { preHandler: requirePermission("project.read_open") }, async () => {
+  app.get("/api/assets", { preHandler: requirePermission("project.read_open") }, async (request) => {
     const machines = await db`
       select m.id, m.code, m.name, mt.name as type_name, mt.tracks_mth,
         (select mu.end_mth from machine_usages mu where mu.machine_id = m.id and mu.end_mth is not null order by mu.end_at desc limit 1) as latest_mth
@@ -15,7 +15,14 @@ export function registerAssetRoutes(app: FastifyInstance, db: Database, requireT
       select a.id, a.code, a.name, at.name as type_name, at.uniquely_tracked
       from attachments a join attachment_types at on at.id = a.attachment_type_id where a.is_active order by a.code
     `;
-    return { machines, attachments };
+    const vehicles = await db`
+      select id, code, name, registration_number from vehicles where is_active order by code
+    `;
+    const employees = await db`
+      select id, display_name from employees
+      where is_active and id <> ${request.sessionUser!.employeeId} order by display_name
+    `;
+    return { machines, attachments, vehicles, employees };
   });
 
   app.post("/api/assets/machines", { preHandler: [requireTrustedOrigin, requirePermission("asset.manage")] }, async (request, reply) => {
@@ -62,6 +69,27 @@ export function registerAssetRoutes(app: FastifyInstance, db: Database, requireT
       return reply.code(201).send({ attachment });
     } catch (error) {
       if (typeof error === "object" && error && "code" in error && error.code === "23505") return reply.code(409).send({ error: "Příslušenství s tímto kódem již existuje." });
+      throw error;
+    }
+  });
+
+  app.post("/api/assets/vehicles", { preHandler: [requireTrustedOrigin, requirePermission("asset.manage")] }, async (request, reply) => {
+    const parsed = createVehicleSchema.safeParse(request.body);
+    if (!parsed.success) return reply.code(400).send({ error: "Neplatné údaje vozidla." });
+    try {
+      const vehicle = await db.begin(async (transaction) => {
+        const [created] = await transaction`
+          insert into vehicles (code, name, registration_number)
+          values (${parsed.data.code}, ${parsed.data.name}, ${parsed.data.registrationNumber})
+          returning id, code, name, registration_number
+        `;
+        await transaction`insert into audit_logs (actor_user_id, action, entity_type, entity_id, after_data)
+          values (${request.sessionUser!.id}, 'VEHICLE_CREATED', 'VEHICLE', ${created!.id}, ${transaction.json(created!)})`;
+        return created!;
+      });
+      return reply.code(201).send({ vehicle });
+    } catch (error) {
+      if (typeof error === "object" && error && "code" in error && error.code === "23505") return reply.code(409).send({ error: "Vozidlo s tímto kódem nebo SPZ již existuje." });
       throw error;
     }
   });

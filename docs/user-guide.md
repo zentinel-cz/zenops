@@ -113,3 +113,20 @@ Pracovník u rozpracovaného pracovního úseku zvolí **Přidat stroj** a vypln
 Formulář ukazuje poslední známý konečný MTH jako návrh. Pracovník jej může
 opravit, ale změna se auditovaně uloží. Stejný stroj ani unikátní příslušenství
 nelze v překrývajícím se čase přiřadit dvěma pracovníkům.
+
+## Vozidla a společné jízdy
+
+Vedoucí nebo Admin nejprve vytvoří vozidlo v části **Provozní prostředky**.
+Každé aktivní vozidlo má jedinečný kód, název a SPZ.
+
+Jízdu zapisuje do svého rozpracovaného pracovního dne pouze řidič:
+
+1. vybere vozidlo a zadá čas od–do;
+2. zapíše počáteční a konečný stav kilometrů;
+3. případně uvede spotřebu, tankování a poznámku;
+4. vybere ostatní zaměstnance, kteří jeli jako cestující.
+
+Kilometry a palivo se ukládají právě jednou u společné jízdy řidiče. Cestující
+se k ní pouze přiřadí a stejné provozní údaje neopisují do svého pracovního
+dne. Řidič nemůže vybrat sám sebe jako cestujícího a stejné vozidlo nelze
+použít ve dvou časově se překrývajících jízdách.

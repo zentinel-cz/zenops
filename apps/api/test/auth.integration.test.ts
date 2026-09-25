@@ -31,8 +31,10 @@ integration("authentication integration", () => {
   let projectId = "";
   let machineId = "";
   let attachmentId = "";
+  let vehicleId = "";
   let submittedWorkDayId = "";
   let submittedEntryIds: string[] = [];
+  let sharedVehicleTripId = "";
 
   beforeAll(async () => {
     const migrationDirectory = resolve(process.cwd(), "migrations");
@@ -172,7 +174,7 @@ integration("authentication integration", () => {
     expect(loaded.json().projectDay.note).toBe("Mokrá vozovka");
   });
 
-  it("allows Leader to create machine and attachment catalogue items", async () => {
+  it("allows Leader to create machine, attachment and vehicle catalogue items", async () => {
     const login = await app.inject({ method: "POST", url: "/api/auth/login", headers: { origin }, payload: { email: "leader@zenops.test", password } });
     const setCookie = login.headers["set-cookie"];
     const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
@@ -189,6 +191,12 @@ integration("authentication integration", () => {
     });
     expect(attachment.statusCode, attachment.body).toBe(201);
     attachmentId = attachment.json().attachment.id as string;
+    const vehicle = await app.inject({
+      method: "POST", url: "/api/assets/vehicles", headers: { origin, cookie: cookie! },
+      payload: { code: "dod-01", name: "Dodávka 01", registrationNumber: "1ab 2345" },
+    });
+    expect(vehicle.statusCode, vehicle.body).toBe(201);
+    vehicleId = vehicle.json().vehicle.id as string;
   });
 
   it("allows Admin to create and deactivate an employee without hard deletion", async () => {
@@ -326,6 +334,28 @@ integration("authentication integration", () => {
     `;
     expect(overrideAudit!.count).toBe(1);
 
+    const tripPayload = {
+      vehicleId, startAt: "2026-09-25T20:00:00Z", endAt: "2026-09-25T21:00:00Z",
+      startOdometerKm: 1000, endOdometerKm: 1042.5, fuelConsumed: 4.2, fuelRefuelled: 10,
+      passengerEmployeeIds: [leaderEmployeeId], note: "Přeprava posádky",
+    };
+    const trip = await app.inject({
+      method: "POST", url: `/api/workdays/${workDayId}/vehicle-trips`, headers: { origin, cookie: cookie! }, payload: tripPayload,
+    });
+    expect(trip.statusCode, trip.body).toBe(201);
+    sharedVehicleTripId = trip.json().trip.id as string;
+    const overlappingTrip = await app.inject({
+      method: "POST", url: `/api/workdays/${workDayId}/vehicle-trips`, headers: { origin, cookie: cookie! },
+      payload: { ...tripPayload, startAt: "2026-09-25T20:30:00Z", endAt: "2026-09-25T21:30:00Z" },
+    });
+    expect(overlappingTrip.statusCode).toBe(409);
+    const [tripData] = await db<Array<{ drivers: number; passengers: number }>>`
+      select count(*) filter (where role = 'DRIVER')::int as drivers,
+        count(*) filter (where role = 'PASSENGER')::int as passengers
+      from vehicle_trip_participants where vehicle_trip_id = ${trip.json().trip.id}
+    `;
+    expect(tripData).toEqual({ drivers: 1, passengers: 1 });
+
     const submitted = await app.inject({ method: "POST", url: `/api/workdays/${workDayId}/submit`, headers: { origin, cookie: cookie! } });
     expect(submitted.statusCode, submitted.body).toBe(200);
     expect(submitted.json().workDay.state).toBe("SUBMITTED");
@@ -334,6 +364,29 @@ integration("authentication integration", () => {
       payload: { startAt: "2026-09-26T03:00:00Z", endAt: "2026-09-26T03:15:00Z" },
     });
     expect(locked.statusCode).toBe(409);
+  });
+
+  it("shows a shared trip to its passenger without duplicating operational data", async () => {
+    const login = await app.inject({
+      method: "POST", url: "/api/auth/login", headers: { origin }, payload: { email: "leader@zenops.test", password },
+    });
+    const setCookie = login.headers["set-cookie"];
+    const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
+    const cookie = cookieHeader?.split(";", 1)[0];
+    const created = await app.inject({
+      method: "POST", url: "/api/workdays", headers: { origin, cookie: cookie! },
+      payload: { workDate: "2026-09-25", shiftType: "NIGHT" },
+    });
+    expect(created.statusCode, created.body).toBe(201);
+    const detail = await app.inject({
+      method: "GET", url: "/api/workdays/current?date=2026-09-25", headers: { cookie: cookie! },
+    });
+    expect(detail.statusCode, detail.body).toBe(200);
+    expect(detail.json().workDay.vehicleTrips).toContainEqual(expect.objectContaining({
+      id: sharedVehicleTripId, vehicleCode: "DOD-01", startOdometerKm: "1000.0", endOdometerKm: "1042.5",
+    }));
+    const [count] = await db<Array<{ count: number }>>`select count(*)::int as count from vehicle_trips where id = ${sharedVehicleTripId}`;
+    expect(count!.count).toBe(1);
   });
 
   it("lets the current Leader approve or return submitted worker entries", async () => {

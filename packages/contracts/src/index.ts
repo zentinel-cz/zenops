@@ -139,6 +139,26 @@ export const createAttachmentSchema = z.object({
   uniquelyTracked: z.boolean().default(true),
 });
 
+export const createVehicleSchema = z.object({
+  code: z.string().trim().min(1).max(40).transform((value) => value.toUpperCase()),
+  name: z.string().trim().min(2).max(160),
+  registrationNumber: z.string().trim().min(2).max(20).transform((value) => value.toUpperCase()),
+});
+
+export const createVehicleTripSchema = intervalSchema.and(z.object({
+  vehicleId: z.string().uuid(),
+  startOdometerKm: z.number().min(0).max(10000000),
+  endOdometerKm: z.number().min(0).max(10000000),
+  fuelConsumed: z.number().min(0).max(100000).nullable().optional(),
+  fuelRefuelled: z.number().min(0).max(100000).nullable().optional(),
+  passengerEmployeeIds: z.array(z.string().uuid()).max(20).default([]).transform((ids) => [...new Set(ids)]),
+  note: z.string().trim().max(1000).nullable().optional(),
+})).superRefine((value, context) => {
+  if (value.endOdometerKm < value.startOdometerKm) {
+    context.addIssue({ code: "custom", path: ["endOdometerKm"], message: "Konečný stav kilometrů nesmí být nižší než počáteční." });
+  }
+});
+
 export const approvalDecisionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("APPROVED") }),
   z.object({ action: z.literal("RETURNED"), reason: z.string().trim().min(3).max(1000) }),
