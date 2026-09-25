@@ -11,8 +11,8 @@ Last updated: 2026-09-25
 - HTTPS, HTTP redirect, unauthenticated 401 and the first Admin login were verified
 - first Admin account exists without any credential stored in Git or documentation
 - pre-deployment PostgreSQL backup was created and restore-list validation passed
-- milestones 9–11 remain development work; this is an explicitly approved preview,
-  not a declaration that all V1 milestones are complete
+- the application remains an explicitly approved production preview while
+  final operational verification is completed
 
 ## Role dashboard and terminology revision — complete
 
@@ -187,3 +187,17 @@ Approval/return behavior is implemented in milestone 8 below.
 - responsive dark monthly overview and closure controls
 - PostgreSQL integration coverage for totals, blocked closure, close, edit lock,
   mandatory reopen reason and audit history
+
+## Milestone 11 — security, backup and production readiness — in progress
+
+- browser security headers defined at the static web boundary
+- API and web containers use read-only root filesystems with bounded tmpfs
+- long-running containers enable `no-new-privileges`
+- Docker JSON log rotation prevents unbounded local log growth
+- owner-only PostgreSQL custom-format backup with checksum and list validation
+- isolated restore-drill script that never writes to the production database
+- systemd daily-backup service and persistent timer supplied as versioned units
+- operational backup/restore and security-baseline documentation
+
+Remaining: deploy the hardening, install/run the timer, complete an isolated
+restore drill and verify the public headers and all production health checks.

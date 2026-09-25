@@ -4,6 +4,13 @@ services:
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    logging: &service_logging
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-zenops}
       POSTGRES_USER: ${POSTGRES_USER:-zenops}
@@ -61,6 +68,12 @@ services:
       postgres:
         condition: service_healthy
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:mode=1777,size=256m
+    logging: *service_logging
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:3000/ready"]
       interval: 15s
@@ -81,6 +94,14 @@ services:
       api:
         condition: service_healthy
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:mode=0755,size=16m
+      - /var/run:mode=0755,size=1m
+      - /tmp:mode=1777,size=16m
+    logging: *service_logging
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8080/health"]
       interval: 15s

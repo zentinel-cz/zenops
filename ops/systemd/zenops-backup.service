@@ -1,0 +1,18 @@
+[Unit]
+Description=ZenOps PostgreSQL verified backup
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/zenops/app/ops/backup.sh
+User=root
+Group=root
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/opt/zenops/backups /run/lock
+NoNewPrivileges=true
