@@ -216,4 +216,52 @@ integration("authentication integration", () => {
     `;
     expect(audit!.count).toBe(2);
   });
+
+  it("creates a night WorkDay, prevents overlaps and submits it", async () => {
+    const login = await app.inject({
+      method: "POST", url: "/api/auth/login", headers: { origin },
+      payload: { email: "worker@zenops.test", password },
+    });
+    const setCookie = login.headers["set-cookie"];
+    const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
+    const cookie = cookieHeader?.split(";", 1)[0];
+    const created = await app.inject({
+      method: "POST", url: "/api/workdays", headers: { origin, cookie: cookie! },
+      payload: { workDate: "2026-09-25", shiftType: "NIGHT" },
+    });
+    expect(created.statusCode, created.body).toBe(201);
+    const workDayId = created.json().workDay.id as string;
+
+    const missingActivity = await app.inject({
+      method: "POST", url: `/api/workdays/${workDayId}/entries`, headers: { origin, cookie: cookie! },
+      payload: { projectId, workTypeCode: "TREE_CUTTING", startAt: "2026-09-25T22:00:00Z", endAt: "2026-09-26T02:00:00Z" },
+    });
+    expect(missingActivity.statusCode).toBe(422);
+
+    const entry = await app.inject({
+      method: "POST", url: `/api/workdays/${workDayId}/entries`, headers: { origin, cookie: cookie! },
+      payload: { projectId, workTypeCode: "TREE_CUTTING", workActivityCode: "SAWYER", startAt: "2026-09-25T22:00:00Z", endAt: "2026-09-26T02:00:00Z" },
+    });
+    expect(entry.statusCode, entry.body).toBe(201);
+
+    const overlap = await app.inject({
+      method: "POST", url: `/api/workdays/${workDayId}/breaks`, headers: { origin, cookie: cookie! },
+      payload: { startAt: "2026-09-26T01:30:00Z", endAt: "2026-09-26T02:15:00Z" },
+    });
+    expect(overlap.statusCode).toBe(409);
+    const breakEntry = await app.inject({
+      method: "POST", url: `/api/workdays/${workDayId}/breaks`, headers: { origin, cookie: cookie! },
+      payload: { startAt: "2026-09-26T02:00:00Z", endAt: "2026-09-26T02:30:00Z" },
+    });
+    expect(breakEntry.statusCode, breakEntry.body).toBe(201);
+
+    const submitted = await app.inject({ method: "POST", url: `/api/workdays/${workDayId}/submit`, headers: { origin, cookie: cookie! } });
+    expect(submitted.statusCode, submitted.body).toBe(200);
+    expect(submitted.json().workDay.state).toBe("SUBMITTED");
+    const locked = await app.inject({
+      method: "POST", url: `/api/workdays/${workDayId}/breaks`, headers: { origin, cookie: cookie! },
+      payload: { startAt: "2026-09-26T03:00:00Z", endAt: "2026-09-26T03:15:00Z" },
+    });
+    expect(locked.statusCode).toBe(409);
+  });
 });

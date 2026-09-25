@@ -54,3 +54,20 @@ Remaining:
 
 - leader reassignment after the authority question is decided
 - richer project detail/edit screen after its editable-field rules are decided
+
+## Milestone 3 — WorkDay, WorkEntry and BreakEntry — core complete
+
+Completed:
+
+- individual WorkDay with morning/night shift and one record per employee/date
+- night intervals crossing midnight
+- multiple project WorkEntries and explicit BreakEntries
+- seeded work types and Tree Cutting activities
+- required Tree Cutting activity and `OTHER` description validation
+- PostgreSQL exclusion constraints and cross-table overlap protection
+- lazy OPEN monthly-period creation and closed-period protection
+- draft/returned edit lock, deletion and submission workflow
+- mobile-first worker dashboard forms and timeline
+- integration coverage for night work, activity rules, overlap and submission
+
+Approval/return behavior remains milestone 8 and is not silently simulated.

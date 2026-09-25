@@ -17,7 +17,8 @@ Přístup vytváří Admin. Neexistuje žádný společný ani výchozí účet.
 ### Pracovník
 
 - vidí všechny otevřené projekty;
-- později bude spravovat vlastní pracovní dny, úseky práce a přestávky.
+- spravuje vlastní pracovní den, úseky práce a přestávky;
+- zvolí ranní nebo noční směnu; noční směna může pokračovat přes půlnoc.
 
 ### Vedoucí
 
@@ -39,6 +40,22 @@ je uzavřít nebo znovu otevřít. Dále spravuje zaměstnance a jejich přístu
 - Uzavřený projekt zůstává v administrátorském přehledu; nemaže se.
 - Změna Vedoucího existujícího projektu zatím není dostupná, protože pravidla
   oprávnění k této operaci čekají na rozhodnutí.
+
+## Můj pracovní den
+
+1. Na dashboardu v části **Pracovní den** zvolte ranní nebo noční směnu a
+   pracovní den zahajte.
+2. Přidejte jeden nebo více pracovních úseků. Každý úsek má projekt, čas od–do
+   a druh práce: Strojní sečení, Křovinořez, Kácení, Reprofilace nebo Ostatní.
+3. U Kácení vyberte aktivitu (například Pilař nebo Manipulace). U druhu Ostatní
+   je povinný vlastní popis.
+4. Přestávku zapište jako samostatný časový interval.
+5. Chybný rozpracovaný úsek nebo přestávku lze odstranit a zadat znovu.
+6. Po dokončení použijte **Odeslat pracovní den**.
+
+Práce ani přestávky se nesmějí časově překrývat. Uzavřený projekt nelze použít
+pro nový úsek. Po odeslání je pracovní den uzamčen pro běžné úpravy a čeká na
+pozdější projektové schválení.
 
 ## Zaměstnanci a účty — Admin
 

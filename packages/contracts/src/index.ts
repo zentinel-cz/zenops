@@ -81,3 +81,27 @@ export const employeeSummarySchema = z.object({
   roles: z.array(roleCodeSchema),
 });
 export type EmployeeSummary = z.infer<typeof employeeSummarySchema>;
+
+export const shiftTypeSchema = z.enum(["MORNING", "NIGHT"]);
+export const workStateSchema = z.enum(["DRAFT", "SUBMITTED", "PARTIALLY_APPROVED", "APPROVED", "RETURNED"]);
+
+export const createWorkDaySchema = z.object({
+  workDate: z.iso.date(),
+  shiftType: shiftTypeSchema,
+});
+
+const intervalSchema = z.object({
+  startAt: z.iso.datetime({ offset: true }),
+  endAt: z.iso.datetime({ offset: true }),
+}).refine((value) => new Date(value.endAt) > new Date(value.startAt), {
+  message: "Konec intervalu musí následovat po začátku.", path: ["endAt"],
+});
+
+export const createWorkEntrySchema = intervalSchema.and(z.object({
+  projectId: z.string().uuid(),
+  workTypeCode: z.enum(["MACHINE_MOWING", "BRUSHCUTTER", "TREE_CUTTING", "REPROFILING", "OTHER"]),
+  workActivityCode: z.string().trim().max(60).nullable().optional(),
+  description: z.string().trim().max(2000).nullable().optional(),
+}));
+
+export const createBreakEntrySchema = intervalSchema;
