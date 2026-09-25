@@ -158,3 +158,16 @@ Approval/return behavior is implemented in milestone 8 below.
 - approval decisions are append-only and mirrored into the audit trail
 - responsive approval queue for Leader/Admin
 - PostgreSQL integration coverage for partial approval, return and resubmission
+
+## Milestone 9 — live daily report and PDF — complete
+
+- live report is derived directly from current operational records
+- approved and provisional work are clearly separated and totalled
+- Leader scope is restricted to orders currently led by that employee
+- Admin receives global daily reporting scope
+- work, breaks, machines, MTH, attachments, machine fuel, vehicles, mileage,
+  passengers and shared order fuel are included
+- responsive dark dashboard supports date selection and operational drill-down
+- professional landscape A4 PDF is rendered by Chromium through Playwright Core
+- PDF endpoint uses the same backend authorization and scope as the live report
+- PostgreSQL integration coverage verifies Leader scope and Worker denial

@@ -5,6 +5,7 @@ import { WorkDayPanel } from "./WorkDayPanel";
 import { ProjectDayPanel } from "./ProjectDayPanel";
 import { AssetPanel } from "./AssetPanel";
 import { ApprovalPanel } from "./ApprovalPanel";
+import { ReportPanel } from "./ReportPanel";
 
 type AuthState = { status: "loading" } | { status: "guest" } | { status: "authenticated"; user: SessionUser };
 
@@ -28,6 +29,7 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
   const canManageEmployees = user.permissions.includes("employee.manage");
   const canManageAssets = user.permissions.includes("asset.manage");
   const canApprove = user.permissions.includes("approval.project.manage") || user.permissions.includes("approval.admin.manage");
+  const canReport = user.permissions.includes("report.scoped.read") || user.permissions.includes("report.global.read");
   const isWorkerOnly = user.roles.includes("WORKER") && !user.roles.includes("LEADER") && !user.roles.includes("ADMIN");
 
   const loadProjects = () => fetch(canManageProjects ? "/api/projects" : "/api/projects/open", { credentials: "include" })
@@ -100,6 +102,7 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
       {isWorkerOnly && showDailyRecord && <WorkDayPanel projects={projects} assetVersion={assetVersion} />}
       <ProjectDayPanel user={user} projects={projects} />
       {canApprove && <ApprovalPanel />}
+      {canReport && <ReportPanel />}
       {canManageAssets && <AssetPanel onChanged={async () => setAssetVersion((value) => value + 1)} />}
       {canManageEmployees && <EmployeePanel user={user} />}
     </main>

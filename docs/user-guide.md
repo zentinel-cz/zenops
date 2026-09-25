@@ -138,3 +138,19 @@ Kilometry a palivo se ukládají právě jednou u společné jízdy řidiče. Ce
 se k ní pouze přiřadí a stejné provozní údaje neopisují do svého pracovního
 dne. Řidič nemůže vybrat sám sebe jako cestujícího a stejné vozidlo nelze
 použít ve dvou časově se překrývajících jízdách.
+
+## Denní report — Vedoucí a Admin
+
+Sekce **Denní report** zobrazuje vždy aktuální provozní data pro zvolené datum.
+Nejde o ručně vytvořenou kopii. Vedoucí vidí pouze práci ze zakázek, které
+aktuálně vede; Admin má globální přehled.
+
+Report rozlišuje:
+
+- **Schváleno** — potvrzené pracovní úseky;
+- **Předběžné** — rozpracované, odeslané nebo vrácené úseky.
+
+Souhrn ukazuje počet pracovníků a úseků, schválený a předběžný čas. Detail
+obsahuje Zakázku, pracovníka, druh práce, přestávky, stroje, MTH, příslušenství,
+palivo, vozidla, kilometry a společné palivo zakázky. Tlačítkem **Stáhnout PDF**
+se stáhne profesionální report ve stejném oprávněném rozsahu.

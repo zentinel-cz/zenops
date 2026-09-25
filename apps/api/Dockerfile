@@ -12,7 +12,8 @@ RUN pnpm --filter @zenops/contracts build && pnpm --filter @zenops/api build
 FROM node:22-alpine AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
-RUN apk add --no-cache su-exec && corepack enable && addgroup -S zenops && adduser -S zenops -G zenops
+RUN apk add --no-cache su-exec chromium nss freetype harfbuzz ca-certificates && corepack enable && addgroup -S zenops && adduser -S zenops -G zenops
+ENV PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium-browser
 COPY --from=build /app/package.json /app/pnpm-lock.yaml /app/pnpm-workspace.yaml ./
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/apps/api/node_modules ./apps/api/node_modules

@@ -498,4 +498,34 @@ integration("authentication integration", () => {
     `;
     expect(entries.map((item) => item.state).sort()).toEqual(["APPROVED", "SUBMITTED"]);
   });
+
+  it("builds a scoped live daily report and denies Worker report access", async () => {
+    const leaderLogin = await app.inject({
+      method: "POST", url: "/api/auth/login", headers: { origin }, payload: { email: "leader@zenops.test", password },
+    });
+    const leaderSetCookie = leaderLogin.headers["set-cookie"];
+    const leaderCookieHeader = Array.isArray(leaderSetCookie) ? leaderSetCookie[0] : leaderSetCookie;
+    const leaderCookie = leaderCookieHeader?.split(";", 1)[0];
+    const report = await app.inject({
+      method: "GET", url: "/api/reports/daily?date=2026-09-25", headers: { cookie: leaderCookie! },
+    });
+    expect(report.statusCode, report.body).toBe(200);
+    expect(report.json().report).toMatchObject({
+      date: "2026-09-25", scope: "LEADER", summary: { entries: 2, workers: 1, approvedMinutes: 240, provisionalMinutes: 60 },
+    });
+    expect(report.json().report.entries[0]).toEqual(expect.objectContaining({ projectCode: "Z-001" }));
+    expect(report.json().report.trips).toHaveLength(1);
+    expect(report.json().report.fuelRecords).toHaveLength(1);
+
+    const workerLogin = await app.inject({
+      method: "POST", url: "/api/auth/login", headers: { origin }, payload: { email: "worker@zenops.test", password },
+    });
+    const workerSetCookie = workerLogin.headers["set-cookie"];
+    const workerCookieHeader = Array.isArray(workerSetCookie) ? workerSetCookie[0] : workerSetCookie;
+    const workerCookie = workerCookieHeader?.split(";", 1)[0];
+    const denied = await app.inject({
+      method: "GET", url: "/api/reports/daily?date=2026-09-25", headers: { cookie: workerCookie! },
+    });
+    expect(denied.statusCode).toBe(403);
+  });
 });
