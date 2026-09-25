@@ -35,14 +35,19 @@ Do not invent missing business rules. Record unresolved decisions in
 
 ## Current implementation status
 
-The repository currently contains the authoritative specification and
-pre-build infrastructure only. PostgreSQL can be prepared with `compose.yaml`,
-but no frontend, backend, schema migration or production application has been
-implemented yet.
+Milestone 1 is in progress. The repository contains a pnpm/TypeScript
+workspace, React mobile-first web shell, Fastify API, PostgreSQL-backed opaque
+sessions, Argon2id authentication, extensible RBAC, checksum-protected SQL
+migrations, isolated Docker images and CI checks.
 
-Preparation documents:
+The application profile is intentionally not deployed while the milestone is
+incomplete. No default credentials are seeded.
+
+Implementation and operations documents:
 
 - `docs/architecture/implementation-plan.md`
 - `docs/architecture/database-schema-v1.md`
 - `docs/architecture/legacy-notes-review.md`
 - `docs/operations/prebuild-readiness.md`
+- `docs/operations/development.md`
+- `docs/implementation-status.md`

@@ -1,0 +1,28 @@
+:root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #12211b; background: #f4f6f2; font-synthesis: none; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; }
+button, input { font: inherit; }
+.login-layout { min-height: 100vh; display: grid; grid-template-columns: 1.15fr .85fr; }
+.brand-panel { position: relative; min-height: 100vh; padding: 42px 6vw; color: #f7fbf7; background: radial-gradient(circle at 80% 15%, #275e45 0, transparent 32%), linear-gradient(145deg, #06130f 0%, #102d21 60%, #153e2d 100%); display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; }
+.brand-panel::after { content: ""; position: absolute; width: 420px; height: 420px; border: 1px solid rgba(181,255,204,.14); border-radius: 50%; right: -160px; bottom: -120px; box-shadow: 0 0 0 70px rgba(181,255,204,.025), 0 0 0 140px rgba(181,255,204,.02); }
+.brand { display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 800; letter-spacing: .2em; }
+.brand-mark { display: grid; place-items: center; width: 34px; height: 34px; color: #092018; background: #b9f6c9; border-radius: 9px; font-size: 18px; letter-spacing: 0; }
+.brand-message { position: relative; z-index: 1; max-width: 640px; }
+.brand-message h1 { margin: 8px 0 18px; font-size: clamp(64px, 9vw, 128px); letter-spacing: -.07em; line-height: .85; }
+.brand-message > p:last-child { max-width: 500px; color: #c7d7ce; font-size: clamp(18px, 2vw, 24px); line-height: 1.5; }
+.eyebrow { color: #62d98b; font-size: 11px; font-weight: 800; letter-spacing: .18em; }
+.copyright { color: #7e9b8d; font-size: 12px; }
+.form-panel { padding: 40px 8vw; display: grid; place-items: center; background: #fbfcfa; }
+form { width: min(100%, 420px); }
+form h2 { margin: 8px 0; font-size: 38px; letter-spacing: -.04em; }
+.muted { color: #6b7871; margin: 0 0 34px; }
+label { display: grid; gap: 8px; margin: 18px 0; color: #34443c; font-size: 13px; font-weight: 700; }
+input { width: 100%; padding: 14px 16px; border: 1px solid #ccd5ce; border-radius: 10px; outline: none; background: white; transition: .2s; }
+input:focus { border-color: #278451; box-shadow: 0 0 0 4px rgba(39,132,81,.1); }
+button { width: 100%; margin-top: 10px; padding: 15px; border: 0; border-radius: 10px; color: white; background: #16643b; font-weight: 800; cursor: pointer; }
+button:hover { background: #0e502e; } button:disabled { opacity: .65; cursor: wait; }
+.error { padding: 11px 13px; border-radius: 8px; color: #8d2020; background: #fbe8e8; font-size: 13px; }
+.support { display: block; margin-top: 24px; color: #7a8680; text-align: center; }
+.center { min-height: 100vh; display: grid; place-items: center; }.loader { width: 32px; height: 32px; border: 3px solid #cbd8d0; border-top-color: #1c7748; border-radius: 50%; animation: spin .7s linear infinite; }@keyframes spin { to { transform: rotate(360deg); } }
+.dashboard { min-height: 100vh; padding: 28px clamp(20px, 5vw, 72px); background: #f1f4ef; }.topbar { display:flex; justify-content:space-between; align-items:center; }.topbar h1 { margin:3px 0; }.user-chip { display:grid; text-align:right; }.user-chip small { color:#68766e; }.welcome { margin:70px 0 36px; }.welcome h2 { font-size:clamp(34px,5vw,62px); margin:8px 0; letter-spacing:-.05em; }.welcome>p:last-child { color:#67756d; }.module-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }.module-grid article { padding:24px; min-height:220px; border:1px solid #d9e0da; border-radius:18px; background:white; }.module-grid article span { color:#2a8150; font-size:12px; font-weight:800; }.module-grid article h3 { margin:30px 0 8px; font-size:24px; }.module-grid article p { color:#69766f; }.module-grid article b { display:block; margin-top:28px; color:#2a8150; font-size:11px; letter-spacing:.12em; }
+@media (max-width: 760px) { .login-layout { grid-template-columns: 1fr; }.brand-panel { min-height: 34vh; padding: 28px 24px; }.brand-message h1 { font-size: 58px; }.brand-message > p:last-child { font-size: 16px; }.copyright { display:none; }.form-panel { padding: 42px 24px; place-items:start center; }.module-grid { grid-template-columns:1fr; }.topbar { align-items:flex-start; }.dashboard { padding:22px 18px; }.welcome { margin:50px 0 26px; } }

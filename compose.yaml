@@ -22,9 +22,76 @@ services:
       retries: 10
       start_period: 10s
 
+  migrate:
+    profiles: ["tools"]
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment: &api_environment
+      NODE_ENV: production
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-zenops}
+      POSTGRES_USER: ${POSTGRES_USER:-zenops}
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      WEB_ORIGIN: ${WEB_ORIGIN:-https://zenops.zentinel.cz}
+      SESSION_TTL_HOURS: ${SESSION_TTL_HOURS:-168}
+      TZ: ${TZ:-Europe/Prague}
+    command: ["node", "dist/cli/migrate.js"]
+    secrets:
+      - postgres_password
+    networks:
+      - backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment: *api_environment
+    secrets:
+      - postgres_password
+    networks:
+      - backend
+      - frontend
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:3000/ready"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  web:
+    profiles: ["app"]
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "127.0.0.1:3000:8080"
+    networks:
+      - frontend
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://127.0.0.1:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
 networks:
   backend:
     internal: true
+  frontend:
 
 volumes:
   postgres_data:
@@ -33,4 +100,3 @@ volumes:
 secrets:
   postgres_password:
     file: /etc/zenops/v1-db-password
-
