@@ -177,6 +177,9 @@ integration("authentication integration", () => {
       from employees e join users u on u.employee_id = e.id where e.id = ${employeeId}
     `;
     expect(stored).toEqual({ employeeActive: false, userActive: false });
+    const listing = await app.inject({ method: "GET", url: "/api/employees", headers: { cookie: cookie! } });
+    expect(listing.statusCode).toBe(200);
+    expect(listing.json().employees).toContainEqual(expect.objectContaining({ id: employeeId, isActive: false }));
     const [audit] = await db<Array<{ count: number }>>`
       select count(*)::int as count from audit_logs
       where entity_id = ${employeeId} and action in ('EMPLOYEE_CREATED', 'EMPLOYEE_DEACTIVATED')
@@ -198,6 +201,9 @@ integration("authentication integration", () => {
     });
     expect(closed.statusCode, closed.body).toBe(200);
     expect(closed.json().project.status).toBe("CLOSED");
+    const allProjects = await app.inject({ method: "GET", url: "/api/projects", headers: { cookie: cookie! } });
+    expect(allProjects.statusCode).toBe(200);
+    expect(allProjects.json().projects).toContainEqual(expect.objectContaining({ id: projectId, status: "CLOSED" }));
     const reopened = await app.inject({
       method: "PATCH", url: `/api/projects/${projectId}/state`, headers: { origin, cookie: cookie! },
       payload: { status: "OPEN" },

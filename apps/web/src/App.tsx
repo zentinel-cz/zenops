@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useState } from "react";
 import type { ProjectSummary, SessionUser } from "@zenops/contracts";
+import { EmployeePanel } from "./EmployeePanel";
 
 type AuthState = { status: "loading" } | { status: "guest" } | { status: "authenticated"; user: SessionUser };
 
@@ -17,8 +18,10 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [projectError, setProjectError] = useState("");
   const canCreateProject = user.permissions.includes("project.create");
+  const canManageProjects = user.permissions.includes("project.close");
+  const canManageEmployees = user.permissions.includes("employee.manage");
 
-  const loadProjects = () => fetch("/api/projects/open", { credentials: "include" })
+  const loadProjects = () => fetch(canManageProjects ? "/api/projects" : "/api/projects/open", { credentials: "include" })
     .then(async (response) => response.ok ? response.json() as Promise<{ projects: ProjectSummary[] }> : Promise.reject())
     .then((body) => setProjects(body.projects));
 
@@ -57,6 +60,20 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
     await loadProjects();
   }
 
+  async function changeProjectState(project: ProjectSummary) {
+    setProjectError("");
+    const response = await fetch(`/api/projects/${project.id}/state`, {
+      method: "PATCH", credentials: "include", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ status: project.status === "OPEN" ? "CLOSED" : "OPEN" }),
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({ error: "Stav projektu se nepodařilo změnit." })) as { error?: string };
+      setProjectError(body.error ?? "Stav projektu se nepodařilo změnit.");
+      return;
+    }
+    await loadProjects();
+  }
+
   return (
     <main className="dashboard">
       <header className="topbar">
@@ -70,11 +87,12 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
       </section>
       <section className="module-grid" aria-label="Moduly">
         <article><span>01</span><h3>Moje práce</h3><p>Směny, pracovní úseky a přestávky.</p><b>PŘIPRAVUJEME</b></article>
-        <article className="projects-card"><span>02 · {loadingProjects ? "…" : projects.length}</span><h3>Otevřené projekty</h3>{projects.length ? <ul>{projects.slice(0, 3).map((project) => <li key={project.id}><strong>{project.code}</strong><span>{project.name} · {project.location}</span></li>)}</ul> : <p>{loadingProjects ? "Načítám projekty…" : "Zatím nejsou otevřené projekty."}</p>}{canCreateProject && <button className="inline-action" onClick={() => setShowProjectForm((visible) => !visible)}>{showProjectForm ? "Zavřít formulář" : "Nový projekt"}</button>}<b>AKTIVNÍ MODUL</b></article>
+        <article className="projects-card"><span>02 · {loadingProjects ? "…" : projects.length}</span><h3>{canManageProjects ? "Projekty" : "Otevřené projekty"}</h3>{projects.length ? <ul>{projects.slice(0, 5).map((project) => <li className={project.status === "CLOSED" ? "closed" : ""} key={project.id}><strong>{project.code}</strong><span>{project.name} · {project.location}</span>{canManageProjects && <button className="project-state" onClick={() => void changeProjectState(project)}>{project.status === "OPEN" ? "Uzavřít" : "Otevřít"}</button>}</li>)}</ul> : <p>{loadingProjects ? "Načítám projekty…" : "Zatím nejsou žádné projekty."}</p>}{canCreateProject && <button className="inline-action" onClick={() => setShowProjectForm((visible) => !visible)}>{showProjectForm ? "Zavřít formulář" : "Nový projekt"}</button>}<b>AKTIVNÍ MODUL</b></article>
         <article><span>03</span><h3>Schvalování</h3><p>Kontrola práce podle vedoucích projektů.</p><b>PŘIPRAVUJEME</b></article>
       </section>
       {showProjectForm && <section className="project-form-panel"><form onSubmit={createProject}><div><p className="eyebrow">NOVÝ PROJEKT</p><h3>Založit projekt</h3></div><label>Kód<input name="code" maxLength={40} required /></label><label>Název<input name="name" maxLength={160} required /></label><label>Místo<input name="location" maxLength={240} required /></label><label>Vedoucí<select name="leaderEmployeeId" required defaultValue=""><option value="" disabled>Vyberte vedoucího</option>{leaders.map((leader) => <option key={leader.id} value={leader.id}>{leader.displayName}</option>)}</select></label><label>Začátek<input name="startDate" type="date" required /></label><label className="checkbox"><input name="besip" type="checkbox" /> BESIP</label>{projectError && <p className="error" role="alert">{projectError}</p>}<button>Vytvořit projekt</button></form></section>}
       {!showProjectForm && projectError && <p className="dashboard-error" role="alert">{projectError}</p>}
+      {canManageEmployees && <EmployeePanel user={user} />}
     </main>
   );
 }

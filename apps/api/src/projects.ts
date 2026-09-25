@@ -17,6 +17,16 @@ type ProjectRow = {
 };
 
 export function registerProjectRoutes(app: FastifyInstance, db: Database, requireTrustedOrigin: AuthorizationHook): void {
+  app.get("/api/projects", { preHandler: requirePermission("project.close") }, async () => {
+    const projects = await db<ProjectRow[]>`
+      select p.id, p.code, p.name, p.location, p.besip, p.start_date, p.end_date, p.status,
+        p.current_leader_employee_id as leader_employee_id, e.display_name as leader_name
+      from projects p join employees e on e.id = p.current_leader_employee_id
+      order by (p.status = 'OPEN') desc, p.start_date desc, p.code
+    `;
+    return { projects };
+  });
+
   app.get("/api/projects/open", { preHandler: requirePermission("project.read_open") }, async () => {
     const projects = await db<ProjectRow[]>`
       select p.id, p.code, p.name, p.location, p.besip, p.start_date, p.end_date, p.status,

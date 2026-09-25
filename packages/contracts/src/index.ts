@@ -71,3 +71,13 @@ export const projectStateSchema = z.object({
   status: projectStatusSchema,
   reason: z.string().trim().max(500).nullable().optional(),
 });
+
+export const employeeSummarySchema = z.object({
+  id: z.string().uuid(),
+  employeeNumber: z.string(),
+  displayName: z.string(),
+  email: z.string().email(),
+  isActive: z.boolean(),
+  roles: z.array(roleCodeSchema),
+});
+export type EmployeeSummary = z.infer<typeof employeeSummarySchema>;

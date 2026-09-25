@@ -42,3 +42,9 @@ deploy incomplete work to production without explicit approval.
 The application is a Zentinel.cz product. UI should be clean, modern,
 professional and intentionally designed rather than a generic admin
 template.
+
+## User documentation
+
+Every user-visible workflow change must update `docs/user-guide.md` in the
+same commit. A feature is not complete when the guide describes different
+roles, controls, states or behavior than the application.

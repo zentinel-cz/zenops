@@ -46,9 +46,11 @@ Completed:
 - active Leader lookup for project creation
 - Admin-only audited project close/reopen workflow
 - Leader/Admin project creation form in the dashboard
+- Admin employee management UI with role assignment and lifecycle controls
+- Admin overview of open/closed projects with close/reopen controls
+- Czech V1 user guide maintained as documentation-as-code
 
 Remaining:
 
-- employee management UI for Admin
 - leader reassignment after the authority question is decided
-- project detail, closed-project overview and management controls
+- richer project detail/edit screen after its editable-field rules are decided
