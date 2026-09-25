@@ -188,7 +188,7 @@ Approval/return behavior is implemented in milestone 8 below.
 - PostgreSQL integration coverage for totals, blocked closure, close, edit lock,
   mandatory reopen reason and audit history
 
-## Milestone 11 — security, backup and production readiness — in progress
+## Milestone 11 — security, backup and production readiness — complete
 
 - browser security headers defined at the static web boundary
 - API and web containers use read-only root filesystems with bounded tmpfs
@@ -198,6 +198,8 @@ Approval/return behavior is implemented in milestone 8 below.
 - isolated restore-drill script that never writes to the production database
 - systemd daily-backup service and persistent timer supplied as versioned units
 - operational backup/restore and security-baseline documentation
-
-Remaining: deploy the hardening, install/run the timer, complete an isolated
-restore drill and verify the public headers and all production health checks.
+- all 21 PostgreSQL integration tests pass
+- automatic dump restored successfully into an isolated PostgreSQL 16 instance
+  with 29 public tables and 11 recorded migrations
+- production containers are healthy, public security headers are present,
+  anonymous session access returns 401 and the timer is enabled and active
