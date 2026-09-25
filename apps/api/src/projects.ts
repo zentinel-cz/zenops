@@ -43,7 +43,7 @@ export function registerProjectRoutes(app: FastifyInstance, db: Database, requir
     preHandler: [requireTrustedOrigin, requirePermission("project.create")],
   }, async (request, reply) => {
     const parsed = createProjectSchema.safeParse(request.body);
-    if (!parsed.success) return reply.code(400).send({ error: "Neplatné údaje projektu.", details: parsed.error.flatten() });
+    if (!parsed.success) return reply.code(400).send({ error: "Neplatné údaje zakázky.", details: parsed.error.flatten() });
     const actor = request.sessionUser!;
     const leader = await db<Array<{ id: string }>>`
       select e.id from employees e
@@ -53,7 +53,7 @@ export function registerProjectRoutes(app: FastifyInstance, db: Database, requir
       where e.id = ${parsed.data.leaderEmployeeId} and e.is_active
       limit 1
     `;
-    if (!leader[0]) return reply.code(422).send({ error: "Vedoucí projektu musí být aktivní uživatel s rolí Vedoucí." });
+    if (!leader[0]) return reply.code(422).send({ error: "Vedoucí zakázky musí být aktivní uživatel s rolí Vedoucí." });
 
     try {
       const project = await db.begin(async (transaction) => {
@@ -81,7 +81,7 @@ export function registerProjectRoutes(app: FastifyInstance, db: Database, requir
       return reply.code(201).send({ project });
     } catch (error) {
       if (typeof error === "object" && error && "code" in error && error.code === "23505") {
-        return reply.code(409).send({ error: "Projekt s tímto kódem již existuje." });
+        return reply.code(409).send({ error: "Zakázka s tímto kódem již existuje." });
       }
       throw error;
     }
@@ -92,7 +92,7 @@ export function registerProjectRoutes(app: FastifyInstance, db: Database, requir
   }, async (request, reply) => {
     const parsed = projectStateSchema.safeParse(request.body);
     const projectId = (request.params as { projectId?: string }).projectId;
-    if (!parsed.success || !projectId) return reply.code(400).send({ error: "Neplatná změna stavu projektu." });
+    if (!parsed.success || !projectId) return reply.code(400).send({ error: "Neplatná změna stavu zakázky." });
     const changed = await db.begin(async (transaction) => {
       const existing = await transaction<Array<ProjectRow>>`
         select p.id, p.code, p.name, p.location, p.besip, p.start_date, p.end_date, p.status,
@@ -119,7 +119,7 @@ export function registerProjectRoutes(app: FastifyInstance, db: Database, requir
       `;
       return updated!;
     });
-    if (!changed) return reply.code(404).send({ error: "Projekt nebyl nalezen nebo je již v požadovaném stavu." });
+    if (!changed) return reply.code(404).send({ error: "Zakázka nebyla nalezena nebo je již v požadovaném stavu." });
     return { project: changed };
   });
 }

@@ -14,6 +14,19 @@ Last updated: 2026-09-25
 - milestones 9–11 remain development work; this is an explicitly approved preview,
   not a declaration that all V1 milestones are complete
 
+## Role dashboard and terminology revision — complete
+
+- Admin and Leader no longer receive or pass Worker-only WorkDay permissions
+- backend rejects WorkDay creation for Admin/Leader even with combined roles
+- Worker dashboard is reduced to one primary daily-record action
+- Worker chooses work category before seeing the order/time form
+- four primary choices are Machine Mowing, Tree Cutting, Reprofiling and Manual Mowing
+- user-facing `Project` terminology is renamed to Czech `Zakázka`; internal
+  schema/API identifiers remain stable to avoid a risky data migration
+- Admin/Leader dashboard focuses on orders, approvals and operational assets
+- active machine, attachment and vehicle lists are visible with catalogue controls
+- entire application uses a responsive dark operating theme
+
 ## Milestone 1 — foundation and authentication — complete
 
 Completed:

@@ -19,3 +19,14 @@ export function requirePermission(permission: string): AuthorizationHook {
     }
   };
 }
+
+export const requireWorkerOnly: AuthorizationHook = async (request, reply) => {
+  if (!request.sessionUser) {
+    await reply.code(401).send({ error: "Nepřihlášený uživatel." });
+    return;
+  }
+  const roles = request.sessionUser.roles;
+  if (!roles.includes("WORKER") || roles.includes("LEADER") || roles.includes("ADMIN")) {
+    await reply.code(403).send({ error: "Denní záznamy vytváří pouze role Pracovník." });
+  }
+};

@@ -1,7 +1,8 @@
 # ZenOps V1 — Uživatelská příručka
 
 Tato příručka popisuje aktuálně implementované funkce nové verze ZenOps. Bude
-se rozšiřovat současně s aplikací. ZenOps zatím není produkčně nasazen.
+se rozšiřovat současně s aplikací. Testovací náhled běží na adrese
+`https://zenops.zentinel.cz`.
 
 ## Přihlášení a odhlášení
 
@@ -16,72 +17,72 @@ Přístup vytváří Admin. Neexistuje žádný společný ani výchozí účet.
 
 ### Pracovník
 
-- vidí všechny otevřené projekty;
-- spravuje vlastní pracovní den, úseky práce a přestávky;
+- má jednoduchý dashboard s hlavní volbou **Přidat denní záznam**;
+- vidí všechny otevřené zakázky až uvnitř formuláře denního záznamu;
+- spravuje vlastní pracovní den, úseky práce, jízdy a přestávky;
 - zvolí ranní nebo noční směnu; noční směna může pokračovat přes půlnoc.
 
 ### Vedoucí
 
-Má možnosti Pracovníka a navíc může založit projekt. Při založení vyplní kód,
-název, místo, vedoucího, datum zahájení a případně označení BESIP. Kód projektu
-se ukládá velkými písmeny a musí být jedinečný. Vedoucí schvaluje jednotlivé
-pracovní úseky ostatních pracovníků na projektech, které aktuálně vede.
+Vedoucí nevytváří vlastní denní záznamy. Zakládá zakázky, spravuje denní údaje,
+techniku a provozní palivo a schvaluje jednotlivé pracovní úseky pracovníků na
+zakázkách, které aktuálně vede.
 
 ### Admin
 
-Má globální oprávnění. Na dashboardu vidí otevřené i uzavřené projekty a může
-je uzavřít nebo znovu otevřít. Dále spravuje zaměstnance a jejich přístupy a
-schvaluje vlastní práci Vedoucích, aby nikdo neschvaloval sám sebe.
+Admin nevytváří vlastní denní záznamy. Má globální provozní dashboard se
+seznamem otevřených i uzavřených zakázek, techniky, příslušenství a vozidel.
+Může zakázky uzavřít nebo znovu otevřít, spravuje zaměstnance a jejich přístupy
+a administrativní schvalování.
 
-## Projekty
+## Zakázky
 
-- Otevřené projekty jsou dostupné všem přihlášeným pracovníkům.
-- Vedoucí nebo Admin vytvoří projekt tlačítkem **Nový projekt**.
-- Každý projekt má právě jednoho aktuálního Vedoucího.
-- Projekt může uzavřít nebo znovu otevřít pouze Admin.
-- Uzavřený projekt zůstává v administrátorském přehledu; nemaže se.
-- Změna Vedoucího existujícího projektu zatím není dostupná, protože pravidla
+- Otevřené zakázky jsou dostupné pracovníkům při vytváření denního záznamu.
+- Vedoucí nebo Admin vytvoří zakázku tlačítkem **Nová zakázka**.
+- Každá zakázka má právě jednoho aktuálního Vedoucího.
+- Zakázku může uzavřít nebo znovu otevřít pouze Admin.
+- Uzavřená zakázka zůstává v administrátorském přehledu; nemaže se.
+- Změna Vedoucího existující zakázky zatím není dostupná, protože pravidla
   oprávnění k této operaci čekají na rozhodnutí.
 
 ## Můj pracovní den
 
-1. Na dashboardu v části **Pracovní den** zvolte ranní nebo noční směnu a
-   pracovní den zahajte.
-2. Přidejte jeden nebo více pracovních úseků. Každý úsek má projekt, čas od–do
-   a druh práce: Strojní sečení, Křovinořez, Kácení, Reprofilace nebo Ostatní.
-3. U Kácení vyberte aktivitu (například Pilař nebo Manipulace). U druhu Ostatní
-   je povinný vlastní popis.
-4. Přestávku zapište jako samostatný časový interval.
-5. Chybný rozpracovaný úsek nebo přestávku lze odstranit a zadat znovu.
-6. Po dokončení použijte **Odeslat pracovní den**.
+1. Na jednoduchém dashboardu zvolte **Přidat denní záznam**.
+2. Pokud pracovní den ještě neexistuje, zvolte ranní nebo noční směnu.
+3. Vyberte Strojní sečení, Kácení, Reprofilaci nebo Ruční sečení.
+4. Teprve v otevřeném formuláři vyberte Zakázku a zadejte čas práce.
+5. Přidejte případné další pracovní úseky, přestávky, stroj nebo jízdu.
+6. U Kácení vyberte aktivitu (například Pilař nebo Manipulace).
+7. Přestávku zapište jako samostatný časový interval.
+8. Chybný rozpracovaný úsek nebo přestávku lze odstranit a zadat znovu.
+9. Po dokončení použijte **Odeslat pracovní den**.
 
-Práce ani přestávky se nesmějí časově překrývat. Uzavřený projekt nelze použít
-pro nový úsek. Po odeslání je pracovní den uzamčen pro běžné úpravy a čeká na
-projektové schválení.
+Práce ani přestávky se nesmějí časově překrývat. Uzavřenou zakázku nelze
+použít pro nový úsek. Po odeslání je pracovní den uzamčen pro běžné úpravy a
+čeká na schválení podle zakázky.
 
 ## Schvalování práce — Vedoucí a Admin
 
 1. V části **Práce ke schválení** otevřete čekající pracovní úsek.
-2. Zkontrolujte pracovníka, projekt, druh práce a vykázaný čas.
+2. Zkontrolujte pracovníka, zakázku, druh práce a vykázaný čas.
 3. Správný úsek potvrďte tlačítkem **Schválit**.
 4. Chybný úsek vraťte a povinně napište konkrétní důvod.
 
-Vedoucí vidí práci ostatních pracovníků pouze na projektech, které právě vede.
-Vlastní práci Vedoucího schvaluje Admin. Každý úsek se posuzuje samostatně:
+Vedoucí vidí práci pracovníků pouze na zakázkách, které právě vede. Každý úsek
+se posuzuje samostatně:
 část dne tedy může být schválena a část vrácena. Pracovník upraví pouze vrácené
 úseky a den znovu odešle; již schválené úseky zůstávají uzamčené. Rozhodnutí se
 uchovávají jako neměnná historie a nelze je zpětně přepsat ani smazat.
 
-## Denní údaje projektu — Vedoucí a Admin
+## Denní údaje zakázky — Vedoucí a Admin
 
-V části **Údaje projektu** vyberte otevřený projekt a zapište počasí, teplotu a
-poznámku pro dnešní den. Údaje se vedou jen jednou za projekt a datum, nikoli
-zvlášť u každého pracovníka. Vedoucí smí upravit pouze projekt, který aktuálně
-vede; Admin může spravovat všechny projekty. Uložení i změna se auditují.
+V části **Údaje zakázky** vyberte otevřenou zakázku a zapište počasí, teplotu a
+poznámku pro dnešní den. Údaje se vedou jen jednou za zakázku a datum. Vedoucí
+smí upravit pouze zakázku, kterou aktuálně vede; Admin může spravovat všechny.
 
 Ve stejném formuláři může Vedoucí nebo Admin zapsat společnou spotřebu a
-tankování paliva pro křovinořezy. Tento údaj patří projektu a dni, nikoli
-jednotlivému pracovníkovi. Pro stejný projekt, datum a kategorii existuje jen
+tankování paliva pro křovinořezy. Tento údaj patří zakázce a dni, nikoli
+jednotlivému pracovníkovi. Pro stejnou zakázku, datum a kategorii existuje jen
 jeden aktuální záznam; při opravě se původní a nový stav uchovají v auditu.
 Systém eviduje také zaměstnance, který údaj naposledy zapsal, ale ten není
 vlastníkem společného palivového záznamu.
@@ -99,7 +100,7 @@ Aktuálně přihlášený Admin nemůže deaktivovat sám sebe.
 
 ## Audit a bezpečnost
 
-- Vytvoření zaměstnance a projektu, změny aktivního stavu i schvalovací
+- Vytvoření zaměstnance a zakázky, změny aktivního stavu i schvalovací
   rozhodnutí se auditují.
 - Hesla jsou ukládána jako Argon2id hash, nikoli čitelně.
 - Přihlášení používá serverovou relaci v bezpečné HTTP-only cookie.

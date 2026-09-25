@@ -1,7 +1,7 @@
 import { createBreakEntrySchema, createWorkDaySchema, createWorkEntrySchema } from "@zenops/contracts";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { requirePermission, type AuthorizationHook } from "./authorization.js";
+import { requirePermission, requireWorkerOnly, type AuthorizationHook } from "./authorization.js";
 import type { Database } from "./db.js";
 
 const idParams = z.object({ workDayId: z.string().uuid() });
@@ -56,7 +56,7 @@ async function getWorkDayDetail(db: Database, workDayId: string, employeeId: str
 }
 
 export function registerWorkDayRoutes(app: FastifyInstance, db: Database, requireTrustedOrigin: AuthorizationHook): void {
-  const own = requirePermission("workday.own.manage");
+  const own = requireWorkerOnly;
 
   app.get("/api/workdays/current", { preHandler: own }, async (request, reply) => {
     const query = z.object({ date: z.iso.date() }).safeParse(request.query);
@@ -128,7 +128,7 @@ export function registerWorkDayRoutes(app: FastifyInstance, db: Database, requir
         `;
         return created;
       });
-      if (!entry) return reply.code(422).send({ error: "Projekt, druh práce nebo povinná aktivita nejsou platné." });
+      if (!entry) return reply.code(422).send({ error: "Zakázka, druh práce nebo povinná aktivita nejsou platné." });
       return reply.code(201).send({ entry });
     } catch (error) {
       if (typeof error === "object" && error && "code" in error && error.code === "23P01") {
@@ -159,7 +159,7 @@ export function registerWorkDayRoutes(app: FastifyInstance, db: Database, requir
     }
   });
 
-  app.post("/api/workdays/:workDayId/submit", { preHandler: [requireTrustedOrigin, requirePermission("workday.own.submit")] }, async (request, reply) => {
+  app.post("/api/workdays/:workDayId/submit", { preHandler: [requireTrustedOrigin, requireWorkerOnly, requirePermission("workday.own.submit")] }, async (request, reply) => {
     const params = idParams.safeParse(request.params);
     if (!params.success) return reply.code(400).send({ error: "Neplatný pracovní den." });
     const workDay = await getOwnedWorkDay(db, params.data.workDayId, request.sessionUser!.employeeId);

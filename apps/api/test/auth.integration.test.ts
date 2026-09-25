@@ -28,6 +28,7 @@ integration("authentication integration", () => {
   };
   const app = buildApp(config, db);
   let leaderEmployeeId = "";
+  let passengerEmployeeId = "";
   let projectId = "";
   let machineId = "";
   let attachmentId = "";
@@ -53,6 +54,15 @@ integration("authentication integration", () => {
       insert into user_roles (user_id, role_id)
       select ${user!.id}, id from roles where code = 'WORKER'
     `;
+    const [passengerEmployee] = await db<Array<{ id: string }>>`
+      insert into employees (employee_number, display_name) values ('TEST-004', 'Test Cestující') returning id
+    `;
+    passengerEmployeeId = passengerEmployee!.id;
+    const [passengerUser] = await db<Array<{ id: string }>>`
+      insert into users (employee_id, email, password_hash)
+      values (${passengerEmployeeId}, 'passenger@zenops.test', ${passwordHash}) returning id
+    `;
+    await db`insert into user_roles (user_id, role_id) select ${passengerUser!.id}, id from roles where code = 'WORKER'`;
     const [leaderEmployee] = await db<Array<{ id: string }>>`
       insert into employees (employee_number, display_name) values ('TEST-002', 'Test Vedoucí') returning id
     `;
@@ -123,6 +133,22 @@ integration("authentication integration", () => {
     expect(afterLogout.statusCode).toBe(401);
     const [session] = await db<Array<{ revoked: boolean }>>`select revoked_at is not null as revoked from sessions`;
     expect(session!.revoked).toBe(true);
+  });
+
+  it("keeps daily records exclusive to Worker accounts", async () => {
+    for (const email of ["leader@zenops.test", "admin@zenops.test"]) {
+      const login = await app.inject({ method: "POST", url: "/api/auth/login", headers: { origin }, payload: { email, password } });
+      const setCookie = login.headers["set-cookie"];
+      const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
+      const cookie = cookieHeader?.split(";", 1)[0];
+      const me = await app.inject({ method: "GET", url: "/api/auth/me", headers: { cookie: cookie! } });
+      expect(me.json().user.permissions).not.toContain("workday.own.manage");
+      const create = await app.inject({
+        method: "POST", url: "/api/workdays", headers: { origin, cookie: cookie! },
+        payload: { workDate: "2026-09-24", shiftType: "MORNING" },
+      });
+      expect(create.statusCode).toBe(403);
+    }
   });
 
   it("enforces RBAC and creates an audited project for a Leader", async () => {
@@ -359,7 +385,7 @@ integration("authentication integration", () => {
     const tripPayload = {
       vehicleId, startAt: "2026-09-25T20:00:00Z", endAt: "2026-09-25T21:00:00Z",
       startOdometerKm: 1000, endOdometerKm: 1042.5, fuelConsumed: 4.2, fuelRefuelled: 10,
-      passengerEmployeeIds: [leaderEmployeeId], note: "Přeprava posádky",
+      passengerEmployeeIds: [passengerEmployeeId], note: "Přeprava posádky",
     };
     const trip = await app.inject({
       method: "POST", url: `/api/workdays/${workDayId}/vehicle-trips`, headers: { origin, cookie: cookie! }, payload: tripPayload,
@@ -390,7 +416,7 @@ integration("authentication integration", () => {
 
   it("shows a shared trip to its passenger without duplicating operational data", async () => {
     const login = await app.inject({
-      method: "POST", url: "/api/auth/login", headers: { origin }, payload: { email: "leader@zenops.test", password },
+      method: "POST", url: "/api/auth/login", headers: { origin }, payload: { email: "passenger@zenops.test", password },
     });
     const setCookie = login.headers["set-cookie"];
     const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;

@@ -1,14 +1,14 @@
 import { createVehicleTripSchema } from "@zenops/contracts";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { requirePermission, type AuthorizationHook } from "./authorization.js";
+import { requirePermission, requireWorkerOnly, type AuthorizationHook } from "./authorization.js";
 import type { Database } from "./db.js";
 
 const paramsSchema = z.object({ workDayId: z.string().uuid() });
 
 export function registerVehicleRoutes(app: FastifyInstance, db: Database, requireTrustedOrigin: AuthorizationHook): void {
   app.post("/api/workdays/:workDayId/vehicle-trips", {
-    preHandler: [requireTrustedOrigin, requirePermission("workday.own.manage")],
+    preHandler: [requireTrustedOrigin, requireWorkerOnly, requirePermission("workday.own.manage")],
   }, async (request, reply) => {
     const params = paramsSchema.safeParse(request.params);
     const parsed = createVehicleTripSchema.safeParse(request.body);

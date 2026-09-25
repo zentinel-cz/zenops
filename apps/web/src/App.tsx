@@ -22,11 +22,13 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [projectError, setProjectError] = useState("");
   const [assetVersion, setAssetVersion] = useState(0);
+  const [showDailyRecord, setShowDailyRecord] = useState(false);
   const canCreateProject = user.permissions.includes("project.create");
   const canManageProjects = user.permissions.includes("project.close");
   const canManageEmployees = user.permissions.includes("employee.manage");
   const canManageAssets = user.permissions.includes("asset.manage");
   const canApprove = user.permissions.includes("approval.project.manage") || user.permissions.includes("approval.admin.manage");
+  const isWorkerOnly = user.roles.includes("WORKER") && !user.roles.includes("LEADER") && !user.roles.includes("ADMIN");
 
   const loadProjects = () => fetch(canManageProjects ? "/api/projects" : "/api/projects/open", { credentials: "include" })
     .then(async (response) => response.ok ? response.json() as Promise<{ projects: ProjectSummary[] }> : Promise.reject())
@@ -34,7 +36,7 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
 
   useEffect(() => {
     void loadProjects()
-      .catch(() => setProjectError("Projekty se nepodařilo načíst."))
+      .catch(() => setProjectError("Zakázky se nepodařilo načíst."))
       .finally(() => setLoadingProjects(false));
     if (canCreateProject) {
       void fetch("/api/employees/leaders", { credentials: "include" })
@@ -58,8 +60,8 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
       }),
     });
     if (!response.ok) {
-      const body = await response.json().catch(() => ({ error: "Projekt se nepodařilo vytvořit." })) as { error?: string };
-      setProjectError(body.error ?? "Projekt se nepodařilo vytvořit.");
+      const body = await response.json().catch(() => ({ error: "Zakázku se nepodařilo vytvořit." })) as { error?: string };
+      setProjectError(body.error ?? "Zakázku se nepodařilo vytvořit.");
       return;
     }
     form.reset();
@@ -74,8 +76,8 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
       body: JSON.stringify({ status: project.status === "OPEN" ? "CLOSED" : "OPEN" }),
     });
     if (!response.ok) {
-      const body = await response.json().catch(() => ({ error: "Stav projektu se nepodařilo změnit." })) as { error?: string };
-      setProjectError(body.error ?? "Stav projektu se nepodařilo změnit.");
+      const body = await response.json().catch(() => ({ error: "Stav zakázky se nepodařilo změnit." })) as { error?: string };
+      setProjectError(body.error ?? "Stav zakázky se nepodařilo změnit.");
       return;
     }
     await loadProjects();
@@ -90,16 +92,12 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
       <section className="welcome">
         <p className="eyebrow">PROVOZ DNEŠNÍHO DNE</p>
         <h2>Dobré ráno, {user.displayName.split(" ")[0]}</h2>
-        <p>Vaše práce, projekty a schvalování na jednom místě.</p>
+        <p>{isWorkerOnly ? "Denní záznam rychle a bez zbytečných kroků." : "Zakázky, technika a provozní přehled na jednom místě."}</p>
       </section>
-      <section className="module-grid" aria-label="Moduly">
-        <article><span>01</span><h3>Moje práce</h3><p>Směny, pracovní úseky a přestávky.</p><b>AKTIVNÍ MODUL</b></article>
-        <article className="projects-card"><span>02 · {loadingProjects ? "…" : projects.length}</span><h3>{canManageProjects ? "Projekty" : "Otevřené projekty"}</h3>{projects.length ? <ul>{projects.slice(0, 5).map((project) => <li className={project.status === "CLOSED" ? "closed" : ""} key={project.id}><strong>{project.code}</strong><span>{project.name} · {project.location}</span>{canManageProjects && <button className="project-state" onClick={() => void changeProjectState(project)}>{project.status === "OPEN" ? "Uzavřít" : "Otevřít"}</button>}</li>)}</ul> : <p>{loadingProjects ? "Načítám projekty…" : "Zatím nejsou žádné projekty."}</p>}{canCreateProject && <button className="inline-action" onClick={() => setShowProjectForm((visible) => !visible)}>{showProjectForm ? "Zavřít formulář" : "Nový projekt"}</button>}<b>AKTIVNÍ MODUL</b></article>
-        <article><span>03</span><h3>Schvalování</h3><p>Kontrola práce podle vedoucích projektů.</p><b>PŘIPRAVUJEME</b></article>
-      </section>
-      {showProjectForm && <section className="project-form-panel"><form onSubmit={createProject}><div><p className="eyebrow">NOVÝ PROJEKT</p><h3>Založit projekt</h3></div><label>Kód<input name="code" maxLength={40} required /></label><label>Název<input name="name" maxLength={160} required /></label><label>Místo<input name="location" maxLength={240} required /></label><label>Vedoucí<select name="leaderEmployeeId" required defaultValue=""><option value="" disabled>Vyberte vedoucího</option>{leaders.map((leader) => <option key={leader.id} value={leader.id}>{leader.displayName}</option>)}</select></label><label>Začátek<input name="startDate" type="date" required /></label><label className="checkbox"><input name="besip" type="checkbox" /> BESIP</label>{projectError && <p className="error" role="alert">{projectError}</p>}<button>Vytvořit projekt</button></form></section>}
+      {isWorkerOnly ? <section className="worker-home"><button className="daily-record-card" onClick={() => setShowDailyRecord((visible) => !visible)}><span>+</span><strong>{showDailyRecord ? "Zavřít denní záznam" : "Přidat denní záznam"}</strong><small>Strojní sečení, kácení, reprofilace nebo ruční sečení</small></button><article className="future-card"><span>BRZY</span><strong>Dovolená a žádosti</strong><small>Tuto část připravíme později.</small></article></section> : <section className="module-grid" aria-label="Moduly"><article className="projects-card"><span>01 · {loadingProjects ? "…" : projects.length}</span><h3>{canManageProjects ? "Zakázky" : "Otevřené zakázky"}</h3>{projects.length ? <ul>{projects.slice(0, 5).map((project) => <li className={project.status === "CLOSED" ? "closed" : ""} key={project.id}><strong>{project.code}</strong><span>{project.name} · {project.location}</span>{canManageProjects && <button className="project-state" onClick={() => void changeProjectState(project)}>{project.status === "OPEN" ? "Uzavřít" : "Otevřít"}</button>}</li>)}</ul> : <p>{loadingProjects ? "Načítám zakázky…" : "Zatím nejsou žádné zakázky."}</p>}{canCreateProject && <button className="inline-action" onClick={() => setShowProjectForm((visible) => !visible)}>{showProjectForm ? "Zavřít formulář" : "Nová zakázka"}</button>}<b>PROVOZNÍ PŘEHLED</b></article><article><span>02</span><h3>Technika</h3><p>Stroje, příslušenství a vozidla v jednom přehledu.</p><b>SPRÁVA PROSTŘEDKŮ</b></article><article><span>03</span><h3>Schvalování</h3><p>Kontrola práce podle vedoucích zakázek.</p><b>PRACOVNÍ TOK</b></article></section>}
+      {showProjectForm && <section className="project-form-panel"><form onSubmit={createProject}><div><p className="eyebrow">NOVÁ ZAKÁZKA</p><h3>Založit zakázku</h3></div><label>Kód<input name="code" maxLength={40} required /></label><label>Název<input name="name" maxLength={160} required /></label><label>Místo<input name="location" maxLength={240} required /></label><label>Vedoucí<select name="leaderEmployeeId" required defaultValue=""><option value="" disabled>Vyberte vedoucího</option>{leaders.map((leader) => <option key={leader.id} value={leader.id}>{leader.displayName}</option>)}</select></label><label>Začátek<input name="startDate" type="date" required /></label><label className="checkbox"><input name="besip" type="checkbox" /> BESIP</label>{projectError && <p className="error" role="alert">{projectError}</p>}<button>Vytvořit zakázku</button></form></section>}
       {!showProjectForm && projectError && <p className="dashboard-error" role="alert">{projectError}</p>}
-      <WorkDayPanel projects={projects} assetVersion={assetVersion} />
+      {isWorkerOnly && showDailyRecord && <WorkDayPanel projects={projects} assetVersion={assetVersion} />}
       <ProjectDayPanel user={user} projects={projects} />
       {canApprove && <ApprovalPanel />}
       {canManageAssets && <AssetPanel onChanged={async () => setAssetVersion((value) => value + 1)} />}

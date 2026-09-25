@@ -11,7 +11,7 @@ export function registerProjectDayRoutes(app: FastifyInstance, db: Database, req
   app.get("/api/projects/:projectId/day", { preHandler: requirePermission("project.read_open") }, async (request, reply) => {
     const params = paramsSchema.safeParse(request.params);
     const query = querySchema.safeParse(request.query);
-    if (!params.success || !query.success) return reply.code(400).send({ error: "Neplatný projekt nebo datum." });
+    if (!params.success || !query.success) return reply.code(400).send({ error: "Neplatná zakázka nebo datum." });
     const rows = await db`
       select pd.id, pd.project_id, pd.work_date, pd.weather, pd.temperature_c, pd.note,
         pd.updated_at, e.display_name as updated_by_name
@@ -35,14 +35,14 @@ export function registerProjectDayRoutes(app: FastifyInstance, db: Database, req
     const params = paramsSchema.safeParse(request.params);
     const query = querySchema.safeParse(request.query);
     const body = projectDaySchema.safeParse(request.body);
-    if (!params.success || !query.success || !body.success) return reply.code(400).send({ error: "Neplatné denní údaje projektu." });
+    if (!params.success || !query.success || !body.success) return reply.code(400).send({ error: "Neplatné denní údaje zakázky." });
     const project = await db<Array<{ leaderEmployeeId: string }>>`
       select current_leader_employee_id as leader_employee_id from projects where id = ${params.data.projectId}
     `;
-    if (!project[0]) return reply.code(404).send({ error: "Projekt nebyl nalezen." });
+    if (!project[0]) return reply.code(404).send({ error: "Zakázka nebyla nalezena." });
     const isAdmin = request.sessionUser!.roles.includes("ADMIN");
     if (!isAdmin && project[0].leaderEmployeeId !== request.sessionUser!.employeeId) {
-      return reply.code(403).send({ error: "Denní údaje může měnit pouze aktuální Vedoucí projektu nebo Admin." });
+      return reply.code(403).send({ error: "Denní údaje může měnit pouze aktuální Vedoucí zakázky nebo Admin." });
     }
     const projectDay = await db.begin(async (transaction) => {
       const before = await transaction`
@@ -78,12 +78,12 @@ export function registerProjectDayRoutes(app: FastifyInstance, db: Database, req
     const projects = await db<Array<{ leaderEmployeeId: string; status: string }>>`
       select current_leader_employee_id as leader_employee_id, status from projects where id = ${params.data.projectId}
     `;
-    if (!projects[0]) return reply.code(404).send({ error: "Projekt nebyl nalezen." });
+    if (!projects[0]) return reply.code(404).send({ error: "Zakázka nebyla nalezena." });
     const isAdmin = request.sessionUser!.roles.includes("ADMIN");
     if (!isAdmin && projects[0].leaderEmployeeId !== request.sessionUser!.employeeId) {
-      return reply.code(403).send({ error: "Palivo může spravovat pouze aktuální Vedoucí projektu nebo Admin." });
+      return reply.code(403).send({ error: "Palivo může spravovat pouze aktuální Vedoucí zakázky nebo Admin." });
     }
-    if (projects[0].status !== "OPEN") return reply.code(409).send({ error: "K uzavřenému projektu nelze přidávat provozní údaje." });
+    if (projects[0].status !== "OPEN") return reply.code(409).send({ error: "K uzavřené zakázce nelze přidávat provozní údaje." });
     const fuelRecord = await db.begin(async (transaction) => {
       const [projectDay] = await transaction<Array<{ id: string }>>`
         insert into project_days (project_id, work_date) values (${params.data.projectId}, ${query.data.date})

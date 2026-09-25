@@ -1,7 +1,7 @@
 import { createAttachmentSchema, createMachineSchema, createVehicleSchema, machineUsageSchema } from "@zenops/contracts";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
-import { requirePermission, type AuthorizationHook } from "./authorization.js";
+import { requirePermission, requireWorkerOnly, type AuthorizationHook } from "./authorization.js";
 import type { Database } from "./db.js";
 
 export function registerAssetRoutes(app: FastifyInstance, db: Database, requireTrustedOrigin: AuthorizationHook): void {
@@ -95,7 +95,7 @@ export function registerAssetRoutes(app: FastifyInstance, db: Database, requireT
   });
 
   app.post("/api/workdays/:workDayId/entries/:entryId/machine", {
-    preHandler: [requireTrustedOrigin, requirePermission("workday.own.manage")],
+    preHandler: [requireTrustedOrigin, requireWorkerOnly, requirePermission("workday.own.manage")],
   }, async (request, reply) => {
     const params = z.object({ workDayId: z.string().uuid(), entryId: z.string().uuid() }).safeParse(request.params);
     const parsed = machineUsageSchema.safeParse(request.body);
