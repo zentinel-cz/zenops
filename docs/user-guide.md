@@ -11,6 +11,16 @@ se rozšiřovat současně s aplikací. Testovací náhled běží na adrese
 3. Po přihlášení se zobrazí dashboard podle vašich oprávnění.
 4. Pro bezpečné ukončení relace použijte tlačítko **Odhlásit** vpravo nahoře.
 
+### Změna vlastního hesla
+
+1. Po přihlášení otevřete vpravo nahoře **Můj účet**.
+2. Zadejte současné heslo a dvakrát nové heslo s nejméně 12 znaky.
+3. Po úspěšné změně systém ukončí všechna přihlášení tohoto účtu.
+4. Přihlaste se znovu novým heslem.
+
+Změna se auditovaně zaznamená bez uložení samotného hesla. Ukončení všech
+relací chrání účet i v případě, že zůstal přihlášený na jiném zařízení.
+
 Přístup vytváří Admin. Neexistuje žádný společný ani výchozí účet.
 
 ## Role

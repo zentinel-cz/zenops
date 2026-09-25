@@ -7,6 +7,7 @@ import { AssetPanel } from "./AssetPanel";
 import { ApprovalPanel } from "./ApprovalPanel";
 import { ReportPanel } from "./ReportPanel";
 import { MonthlyPanel } from "./MonthlyPanel";
+import { AccountPanel } from "./AccountPanel";
 
 type AuthState = { status: "loading" } | { status: "guest" } | { status: "authenticated"; user: SessionUser };
 
@@ -90,7 +91,7 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
     <main className="dashboard">
       <header className="topbar">
         <div><span className="eyebrow">ZENTINEL</span><h1>ZenOps</h1></div>
-        <div className="account"><div className="user-chip"><span>{user.displayName}</span><small>{user.roles.join(" · ")}</small></div><button className="ghost" onClick={onLogout}>Odhlásit</button></div>
+        <div className="account"><div className="user-chip"><span>{user.displayName}</span><small>{user.roles.join(" · ")}</small></div><AccountPanel onPasswordChanged={onLogout} /><button className="ghost" onClick={onLogout}>Odhlásit</button></div>
       </header>
       <section className="welcome">
         <p className="eyebrow">PROVOZ DNEŠNÍHO DNE</p>

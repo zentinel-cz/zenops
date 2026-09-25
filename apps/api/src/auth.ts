@@ -1,4 +1,4 @@
-import { verify } from "@node-rs/argon2";
+import { hash, verify } from "@node-rs/argon2";
 import { sessionUserSchema, type RoleCode, type SessionUser } from "@zenops/contracts";
 import type { Database } from "./db.js";
 import { createOpaqueToken, hashToken } from "./security.js";
@@ -72,4 +72,27 @@ export async function getSessionUser(db: Database, token: string): Promise<Sessi
 
 export async function revokeSession(db: Database, token: string): Promise<void> {
   await db`update sessions set revoked_at = now() where token_hash = ${hashToken(token)} and revoked_at is null`;
+}
+
+export async function changePassword(
+  db: Database,
+  userId: string,
+  currentPassword: string,
+  newPassword: string,
+): Promise<boolean> {
+  return db.begin(async (transaction) => {
+    const rows = await transaction<Array<{ passwordHash: string }>>`
+      select password_hash from users where id = ${userId} and is_active for update
+    `;
+    const user = rows[0];
+    if (!user || !(await verify(user.passwordHash, currentPassword))) return false;
+    const passwordHash = await hash(newPassword, { memoryCost: 65536, timeCost: 3, parallelism: 1 });
+    await transaction`update users set password_hash = ${passwordHash}, updated_at = now() where id = ${userId}`;
+    await transaction`update sessions set revoked_at = now() where user_id = ${userId} and revoked_at is null`;
+    await transaction`
+      insert into audit_logs (actor_user_id, action, entity_type, entity_id, after_data)
+      values (${userId}, 'PASSWORD_CHANGED', 'USER', ${userId}, ${transaction.json({ sessionsRevoked: true })})
+    `;
+    return true;
+  });
 }

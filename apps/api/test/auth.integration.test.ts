@@ -592,4 +592,38 @@ integration("authentication integration", () => {
     `;
     expect(audit!.count).toBe(2);
   });
+
+  it("changes the authenticated password, audits it and revokes every session", async () => {
+    const login = await app.inject({
+      method: "POST", url: "/api/auth/login", headers: { origin }, payload: { email: "admin@zenops.test", password },
+    });
+    const setCookie = login.headers["set-cookie"];
+    const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
+    const cookie = cookieHeader?.split(";", 1)[0];
+    const incorrect = await app.inject({
+      method: "POST", url: "/api/auth/password", headers: { origin, cookie: cookie! },
+      payload: { currentPassword: "Incorrect-Password!", newPassword: "A-New-Secure-Password-2026!" },
+    });
+    expect(incorrect.statusCode).toBe(401);
+    const changed = await app.inject({
+      method: "POST", url: "/api/auth/password", headers: { origin, cookie: cookie! },
+      payload: { currentPassword: password, newPassword: "A-New-Secure-Password-2026!" },
+    });
+    expect(changed.statusCode).toBe(204);
+    const revoked = await app.inject({ method: "GET", url: "/api/auth/me", headers: { cookie: cookie! } });
+    expect(revoked.statusCode).toBe(401);
+    const oldLogin = await app.inject({
+      method: "POST", url: "/api/auth/login", headers: { origin }, payload: { email: "admin@zenops.test", password },
+    });
+    expect(oldLogin.statusCode).toBe(401);
+    const newLogin = await app.inject({
+      method: "POST", url: "/api/auth/login", headers: { origin },
+      payload: { email: "admin@zenops.test", password: "A-New-Secure-Password-2026!" },
+    });
+    expect(newLogin.statusCode).toBe(204);
+    const [audit] = await db<Array<{ count: number }>>`
+      select count(*)::int as count from audit_logs where action = 'PASSWORD_CHANGED'
+    `;
+    expect(audit!.count).toBe(1);
+  });
 });

@@ -203,3 +203,14 @@ Approval/return behavior is implemented in milestone 8 below.
   with 29 public tables and 11 recorded migrations
 - production containers are healthy, public security headers are present,
   anonymous session access returns 401 and the timer is enabled and active
+
+## Production follow-up — self-service password change — complete
+
+- every authenticated user can change their own password after confirming the
+  current password
+- the replacement password uses the same Argon2id parameters as account setup
+- all sessions for the account are revoked after a successful change
+- the operation is rate-limited and append-only audited without password data
+- the responsive dark account form confirms the new password before sending
+- PostgreSQL integration coverage verifies rejection of a wrong current
+  password, old-password invalidation, new login and audit creation

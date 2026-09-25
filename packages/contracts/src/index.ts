@@ -20,6 +20,14 @@ export const sessionUserSchema = z.object({
 export type LoginInput = z.infer<typeof loginSchema>;
 export type SessionUser = z.infer<typeof sessionUserSchema>;
 
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(12).max(200),
+  newPassword: z.string().min(12).max(200),
+}).refine((value) => value.currentPassword !== value.newPassword, {
+  message: "Nové heslo musí být odlišné od současného.", path: ["newPassword"],
+});
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+
 export const projectStatusSchema = z.enum(["OPEN", "CLOSED"]);
 
 export const createProjectSchema = z.object({
