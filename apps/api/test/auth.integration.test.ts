@@ -29,6 +29,8 @@ integration("authentication integration", () => {
   const app = buildApp(config, db);
   let leaderEmployeeId = "";
   let projectId = "";
+  let machineId = "";
+  let attachmentId = "";
 
   beforeAll(async () => {
     const migrationDirectory = resolve(process.cwd(), "migrations");
@@ -168,6 +170,25 @@ integration("authentication integration", () => {
     expect(loaded.json().projectDay.note).toBe("Mokrá vozovka");
   });
 
+  it("allows Leader to create machine and attachment catalogue items", async () => {
+    const login = await app.inject({ method: "POST", url: "/api/auth/login", headers: { origin }, payload: { email: "leader@zenops.test", password } });
+    const setCookie = login.headers["set-cookie"];
+    const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
+    const cookie = cookieHeader?.split(";", 1)[0];
+    const machine = await app.inject({
+      method: "POST", url: "/api/assets/machines", headers: { origin, cookie: cookie! },
+      payload: { code: "tr-01", name: "Traktor 01", typeName: "Traktor", tracksMth: true },
+    });
+    expect(machine.statusCode, machine.body).toBe(201);
+    machineId = machine.json().machine.id as string;
+    const attachment = await app.inject({
+      method: "POST", url: "/api/assets/attachments", headers: { origin, cookie: cookie! },
+      payload: { code: "mul-01", name: "Mulčovač 01", typeName: "Mulčovač", uniquelyTracked: true },
+    });
+    expect(attachment.statusCode, attachment.body).toBe(201);
+    attachmentId = attachment.json().attachment.id as string;
+  });
+
   it("allows Admin to create and deactivate an employee without hard deletion", async () => {
     const login = await app.inject({
       method: "POST", url: "/api/auth/login", headers: { origin },
@@ -263,10 +284,16 @@ integration("authentication integration", () => {
       payload: { projectId, workTypeCode: "TREE_CUTTING", workActivityCode: "SAWYER", startAt: "2026-09-25T22:00:00Z", endAt: "2026-09-26T02:00:00Z" },
     });
     expect(entry.statusCode, entry.body).toBe(201);
+    const entryId = entry.json().entry.id as string;
     const [projectDays] = await db<Array<{ count: number }>>`
       select count(*)::int as count from project_days where project_id = ${projectId} and work_date = '2026-09-25'
     `;
     expect(projectDays!.count).toBe(1);
+    const usage = await app.inject({
+      method: "POST", url: `/api/workdays/${workDayId}/entries/${entryId}/machine`, headers: { origin, cookie: cookie! },
+      payload: { machineId, startMth: 10, endMth: 11, fuelConsumed: 20, fuelRefuelled: 25, attachmentIds: [attachmentId] },
+    });
+    expect(usage.statusCode, usage.body).toBe(201);
 
     const overlap = await app.inject({
       method: "POST", url: `/api/workdays/${workDayId}/breaks`, headers: { origin, cookie: cookie! },
@@ -278,6 +305,22 @@ integration("authentication integration", () => {
       payload: { startAt: "2026-09-26T02:00:00Z", endAt: "2026-09-26T02:30:00Z" },
     });
     expect(breakEntry.statusCode, breakEntry.body).toBe(201);
+
+    const secondEntry = await app.inject({
+      method: "POST", url: `/api/workdays/${workDayId}/entries`, headers: { origin, cookie: cookie! },
+      payload: { projectId, workTypeCode: "MACHINE_MOWING", startAt: "2026-09-26T03:00:00Z", endAt: "2026-09-26T04:00:00Z" },
+    });
+    const secondEntryId = secondEntry.json().entry.id as string;
+    const secondUsage = await app.inject({
+      method: "POST", url: `/api/workdays/${workDayId}/entries/${secondEntryId}/machine`, headers: { origin, cookie: cookie! },
+      payload: { machineId, startMth: 12, endMth: 13, attachmentIds: [attachmentId] },
+    });
+    expect(secondUsage.statusCode, secondUsage.body).toBe(201);
+    expect(secondUsage.json().usage.suggestedStartMth).toBe("11.00");
+    const [overrideAudit] = await db<Array<{ count: number }>>`
+      select count(*)::int as count from audit_logs where action = 'MACHINE_START_MTH_OVERRIDDEN'
+    `;
+    expect(overrideAudit!.count).toBe(1);
 
     const submitted = await app.inject({ method: "POST", url: `/api/workdays/${workDayId}/submit`, headers: { origin, cookie: cookie! } });
     expect(submitted.statusCode, submitted.body).toBe(200);

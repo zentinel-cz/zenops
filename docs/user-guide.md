@@ -81,3 +81,10 @@ Aktuálně přihlášený Admin nemůže deaktivovat sám sebe.
 - Hesla jsou ukládána jako Argon2id hash, nikoli čitelně.
 - Přihlášení používá serverovou relaci v bezpečné HTTP-only cookie.
 - Oprávnění kontroluje backend; skrytí tlačítka v rozhraní není jediná ochrana.
+
+## Stroje a příslušenství — připravovaná obrazovka
+
+Backend již eviduje fyzické stroje, jejich typy, příslušenství, MTH, spotřebu a
+tankování. Hlídá souběžné použití stejného stroje i unikátního příslušenství a
+audituje opravu navrženého počátečního MTH. Uživatelský formulář pro tuto část
+ještě není součástí náhledu; funkce proto zatím není označena jako dokončená.

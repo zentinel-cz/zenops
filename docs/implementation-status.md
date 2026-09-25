@@ -81,3 +81,17 @@ Approval/return behavior remains milestone 8 and is not silently simulated.
 - WorkEntry always references its ProjectDay
 - server-owned work types and Tree Cutting activities
 - responsive ProjectDay management form
+
+## Milestone 5 — machines and attachments — backend core complete
+
+- generic machine/machine-type and attachment/attachment-type catalogues
+- Leader/Admin catalogue creation with audit trail
+- machine usage bound to an owned draft WorkEntry
+- suggested start MTH from latest valid end reading
+- entered start/end MTH validation and override audit
+- separate fuel consumed and fuel refuelled values
+- PostgreSQL exclusion constraints for concurrent physical-machine usage
+- PostgreSQL exclusion constraints for concurrent attachment usage
+- integration coverage for MTH continuity and attachment reuse
+
+Remaining: catalogue management UI and worker machine/attachment form.

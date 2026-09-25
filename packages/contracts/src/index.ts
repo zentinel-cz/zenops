@@ -111,3 +111,30 @@ export const projectDaySchema = z.object({
   temperatureC: z.number().min(-60).max(60).nullable().optional(),
   note: z.string().trim().max(2000).nullable().optional(),
 });
+
+export const createMachineSchema = z.object({
+  code: z.string().trim().min(1).max(40).transform((value) => value.toUpperCase()),
+  name: z.string().trim().min(2).max(160),
+  typeName: z.string().trim().min(2).max(100),
+  tracksMth: z.boolean().default(true),
+});
+
+export const machineUsageSchema = z.object({
+  machineId: z.string().uuid(),
+  startMth: z.number().min(0).max(10000000).nullable().optional(),
+  endMth: z.number().min(0).max(10000000).nullable().optional(),
+  fuelConsumed: z.number().min(0).max(100000).nullable().optional(),
+  fuelRefuelled: z.number().min(0).max(100000).nullable().optional(),
+  attachmentIds: z.array(z.string().uuid()).max(20).default([]),
+}).superRefine((value, context) => {
+  if (value.startMth != null && value.endMth != null && value.endMth < value.startMth) {
+    context.addIssue({ code: "custom", path: ["endMth"], message: "Konečný MTH nesmí být nižší než počáteční." });
+  }
+});
+
+export const createAttachmentSchema = z.object({
+  code: z.string().trim().min(1).max(40).transform((value) => value.toUpperCase()),
+  name: z.string().trim().min(2).max(160),
+  typeName: z.string().trim().min(2).max(100),
+  uniquelyTracked: z.boolean().default(true),
+});
