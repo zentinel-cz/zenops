@@ -35,10 +35,12 @@ Do not invent missing business rules. Record unresolved decisions in
 
 ## Current implementation status
 
-Milestone 1 is in progress. The repository contains a pnpm/TypeScript
+Milestone 1 is complete and milestone 2 is in progress. The repository contains a pnpm/TypeScript
 workspace, React mobile-first web shell, Fastify API, PostgreSQL-backed opaque
 sessions, Argon2id authentication, extensible RBAC, checksum-protected SQL
-migrations, isolated Docker images and CI checks.
+migrations, isolated Docker images and CI checks. The first milestone 2 slice
+adds projects, current/effective-dated leaders, audited creation and a live
+open-project dashboard.
 
 The application profile is intentionally not deployed while the milestone is
 incomplete. No default credentials are seeded.

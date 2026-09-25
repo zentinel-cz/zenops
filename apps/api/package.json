@@ -4,12 +4,14 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "pnpm --filter @zenops/contracts build",
     "build": "tsc -p tsconfig.build.json",
     "dev": "tsx watch src/server.ts",
     "start": "node dist/server.js",
     "db:migrate": "tsx src/cli/migrate.ts",
     "user:create-admin": "tsx src/cli/create-admin.ts",
     "typecheck": "tsc --noEmit",
+    "pretest": "pnpm --filter @zenops/contracts build",
     "test": "vitest run"
   },
   "dependencies": {

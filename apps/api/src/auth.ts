@@ -1,5 +1,5 @@
 import { verify } from "@node-rs/argon2";
-import type { RoleCode, SessionUser } from "@zenops/contracts";
+import { sessionUserSchema, type RoleCode, type SessionUser } from "@zenops/contracts";
 import type { Database } from "./db.js";
 import { createOpaqueToken, hashToken } from "./security.js";
 
@@ -48,6 +48,7 @@ export async function getSessionUser(db: Database, token: string): Promise<Sessi
   const rows = await db<Array<SessionUser & { roles: RoleCode[]; permissions: string[] }>>`
     select
       u.id,
+      e.id as employee_id,
       u.email,
       e.display_name,
       coalesce(array_agg(distinct r.code) filter (where r.code is not null), '{}') as roles,
@@ -62,10 +63,11 @@ export async function getSessionUser(db: Database, token: string): Promise<Sessi
     where s.token_hash = ${hashToken(token)}
       and s.revoked_at is null
       and s.expires_at > now()
-    group by u.id, u.email, e.display_name
+    group by u.id, u.email, e.id, e.display_name
     limit 1
   `;
-  return rows[0] ?? null;
+  const row = rows[0];
+  return row ? sessionUserSchema.parse(row) : null;
 }
 
 export async function revokeSession(db: Database, token: string): Promise<void> {

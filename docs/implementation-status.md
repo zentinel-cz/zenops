@@ -2,7 +2,7 @@
 
 Last updated: 2026-09-25
 
-## Milestone 1 — foundation and authentication
+## Milestone 1 — foundation and authentication — complete
 
 Completed:
 
@@ -16,19 +16,35 @@ Completed:
 - forward-only checksum-protected migration runner
 - isolated API/web production images and Compose profiles
 - CI typecheck, test, build and Compose validation
+- real PostgreSQL integration tests for login, session lookup, revocation and RBAC
+- reusable backend authentication and permission guards
 
 Verified:
 
-- all workspace typechecks, tests and production builds pass
+- all workspace typechecks, unit/integration tests and production builds pass
 - both SQL migrations apply and a repeated run safely skips them
 - API `/health` and `/ready` pass from an isolated non-public smoke container
 - database has no seeded/default account
 - application services are not running in production
 
-Remaining before milestone 1 can close:
+Deployment gate: the first administrator will be created only during an
+explicitly approved deployment. This is not seeded into source or migrations.
 
-- integration tests for login/session/revocation against disposable PostgreSQL
-- explicit backend authorization guards and tests for protected feature routes
-- approved creation of the first administrator during deployment
+## Milestone 2 — master data and projects — in progress
 
-Milestone 2 master data and projects has not started.
+Completed:
+
+- projects schema with normalized unique code and lifecycle constraints
+- exactly one current leader plus effective-dated leader history
+- permission-protected API to list open projects
+- Leader/Admin project creation with active-Leader validation
+- transactional project, leader-history and audit creation
+- project creation/listing integration coverage
+- authenticated dashboard displays live open projects
+
+Remaining:
+
+- Admin employee/user/role management
+- leader reassignment with effective history
+- Admin-only close/reopen project workflow and audit
+- complete project management UI

@@ -1,5 +1,5 @@
 import { type FormEvent, useEffect, useState } from "react";
-import type { SessionUser } from "@zenops/contracts";
+import type { ProjectSummary, SessionUser } from "@zenops/contracts";
 
 type AuthState = { status: "loading" } | { status: "guest" } | { status: "authenticated"; user: SessionUser };
 
@@ -8,6 +8,37 @@ async function getCurrentUser(): Promise<SessionUser | null> {
   if (response.status === 401) return null;
   if (!response.ok) throw new Error("Služba je dočasně nedostupná.");
   return (await response.json() as { user: SessionUser }).user;
+}
+
+function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void }) {
+  const [projects, setProjects] = useState<ProjectSummary[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(true);
+
+  useEffect(() => {
+    void fetch("/api/projects/open", { credentials: "include" })
+      .then(async (response) => response.ok ? response.json() as Promise<{ projects: ProjectSummary[] }> : Promise.reject())
+      .then((body) => setProjects(body.projects))
+      .finally(() => setLoadingProjects(false));
+  }, []);
+
+  return (
+    <main className="dashboard">
+      <header className="topbar">
+        <div><span className="eyebrow">ZENTINEL</span><h1>ZenOps</h1></div>
+        <div className="account"><div className="user-chip"><span>{user.displayName}</span><small>{user.roles.join(" · ")}</small></div><button className="ghost" onClick={onLogout}>Odhlásit</button></div>
+      </header>
+      <section className="welcome">
+        <p className="eyebrow">PROVOZ DNEŠNÍHO DNE</p>
+        <h2>Dobré ráno, {user.displayName.split(" ")[0]}</h2>
+        <p>Vaše práce, projekty a schvalování na jednom místě.</p>
+      </section>
+      <section className="module-grid" aria-label="Moduly">
+        <article><span>01</span><h3>Moje práce</h3><p>Směny, pracovní úseky a přestávky.</p><b>PŘIPRAVUJEME</b></article>
+        <article className="projects-card"><span>02 · {loadingProjects ? "…" : projects.length}</span><h3>Otevřené projekty</h3>{projects.length ? <ul>{projects.slice(0, 3).map((project) => <li key={project.id}><strong>{project.code}</strong><span>{project.name} · {project.location}</span></li>)}</ul> : <p>{loadingProjects ? "Načítám projekty…" : "Zatím nejsou otevřené projekty."}</p>}<b>AKTIVNÍ MODUL</b></article>
+        <article><span>03</span><h3>Schvalování</h3><p>Kontrola práce podle vedoucích projektů.</p><b>PŘIPRAVUJEME</b></article>
+      </section>
+    </main>
+  );
 }
 
 export function App() {
@@ -43,29 +74,17 @@ export function App() {
     setAuth(user ? { status: "authenticated", user } : { status: "guest" });
   }
 
+  async function logout() {
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    setAuth({ status: "guest" });
+  }
+
   if (auth.status === "loading") {
     return <main className="center"><div className="loader" aria-label="Načítání" /></main>;
   }
 
   if (auth.status === "authenticated") {
-    return (
-      <main className="dashboard">
-        <header className="topbar">
-          <div><span className="eyebrow">ZENTINEL</span><h1>ZenOps</h1></div>
-          <div className="user-chip"><span>{auth.user.displayName}</span><small>{auth.user.roles.join(" · ")}</small></div>
-        </header>
-        <section className="welcome">
-          <p className="eyebrow">PROVOZ DNEŠNÍHO DNE</p>
-          <h2>Dobré ráno, {auth.user.displayName.split(" ")[0]}</h2>
-          <p>První provozní moduly budou zpřístupněny v dalších milnících.</p>
-        </section>
-        <section className="module-grid" aria-label="Moduly">
-          <article><span>01</span><h3>Moje práce</h3><p>Směny, pracovní úseky a přestávky.</p><b>Připravujeme</b></article>
-          <article><span>02</span><h3>Projekty</h3><p>Aktivní zakázky a denní kontext.</p><b>Připravujeme</b></article>
-          <article><span>03</span><h3>Schvalování</h3><p>Kontrola práce podle vedoucích projektů.</p><b>Připravujeme</b></article>
-        </section>
-      </main>
-    );
+    return <Dashboard user={auth.user} onLogout={() => void logout()} />;
   }
 
   return (

@@ -8,6 +8,22 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: zenops_test
+          POSTGRES_USER: zenops_test
+          POSTGRES_PASSWORD: zenops_test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U zenops_test -d zenops_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql://zenops_test:zenops_test_password@127.0.0.1:5432/zenops_test
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4

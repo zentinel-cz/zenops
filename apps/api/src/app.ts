@@ -5,9 +5,11 @@ import rateLimit from "@fastify/rate-limit";
 import { loginSchema, type SessionUser } from "@zenops/contracts";
 import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
 import { authenticate, createSession, getSessionUser, revokeSession } from "./auth.js";
+import { requireAuthentication } from "./authorization.js";
 import type { AppConfig } from "./config.js";
 import type { Database } from "./db.js";
 import { isTrustedOrigin } from "./security.js";
+import { registerProjectRoutes } from "./projects.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -68,8 +70,7 @@ export function buildApp(config: AppConfig, db: Database): FastifyInstance {
     return reply.code(204).send();
   });
 
-  app.get("/api/auth/me", async (request, reply) => {
-    if (!request.sessionUser) return reply.code(401).send({ error: "Nepřihlášený uživatel." });
+  app.get("/api/auth/me", { preHandler: requireAuthentication }, async (request) => {
     return { user: request.sessionUser };
   });
 
@@ -79,6 +80,8 @@ export function buildApp(config: AppConfig, db: Database): FastifyInstance {
     reply.clearCookie(config.SESSION_COOKIE_NAME, { path: "/" });
     return reply.code(204).send();
   });
+
+  registerProjectRoutes(app, db, requireTrustedOrigin);
 
   return app;
 }
