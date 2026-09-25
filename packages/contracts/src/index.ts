@@ -105,3 +105,9 @@ export const createWorkEntrySchema = intervalSchema.and(z.object({
 }));
 
 export const createBreakEntrySchema = intervalSchema;
+
+export const projectDaySchema = z.object({
+  weather: z.string().trim().max(120).nullable().optional(),
+  temperatureC: z.number().min(-60).max(60).nullable().optional(),
+  note: z.string().trim().max(2000).nullable().optional(),
+});

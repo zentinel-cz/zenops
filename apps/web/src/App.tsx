@@ -2,6 +2,7 @@ import { type FormEvent, useEffect, useState } from "react";
 import type { ProjectSummary, SessionUser } from "@zenops/contracts";
 import { EmployeePanel } from "./EmployeePanel";
 import { WorkDayPanel } from "./WorkDayPanel";
+import { ProjectDayPanel } from "./ProjectDayPanel";
 
 type AuthState = { status: "loading" } | { status: "guest" } | { status: "authenticated"; user: SessionUser };
 
@@ -94,6 +95,7 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
       {showProjectForm && <section className="project-form-panel"><form onSubmit={createProject}><div><p className="eyebrow">NOVÝ PROJEKT</p><h3>Založit projekt</h3></div><label>Kód<input name="code" maxLength={40} required /></label><label>Název<input name="name" maxLength={160} required /></label><label>Místo<input name="location" maxLength={240} required /></label><label>Vedoucí<select name="leaderEmployeeId" required defaultValue=""><option value="" disabled>Vyberte vedoucího</option>{leaders.map((leader) => <option key={leader.id} value={leader.id}>{leader.displayName}</option>)}</select></label><label>Začátek<input name="startDate" type="date" required /></label><label className="checkbox"><input name="besip" type="checkbox" /> BESIP</label>{projectError && <p className="error" role="alert">{projectError}</p>}<button>Vytvořit projekt</button></form></section>}
       {!showProjectForm && projectError && <p className="dashboard-error" role="alert">{projectError}</p>}
       <WorkDayPanel projects={projects} />
+      <ProjectDayPanel user={user} projects={projects} />
       {canManageEmployees && <EmployeePanel user={user} />}
     </main>
   );

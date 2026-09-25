@@ -148,6 +148,26 @@ integration("authentication integration", () => {
     expect(audit!.count).toBe(1);
   });
 
+  it("stores ProjectDay once and allows its current Leader to manage it", async () => {
+    const login = await app.inject({
+      method: "POST", url: "/api/auth/login", headers: { origin }, payload: { email: "leader@zenops.test", password },
+    });
+    const setCookie = login.headers["set-cookie"];
+    const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
+    const cookie = cookieHeader?.split(";", 1)[0];
+    const saved = await app.inject({
+      method: "PUT", url: `/api/projects/${projectId}/day?date=2026-09-25`, headers: { origin, cookie: cookie! },
+      payload: { weather: "Déšť", temperatureC: 12.5, note: "Mokrá vozovka" },
+    });
+    expect(saved.statusCode, saved.body).toBe(200);
+    expect(saved.json().projectDay).toMatchObject({ weather: "Déšť", temperatureC: "12.50" });
+    const loaded = await app.inject({
+      method: "GET", url: `/api/projects/${projectId}/day?date=2026-09-25`, headers: { cookie: cookie! },
+    });
+    expect(loaded.statusCode).toBe(200);
+    expect(loaded.json().projectDay.note).toBe("Mokrá vozovka");
+  });
+
   it("allows Admin to create and deactivate an employee without hard deletion", async () => {
     const login = await app.inject({
       method: "POST", url: "/api/auth/login", headers: { origin },
@@ -243,6 +263,10 @@ integration("authentication integration", () => {
       payload: { projectId, workTypeCode: "TREE_CUTTING", workActivityCode: "SAWYER", startAt: "2026-09-25T22:00:00Z", endAt: "2026-09-26T02:00:00Z" },
     });
     expect(entry.statusCode, entry.body).toBe(201);
+    const [projectDays] = await db<Array<{ count: number }>>`
+      select count(*)::int as count from project_days where project_id = ${projectId} and work_date = '2026-09-25'
+    `;
+    expect(projectDays!.count).toBe(1);
 
     const overlap = await app.inject({
       method: "POST", url: `/api/workdays/${workDayId}/breaks`, headers: { origin, cookie: cookie! },

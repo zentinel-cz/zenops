@@ -71,3 +71,13 @@ Completed:
 - integration coverage for night work, activity rules, overlap and submission
 
 Approval/return behavior remains milestone 8 and is not silently simulated.
+
+## Milestone 4 — ProjectDay and work metadata — complete
+
+- unique lazy ProjectDay per project/business date
+- shared weather, temperature and note
+- current-Leader scope enforcement with global Admin access
+- transactional audit for ProjectDay changes
+- WorkEntry always references its ProjectDay
+- server-owned work types and Tree Cutting activities
+- responsive ProjectDay management form

@@ -83,15 +83,29 @@ export function registerWorkDayRoutes(app: FastifyInstance, db: Database, requir
     if (!['DRAFT', 'RETURNED'].includes(workDay.state)) return reply.code(409).send({ error: "Odeslaný pracovní den nelze běžně upravovat." });
     if (parsed.data.workTypeCode === "OTHER" && !parsed.data.description) return reply.code(422).send({ error: "U ostatní práce je povinný popis." });
     try {
-      const [entry] = await db`
-        insert into work_entries (work_day_id, project_id, work_type_id, work_activity_id, start_at, end_at, description)
-        select ${workDay.id}, p.id, wt.id, wa.id, ${parsed.data.startAt}, ${parsed.data.endAt}, ${parsed.data.description ?? null}
-        from projects p join work_types wt on wt.code = ${parsed.data.workTypeCode} and wt.is_active
-        left join work_activities wa on wa.work_type_id = wt.id and wa.code = ${parsed.data.workActivityCode ?? null} and wa.is_active
-        where p.id = ${parsed.data.projectId} and p.status = 'OPEN'
-          and (not wt.requires_activity or wa.id is not null)
-        returning id, start_at, end_at, description, state
-      `;
+      const entry = await db.begin(async (transaction) => {
+        const context = await transaction<Array<{ projectId: string; workTypeId: string; workActivityId: string | null }>>`
+          select p.id as project_id, wt.id as work_type_id, wa.id as work_activity_id
+          from projects p join work_types wt on wt.code = ${parsed.data.workTypeCode} and wt.is_active
+          left join work_activities wa on wa.work_type_id = wt.id and wa.code = ${parsed.data.workActivityCode ?? null} and wa.is_active
+          where p.id = ${parsed.data.projectId} and p.status = 'OPEN'
+            and (not wt.requires_activity or wa.id is not null)
+        `;
+        if (!context[0]) return null;
+        const [projectDay] = await transaction<Array<{ id: string }>>`
+          insert into project_days (project_id, work_date)
+          values (${context[0].projectId}, ${workDay.workDate})
+          on conflict (project_id, work_date) do update set project_id = excluded.project_id
+          returning id
+        `;
+        const [created] = await transaction`
+          insert into work_entries (work_day_id, project_id, project_day_id, work_type_id, work_activity_id, start_at, end_at, description)
+          values (${workDay.id}, ${context[0].projectId}, ${projectDay!.id}, ${context[0].workTypeId},
+            ${context[0].workActivityId}, ${parsed.data.startAt}, ${parsed.data.endAt}, ${parsed.data.description ?? null})
+          returning id, start_at, end_at, description, state
+        `;
+        return created;
+      });
       if (!entry) return reply.code(422).send({ error: "Projekt, druh práce nebo povinná aktivita nejsou platné." });
       return reply.code(201).send({ entry });
     } catch (error) {

@@ -57,6 +57,13 @@ Práce ani přestávky se nesmějí časově překrývat. Uzavřený projekt nel
 pro nový úsek. Po odeslání je pracovní den uzamčen pro běžné úpravy a čeká na
 pozdější projektové schválení.
 
+## Denní údaje projektu — Vedoucí a Admin
+
+V části **Údaje projektu** vyberte otevřený projekt a zapište počasí, teplotu a
+poznámku pro dnešní den. Údaje se vedou jen jednou za projekt a datum, nikoli
+zvlášť u každého pracovníka. Vedoucí smí upravit pouze projekt, který aktuálně
+vede; Admin může spravovat všechny projekty. Uložení i změna se auditují.
+
 ## Zaměstnanci a účty — Admin
 
 1. V sekci **Zaměstnanci** zvolte **Nový zaměstnanec**.
