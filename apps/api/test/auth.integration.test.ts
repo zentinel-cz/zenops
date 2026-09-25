@@ -528,4 +528,68 @@ integration("authentication integration", () => {
     });
     expect(denied.statusCode).toBe(403);
   });
+
+  it("reports monthly totals and enforces audited Admin closure and reopen", async () => {
+    const adminLogin = await app.inject({
+      method: "POST", url: "/api/auth/login", headers: { origin }, payload: { email: "admin@zenops.test", password },
+    });
+    const adminSetCookie = adminLogin.headers["set-cookie"];
+    const adminCookieHeader = Array.isArray(adminSetCookie) ? adminSetCookie[0] : adminSetCookie;
+    const adminCookie = adminCookieHeader?.split(";", 1)[0];
+    const periodBefore = await app.inject({ method: "GET", url: "/api/periods/2026-09", headers: { cookie: adminCookie! } });
+    expect(periodBefore.statusCode, periodBefore.body).toBe(200);
+    expect(periodBefore.json().period).toMatchObject({ state: "OPEN", unresolvedWorkDays: 2 });
+    const monthly = await app.inject({ method: "GET", url: "/api/reports/monthly?month=2026-09", headers: { cookie: adminCookie! } });
+    expect(monthly.statusCode, monthly.body).toBe(200);
+    expect(monthly.json().report).toMatchObject({ month: "2026-09", scope: "GLOBAL" });
+    expect(monthly.json().report.employeeHours).toContainEqual(expect.objectContaining({ displayName: "Test Pracovník", workedMinutes: 300 }));
+    expect(monthly.json().report.orderHours).toContainEqual(expect.objectContaining({ code: "Z-001", workedMinutes: 300 }));
+    expect(monthly.json().report.machines).toContainEqual(expect.objectContaining({ code: "TR-01", mth: "2.00" }));
+    expect(monthly.json().report.vehicles).toContainEqual(expect.objectContaining({ code: "DOD-01", kilometres: "42.5" }));
+
+    const blocked = await app.inject({
+      method: "POST", url: "/api/periods/2026-09/action", headers: { origin, cookie: adminCookie! }, payload: { action: "CLOSE" },
+    });
+    expect(blocked.statusCode).toBe(409);
+    expect(blocked.json().unresolvedWorkDays).toBeGreaterThan(0);
+
+    await db`delete from work_days where employee_id = ${passengerEmployeeId} and work_date = '2026-09-25'`;
+    const leaderLogin = await app.inject({
+      method: "POST", url: "/api/auth/login", headers: { origin }, payload: { email: "leader@zenops.test", password },
+    });
+    const leaderSetCookie = leaderLogin.headers["set-cookie"];
+    const leaderCookieHeader = Array.isArray(leaderSetCookie) ? leaderSetCookie[0] : leaderSetCookie;
+    const leaderCookie = leaderCookieHeader?.split(";", 1)[0];
+    const approved = await app.inject({
+      method: "POST", url: `/api/approvals/${submittedEntryIds[1]}/decision`, headers: { origin, cookie: leaderCookie! },
+      payload: { action: "APPROVED" },
+    });
+    expect(approved.statusCode, approved.body).toBe(200);
+    expect(approved.json().decision.workDayState).toBe("APPROVED");
+
+    const closed = await app.inject({
+      method: "POST", url: "/api/periods/2026-09/action", headers: { origin, cookie: adminCookie! }, payload: { action: "CLOSE" },
+    });
+    expect(closed.statusCode, closed.body).toBe(200);
+    expect(closed.json().period.state).toBe("CLOSED");
+    const closedEdit = await app.inject({
+      method: "PUT", url: `/api/projects/${projectId}/day?date=2026-09-25`, headers: { origin, cookie: adminCookie! },
+      payload: { weather: "Slunečno" },
+    });
+    expect(closedEdit.statusCode).toBe(409);
+    const invalidReopen = await app.inject({
+      method: "POST", url: "/api/periods/2026-09/action", headers: { origin, cookie: adminCookie! }, payload: { action: "REOPEN", reason: "" },
+    });
+    expect(invalidReopen.statusCode).toBe(400);
+    const reopened = await app.inject({
+      method: "POST", url: "/api/periods/2026-09/action", headers: { origin, cookie: adminCookie! },
+      payload: { action: "REOPEN", reason: "Oprava schválených provozních údajů" },
+    });
+    expect(reopened.statusCode, reopened.body).toBe(200);
+    expect(reopened.json().period).toMatchObject({ state: "OPEN", reopenReason: "Oprava schválených provozních údajů" });
+    const [audit] = await db<Array<{ count: number }>>`
+      select count(*)::int as count from audit_logs where action in ('MONTHLY_PERIOD_CLOSED', 'MONTHLY_PERIOD_REOPENED')
+    `;
+    expect(audit!.count).toBe(2);
+  });
 });

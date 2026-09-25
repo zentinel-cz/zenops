@@ -172,3 +172,8 @@ export const approvalDecisionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("APPROVED") }),
   z.object({ action: z.literal("RETURNED"), reason: z.string().trim().min(3).max(1000) }),
 ]);
+
+export const monthlyPeriodActionSchema = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("CLOSE") }),
+  z.object({ action: z.literal("REOPEN"), reason: z.string().trim().min(3).max(1000) }),
+]);

@@ -36,6 +36,10 @@ export function registerProjectDayRoutes(app: FastifyInstance, db: Database, req
     const query = querySchema.safeParse(request.query);
     const body = projectDaySchema.safeParse(request.body);
     if (!params.success || !query.success || !body.success) return reply.code(400).send({ error: "Neplatné denní údaje zakázky." });
+    const [closedPeriod] = await db<Array<{ closed: boolean }>>`
+      select exists(select 1 from monthly_periods where month_start = date_trunc('month', ${query.data.date}::date)::date and state = 'CLOSED') as closed
+    `;
+    if (closedPeriod!.closed) return reply.code(409).send({ error: "Uzavřený měsíc nelze běžně měnit." });
     const project = await db<Array<{ leaderEmployeeId: string }>>`
       select current_leader_employee_id as leader_employee_id from projects where id = ${params.data.projectId}
     `;
@@ -75,6 +79,10 @@ export function registerProjectDayRoutes(app: FastifyInstance, db: Database, req
     const query = querySchema.safeParse(request.query);
     const body = projectFuelSchema.safeParse(request.body);
     if (!params.success || !query.success || !body.success) return reply.code(400).send({ error: "Neplatný záznam paliva." });
+    const [closedPeriod] = await db<Array<{ closed: boolean }>>`
+      select exists(select 1 from monthly_periods where month_start = date_trunc('month', ${query.data.date}::date)::date and state = 'CLOSED') as closed
+    `;
+    if (closedPeriod!.closed) return reply.code(409).send({ error: "Uzavřený měsíc nelze běžně měnit." });
     const projects = await db<Array<{ leaderEmployeeId: string; status: string }>>`
       select current_leader_employee_id as leader_employee_id, status from projects where id = ${params.data.projectId}
     `;

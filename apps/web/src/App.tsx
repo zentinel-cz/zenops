@@ -6,6 +6,7 @@ import { ProjectDayPanel } from "./ProjectDayPanel";
 import { AssetPanel } from "./AssetPanel";
 import { ApprovalPanel } from "./ApprovalPanel";
 import { ReportPanel } from "./ReportPanel";
+import { MonthlyPanel } from "./MonthlyPanel";
 
 type AuthState = { status: "loading" } | { status: "guest" } | { status: "authenticated"; user: SessionUser };
 
@@ -103,6 +104,7 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
       <ProjectDayPanel user={user} projects={projects} />
       {canApprove && <ApprovalPanel />}
       {canReport && <ReportPanel />}
+      {canReport && <MonthlyPanel user={user} />}
       {canManageAssets && <AssetPanel onChanged={async () => setAssetVersion((value) => value + 1)} />}
       {canManageEmployees && <EmployeePanel user={user} />}
     </main>

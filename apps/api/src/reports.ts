@@ -5,6 +5,7 @@ import { requireAuthentication } from "./authorization.js";
 import type { Database } from "./db.js";
 
 const querySchema = z.object({ date: z.iso.date() });
+const monthQuerySchema = z.object({ month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/) });
 
 type ReportEntry = {
   id: string; employeeName: string; shiftType: string; workDayState: string; entryState: string;
@@ -101,5 +102,57 @@ export function registerReportRoutes(app: FastifyInstance, db: Database): void {
     } finally {
       await browser.close();
     }
+  });
+  app.get("/api/reports/monthly", { preHandler: requireReportAccess }, async (request, reply) => {
+    const query = monthQuerySchema.safeParse(request.query);
+    if (!query.success) return reply.code(400).send({ error: "Neplatný měsíc reportu." });
+    const monthStart = `${query.data.month}-01`;
+    const isGlobal = request.sessionUser!.permissions.includes("report.global.read");
+    const employeeHours = await db`
+      select e.id, e.display_name, wd.shift_type,
+        round(sum(extract(epoch from (we.end_at - we.start_at))) / 60)::int as worked_minutes,
+        round(sum(extract(epoch from (we.end_at - we.start_at))) filter (where we.state = 'APPROVED') / 60)::int as approved_minutes
+      from work_entries we join work_days wd on wd.id = we.work_day_id join employees e on e.id = wd.employee_id
+      join projects p on p.id = we.project_id
+      where wd.work_date >= ${monthStart}::date and wd.work_date < (${monthStart}::date + interval '1 month')
+        and (${isGlobal} or p.current_leader_employee_id = ${request.sessionUser!.employeeId})
+      group by e.id, wd.shift_type order by e.display_name, wd.shift_type
+    `;
+    const orderHours = await db`
+      select p.id, p.code, p.name, p.status,
+        round(sum(extract(epoch from (we.end_at - we.start_at))) / 60)::int as worked_minutes,
+        count(distinct wd.employee_id)::int as workers
+      from work_entries we join work_days wd on wd.id = we.work_day_id join projects p on p.id = we.project_id
+      where wd.work_date >= ${monthStart}::date and wd.work_date < (${monthStart}::date + interval '1 month')
+        and (${isGlobal} or p.current_leader_employee_id = ${request.sessionUser!.employeeId})
+      group by p.id order by p.code
+    `;
+    const machines = await db`
+      select m.id, m.code, m.name, sum(mu.end_mth - mu.entered_start_mth) as mth,
+        sum(mu.fuel_consumed) as fuel_consumed, sum(mu.fuel_refuelled) as fuel_refuelled
+      from machine_usages mu join machines m on m.id = mu.machine_id join work_entries we on we.id = mu.work_entry_id
+      join work_days wd on wd.id = we.work_day_id join projects p on p.id = we.project_id
+      where wd.work_date >= ${monthStart}::date and wd.work_date < (${monthStart}::date + interval '1 month')
+        and (${isGlobal} or p.current_leader_employee_id = ${request.sessionUser!.employeeId})
+      group by m.id order by m.code
+    `;
+    const vehicles = await db`
+      select v.id, v.code, v.registration_number, sum(vt.end_odometer_km - vt.start_odometer_km) as kilometres,
+        sum(vt.fuel_consumed) as fuel_consumed, sum(vt.fuel_refuelled) as fuel_refuelled
+      from vehicle_trips vt join vehicles v on v.id = vt.vehicle_id join work_days wd on wd.id = vt.driver_work_day_id
+      where wd.work_date >= ${monthStart}::date and wd.work_date < (${monthStart}::date + interval '1 month')
+        and (${isGlobal} or exists (select 1 from work_entries we join projects p on p.id = we.project_id
+          where we.work_day_id = wd.id and p.current_leader_employee_id = ${request.sessionUser!.employeeId}))
+      group by v.id order by v.code
+    `;
+    const sharedFuel = await db`
+      select p.id as project_id, p.code as project_code, sum(pfr.fuel_consumed) as fuel_consumed,
+        sum(pfr.fuel_refuelled) as fuel_refuelled
+      from project_fuel_records pfr join project_days pd on pd.id = pfr.project_day_id join projects p on p.id = pd.project_id
+      where pd.work_date >= ${monthStart}::date and pd.work_date < (${monthStart}::date + interval '1 month')
+        and (${isGlobal} or p.current_leader_employee_id = ${request.sessionUser!.employeeId})
+      group by p.id order by p.code
+    `;
+    return { report: { month: query.data.month, scope: isGlobal ? "GLOBAL" : "LEADER", employeeHours, orderHours, machines, vehicles, sharedFuel } };
   });
 }

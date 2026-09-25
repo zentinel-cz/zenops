@@ -154,3 +154,26 @@ Souhrn ukazuje počet pracovníků a úseků, schválený a předběžný čas. 
 obsahuje Zakázku, pracovníka, druh práce, přestávky, stroje, MTH, příslušenství,
 palivo, vozidla, kilometry a společné palivo zakázky. Tlačítkem **Stáhnout PDF**
 se stáhne profesionální report ve stejném oprávněném rozsahu.
+
+## Měsíční report — Vedoucí a Admin
+
+Sekce **Souhrny a uzávěrka** nabízí pro vybraný měsíc:
+
+- hodiny podle pracovníků a směn;
+- hodiny a počty pracovníků podle Zakázek;
+- MTH, spotřebu a tankování podle strojů;
+- kilometry a palivo podle vozidel;
+- společné palivo podle Zakázek.
+
+Vedoucí vidí pouze Zakázky, které vede. Admin vidí globální souhrn. Report je
+provozní podklad pro odměny a mzdy, ale ZenOps mzdy sám nepočítá.
+
+### Uzávěrka měsíce — Admin
+
+Admin vidí stav **Otevřený/Uzavřený**, počet pracovních dnů a počet
+nevyřešených záznamů. Měsíc lze uzavřít pouze tehdy, když jsou všechny
+pracovní dny plně schválené. Rozpracovaný, odeslaný, částečně schválený nebo
+vrácený den uzávěrku zablokuje.
+
+Uzavřený měsíc nepovolí běžné provozní změny. Pokud je nutná oprava, Admin
+musí uvést důvod znovuotevření. Uzavření i znovuotevření se auditují.

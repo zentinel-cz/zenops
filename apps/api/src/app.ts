@@ -17,6 +17,7 @@ import { registerAssetRoutes } from "./assets.js";
 import { registerApprovalRoutes } from "./approvals.js";
 import { registerVehicleRoutes } from "./vehicles.js";
 import { registerReportRoutes } from "./reports.js";
+import { registerPeriodRoutes } from "./periods.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -96,6 +97,7 @@ export function buildApp(config: AppConfig, db: Database): FastifyInstance {
   registerApprovalRoutes(app, db, requireTrustedOrigin);
   registerVehicleRoutes(app, db, requireTrustedOrigin);
   registerReportRoutes(app, db);
+  registerPeriodRoutes(app, db, requireTrustedOrigin);
 
   return app;
 }

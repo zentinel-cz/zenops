@@ -171,3 +171,19 @@ Approval/return behavior is implemented in milestone 8 below.
 - professional landscape A4 PDF is rendered by Chromium through Playwright Core
 - PDF endpoint uses the same backend authorization and scope as the live report
 - PostgreSQL integration coverage verifies Leader scope and Worker denial
+
+## Milestone 10 — monthly reporting and closure — complete
+
+- monthly employee totals with morning/night shift breakdown
+- monthly order hours and participating-worker counts
+- machine MTH and consumed/refuelled fuel totals
+- vehicle kilometre and fuel totals plus shared order fuel totals
+- Leader reporting remains scoped to currently led orders; Admin is global
+- Admin-only OPEN/CLOSED monthly-period controls
+- unresolved WorkDays block closure with an exact count
+- closed month blocks ordinary ProjectDay and shared-fuel edits
+- reopening requires a recorded reason
+- close/reopen actions are append-only audited
+- responsive dark monthly overview and closure controls
+- PostgreSQL integration coverage for totals, blocked closure, close, edit lock,
+  mandatory reopen reason and audit history
