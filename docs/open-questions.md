@@ -31,3 +31,11 @@ reporting.
 ## Notifications
 
 Notification channels and escalation rules are deferred.
+
+## Project leader reassignment
+
+V1 requires exactly one current Project Leader and effective-dated history,
+but the accepted rules do not state who may reassign an existing project's
+Leader. The database retains the required history structure; the reassignment
+endpoint remains intentionally unimplemented until the authority and any
+required reason/approval are decided.

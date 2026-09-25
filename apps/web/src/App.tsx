@@ -13,13 +13,49 @@ async function getCurrentUser(): Promise<SessionUser | null> {
 function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void }) {
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(true);
+  const [leaders, setLeaders] = useState<Array<{ id: string; displayName: string }>>([]);
+  const [showProjectForm, setShowProjectForm] = useState(false);
+  const [projectError, setProjectError] = useState("");
+  const canCreateProject = user.permissions.includes("project.create");
+
+  const loadProjects = () => fetch("/api/projects/open", { credentials: "include" })
+    .then(async (response) => response.ok ? response.json() as Promise<{ projects: ProjectSummary[] }> : Promise.reject())
+    .then((body) => setProjects(body.projects));
 
   useEffect(() => {
-    void fetch("/api/projects/open", { credentials: "include" })
-      .then(async (response) => response.ok ? response.json() as Promise<{ projects: ProjectSummary[] }> : Promise.reject())
-      .then((body) => setProjects(body.projects))
+    void loadProjects()
+      .catch(() => setProjectError("Projekty se nepodařilo načíst."))
       .finally(() => setLoadingProjects(false));
+    if (canCreateProject) {
+      void fetch("/api/employees/leaders", { credentials: "include" })
+        .then(async (response) => response.ok ? response.json() as Promise<{ leaders: Array<{ id: string; displayName: string }> }> : Promise.reject())
+        .then((body) => setLeaders(body.leaders))
+        .catch(() => setProjectError("Seznam vedoucích se nepodařilo načíst."));
+    }
   }, []);
+
+  async function createProject(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setProjectError("");
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    const response = await fetch("/api/projects", {
+      method: "POST", credentials: "include", headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        code: data.get("code"), name: data.get("name"), location: data.get("location"),
+        leaderEmployeeId: data.get("leaderEmployeeId"), startDate: data.get("startDate"),
+        besip: data.get("besip") === "on",
+      }),
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({ error: "Projekt se nepodařilo vytvořit." })) as { error?: string };
+      setProjectError(body.error ?? "Projekt se nepodařilo vytvořit.");
+      return;
+    }
+    form.reset();
+    setShowProjectForm(false);
+    await loadProjects();
+  }
 
   return (
     <main className="dashboard">
@@ -34,9 +70,11 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
       </section>
       <section className="module-grid" aria-label="Moduly">
         <article><span>01</span><h3>Moje práce</h3><p>Směny, pracovní úseky a přestávky.</p><b>PŘIPRAVUJEME</b></article>
-        <article className="projects-card"><span>02 · {loadingProjects ? "…" : projects.length}</span><h3>Otevřené projekty</h3>{projects.length ? <ul>{projects.slice(0, 3).map((project) => <li key={project.id}><strong>{project.code}</strong><span>{project.name} · {project.location}</span></li>)}</ul> : <p>{loadingProjects ? "Načítám projekty…" : "Zatím nejsou otevřené projekty."}</p>}<b>AKTIVNÍ MODUL</b></article>
+        <article className="projects-card"><span>02 · {loadingProjects ? "…" : projects.length}</span><h3>Otevřené projekty</h3>{projects.length ? <ul>{projects.slice(0, 3).map((project) => <li key={project.id}><strong>{project.code}</strong><span>{project.name} · {project.location}</span></li>)}</ul> : <p>{loadingProjects ? "Načítám projekty…" : "Zatím nejsou otevřené projekty."}</p>}{canCreateProject && <button className="inline-action" onClick={() => setShowProjectForm((visible) => !visible)}>{showProjectForm ? "Zavřít formulář" : "Nový projekt"}</button>}<b>AKTIVNÍ MODUL</b></article>
         <article><span>03</span><h3>Schvalování</h3><p>Kontrola práce podle vedoucích projektů.</p><b>PŘIPRAVUJEME</b></article>
       </section>
+      {showProjectForm && <section className="project-form-panel"><form onSubmit={createProject}><div><p className="eyebrow">NOVÝ PROJEKT</p><h3>Založit projekt</h3></div><label>Kód<input name="code" maxLength={40} required /></label><label>Název<input name="name" maxLength={160} required /></label><label>Místo<input name="location" maxLength={240} required /></label><label>Vedoucí<select name="leaderEmployeeId" required defaultValue=""><option value="" disabled>Vyberte vedoucího</option>{leaders.map((leader) => <option key={leader.id} value={leader.id}>{leader.displayName}</option>)}</select></label><label>Začátek<input name="startDate" type="date" required /></label><label className="checkbox"><input name="besip" type="checkbox" /> BESIP</label>{projectError && <p className="error" role="alert">{projectError}</p>}<button>Vytvořit projekt</button></form></section>}
+      {!showProjectForm && projectError && <p className="dashboard-error" role="alert">{projectError}</p>}
     </main>
   );
 }

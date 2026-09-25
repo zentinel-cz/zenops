@@ -1,4 +1,4 @@
-import { createProjectSchema } from "@zenops/contracts";
+import { createProjectSchema, projectStateSchema } from "@zenops/contracts";
 import type { FastifyInstance } from "fastify";
 import { requirePermission, type AuthorizationHook } from "./authorization.js";
 import type { Database } from "./db.js";
@@ -75,5 +75,41 @@ export function registerProjectRoutes(app: FastifyInstance, db: Database, requir
       }
       throw error;
     }
+  });
+
+  app.patch("/api/projects/:projectId/state", {
+    preHandler: [requireTrustedOrigin, requirePermission("project.close")],
+  }, async (request, reply) => {
+    const parsed = projectStateSchema.safeParse(request.body);
+    const projectId = (request.params as { projectId?: string }).projectId;
+    if (!parsed.success || !projectId) return reply.code(400).send({ error: "Neplatná změna stavu projektu." });
+    const changed = await db.begin(async (transaction) => {
+      const existing = await transaction<Array<ProjectRow>>`
+        select p.id, p.code, p.name, p.location, p.besip, p.start_date, p.end_date, p.status,
+          p.current_leader_employee_id as leader_employee_id, e.display_name as leader_name
+        from projects p join employees e on e.id = p.current_leader_employee_id
+        where p.id = ${projectId} for update of p
+      `;
+      if (!existing[0] || existing[0].status === parsed.data.status) return null;
+      const [updated] = parsed.data.status === "CLOSED"
+        ? await transaction<Array<ProjectRow>>`
+            update projects set status = 'CLOSED', closed_at = now(), closed_by_user_id = ${request.sessionUser!.id}, updated_at = now()
+            where id = ${projectId} returning id, code, name, location, besip, start_date, end_date, status,
+              current_leader_employee_id as leader_employee_id
+          `
+        : await transaction<Array<ProjectRow>>`
+            update projects set status = 'OPEN', closed_at = null, closed_by_user_id = null, updated_at = now()
+            where id = ${projectId} returning id, code, name, location, besip, start_date, end_date, status,
+              current_leader_employee_id as leader_employee_id
+          `;
+      await transaction`
+        insert into audit_logs (actor_user_id, action, entity_type, entity_id, before_data, after_data, reason)
+        values (${request.sessionUser!.id}, ${parsed.data.status === 'CLOSED' ? 'PROJECT_CLOSED' : 'PROJECT_REOPENED'},
+          'PROJECT', ${projectId}, ${transaction.json(existing[0])}, ${transaction.json(updated!)}, ${parsed.data.reason ?? null})
+      `;
+      return updated!;
+    });
+    if (!changed) return reply.code(404).send({ error: "Projekt nebyl nalezen nebo je již v požadovaném stavu." });
+    return { project: changed };
   });
 }

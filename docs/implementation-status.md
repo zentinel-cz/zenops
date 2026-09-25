@@ -41,10 +41,14 @@ Completed:
 - transactional project, leader-history and audit creation
 - project creation/listing integration coverage
 - authenticated dashboard displays live open projects
+- Admin employee/account creation with explicit role assignment
+- audited employee deactivation/reactivation without hard deletion
+- active Leader lookup for project creation
+- Admin-only audited project close/reopen workflow
+- Leader/Admin project creation form in the dashboard
 
 Remaining:
 
-- Admin employee/user/role management
-- leader reassignment with effective history
-- Admin-only close/reopen project workflow and audit
-- complete project management UI
+- employee management UI for Admin
+- leader reassignment after the authority question is decided
+- project detail, closed-project overview and management controls

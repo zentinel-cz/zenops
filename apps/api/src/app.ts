@@ -10,6 +10,7 @@ import type { AppConfig } from "./config.js";
 import type { Database } from "./db.js";
 import { isTrustedOrigin } from "./security.js";
 import { registerProjectRoutes } from "./projects.js";
+import { registerEmployeeRoutes } from "./employees.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -82,6 +83,7 @@ export function buildApp(config: AppConfig, db: Database): FastifyInstance {
   });
 
   registerProjectRoutes(app, db, requireTrustedOrigin);
+  registerEmployeeRoutes(app, db, requireTrustedOrigin);
 
   return app;
 }

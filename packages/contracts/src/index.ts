@@ -52,3 +52,22 @@ export const projectSummarySchema = z.object({
   leaderName: z.string(),
 });
 export type ProjectSummary = z.infer<typeof projectSummarySchema>;
+
+export const createEmployeeUserSchema = z.object({
+  employeeNumber: z.string().trim().min(1).max(40).transform((value) => value.toUpperCase()),
+  displayName: z.string().trim().min(2).max(160),
+  email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
+  password: z.string().min(12).max(200),
+  roles: z.array(roleCodeSchema).min(1).max(3).transform((roles) => [...new Set(roles)]),
+});
+export type CreateEmployeeUserInput = z.infer<typeof createEmployeeUserSchema>;
+
+export const employeeStateSchema = z.object({
+  active: z.boolean(),
+  reason: z.string().trim().min(3).max(500),
+});
+
+export const projectStateSchema = z.object({
+  status: projectStatusSchema,
+  reason: z.string().trim().max(500).nullable().optional(),
+});

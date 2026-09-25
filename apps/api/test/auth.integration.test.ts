@@ -28,6 +28,7 @@ integration("authentication integration", () => {
   };
   const app = buildApp(config, db);
   let leaderEmployeeId = "";
+  let projectId = "";
 
   beforeAll(async () => {
     const migrationDirectory = resolve(process.cwd(), "migrations");
@@ -57,6 +58,17 @@ integration("authentication integration", () => {
     await db`
       insert into user_roles (user_id, role_id)
       select ${leaderUser!.id}, id from roles where code = 'LEADER'
+    `;
+    const [adminEmployee] = await db<Array<{ id: string }>>`
+      insert into employees (employee_number, display_name) values ('TEST-003', 'Test Administrátor') returning id
+    `;
+    const [adminUser] = await db<Array<{ id: string }>>`
+      insert into users (employee_id, email, password_hash)
+      values (${adminEmployee!.id}, 'admin@zenops.test', ${passwordHash}) returning id
+    `;
+    await db`
+      insert into user_roles (user_id, role_id)
+      select ${adminUser!.id}, id from roles where code = 'ADMIN'
     `;
     await app.ready();
   }, 30_000);
@@ -125,6 +137,7 @@ integration("authentication integration", () => {
     });
     expect(created.statusCode, created.body).toBe(201);
     expect(created.json().project).toMatchObject({ code: "Z-001", status: "OPEN" });
+    projectId = created.json().project.id as string;
 
     const listing = await app.inject({ method: "GET", url: "/api/projects/open", headers: { cookie: cookie! } });
     expect(listing.statusCode).toBe(200);
@@ -133,5 +146,68 @@ integration("authentication integration", () => {
       select count(*)::int as count from audit_logs where action = 'PROJECT_CREATED'
     `;
     expect(audit!.count).toBe(1);
+  });
+
+  it("allows Admin to create and deactivate an employee without hard deletion", async () => {
+    const login = await app.inject({
+      method: "POST", url: "/api/auth/login", headers: { origin },
+      payload: { email: "admin@zenops.test", password },
+    });
+    const setCookie = login.headers["set-cookie"];
+    const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
+    const cookie = cookieHeader?.split(";", 1)[0];
+    const created = await app.inject({
+      method: "POST", url: "/api/employees", headers: { origin, cookie: cookie! },
+      payload: {
+        employeeNumber: "new-004", displayName: "Nový Pracovník", email: "new.worker@zenops.test",
+        password: "New-Worker-2026!", roles: ["WORKER"],
+      },
+    });
+    expect(created.statusCode, created.body).toBe(201);
+    const employeeId = created.json().employee.id as string;
+    expect(created.json().employee).toMatchObject({ employeeNumber: "NEW-004", roles: ["WORKER"] });
+
+    const deactivated = await app.inject({
+      method: "PATCH", url: `/api/employees/${employeeId}/state`, headers: { origin, cookie: cookie! },
+      payload: { active: false, reason: "Ukončení testovacího pracovního poměru" },
+    });
+    expect(deactivated.statusCode, deactivated.body).toBe(200);
+    const [stored] = await db<Array<{ employeeActive: boolean; userActive: boolean }>>`
+      select e.is_active as employee_active, u.is_active as user_active
+      from employees e join users u on u.employee_id = e.id where e.id = ${employeeId}
+    `;
+    expect(stored).toEqual({ employeeActive: false, userActive: false });
+    const [audit] = await db<Array<{ count: number }>>`
+      select count(*)::int as count from audit_logs
+      where entity_id = ${employeeId} and action in ('EMPLOYEE_CREATED', 'EMPLOYEE_DEACTIVATED')
+    `;
+    expect(audit!.count).toBe(2);
+  });
+
+  it("allows only Admin permission to close and reopen a project", async () => {
+    const login = await app.inject({
+      method: "POST", url: "/api/auth/login", headers: { origin },
+      payload: { email: "admin@zenops.test", password },
+    });
+    const setCookie = login.headers["set-cookie"];
+    const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
+    const cookie = cookieHeader?.split(";", 1)[0];
+    const closed = await app.inject({
+      method: "PATCH", url: `/api/projects/${projectId}/state`, headers: { origin, cookie: cookie! },
+      payload: { status: "CLOSED", reason: "Dokončeno" },
+    });
+    expect(closed.statusCode, closed.body).toBe(200);
+    expect(closed.json().project.status).toBe("CLOSED");
+    const reopened = await app.inject({
+      method: "PATCH", url: `/api/projects/${projectId}/state`, headers: { origin, cookie: cookie! },
+      payload: { status: "OPEN" },
+    });
+    expect(reopened.statusCode, reopened.body).toBe(200);
+    expect(reopened.json().project.status).toBe("OPEN");
+    const [audit] = await db<Array<{ count: number }>>`
+      select count(*)::int as count from audit_logs
+      where entity_id = ${projectId} and action in ('PROJECT_CLOSED', 'PROJECT_REOPENED')
+    `;
+    expect(audit!.count).toBe(2);
   });
 });
