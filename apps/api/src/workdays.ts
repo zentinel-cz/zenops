@@ -20,11 +20,15 @@ async function getWorkDayDetail(db: Database, workDayId: string, employeeId: str
   const entries = await db`
     select we.id, we.start_at, we.end_at, we.description, we.state, p.id as project_id,
       p.code as project_code, p.name as project_name, wt.code as work_type_code,
-      wt.name as work_type_name, wa.code as work_activity_code, wa.name as work_activity_name
+      wt.name as work_type_name, wa.code as work_activity_code, wa.name as work_activity_name,
+      mu.id as machine_usage_id, m.code as machine_code, m.name as machine_name,
+      mu.entered_start_mth, mu.end_mth, mu.fuel_consumed, mu.fuel_refuelled
     from work_entries we
     join projects p on p.id = we.project_id
     join work_types wt on wt.id = we.work_type_id
     left join work_activities wa on wa.id = we.work_activity_id
+    left join machine_usages mu on mu.work_entry_id = we.id
+    left join machines m on m.id = mu.machine_id
     where we.work_day_id = ${workDayId} order by we.start_at
   `;
   const breaks = await db`

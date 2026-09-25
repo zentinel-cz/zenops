@@ -82,9 +82,18 @@ Aktuálně přihlášený Admin nemůže deaktivovat sám sebe.
 - Přihlášení používá serverovou relaci v bezpečné HTTP-only cookie.
 - Oprávnění kontroluje backend; skrytí tlačítka v rozhraní není jediná ochrana.
 
-## Stroje a příslušenství — připravovaná obrazovka
+## Stroje a příslušenství
 
-Backend již eviduje fyzické stroje, jejich typy, příslušenství, MTH, spotřebu a
-tankování. Hlídá souběžné použití stejného stroje i unikátního příslušenství a
-audituje opravu navrženého počátečního MTH. Uživatelský formulář pro tuto část
-ještě není součástí náhledu; funkce proto zatím není označena jako dokončená.
+Vedoucí nebo Admin vytvoří položky v sekci **Stroje a příslušenství**. U stroje
+určí, zda se sleduje MTH; u příslušenství, zda jde o unikátně sledovaný fyzický
+kus.
+
+Pracovník u rozpracovaného pracovního úseku zvolí **Přidat stroj** a vyplní:
+
+- stroj a případné příslušenství;
+- počáteční a konečný MTH u sledovaného stroje;
+- samostatně spotřebu a natankované množství.
+
+Formulář ukazuje poslední známý konečný MTH jako návrh. Pracovník jej může
+opravit, ale změna se auditovaně uloží. Stejný stroj ani unikátní příslušenství
+nelze v překrývajícím se čase přiřadit dvěma pracovníkům.

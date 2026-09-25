@@ -3,6 +3,7 @@ import type { ProjectSummary, SessionUser } from "@zenops/contracts";
 import { EmployeePanel } from "./EmployeePanel";
 import { WorkDayPanel } from "./WorkDayPanel";
 import { ProjectDayPanel } from "./ProjectDayPanel";
+import { AssetPanel } from "./AssetPanel";
 
 type AuthState = { status: "loading" } | { status: "guest" } | { status: "authenticated"; user: SessionUser };
 
@@ -19,9 +20,11 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
   const [leaders, setLeaders] = useState<Array<{ id: string; displayName: string }>>([]);
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [projectError, setProjectError] = useState("");
+  const [assetVersion, setAssetVersion] = useState(0);
   const canCreateProject = user.permissions.includes("project.create");
   const canManageProjects = user.permissions.includes("project.close");
   const canManageEmployees = user.permissions.includes("employee.manage");
+  const canManageAssets = user.permissions.includes("asset.manage");
 
   const loadProjects = () => fetch(canManageProjects ? "/api/projects" : "/api/projects/open", { credentials: "include" })
     .then(async (response) => response.ok ? response.json() as Promise<{ projects: ProjectSummary[] }> : Promise.reject())
@@ -94,8 +97,9 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
       </section>
       {showProjectForm && <section className="project-form-panel"><form onSubmit={createProject}><div><p className="eyebrow">NOVÝ PROJEKT</p><h3>Založit projekt</h3></div><label>Kód<input name="code" maxLength={40} required /></label><label>Název<input name="name" maxLength={160} required /></label><label>Místo<input name="location" maxLength={240} required /></label><label>Vedoucí<select name="leaderEmployeeId" required defaultValue=""><option value="" disabled>Vyberte vedoucího</option>{leaders.map((leader) => <option key={leader.id} value={leader.id}>{leader.displayName}</option>)}</select></label><label>Začátek<input name="startDate" type="date" required /></label><label className="checkbox"><input name="besip" type="checkbox" /> BESIP</label>{projectError && <p className="error" role="alert">{projectError}</p>}<button>Vytvořit projekt</button></form></section>}
       {!showProjectForm && projectError && <p className="dashboard-error" role="alert">{projectError}</p>}
-      <WorkDayPanel projects={projects} />
+      <WorkDayPanel projects={projects} assetVersion={assetVersion} />
       <ProjectDayPanel user={user} projects={projects} />
+      {canManageAssets && <AssetPanel onChanged={async () => setAssetVersion((value) => value + 1)} />}
       {canManageEmployees && <EmployeePanel user={user} />}
     </main>
   );

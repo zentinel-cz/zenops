@@ -82,7 +82,7 @@ Approval/return behavior remains milestone 8 and is not silently simulated.
 - server-owned work types and Tree Cutting activities
 - responsive ProjectDay management form
 
-## Milestone 5 — machines and attachments — backend core complete
+## Milestone 5 — machines and attachments — complete
 
 - generic machine/machine-type and attachment/attachment-type catalogues
 - Leader/Admin catalogue creation with audit trail
@@ -93,5 +93,6 @@ Approval/return behavior remains milestone 8 and is not silently simulated.
 - PostgreSQL exclusion constraints for concurrent physical-machine usage
 - PostgreSQL exclusion constraints for concurrent attachment usage
 - integration coverage for MTH continuity and attachment reuse
-
-Remaining: catalogue management UI and worker machine/attachment form.
+- responsive Leader/Admin catalogue creation UI
+- worker machine/MTH/fuel/attachment form attached to a draft WorkEntry
+- machine usage rendered in the WorkDay timeline
