@@ -1,4 +1,4 @@
-import { createProjectSchema, projectStateSchema } from "@zenops/contracts";
+import { createProjectSchema, projectStateSchema, updateProjectSchema } from "@zenops/contracts";
 import type { FastifyInstance } from "fastify";
 import { requirePermission, type AuthorizationHook } from "./authorization.js";
 import type { Database } from "./db.js";
@@ -11,6 +11,7 @@ type ProjectRow = {
   besip: boolean;
   startDate: string;
   endDate: string | null;
+  note: string | null;
   status: "OPEN" | "CLOSED";
   leaderEmployeeId: string;
   leaderName: string;
@@ -19,7 +20,7 @@ type ProjectRow = {
 export function registerProjectRoutes(app: FastifyInstance, db: Database, requireTrustedOrigin: AuthorizationHook): void {
   app.get("/api/projects", { preHandler: requirePermission("project.close") }, async () => {
     const projects = await db<ProjectRow[]>`
-      select p.id, p.code, p.name, p.location, p.besip, p.start_date, p.end_date, p.status,
+      select p.id, p.code, p.name, p.location, p.besip, p.start_date, p.end_date, p.note, p.status,
         p.current_leader_employee_id as leader_employee_id, e.display_name as leader_name
       from projects p join employees e on e.id = p.current_leader_employee_id
       order by (p.status = 'OPEN') desc, p.start_date desc, p.code
@@ -29,7 +30,7 @@ export function registerProjectRoutes(app: FastifyInstance, db: Database, requir
 
   app.get("/api/projects/open", { preHandler: requirePermission("project.read_open") }, async () => {
     const projects = await db<ProjectRow[]>`
-      select p.id, p.code, p.name, p.location, p.besip, p.start_date, p.end_date, p.status,
+      select p.id, p.code, p.name, p.location, p.besip, p.start_date, p.end_date, p.note, p.status,
         p.current_leader_employee_id as leader_employee_id, e.display_name as leader_name
       from projects p
       join employees e on e.id = p.current_leader_employee_id
@@ -37,6 +38,58 @@ export function registerProjectRoutes(app: FastifyInstance, db: Database, requir
       order by p.start_date desc, p.code
     `;
     return { projects };
+  });
+
+  app.patch("/api/projects/:projectId", {
+    preHandler: [requireTrustedOrigin, requirePermission("project.close")],
+  }, async (request, reply) => {
+    const parsed = updateProjectSchema.safeParse(request.body);
+    const projectId = (request.params as { projectId?: string }).projectId;
+    if (!parsed.success || !projectId) return reply.code(400).send({ error: "Neplatné údaje zakázky.", details: parsed.success ? undefined : parsed.error.flatten() });
+    const leader = await db<Array<{ id: string }>>`
+      select e.id from employees e
+      join users u on u.employee_id = e.id and u.is_active
+      join user_roles ur on ur.user_id = u.id
+      join roles r on r.id = ur.role_id and r.code = 'LEADER'
+      where e.id = ${parsed.data.leaderEmployeeId} and e.is_active limit 1
+    `;
+    if (!leader[0]) return reply.code(422).send({ error: "Vedoucí zakázky musí být aktivní uživatel s rolí Vedoucí." });
+    try {
+      const project = await db.begin(async (transaction) => {
+        const existing = await transaction<ProjectRow[]>`
+          select p.id, p.code, p.name, p.location, p.besip, p.start_date, p.end_date, p.note, p.status,
+            p.current_leader_employee_id as leader_employee_id, e.display_name as leader_name
+          from projects p join employees e on e.id=p.current_leader_employee_id
+          where p.id=${projectId} for update of p
+        `;
+        if (!existing[0]) return null;
+        const leaderChanged = existing[0].leaderEmployeeId !== parsed.data.leaderEmployeeId;
+        if (leaderChanged) {
+          await transaction`update project_leader_history set effective_to=now() where project_id=${projectId} and effective_to is null`;
+          await transaction`insert into project_leader_history (project_id, leader_employee_id, changed_by_user_id) values (${projectId}, ${parsed.data.leaderEmployeeId}, ${request.sessionUser!.id})`;
+        }
+        const [updated] = await transaction<ProjectRow[]>`
+          update projects set code=${parsed.data.code}, name=${parsed.data.name}, location=${parsed.data.location},
+            besip=${parsed.data.besip}, current_leader_employee_id=${parsed.data.leaderEmployeeId},
+            start_date=${parsed.data.startDate}, end_date=${parsed.data.endDate ?? null}, note=${parsed.data.note ?? null}, updated_at=now()
+          where id=${projectId}
+          returning id, code, name, location, besip, start_date, end_date, note, status,
+            current_leader_employee_id as leader_employee_id,
+            (select display_name from employees where id=current_leader_employee_id) as leader_name
+        `;
+        await transaction`
+          insert into audit_logs (actor_user_id, action, entity_type, entity_id, before_data, after_data, reason)
+          values (${request.sessionUser!.id}, 'PROJECT_UPDATED', 'PROJECT', ${projectId},
+            ${transaction.json(existing[0])}, ${transaction.json(updated!)}, ${parsed.data.reason})
+        `;
+        return updated!;
+      });
+      if (!project) return reply.code(404).send({ error: "Zakázka nebyla nalezena." });
+      return { project };
+    } catch (error) {
+      if (typeof error === "object" && error && "code" in error && error.code === "23505") return reply.code(409).send({ error: "Zakázka s tímto kódem již existuje." });
+      throw error;
+    }
   });
 
   app.post("/api/projects", {
@@ -95,7 +148,7 @@ export function registerProjectRoutes(app: FastifyInstance, db: Database, requir
     if (!parsed.success || !projectId) return reply.code(400).send({ error: "Neplatná změna stavu zakázky." });
     const changed = await db.begin(async (transaction) => {
       const existing = await transaction<Array<ProjectRow>>`
-        select p.id, p.code, p.name, p.location, p.besip, p.start_date, p.end_date, p.status,
+        select p.id, p.code, p.name, p.location, p.besip, p.start_date, p.end_date, p.note, p.status,
           p.current_leader_employee_id as leader_employee_id, e.display_name as leader_name
         from projects p join employees e on e.id = p.current_leader_employee_id
         where p.id = ${projectId} for update of p

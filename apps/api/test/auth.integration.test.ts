@@ -345,6 +345,41 @@ integration("authentication integration", () => {
     expect(audit!.count).toBe(2);
   });
 
+  it("allows Admin to edit a project and preserves leader history", async () => {
+    const login = await app.inject({ method: "POST", url: "/api/auth/login", headers: { origin }, payload: { email: "admin@zenops.test", password } });
+    const setCookie = login.headers["set-cookie"];
+    const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
+    const cookie = cookieHeader?.split(";", 1)[0];
+    const createdLeader = await app.inject({
+      method: "POST", url: "/api/employees", headers: { origin, cookie: cookie! },
+      payload: { employeeNumber: "LEAD-005", displayName: "Druhý Vedoucí", email: "second.leader@zenops.test", password: "Second-Leader-2026!", roles: ["LEADER"] },
+    });
+    expect(createdLeader.statusCode, createdLeader.body).toBe(201);
+    const newLeaderId = createdLeader.json().employee.id as string;
+    const changed = await app.inject({
+      method: "PATCH", url: `/api/projects/${projectId}`, headers: { origin, cookie: cookie! },
+      payload: { code: "Z-001", name: "Upravená zakázka", location: "Praha 4", besip: false,
+        leaderEmployeeId: newLeaderId, startDate: "2026-09-25", endDate: "2026-10-31",
+        note: "Rozšířený rozsah", reason: "Změna odpovědného vedoucího" },
+    });
+    expect(changed.statusCode, changed.body).toBe(200);
+    expect(changed.json().project).toMatchObject({ name: "Upravená zakázka", leaderEmployeeId: newLeaderId, leaderName: "Druhý Vedoucí" });
+    const restored = await app.inject({
+      method: "PATCH", url: `/api/projects/${projectId}`, headers: { origin, cookie: cookie! },
+      payload: { code: "Z-001", name: "Testovací projekt", location: "Praha", besip: true,
+        leaderEmployeeId, startDate: "2026-09-25", endDate: null, note: null,
+        reason: "Obnovení vedoucího pro navazující testy" },
+    });
+    expect(restored.statusCode, restored.body).toBe(200);
+    const [history] = await db<Array<{ total: number; current: number; audits: number }>>`
+      select
+        (select count(*)::int from project_leader_history where project_id=${projectId}) as total,
+        (select count(*)::int from project_leader_history where project_id=${projectId} and effective_to is null) as current,
+        (select count(*)::int from audit_logs where entity_id=${projectId} and action='PROJECT_UPDATED') as audits
+    `;
+    expect(history).toEqual({ total: 3, current: 1, audits: 2 });
+  });
+
   it("creates a night WorkDay, prevents overlaps and submits it", async () => {
     const login = await app.inject({
       method: "POST", url: "/api/auth/login", headers: { origin },

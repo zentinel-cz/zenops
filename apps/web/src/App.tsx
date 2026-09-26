@@ -24,6 +24,7 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [leaders, setLeaders] = useState<Array<{ id: string; displayName: string }>>([]);
   const [showProjectForm, setShowProjectForm] = useState(false);
+  const [editingProject, setEditingProject] = useState<ProjectSummary | null>(null);
   const [projectError, setProjectError] = useState("");
   const [assetVersion, setAssetVersion] = useState(0);
   const [showDailyRecord, setShowDailyRecord] = useState(false);
@@ -88,6 +89,22 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
     await loadProjects();
   }
 
+  async function updateProject(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!editingProject) return;
+    setProjectError("");
+    const data = new FormData(event.currentTarget);
+    const response = await fetch(`/api/projects/${editingProject.id}`, {
+      method: "PATCH", credentials: "include", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ code: data.get("code"), name: data.get("name"), location: data.get("location"),
+        leaderEmployeeId: data.get("leaderEmployeeId"), startDate: data.get("startDate"), endDate: data.get("endDate") || null,
+        note: data.get("note") || null, besip: data.get("besip") === "on", reason: data.get("reason") }),
+    });
+    if (!response.ok) { const body = await response.json().catch(() => ({ error: "Zakázku se nepodařilo upravit." })) as { error?: string }; setProjectError(body.error ?? "Zakázku se nepodařilo upravit."); return; }
+    setEditingProject(null);
+    await loadProjects();
+  }
+
   return (
     <main className="dashboard">
       <header className="topbar">
@@ -99,8 +116,9 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
         <h2>Dobré ráno, {user.displayName.split(" ")[0]}</h2>
         <p>{isWorkerOnly ? "Denní záznam rychle a bez zbytečných kroků." : "Zakázky, technika a provozní přehled na jednom místě."}</p>
       </section>
-      {isWorkerOnly ? <section className="worker-home"><button className="daily-record-card" onClick={() => setShowDailyRecord((visible) => !visible)}><span>+</span><strong>{showDailyRecord ? "Zavřít denní záznam" : "Přidat denní záznam"}</strong><small>Strojní sečení, kácení, reprofilace nebo ruční sečení</small></button><article className="future-card"><span>BRZY</span><strong>Dovolená a žádosti</strong><small>Tuto část připravíme později.</small></article></section> : <section className="module-grid" aria-label="Moduly"><article className="projects-card"><span>01 · {loadingProjects ? "…" : projects.length}</span><h3>{canManageProjects ? "Zakázky" : "Otevřené zakázky"}</h3>{projects.length ? <ul>{projects.slice(0, 5).map((project) => <li className={project.status === "CLOSED" ? "closed" : ""} key={project.id}><strong>{project.code}</strong><span>{project.name} · {project.location}</span>{canManageProjects && <button className="project-state" onClick={() => void changeProjectState(project)}>{project.status === "OPEN" ? "Uzavřít" : "Otevřít"}</button>}</li>)}</ul> : <p>{loadingProjects ? "Načítám zakázky…" : "Zatím nejsou žádné zakázky."}</p>}{canCreateProject && <button className="inline-action" onClick={() => setShowProjectForm((visible) => !visible)}>{showProjectForm ? "Zavřít formulář" : "Nová zakázka"}</button>}<b>PROVOZNÍ PŘEHLED</b></article><article><span>02</span><h3>Technika</h3><p>Stroje, příslušenství a vozidla v jednom přehledu.</p><b>SPRÁVA PROSTŘEDKŮ</b></article><article><span>03</span><h3>Schvalování</h3><p>Kontrola práce podle vedoucích zakázek.</p><b>PRACOVNÍ TOK</b></article></section>}
+      {isWorkerOnly ? <section className="worker-home"><button className="daily-record-card" onClick={() => setShowDailyRecord((visible) => !visible)}><span>+</span><strong>{showDailyRecord ? "Zavřít denní záznam" : "Přidat denní záznam"}</strong><small>Strojní sečení, kácení, reprofilace nebo ruční sečení</small></button><article className="future-card"><span>BRZY</span><strong>Dovolená a žádosti</strong><small>Tuto část připravíme později.</small></article></section> : <section className="module-grid" aria-label="Moduly"><article className="projects-card"><span>01 · {loadingProjects ? "…" : projects.length}</span><h3>{canManageProjects ? "Zakázky" : "Otevřené zakázky"}</h3>{projects.length ? <ul>{projects.slice(0, 5).map((project) => <li className={project.status === "CLOSED" ? "closed" : ""} key={project.id}><strong>{project.code}</strong><span>{project.name} · {project.location}</span>{canManageProjects && <span className="row-actions"><button className="project-state" onClick={() => setEditingProject(project)}>Upravit</button><button className="project-state" onClick={() => void changeProjectState(project)}>{project.status === "OPEN" ? "Uzavřít" : "Otevřít"}</button></span>}</li>)}</ul> : <p>{loadingProjects ? "Načítám zakázky…" : "Zatím nejsou žádné zakázky."}</p>}{canCreateProject && <button className="inline-action" onClick={() => setShowProjectForm((visible) => !visible)}>{showProjectForm ? "Zavřít formulář" : "Nová zakázka"}</button>}<b>PROVOZNÍ PŘEHLED</b></article><article><span>02</span><h3>Technika</h3><p>Stroje, příslušenství a vozidla v jednom přehledu.</p><b>SPRÁVA PROSTŘEDKŮ</b></article><article><span>03</span><h3>Schvalování</h3><p>Kontrola práce podle vedoucích zakázek.</p><b>PRACOVNÍ TOK</b></article></section>}
       {showProjectForm && <section className="project-form-panel"><form onSubmit={createProject}><div><p className="eyebrow">NOVÁ ZAKÁZKA</p><h3>Založit zakázku</h3></div><label>Kód<input name="code" maxLength={40} required /></label><label>Název<input name="name" maxLength={160} required /></label><label>Místo<input name="location" maxLength={240} required /></label><label>Vedoucí<select name="leaderEmployeeId" required defaultValue=""><option value="" disabled>Vyberte vedoucího</option>{leaders.map((leader) => <option key={leader.id} value={leader.id}>{leader.displayName}</option>)}</select></label><label>Začátek<input name="startDate" type="date" required /></label><label className="checkbox"><input name="besip" type="checkbox" /> BESIP</label>{projectError && <p className="error" role="alert">{projectError}</p>}<button>Vytvořit zakázku</button></form></section>}
+      {editingProject && <form className="admin-entry-form" onSubmit={updateProject}><div><strong>Upravit zakázku</strong><button type="button" className="close-button" onClick={() => setEditingProject(null)}>×</button></div><label>Kód<input name="code" defaultValue={editingProject.code} maxLength={40} required /></label><label>Název<input name="name" defaultValue={editingProject.name} maxLength={160} required /></label><label>Místo<input name="location" defaultValue={editingProject.location} maxLength={240} required /></label><label>Vedoucí<select name="leaderEmployeeId" defaultValue={editingProject.leaderEmployeeId} required>{leaders.map(leader => <option key={leader.id} value={leader.id}>{leader.displayName}</option>)}</select></label><label>Začátek<input name="startDate" type="date" defaultValue={editingProject.startDate.slice(0, 10)} required /></label><label>Konec<input name="endDate" type="date" defaultValue={editingProject.endDate?.slice(0, 10) ?? ""} /></label><label>Poznámka<textarea name="note" defaultValue={editingProject.note ?? ""} maxLength={2000} /></label><label className="checkbox"><input name="besip" type="checkbox" defaultChecked={editingProject.besip} /> BESIP</label><label>Důvod změny<input name="reason" minLength={3} maxLength={500} required /></label>{projectError && <p className="error">{projectError}</p>}<button>Uložit auditovanou změnu</button></form>}
       {!showProjectForm && projectError && <p className="dashboard-error" role="alert">{projectError}</p>}
       {isWorkerOnly && showDailyRecord && <WorkDayPanel projects={projects} assetVersion={assetVersion} />}
       <ProjectDayPanel user={user} projects={projects} />

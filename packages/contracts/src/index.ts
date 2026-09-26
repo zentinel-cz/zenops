@@ -55,11 +55,17 @@ export const projectSummarySchema = z.object({
   besip: z.boolean(),
   startDate: z.string(),
   endDate: z.string().nullable(),
+  note: z.string().nullable(),
   status: projectStatusSchema,
   leaderEmployeeId: z.string().uuid(),
   leaderName: z.string(),
 });
 export type ProjectSummary = z.infer<typeof projectSummarySchema>;
+
+export const updateProjectSchema = createProjectSchema.and(z.object({
+  reason: z.string().trim().min(3).max(500),
+}));
+export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
 
 export const createEmployeeUserSchema = z.object({
   employeeNumber: z.string().trim().min(1).max(40).transform((value) => value.toUpperCase()),

@@ -1,6 +1,6 @@
 # Implementation Status
 
-Last updated: 2026-09-25
+Last updated: 2026-09-26
 
 ## Preview deployment
 
@@ -55,7 +55,7 @@ Verified:
 The first administrator was created during the explicitly approved preview
 deployment. It remains outside source code and migrations.
 
-## Milestone 2 — master data and projects — in progress
+## Milestone 2 — master data and projects — complete
 
 Completed:
 
@@ -75,10 +75,10 @@ Completed:
 - Admin overview of open/closed projects with close/reopen controls
 - Czech V1 user guide maintained as documentation-as-code
 
-Remaining:
-
-- leader reassignment after the authority question is decided
-- richer project detail/edit screen after its editable-field rules are decided
+- Admin can edit project code, name, location, dates, note, BESIP and current Leader
+- every edit requires a reason and stores immutable before/after audit evidence
+- Leader reassignment closes the previous effective history interval and creates
+  exactly one new current assignment without rewriting historical ownership
 
 ## Milestone 3 — WorkDay, WorkEntry and BreakEntry — core complete
 

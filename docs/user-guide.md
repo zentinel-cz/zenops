@@ -47,6 +47,11 @@ a administrativní schvalování.
 
 ## Zakázky
 
+Admin může u existující zakázky použít tlačítko **Upravit**. Lze změnit kód,
+název, místo, začátek a konec, poznámku, příznak BESIP i vedoucího. Každá
+změna vyžaduje důvod. Při změně vedoucího systém zachová historii předchozího
+vedení zakázky; starší provozní data se nepřepisují.
+
 - Otevřené zakázky jsou dostupné pracovníkům při vytváření denního záznamu.
 - Vedoucí nebo Admin vytvoří zakázku tlačítkem **Nová zakázka**.
 - Každá zakázka má právě jednoho aktuálního Vedoucího.
