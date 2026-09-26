@@ -1,5 +1,5 @@
 import { hash } from "@node-rs/argon2";
-import { createEmployeeUserSchema, employeeStateSchema } from "@zenops/contracts";
+import { createEmployeeUserSchema, employeeStateSchema, updateEmployeeUserSchema } from "@zenops/contracts";
 import type { FastifyInstance } from "fastify";
 import { requirePermission, type AuthorizationHook } from "./authorization.js";
 import type { Database } from "./db.js";
@@ -113,5 +113,37 @@ export function registerEmployeeRoutes(app: FastifyInstance, db: Database, requi
     });
     if (!changed) return reply.code(404).send({ error: "Zaměstnanec nebyl nalezen nebo je již v požadovaném stavu." });
     return { employee: changed };
+  });
+
+  app.patch("/api/employees/:employeeId", {
+    preHandler: [requireTrustedOrigin, requirePermission("employee.manage")],
+  }, async (request, reply) => {
+    const parsed = updateEmployeeUserSchema.safeParse(request.body);
+    const employeeId = (request.params as { employeeId?: string }).employeeId;
+    if (!parsed.success || !employeeId) return reply.code(400).send({ error: "Neplatné údaje zaměstnance." });
+    if (employeeId === request.sessionUser!.employeeId && !parsed.data.roles.includes("ADMIN")) {
+      return reply.code(409).send({ error: "Aktuálně přihlášený správce si nemůže odebrat roli Admin." });
+    }
+    try {
+      const employee = await db.begin(async (transaction) => {
+        const beforeRows = await transaction<EmployeeRow[]>`
+          select e.id, e.employee_number, e.display_name, u.email, e.is_active,
+            coalesce((select array_agg(r.code order by r.code) from user_roles ur join roles r on r.id=ur.role_id where ur.user_id=u.id), '{}') as roles
+          from employees e join users u on u.employee_id=e.id where e.id=${employeeId} for update of e, u
+        `;
+        if (!beforeRows[0]) return null;
+        const [account] = await transaction<Array<{ id: string }>>`select id from users where employee_id=${employeeId}`;
+        await transaction`update employees set employee_number=${parsed.data.employeeNumber}, display_name=${parsed.data.displayName}, updated_at=now() where id=${employeeId}`;
+        await transaction`update users set email=${parsed.data.email}, updated_at=now() where id=${account!.id}`;
+        await transaction`delete from user_roles where user_id=${account!.id}`;
+        await transaction`insert into user_roles (user_id, role_id) select ${account!.id}, id from roles where code=any(${transaction.array(parsed.data.roles)})`;
+        await transaction`update sessions set revoked_at=now() where user_id=${account!.id} and revoked_at is null`;
+        const after = { id: employeeId, employeeNumber: parsed.data.employeeNumber, displayName: parsed.data.displayName, email: parsed.data.email, isActive: beforeRows[0].isActive, roles: parsed.data.roles };
+        await transaction`insert into audit_logs (actor_user_id, action, entity_type, entity_id, before_data, after_data, reason) values (${request.sessionUser!.id}, 'EMPLOYEE_UPDATED', 'EMPLOYEE', ${employeeId}, ${transaction.json(beforeRows[0])}, ${transaction.json(after)}, ${parsed.data.reason})`;
+        return after;
+      });
+      if (!employee) return reply.code(404).send({ error: "Zaměstnanec nebyl nalezen." });
+      return { employee, sessionsRevoked: true };
+    } catch (error) { if (typeof error === "object" && error && "code" in error && error.code === "23505") return reply.code(409).send({ error: "E-mail nebo osobní číslo již existuje." }); throw error; }
   });
 }

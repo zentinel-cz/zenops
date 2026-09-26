@@ -214,3 +214,17 @@ Approval/return behavior is implemented in milestone 8 below.
 - the responsive dark account form confirms the new password before sending
 - PostgreSQL integration coverage verifies rejection of a wrong current
   password, old-password invalidation, new login and audit creation
+
+## Admin editable operations — complete
+
+- machines, attachments and vehicles are editable list items with activation
+  state, mandatory correction reason and immutable before/after audit
+- employee identity, email and role assignment are editable; existing sessions
+  are revoked after a change
+- Admin can list every employee WorkDay by date and correct WorkEntry content
+  while the month is open
+- Admin approval corrections append a new decision and never rewrite the
+  historical approval row
+- Admin can correct breaks, machine MTH/fuel/attachment data and vehicle-trip
+  mileage, fuel, passengers and note while the month is open
+- every correction requires a reason and stores immutable audit evidence

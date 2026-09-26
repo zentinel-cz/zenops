@@ -1,42 +1,13 @@
 import { type FormEvent, useEffect, useState } from "react";
-
-type AssetLists = {
-  machines: Array<{ id: string; code: string; name: string; typeName: string }>;
-  attachments: Array<{ id: string; code: string; name: string; typeName: string }>;
-  vehicles: Array<{ id: string; code: string; name: string; registrationNumber: string }>;
-};
-
+type Kind = "machine" | "attachment" | "vehicle";
+type Asset = { id: string; code: string; name: string; isActive: boolean; typeName?: string; tracksMth?: boolean; uniquelyTracked?: boolean; registrationNumber?: string };
+type AssetLists = { machines: Asset[]; attachments: Asset[]; vehicles: Asset[] };
 export function AssetPanel({ onChanged }: { onChanged: () => Promise<void> }) {
-  const [mode, setMode] = useState<"machine" | "attachment" | "vehicle" | null>(null);
-  const [message, setMessage] = useState("");
-  const [assets, setAssets] = useState<AssetLists>({ machines: [], attachments: [], vehicles: [] });
-
-  const load = () => fetch("/api/assets", { credentials: "include" })
-    .then(async (response) => response.ok ? response.json() as Promise<AssetLists> : Promise.reject())
-    .then((body) => setAssets(body));
+  const [mode, setMode] = useState<Kind | null>(null); const [target, setTarget] = useState<Asset | null>(null); const [message, setMessage] = useState(""); const [assets, setAssets] = useState<AssetLists>({ machines: [], attachments: [], vehicles: [] });
+  const load = () => fetch("/api/assets?includeInactive=true", { credentials: "include" }).then(async (response) => response.ok ? response.json() as Promise<AssetLists> : Promise.reject()).then(setAssets);
   useEffect(() => { void load().catch(() => setMessage("Seznam techniky se nepodařilo načíst.")); }, []);
-
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); if (!mode) return; setMessage("");
-    const form = event.currentTarget; const data = new FormData(form);
-    const endpoint = mode === "machine" ? "/api/assets/machines" : mode === "attachment" ? "/api/assets/attachments" : "/api/assets/vehicles";
-    const response = await fetch(endpoint, {
-      method: "POST", credentials: "include", headers: { "content-type": "application/json" },
-      body: JSON.stringify(mode === "machine" ? {
-        code: data.get("code"), name: data.get("name"), typeName: data.get("typeName"), tracksMth: data.get("tracked") === "on",
-      } : mode === "attachment" ? {
-        code: data.get("code"), name: data.get("name"), typeName: data.get("typeName"), uniquelyTracked: data.get("tracked") === "on",
-      } : {
-        code: data.get("code"), name: data.get("name"), registrationNumber: data.get("registrationNumber"),
-      }),
-    });
-    if (!response.ok) { const body = await response.json().catch(() => ({ error: "Uložení se nezdařilo." })) as { error?: string }; setMessage(body.error ?? "Uložení se nezdařilo."); return; }
-    form.reset(); setMode(null); setMessage("Položka katalogu byla vytvořena."); await Promise.all([onChanged(), load()]);
-  }
-
-  return <section className="management-panel"><div className="section-heading"><div><p className="eyebrow">PROVOZNÍ PROSTŘEDKY</p><h3>Technika a příslušenství</h3></div><div className="button-group"><button className="inline-action" onClick={() => setMode("machine")}>Nový stroj</button><button className="inline-action secondary" onClick={() => setMode("attachment")}>Nové příslušenství</button><button className="inline-action secondary" onClick={() => setMode("vehicle")}>Nové vozidlo</button></div></div>{message && <p className="form-message">{message}</p>}{mode && <form className="asset-form" onSubmit={submit}><label>Kód<input name="code" required maxLength={40} /></label><label>Název<input name="name" required maxLength={160} /></label>{mode === "vehicle" ? <label>SPZ<input name="registrationNumber" required maxLength={20} /></label> : <><label>Typ<input name="typeName" required maxLength={100} /></label><label className="checkbox"><input name="tracked" type="checkbox" defaultChecked /> {mode === "machine" ? "Sleduje MTH" : "Unikátně sledované"}</label></>}<button>Vytvořit</button><button type="button" className="ghost" onClick={() => setMode(null)}>Zrušit</button></form>}<div className="asset-lists"><AssetList title="Stroje" items={assets.machines.map((item) => ({ ...item, detail: item.typeName }))} /><AssetList title="Příslušenství" items={assets.attachments.map((item) => ({ ...item, detail: item.typeName }))} /><AssetList title="Vozidla" items={assets.vehicles.map((item) => ({ ...item, detail: item.registrationNumber }))} /></div></section>;
+  function open(kind: Kind, asset: Asset | null = null) { setMode(kind); setTarget(asset); setMessage(""); }
+  async function submit(event: FormEvent<HTMLFormElement>) { event.preventDefault(); if (!mode) return; setMessage(""); const data = new FormData(event.currentTarget); const base = mode === "machine" ? "/api/assets/machines" : mode === "attachment" ? "/api/assets/attachments" : "/api/assets/vehicles"; const common = { code: data.get("code"), name: data.get("name") }; const body = mode === "vehicle" ? { ...common, registrationNumber: data.get("registrationNumber") } : mode === "machine" ? { ...common, typeName: data.get("typeName"), tracksMth: data.get("tracked") === "on" } : { ...common, typeName: data.get("typeName"), uniquelyTracked: data.get("tracked") === "on" }; const response = await fetch(target ? `${base}/${target.id}` : base, { method: target ? "PATCH" : "POST", credentials: "include", headers: { "content-type": "application/json" }, body: JSON.stringify(target ? { ...body, isActive: data.get("isActive") === "on", reason: data.get("reason") } : body) }); if (!response.ok) { const result = await response.json().catch(() => ({ error: "Uložení se nezdařilo." })) as { error?: string }; setMessage(result.error ?? "Uložení se nezdařilo."); return; } setMode(null); setTarget(null); setMessage(target ? "Položka byla upravena a změna auditována." : "Položka katalogu byla vytvořena."); await Promise.all([onChanged(), load()]); }
+  return <section className="management-panel"><div className="section-heading"><div><p className="eyebrow">PROVOZNÍ PROSTŘEDKY</p><h3>Technika, příslušenství a vozidla</h3></div><div className="button-group"><button className="inline-action" onClick={() => open("machine")}>Nový stroj</button><button className="inline-action secondary" onClick={() => open("attachment")}>Nové příslušenství</button><button className="inline-action secondary" onClick={() => open("vehicle")}>Nové vozidlo</button></div></div>{message && <p className="form-message">{message}</p>}{mode && <form key={`${mode}-${target?.id ?? "new"}`} className="asset-form asset-edit-form" onSubmit={submit}><label>Kód<input name="code" required maxLength={40} defaultValue={target?.code} /></label><label>Název<input name="name" required maxLength={160} defaultValue={target?.name} /></label>{mode === "vehicle" ? <label>SPZ<input name="registrationNumber" required maxLength={20} defaultValue={target?.registrationNumber} /></label> : <><label>Typ<input name="typeName" required maxLength={100} defaultValue={target?.typeName} /></label><label className="checkbox"><input name="tracked" type="checkbox" defaultChecked={mode === "machine" ? target?.tracksMth ?? true : target?.uniquelyTracked ?? true} /> {mode === "machine" ? "Sleduje MTH" : "Unikátně sledované"}</label></>}{target && <><label className="checkbox"><input name="isActive" type="checkbox" defaultChecked={target.isActive} /> Aktivní</label><label className="asset-reason">Důvod změny<input name="reason" required minLength={3} maxLength={500} /></label></>}<button>{target ? "Uložit změny" : "Vytvořit"}</button><button type="button" className="ghost" onClick={() => { setMode(null); setTarget(null); }}>Zrušit</button></form>}<div className="asset-lists"><AssetList title="Stroje" kind="machine" items={assets.machines} onEdit={open} /><AssetList title="Příslušenství" kind="attachment" items={assets.attachments} onEdit={open} /><AssetList title="Vozidla" kind="vehicle" items={assets.vehicles} onEdit={open} /></div></section>;
 }
-
-function AssetList({ title, items }: { title: string; items: Array<{ id: string; code: string; name: string; detail: string }> }) {
-  return <div><div className="asset-list-title"><strong>{title}</strong><span>{items.length}</span></div>{items.length === 0 ? <p className="muted">Zatím bez položek.</p> : <ul>{items.map((item) => <li key={item.id}><strong>{item.code}</strong><span>{item.name}</span><small>{item.detail}</small></li>)}</ul>}</div>;
-}
+function AssetList({ title, kind, items, onEdit }: { title: string; kind: Kind; items: Asset[]; onEdit: (kind: Kind, asset: Asset) => void }) { return <div><div className="asset-list-title"><strong>{title}</strong><span>{items.length}</span></div>{items.length === 0 ? <p className="muted">Zatím bez položek.</p> : <ul>{items.map((item) => <li className={item.isActive ? "" : "inactive"} key={item.id}><strong>{item.code}</strong><span>{item.name}<small>{item.typeName ?? item.registrationNumber}</small></span><button className="table-action" onClick={() => onEdit(kind, item)}>Upravit</button></li>)}</ul>}</div>; }

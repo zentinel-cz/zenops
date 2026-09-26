@@ -75,6 +75,14 @@ export const employeeStateSchema = z.object({
   reason: z.string().trim().min(3).max(500),
 });
 
+export const updateEmployeeUserSchema = z.object({
+  employeeNumber: z.string().trim().min(1).max(40).transform((value) => value.toUpperCase()),
+  displayName: z.string().trim().min(2).max(160),
+  email: z.string().trim().email().max(254).transform((value) => value.toLowerCase()),
+  roles: z.array(roleCodeSchema).min(1).max(3).transform((roles) => [...new Set(roles)]),
+  reason: z.string().trim().min(3).max(500),
+});
+
 export const projectStateSchema = z.object({
   status: projectStatusSchema,
   reason: z.string().trim().max(500).nullable().optional(),
@@ -135,6 +143,7 @@ export const createMachineSchema = z.object({
   typeName: z.string().trim().min(2).max(100),
   tracksMth: z.boolean().default(true),
 });
+export const updateMachineSchema = createMachineSchema.extend({ isActive: z.boolean(), reason: z.string().trim().min(3).max(500) });
 
 export const machineUsageSchema = z.object({
   machineId: z.string().uuid(),
@@ -155,12 +164,14 @@ export const createAttachmentSchema = z.object({
   typeName: z.string().trim().min(2).max(100),
   uniquelyTracked: z.boolean().default(true),
 });
+export const updateAttachmentSchema = createAttachmentSchema.extend({ isActive: z.boolean(), reason: z.string().trim().min(3).max(500) });
 
 export const createVehicleSchema = z.object({
   code: z.string().trim().min(1).max(40).transform((value) => value.toUpperCase()),
   name: z.string().trim().min(2).max(160),
   registrationNumber: z.string().trim().min(2).max(20).transform((value) => value.toUpperCase()),
 });
+export const updateVehicleSchema = createVehicleSchema.extend({ isActive: z.boolean(), reason: z.string().trim().min(3).max(500) });
 
 export const createVehicleTripSchema = intervalSchema.and(z.object({
   vehicleId: z.string().uuid(),
@@ -180,6 +191,17 @@ export const approvalDecisionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("APPROVED") }),
   z.object({ action: z.literal("RETURNED"), reason: z.string().trim().min(3).max(1000) }),
 ]);
+
+export const adminWorkEntryUpdateSchema = createWorkEntrySchema.and(z.object({
+  reason: z.string().trim().min(3).max(1000),
+}));
+export const adminApprovalCorrectionSchema = z.object({
+  action: z.enum(["APPROVED", "RETURNED"]),
+  reason: z.string().trim().min(3).max(1000),
+});
+export const adminBreakUpdateSchema = createBreakEntrySchema.and(z.object({ reason: z.string().trim().min(3).max(1000) }));
+export const adminMachineUsageUpdateSchema = machineUsageSchema.and(z.object({ reason: z.string().trim().min(3).max(1000) }));
+export const adminVehicleTripUpdateSchema = createVehicleTripSchema.and(z.object({ reason: z.string().trim().min(3).max(1000) }));
 
 export const monthlyPeriodActionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("CLOSE") }),

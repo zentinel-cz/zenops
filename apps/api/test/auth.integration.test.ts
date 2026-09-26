@@ -247,6 +247,21 @@ integration("authentication integration", () => {
     vehicleId = vehicle.json().vehicle.id as string;
   });
 
+  it("allows audited catalogue edits without deleting historical assets", async () => {
+    const login = await app.inject({ method: "POST", url: "/api/auth/login", headers: { origin }, payload: { email: "admin@zenops.test", password } });
+    const setCookie = login.headers["set-cookie"]; const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie; const cookie = cookieHeader?.split(";", 1)[0];
+    const machine = await app.inject({ method: "PATCH", url: `/api/assets/machines/${machineId}`, headers: { origin, cookie: cookie! }, payload: { code: "TR-01", name: "Traktor hlavní", typeName: "Traktor", tracksMth: true, isActive: true, reason: "Upřesnění názvu" } });
+    expect(machine.statusCode, machine.body).toBe(200);
+    const attachment = await app.inject({ method: "PATCH", url: `/api/assets/attachments/${attachmentId}`, headers: { origin, cookie: cookie! }, payload: { code: "MUL-01", name: "Mulčovač hlavní", typeName: "Mulčovač", uniquelyTracked: true, isActive: true, reason: "Upřesnění názvu" } });
+    expect(attachment.statusCode, attachment.body).toBe(200);
+    const vehicle = await app.inject({ method: "PATCH", url: `/api/assets/vehicles/${vehicleId}`, headers: { origin, cookie: cookie! }, payload: { code: "DOD-01", name: "Dodávka hlavní", registrationNumber: "1AB 2345", isActive: true, reason: "Upřesnění názvu" } });
+    expect(vehicle.statusCode, vehicle.body).toBe(200);
+    const listing = await app.inject({ method: "GET", url: "/api/assets?includeInactive=true", headers: { cookie: cookie! } });
+    expect(listing.json().attachments).toContainEqual(expect.objectContaining({ id: attachmentId, name: "Mulčovač hlavní", isActive: true }));
+    const [audit] = await db<Array<{ count: number }>>`select count(*)::int as count from audit_logs where action in ('MACHINE_UPDATED','ATTACHMENT_UPDATED','VEHICLE_UPDATED')`;
+    expect(audit!.count).toBe(3);
+  });
+
   it("allows Admin to create and deactivate an employee without hard deletion", async () => {
     const login = await app.inject({
       method: "POST", url: "/api/auth/login", headers: { origin },
@@ -284,6 +299,20 @@ integration("authentication integration", () => {
       where entity_id = ${employeeId} and action in ('EMPLOYEE_CREATED', 'EMPLOYEE_DEACTIVATED')
     `;
     expect(audit!.count).toBe(2);
+  });
+
+  it("allows Admin to edit employee identity and roles and revokes existing sessions", async () => {
+    const adminLogin = await app.inject({ method: "POST", url: "/api/auth/login", headers: { origin }, payload: { email: "admin@zenops.test", password } });
+    const adminSetCookie = adminLogin.headers["set-cookie"]; const adminCookieHeader = Array.isArray(adminSetCookie) ? adminSetCookie[0] : adminSetCookie; const adminCookie = adminCookieHeader?.split(";", 1)[0];
+    const workerLogin = await app.inject({ method: "POST", url: "/api/auth/login", headers: { origin }, payload: { email: "passenger@zenops.test", password } });
+    const workerSetCookie = workerLogin.headers["set-cookie"]; const workerCookieHeader = Array.isArray(workerSetCookie) ? workerSetCookie[0] : workerSetCookie; const workerCookie = workerCookieHeader?.split(";", 1)[0];
+    const changed = await app.inject({ method: "PATCH", url: `/api/employees/${passengerEmployeeId}`, headers: { origin, cookie: adminCookie! }, payload: { employeeNumber: "TEST-004", displayName: "Upravený Cestující", email: "passenger@zenops.test", roles: ["WORKER"], reason: "Oprava osobních údajů" } });
+    expect(changed.statusCode, changed.body).toBe(200);
+    expect(changed.json().employee).toMatchObject({ displayName: "Upravený Cestující", roles: ["WORKER"] });
+    const revoked = await app.inject({ method: "GET", url: "/api/auth/me", headers: { cookie: workerCookie! } });
+    expect(revoked.statusCode).toBe(401);
+    const [audit] = await db<Array<{ count: number }>>`select count(*)::int as count from audit_logs where action='EMPLOYEE_UPDATED' and entity_id=${passengerEmployeeId}`;
+    expect(audit!.count).toBe(1);
   });
 
   it("allows only Admin permission to close and reopen a project", async () => {
@@ -591,6 +620,20 @@ integration("authentication integration", () => {
       select count(*)::int as count from audit_logs where action in ('MONTHLY_PERIOD_CLOSED', 'MONTHLY_PERIOD_REOPENED')
     `;
     expect(audit!.count).toBe(2);
+  });
+
+  it("allows Admin to correct complete daily operational data with audit history", async () => {
+    const login=await app.inject({method:"POST",url:"/api/auth/login",headers:{origin},payload:{email:"admin@zenops.test",password}});const setCookie=login.headers["set-cookie"];const cookieHeader=Array.isArray(setCookie)?setCookie[0]:setCookie;const cookie=cookieHeader?.split(";",1)[0];
+    const listing=await app.inject({method:"GET",url:"/api/admin/workdays?date=2026-09-25",headers:{cookie:cookie!}});expect(listing.statusCode,listing.body).toBe(200);expect(listing.json().workDays.length).toBeGreaterThan(0);
+    const [entry]=await db<Array<{id:string;projectId:string;startAt:Date;endAt:Date}>>`select id,project_id,start_at,end_at from work_entries where id=${submittedEntryIds[0]!}`;
+    const corrected=await app.inject({method:"PATCH",url:`/api/admin/work-entries/${entry!.id}`,headers:{origin,cookie:cookie!},payload:{projectId:entry!.projectId,workTypeCode:"MACHINE_MOWING",startAt:entry!.startAt.toISOString(),endAt:entry!.endAt.toISOString(),description:"Administrativně ověřeno",reason:"Oprava popisu"}});expect(corrected.statusCode,corrected.body).toBe(200);
+    const [breakEntry]=await db<Array<{id:string;startAt:Date;endAt:Date}>>`select id,start_at,end_at from break_entries limit 1`;const breakResult=await app.inject({method:"PATCH",url:`/api/admin/breaks/${breakEntry!.id}`,headers:{origin,cookie:cookie!},payload:{startAt:breakEntry!.startAt.toISOString(),endAt:breakEntry!.endAt.toISOString(),reason:"Kontrola přestávky"}});expect(breakResult.statusCode,breakResult.body).toBe(200);
+    const [usage]=await db<Array<{id:string;machineId:string;enteredStartMth:string;endMth:string;fuelConsumed:string|null;fuelRefuelled:string|null}>>`select id,machine_id,entered_start_mth,end_mth,fuel_consumed,fuel_refuelled from machine_usages limit 1`;
+    const usageResult=await app.inject({method:"PATCH",url:`/api/admin/machine-usages/${usage!.id}`,headers:{origin,cookie:cookie!},payload:{machineId:usage!.machineId,startMth:Number(usage!.enteredStartMth),endMth:Number(usage!.endMth),fuelConsumed:Number(usage!.fuelConsumed),fuelRefuelled:Number(usage!.fuelRefuelled),attachmentIds:[attachmentId],reason:"Kontrola technických údajů"}});expect(usageResult.statusCode,usageResult.body).toBe(200);
+    const [trip]=await db<Array<{id:string;vehicleId:string;startAt:Date;endAt:Date;startOdometerKm:string;endOdometerKm:string}>>`select id,vehicle_id,start_at,end_at,start_odometer_km,end_odometer_km from vehicle_trips where id=${sharedVehicleTripId}`;
+    const tripResult=await app.inject({method:"PATCH",url:`/api/admin/vehicle-trips/${trip!.id}`,headers:{origin,cookie:cookie!},payload:{vehicleId:trip!.vehicleId,startAt:trip!.startAt.toISOString(),endAt:trip!.endAt.toISOString(),startOdometerKm:Number(trip!.startOdometerKm),endOdometerKm:Number(trip!.endOdometerKm),passengerEmployeeIds:[passengerEmployeeId],note:"Administrativně ověřeno",reason:"Oprava poznámky"}});expect(tripResult.statusCode,tripResult.body).toBe(200);
+    const decision=await app.inject({method:"POST",url:`/api/admin/work-entries/${entry!.id}/decision`,headers:{origin,cookie:cookie!},payload:{action:"APPROVED",reason:"Administrativní potvrzení"}});expect(decision.statusCode,decision.body).toBe(200);
+    const [audit]=await db<Array<{count:number}>>`select count(*)::int as count from audit_logs where action in ('WORK_ENTRY_ADMIN_CORRECTED','BREAK_ADMIN_CORRECTED','MACHINE_USAGE_ADMIN_CORRECTED','VEHICLE_TRIP_ADMIN_CORRECTED','APPROVAL_ADMIN_CORRECTED')`;expect(audit!.count).toBe(5);
   });
 
   it("changes the authenticated password, audits it and revokes every session", async () => {

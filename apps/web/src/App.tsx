@@ -8,6 +8,7 @@ import { ApprovalPanel } from "./ApprovalPanel";
 import { ReportPanel } from "./ReportPanel";
 import { MonthlyPanel } from "./MonthlyPanel";
 import { AccountPanel } from "./AccountPanel";
+import { AdminRecordsPanel } from "./AdminRecordsPanel";
 
 type AuthState = { status: "loading" } | { status: "guest" } | { status: "authenticated"; user: SessionUser };
 
@@ -106,6 +107,7 @@ function Dashboard({ user, onLogout }: { user: SessionUser; onLogout: () => void
       {canApprove && <ApprovalPanel />}
       {canReport && <ReportPanel />}
       {canReport && <MonthlyPanel user={user} />}
+      {user.roles.includes("ADMIN") && <AdminRecordsPanel projects={projects} />}
       {canManageAssets && <AssetPanel onChanged={async () => setAssetVersion((value) => value + 1)} />}
       {canManageEmployees && <EmployeePanel user={user} />}
     </main>

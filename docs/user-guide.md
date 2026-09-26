@@ -108,6 +108,10 @@ Admin může účet deaktivovat nebo znovu aktivovat. Vždy musí uvést důvod.
 Deaktivovaný zaměstnanec ani jeho účet se nemažou a nemůže se přihlásit.
 Aktuálně přihlášený Admin nemůže deaktivovat sám sebe.
 
+Admin může tlačítkem **Upravit** změnit osobní číslo, jméno, e-mail a role
+kteréhokoli zaměstnance. Každá změna vyžaduje důvod, zapisuje se do auditu a
+ukončí dosavadní relace upraveného účtu, aby se nová oprávnění použila ihned.
+
 ## Audit a bezpečnost
 
 - Vytvoření zaměstnance a zakázky, změny aktivního stavu i schvalovací
@@ -121,6 +125,21 @@ Aktuálně přihlášený Admin nemůže deaktivovat sám sebe.
 Vedoucí nebo Admin vytvoří položky v sekci **Stroje a příslušenství**. U stroje
 určí, zda se sleduje MTH; u příslušenství, zda jde o unikátně sledovaný fyzický
 kus.
+
+Každá položka seznamu má volbu **Upravit**. Lze změnit kód, název, typ,
+sledování, SPZ i aktivní stav. Historicky použitá položka se nemaže; deaktivace
+ji skryje z nových záznamů a minulá data zůstanou zachována. Oprava vyžaduje
+důvod a ukládá původní i nový stav do auditu.
+
+## Administrativní opravy denních záznamů — Admin
+
+Admin má sekci **Denní záznamy zaměstnanců**, kde vybere datum a vidí práci
+všech zaměstnanců. Může opravit Zakázku, druh práce, aktivitu, čas a popis a
+také přidat nové opravné rozhodnutí Schválit/Vrátit. Původní schválení se
+nepřepisuje ani nemaže. Každá korekce vyžaduje důvod a vytváří auditní stopu.
+Uzavřený měsíc je chráněný; před opravou jej musí Admin vědomě znovu otevřít.
+Ve stejném přehledu může opravit přestávku, MTH a palivo stroje, přiřazené
+příslušenství i kilometry, palivo, cestující a poznámku jízdy vozidlem.
 
 Pracovník u rozpracovaného pracovního úseku zvolí **Přidat stroj** a vyplní:
 

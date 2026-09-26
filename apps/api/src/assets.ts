@@ -1,4 +1,4 @@
-import { createAttachmentSchema, createMachineSchema, createVehicleSchema, machineUsageSchema } from "@zenops/contracts";
+import { createAttachmentSchema, createMachineSchema, createVehicleSchema, machineUsageSchema, updateAttachmentSchema, updateMachineSchema, updateVehicleSchema } from "@zenops/contracts";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { requirePermission, requireWorkerOnly, type AuthorizationHook } from "./authorization.js";
@@ -6,23 +6,81 @@ import type { Database } from "./db.js";
 
 export function registerAssetRoutes(app: FastifyInstance, db: Database, requireTrustedOrigin: AuthorizationHook): void {
   app.get("/api/assets", { preHandler: requirePermission("project.read_open") }, async (request) => {
+    const includeInactive = (request.query as { includeInactive?: string }).includeInactive === "true"
+      && request.sessionUser!.permissions.includes("asset.manage");
     const machines = await db`
-      select m.id, m.code, m.name, mt.name as type_name, mt.tracks_mth,
+      select m.id, m.code, m.name, m.is_active, mt.name as type_name, mt.tracks_mth,
         (select mu.end_mth from machine_usages mu where mu.machine_id = m.id and mu.end_mth is not null order by mu.end_at desc limit 1) as latest_mth
-      from machines m join machine_types mt on mt.id = m.machine_type_id where m.is_active order by m.code
+      from machines m join machine_types mt on mt.id = m.machine_type_id
+      where (${includeInactive} or m.is_active) order by m.is_active desc, m.code
     `;
     const attachments = await db`
-      select a.id, a.code, a.name, at.name as type_name, at.uniquely_tracked
-      from attachments a join attachment_types at on at.id = a.attachment_type_id where a.is_active order by a.code
+      select a.id, a.code, a.name, a.is_active, at.name as type_name, at.uniquely_tracked
+      from attachments a join attachment_types at on at.id = a.attachment_type_id
+      where (${includeInactive} or a.is_active) order by a.is_active desc, a.code
     `;
     const vehicles = await db`
-      select id, code, name, registration_number from vehicles where is_active order by code
+      select id, code, name, registration_number, is_active from vehicles
+      where (${includeInactive} or is_active) order by is_active desc, code
     `;
     const employees = await db`
       select id, display_name from employees
       where is_active and id <> ${request.sessionUser!.employeeId} order by display_name
     `;
     return { machines, attachments, vehicles, employees };
+  });
+
+  app.patch("/api/assets/machines/:id", { preHandler: [requireTrustedOrigin, requirePermission("asset.manage")] }, async (request, reply) => {
+    const id = z.string().uuid().safeParse((request.params as { id?: string }).id);
+    const parsed = updateMachineSchema.safeParse(request.body);
+    if (!id.success || !parsed.success) return reply.code(400).send({ error: "Neplatné údaje stroje." });
+    try {
+      const updated = await db.begin(async (transaction) => {
+        const before = await transaction`select m.id, m.code, m.name, m.is_active, mt.name as type_name, mt.tracks_mth from machines m join machine_types mt on mt.id=m.machine_type_id where m.id=${id.data} for update of m`;
+        if (!before[0]) return null;
+        const [type] = await transaction<Array<{ id: string }>>`insert into machine_types (name, tracks_mth) values (${parsed.data.typeName}, ${parsed.data.tracksMth}) on conflict (name) do update set tracks_mth=excluded.tracks_mth returning id`;
+        const [after] = await transaction`update machines set machine_type_id=${type!.id}, code=${parsed.data.code}, name=${parsed.data.name}, is_active=${parsed.data.isActive}, updated_at=now() where id=${id.data} returning id, code, name, is_active`;
+        await transaction`insert into audit_logs (actor_user_id, action, entity_type, entity_id, before_data, after_data, reason) values (${request.sessionUser!.id}, 'MACHINE_UPDATED', 'MACHINE', ${id.data}, ${transaction.json(before[0]!)}, ${transaction.json(after!)}, ${parsed.data.reason})`;
+        return after;
+      });
+      if (!updated) return reply.code(404).send({ error: "Stroj nebyl nalezen." });
+      return { machine: updated };
+    } catch (error) { if (typeof error === "object" && error && "code" in error && error.code === "23505") return reply.code(409).send({ error: "Stroj s tímto kódem již existuje." }); throw error; }
+  });
+
+  app.patch("/api/assets/attachments/:id", { preHandler: [requireTrustedOrigin, requirePermission("asset.manage")] }, async (request, reply) => {
+    const id = z.string().uuid().safeParse((request.params as { id?: string }).id);
+    const parsed = updateAttachmentSchema.safeParse(request.body);
+    if (!id.success || !parsed.success) return reply.code(400).send({ error: "Neplatné údaje příslušenství." });
+    try {
+      const updated = await db.begin(async (transaction) => {
+        const before = await transaction`select a.id, a.code, a.name, a.is_active, at.name as type_name, at.uniquely_tracked from attachments a join attachment_types at on at.id=a.attachment_type_id where a.id=${id.data} for update of a`;
+        if (!before[0]) return null;
+        const [type] = await transaction<Array<{ id: string }>>`insert into attachment_types (name, uniquely_tracked) values (${parsed.data.typeName}, ${parsed.data.uniquelyTracked}) on conflict (name) do update set uniquely_tracked=excluded.uniquely_tracked returning id`;
+        const [after] = await transaction`update attachments set attachment_type_id=${type!.id}, code=${parsed.data.code}, name=${parsed.data.name}, is_active=${parsed.data.isActive}, updated_at=now() where id=${id.data} returning id, code, name, is_active`;
+        await transaction`insert into audit_logs (actor_user_id, action, entity_type, entity_id, before_data, after_data, reason) values (${request.sessionUser!.id}, 'ATTACHMENT_UPDATED', 'ATTACHMENT', ${id.data}, ${transaction.json(before[0]!)}, ${transaction.json(after!)}, ${parsed.data.reason})`;
+        return after;
+      });
+      if (!updated) return reply.code(404).send({ error: "Příslušenství nebylo nalezeno." });
+      return { attachment: updated };
+    } catch (error) { if (typeof error === "object" && error && "code" in error && error.code === "23505") return reply.code(409).send({ error: "Příslušenství s tímto kódem již existuje." }); throw error; }
+  });
+
+  app.patch("/api/assets/vehicles/:id", { preHandler: [requireTrustedOrigin, requirePermission("asset.manage")] }, async (request, reply) => {
+    const id = z.string().uuid().safeParse((request.params as { id?: string }).id);
+    const parsed = updateVehicleSchema.safeParse(request.body);
+    if (!id.success || !parsed.success) return reply.code(400).send({ error: "Neplatné údaje vozidla." });
+    try {
+      const updated = await db.begin(async (transaction) => {
+        const before = await transaction`select id, code, name, registration_number, is_active from vehicles where id=${id.data} for update`;
+        if (!before[0]) return null;
+        const [after] = await transaction`update vehicles set code=${parsed.data.code}, name=${parsed.data.name}, registration_number=${parsed.data.registrationNumber}, is_active=${parsed.data.isActive}, updated_at=now() where id=${id.data} returning id, code, name, registration_number, is_active`;
+        await transaction`insert into audit_logs (actor_user_id, action, entity_type, entity_id, before_data, after_data, reason) values (${request.sessionUser!.id}, 'VEHICLE_UPDATED', 'VEHICLE', ${id.data}, ${transaction.json(before[0]!)}, ${transaction.json(after!)}, ${parsed.data.reason})`;
+        return after;
+      });
+      if (!updated) return reply.code(404).send({ error: "Vozidlo nebylo nalezeno." });
+      return { vehicle: updated };
+    } catch (error) { if (typeof error === "object" && error && "code" in error && error.code === "23505") return reply.code(409).send({ error: "Vozidlo s tímto kódem nebo SPZ již existuje." }); throw error; }
   });
 
   app.post("/api/assets/machines", { preHandler: [requireTrustedOrigin, requirePermission("asset.manage")] }, async (request, reply) => {
