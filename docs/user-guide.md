@@ -45,6 +45,19 @@ seznamem otevřených i uzavřených zakázek, techniky, příslušenství a voz
 Může zakázky uzavřít nebo znovu otevřít, spravuje zaměstnance a jejich přístupy
 a administrativní schvalování.
 
+### Orientace v administraci
+
+Administrátorské rozhraní používá stálý boční panel, který rozděluje agendu do
+samostatných provozních sekcí: Přehled, Zakázky, Denní provoz, Schvalování,
+Denní report, Měsíční přehled, Opravy záznamů, Technika a Zaměstnanci. Volba
+sekce přesune administrátora přímo na odpovídající pracovní část bez hledání v
+dlouhé stránce. Na menším displeji se panel změní na vodorovnou lištu ikon.
+
+Horní přehled ukazuje celkový počet Zakázek a odděleně otevřené a uzavřené
+Zakázky. Uživatelský účet, změna hesla a bezpečné odhlášení zůstávají v horní
+liště. Změna vzhledu nemění oprávnění ani schvalovací pravidla jednotlivých
+sekcí.
+
 ## Zakázky
 
 Admin může u existující zakázky použít tlačítko **Upravit**. Lze změnit kód,
