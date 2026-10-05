@@ -11,17 +11,24 @@
 
 ## Leader
 
-Includes Worker capabilities plus: - create projects - manage
-machine/attachment/vehicle catalogues - manage operational fuel
-records - manage ProjectDay data - approve/return work for projects
-where they are the Leader - view/download reports relevant to their
-operational scope - correct approved records for own projects while
-allowed
+Leader is an operational-management role and does not inherit Worker WorkDay
+capabilities. A user with the Leader role cannot create, edit or submit a
+WorkDay, including when Worker is assigned as an additional role.
+
+- create projects
+- manage machine/attachment/vehicle catalogues
+- manage operational fuel records
+- manage ProjectDay data
+- approve/return work for projects where they are the current Leader
+- view/download reports relevant to their operational scope
+- correct approved records for own projects while allowed
 
 Leader cannot approve their own work.
 
 ## Admin
 
+- cannot create, edit or submit a WorkDay, including when Worker is assigned
+  as an additional role
 -   global operational administration
 -   employee/user administration
 -   close/reopen projects

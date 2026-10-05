@@ -35,15 +35,19 @@ Do not invent missing business rules. Record unresolved decisions in
 
 ## Current implementation status
 
-Milestone 1 is complete and milestone 2 is in progress. The repository contains a pnpm/TypeScript
-workspace, React mobile-first web shell, Fastify API, PostgreSQL-backed opaque
-sessions, Argon2id authentication, extensible RBAC, checksum-protected SQL
-migrations, isolated Docker images and CI checks. The first milestone 2 slice
-adds projects, current/effective-dated leaders, audited creation and a live
-open-project dashboard.
+ZenOps V1 is deployed at `https://zenops.zentinel.cz`. The implemented scope
+includes authentication and RBAC, employee and project administration,
+Worker-only WorkDays, work entries and breaks, machines and attachments,
+vehicles and shared trips, operational fuel, per-entry approval, daily and
+monthly reporting, monthly closure, audited administrative corrections,
+self-service password changes, production backups and restore tooling.
 
-The application profile is intentionally not deployed while the milestone is
-incomplete. No default credentials are seeded.
+The workspace uses React/Vite for the mobile-first web application, Fastify for
+the API, PostgreSQL as the system of record, checksum-protected SQL migrations,
+isolated Docker images and CI checks. No default credentials are seeded.
+
+See `docs/implementation-status.md` for the detailed implemented scope and
+`docs/user-guide.md` for current user-visible workflows.
 
 Implementation and operations documents:
 

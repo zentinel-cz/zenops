@@ -32,10 +32,9 @@ reporting.
 
 Notification channels and escalation rules are deferred.
 
-## Project leader reassignment
+## Project leader reassignment — resolved
 
-V1 requires exactly one current Project Leader and effective-dated history,
-but the accepted rules do not state who may reassign an existing project's
-Leader. The database retains the required history structure; the reassignment
-endpoint remains intentionally unimplemented until the authority and any
-required reason/approval are decided.
+Admin may reassign an existing project's Leader through an audited project
+update. A reason is mandatory and the system closes the previous effective
+assignment before recording the new current Leader. The project continues to
+have exactly one current Leader and retains effective-dated history.

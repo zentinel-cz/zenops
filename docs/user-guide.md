@@ -70,8 +70,8 @@ vedení zakázky; starší provozní data se nepřepisují.
 - Každá zakázka má právě jednoho aktuálního Vedoucího.
 - Zakázku může uzavřít nebo znovu otevřít pouze Admin.
 - Uzavřená zakázka zůstává v administrátorském přehledu; nemaže se.
-- Změna Vedoucího existující zakázky zatím není dostupná, protože pravidla
-  oprávnění k této operaci čekají na rozhodnutí.
+- Admin může při auditované úpravě zakázky změnit jejího Vedoucího. Musí uvést
+  důvod změny a systém zachová efektivně datovanou historii vedení zakázky.
 
 ## Můj pracovní den
 
