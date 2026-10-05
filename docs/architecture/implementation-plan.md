@@ -34,7 +34,7 @@
 5. Machines, attachments, MTH continuity and overlap protection.
 6. Vehicles, shared trip semantics and driver-owned operational data.
 7. Machine fuel and shared ProjectDay brushcutter fuel.
-8. Project-based approvals, return reasons and self-approval prevention.
+8. Project-based approvals and return reasons enforced by the assigned Leader.
 9. Live daily report and PDF export.
 10. Monthly reports, closure/reopen workflow and audit hardening.
 11. Security, backup/restore and production-readiness verification.
@@ -43,4 +43,3 @@
 Each milestone must include migrations, backend authorization, validation,
 tests, audit implications and documentation. Deferred items in
 `docs/open-questions.md` remain out of scope.
-

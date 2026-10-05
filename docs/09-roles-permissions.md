@@ -1,5 +1,8 @@
 # Roles and Permissions
 
+Each account has exactly one role. Worker, Leader and Admin are mutually
+exclusive operating modes.
+
 ## Worker
 
 -   manage own draft/returned WorkDays and WorkEntries
@@ -13,7 +16,7 @@
 
 Leader is an operational-management role and does not inherit Worker WorkDay
 capabilities. A user with the Leader role cannot create, edit or submit a
-WorkDay, including when Worker is assigned as an additional role.
+WorkDay.
 
 - create projects
 - manage machine/attachment/vehicle catalogues
@@ -23,17 +26,16 @@ WorkDay, including when Worker is assigned as an additional role.
 - view/download reports relevant to their operational scope
 - correct approved records for own projects while allowed
 
-Leader cannot approve their own work.
+Leader is the only role that approves or returns submitted WorkEntries for the
+Projects assigned to that Leader.
 
 ## Admin
 
-- cannot create, edit or submit a WorkDay, including when Worker is assigned
-  as an additional role
+- cannot create, edit or submit a WorkDay
 -   global operational administration
 -   employee/user administration
 -   close/reopen projects
 -   close/reopen monthly periods
--   approve Leader's own work
 -   administrative corrections
 -   global reporting and audit access
 

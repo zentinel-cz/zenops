@@ -22,6 +22,7 @@ Změna se auditovaně zaznamená bez uložení samotného hesla. Ukončení vše
 relací chrání účet i v případě, že zůstal přihlášený na jiném zařízení.
 
 Přístup vytváří Admin. Neexistuje žádný společný ani výchozí účet.
+Každý účet má právě jednu roli; role Pracovník, Vedoucí a Admin se nekombinují.
 
 ## Role
 
@@ -40,7 +41,7 @@ zakázkách, které aktuálně vede.
 
 ### Admin
 
-Admin nevytváří vlastní denní záznamy. Má globální provozní dashboard se
+Admin nevytváří vlastní denní záznamy ani neschvaluje práci. Má globální provozní dashboard se
 seznamem otevřených i uzavřených zakázek, techniky, příslušenství a vozidel.
 Může zakázky uzavřít nebo znovu otevřít, spravuje zaměstnance a jejich přístupy
 a administrativní schvalování.
@@ -61,17 +62,15 @@ sekcí.
 ## Zakázky
 
 Admin může u existující zakázky použít tlačítko **Upravit**. Lze změnit kód,
-název, místo, začátek a konec, poznámku, příznak BESIP i vedoucího. Každá
-změna vyžaduje důvod. Při změně vedoucího systém zachová historii předchozího
-vedení zakázky; starší provozní data se nepřepisují.
+název, místo, začátek a konec, poznámku a příznak BESIP. Každá změna vyžaduje
+důvod. Vedoucí se určí při založení zakázky a později se nemění.
 
 - Otevřené zakázky jsou dostupné pracovníkům při vytváření denního záznamu.
 - Vedoucí nebo Admin vytvoří zakázku tlačítkem **Nová zakázka**.
-- Každá zakázka má právě jednoho aktuálního Vedoucího.
+- Každá zakázka má právě jednoho neměnného Vedoucího.
 - Zakázku může uzavřít nebo znovu otevřít pouze Admin.
 - Uzavřená zakázka zůstává v administrátorském přehledu; nemaže se.
-- Admin může při auditované úpravě zakázky změnit jejího Vedoucího. Musí uvést
-  důvod změny a systém zachová efektivně datovanou historii vedení zakázky.
+- Při auditované úpravě zakázky nelze jejího Vedoucího změnit.
 
 ## Můj pracovní den
 
@@ -96,7 +95,7 @@ použít pro nový úsek. Po odeslání je pracovní den uzamčen pro běžné �
 3. Správný úsek potvrďte tlačítkem **Schválit**.
 4. Chybný úsek vraťte a povinně napište konkrétní důvod.
 
-Vedoucí vidí práci pracovníků pouze na zakázkách, které právě vede. Každý úsek
+Vedoucí vidí práci pracovníků pouze na zakázkách, které vede. Každý úsek
 se posuzuje samostatně:
 část dne tedy může být schválena a část vrácena. Pracovník upraví pouze vrácené
 úseky a den znovu odešle; již schválené úseky zůstávají uzamčené. Rozhodnutí se
@@ -119,14 +118,14 @@ vlastníkem společného palivového záznamu.
 
 1. V sekci **Zaměstnanci** zvolte **Nový zaměstnanec**.
 2. Vyplňte osobní číslo, jméno, e-mail a dočasné heslo.
-3. Přiřaďte nejméně jednu roli: Pracovník, Vedoucí nebo Admin.
+3. Vyberte právě jednu roli: Pracovník, Vedoucí nebo Admin.
 4. Účet vytvořte. E-mail i osobní číslo musí být jedinečné.
 
 Admin může účet deaktivovat nebo znovu aktivovat. Vždy musí uvést důvod.
 Deaktivovaný zaměstnanec ani jeho účet se nemažou a nemůže se přihlásit.
 Aktuálně přihlášený Admin nemůže deaktivovat sám sebe.
 
-Admin může tlačítkem **Upravit** změnit osobní číslo, jméno, e-mail a role
+Admin může tlačítkem **Upravit** změnit osobní číslo, jméno, e-mail a roli
 kteréhokoli zaměstnance. Každá změna vyžaduje důvod, zapisuje se do auditu a
 ukončí dosavadní relace upraveného účtu, aby se nová oprávnění použila ihned.
 

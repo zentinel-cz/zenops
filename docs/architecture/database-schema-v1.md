@@ -14,7 +14,8 @@ application schema yet.
 
 - `projects`: code, name, location, BESIP flag, dates, status and current
   leader.
-- `project_leader_history`: effective-dated leader history.
+- `project_leader_history`: immutable initial leader assignment retained for
+  audit compatibility.
 - `project_days`: unique `(project_id, work_date)` weather, temperature and
   note record.
 - `monthly_periods`: unique month with `OPEN` or `CLOSED` state and audited
@@ -69,4 +70,3 @@ date while timestamps remain timezone-safe.
   business rule can be expressed in PostgreSQL.
 - The legacy database is not attached to the new application. Any import must
   have an explicit mapping, rehearsal, reconciliation report and rollback.
-

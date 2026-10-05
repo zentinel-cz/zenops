@@ -60,7 +60,7 @@ deployment. It remains outside source code and migrations.
 Completed:
 
 - projects schema with normalized unique code and lifecycle constraints
-- exactly one current leader plus effective-dated leader history
+- exactly one immutable leader selected at project creation
 - permission-protected API to list open projects
 - Leader/Admin project creation with active-Leader validation
 - transactional project, leader-history and audit creation
@@ -75,10 +75,10 @@ Completed:
 - Admin overview of open/closed projects with close/reopen controls
 - Czech V1 user guide maintained as documentation-as-code
 
-- Admin can edit project code, name, location, dates, note, BESIP and current Leader
+- Admin can edit project code, name, location, dates, note and BESIP while the
+  original Leader remains unchanged
 - every edit requires a reason and stores immutable before/after audit evidence
-- Leader reassignment closes the previous effective history interval and creates
-  exactly one new current assignment without rewriting historical ownership
+- database and API prevent Leader reassignment after project creation
 
 ## Milestone 3 — WorkDay, WorkEntry and BreakEntry — core complete
 
@@ -153,7 +153,8 @@ Approval/return behavior is implemented in milestone 8 below.
 - Leader approves or returns each WorkEntry independently
 - returned WorkEntry requires a reason and unlocks the owning WorkDay
 - already approved entries remain locked when returned work is resubmitted
-- Leader's own submitted work is routed to Admin instead of self-approval
+- only the current Project Leader may approve or return submitted work;
+  Leader/Admin accounts cannot create WorkDays
 - WorkDay aggregates `SUBMITTED`, `PARTIALLY_APPROVED`, `RETURNED` and `APPROVED`
 - approval decisions are append-only and mirrored into the audit trail
 - responsive approval queue for Leader/Admin
@@ -223,8 +224,8 @@ Approval/return behavior is implemented in milestone 8 below.
   are revoked after a change
 - Admin can list every employee WorkDay by date and correct WorkEntry content
   while the month is open
-- Admin approval corrections append a new decision and never rewrite the
-  historical approval row
+- approval decisions remain exclusively in the current Project Leader workflow;
+  Admin operational corrections do not create approval decisions
 - Admin can correct breaks, machine MTH/fuel/attachment data and vehicle-trip
   mileage, fuel, passengers and note while the month is open
 - every correction requires a reason and stores immutable audit evidence

@@ -34,7 +34,6 @@ Notification channels and escalation rules are deferred.
 
 ## Project leader reassignment — resolved
 
-Admin may reassign an existing project's Leader through an audited project
-update. A reason is mandatory and the system closes the previous effective
-assignment before recording the new current Leader. The project continues to
-have exactly one current Leader and retains effective-dated history.
+The Leader is selected when a Project is created and cannot be reassigned.
+Only that current Leader may approve or return submitted WorkEntries for the
+Project. Admin may edit other Project metadata but cannot change its Leader.

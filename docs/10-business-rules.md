@@ -43,7 +43,8 @@
     different approvers.
 -   **BR-033** WorkDay is fully approved only when all relevant work is
     approved.
--   **BR-034** Leader cannot approve their own work; Admin approves it.
+-   **BR-034** Only the current Project Leader may approve or return submitted
+    WorkEntries for that Project; Admin does not perform operational approval.
 -   **BR-035** Returned work requires a reason.
 -   **BR-036** Worker cannot freely modify approved records.
 -   **BR-037** Sensitive corrections must be audited.
