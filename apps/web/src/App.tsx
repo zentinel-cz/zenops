@@ -116,9 +116,7 @@ function Dashboard({
   const canManageProjects = user.permissions.includes("project.close");
   const canManageEmployees = user.permissions.includes("employee.manage");
   const canManageAssets = user.permissions.includes("asset.manage");
-  const canApprove =
-    user.permissions.includes("approval.project.manage") ||
-    user.permissions.includes("approval.admin.manage");
+  const canApprove = user.permissions.includes("approval.project.manage");
   const canReport =
     user.permissions.includes("report.scoped.read") ||
     user.permissions.includes("report.global.read");
@@ -156,26 +154,6 @@ function Dashboard({
         .catch(() => setProjectError("Seznam vedoucích se nepodařilo načíst."));
     }
   }, []);
-
-  useEffect(() => {
-    if (!user.roles.includes("ADMIN")) return;
-    const sections = Array.from(
-      document.querySelectorAll<HTMLElement>(
-        ".admin-section-anchor, .admin-overview",
-      ),
-    );
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
-        if (visible?.target.id) setActiveSection(visible.target.id);
-      },
-      { rootMargin: "-90px 0px -65%", threshold: [0, 0.15, 0.4] },
-    );
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
-  }, [user.roles]);
 
   async function createProject(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -481,18 +459,19 @@ function Dashboard({
     const closedProjects = projects.filter(
       (project) => project.status === "CLOSED",
     ).length;
-    const navItems: Array<{ href: string; label: string; icon: NavIconName }> =
+    const navItems: Array<{ id: string; label: string; icon: NavIconName }> =
       [
-        { href: "#overview", label: "Přehled", icon: "overview" },
-        { href: "#projects", label: "Zakázky", icon: "projects" },
-        { href: "#project-day", label: "Denní provoz", icon: "calendar" },
-        { href: "#approvals", label: "Schvalování", icon: "approval" },
-        { href: "#daily-report", label: "Denní report", icon: "report" },
-        { href: "#monthly-report", label: "Měsíční přehled", icon: "report" },
-        { href: "#records", label: "Opravy záznamů", icon: "records" },
-        { href: "#assets", label: "Technika", icon: "assets" },
-        { href: "#employees", label: "Zaměstnanci", icon: "people" },
+        { id: "overview", label: "Přehled", icon: "overview" },
+        { id: "projects", label: "Zakázky", icon: "projects" },
+        { id: "project-day", label: "Denní provoz", icon: "calendar" },
+        { id: "daily-report", label: "Denní report", icon: "report" },
+        { id: "monthly-report", label: "Měsíční přehled", icon: "report" },
+        { id: "records", label: "Opravy záznamů", icon: "records" },
+        { id: "assets", label: "Technika", icon: "assets" },
+        { id: "employees", label: "Zaměstnanci", icon: "people" },
       ];
+    const currentSection =
+      navItems.find((item) => item.id === activeSection) ?? navItems[0]!;
     return (
       <main className="admin-shell">
         <aside className="admin-sidebar">
@@ -505,18 +484,17 @@ function Dashboard({
           </div>
           <nav aria-label="Hlavní navigace">
             {navItems.map((item) => (
-              <a
-                className={activeSection === item.href.slice(1) ? "active" : ""}
-                href={item.href}
-                key={item.href}
+              <button
+                className={activeSection === item.id ? "active" : ""}
+                key={item.id}
                 title={item.label}
-                aria-current={
-                  activeSection === item.href.slice(1) ? "page" : undefined
-                }
+                type="button"
+                aria-current={activeSection === item.id ? "page" : undefined}
+                onClick={() => setActiveSection(item.id)}
               >
                 <NavIcon name={item.icon} />
                 <span>{item.label}</span>
-              </a>
+              </button>
             ))}
           </nav>
           <div className="sidebar-status">
@@ -531,9 +509,9 @@ function Dashboard({
           <header className="admin-topbar">
             <div>
               <span className="topbar-context">
-                ADMINISTRACE / PROVOZNÍ PŘEHLED
+                ADMINISTRACE / {currentSection.label.toUpperCase()}
               </span>
-              <h1>Řídicí centrum</h1>
+              <h1>{currentSection.label}</h1>
             </div>
             <div className="account">
               <div className="user-chip">
@@ -547,74 +525,77 @@ function Dashboard({
             </div>
           </header>
           <div className="admin-content">
-            <section className="admin-overview" id="overview">
-              <div>
-                <p className="eyebrow">AKTUÁLNÍ STAV PROVOZU</p>
-                <h2>Vše pod kontrolou.</h2>
-                <p>
-                  Zakázky, lidé, technika a schvalování v jednom pracovním
-                  prostoru.
-                </p>
-              </div>
-              <div className="overview-metrics">
-                <article>
-                  <small>Všechny zakázky</small>
-                  <strong>{loadingProjects ? "—" : projects.length}</strong>
-                  <span>v evidenci</span>
-                </article>
-                <article>
-                  <small>Aktivní zakázky</small>
-                  <strong>{loadingProjects ? "—" : openProjects}</strong>
-                  <span>otevřené</span>
-                </article>
-                <article>
-                  <small>Archiv zakázek</small>
-                  <strong>{loadingProjects ? "—" : closedProjects}</strong>
-                  <span>uzavřené</span>
-                </article>
-              </div>
-            </section>
-            <section className="admin-section-anchor" id="projects">
-              <div className="content-section-label">
-                <span>01</span>
+            {activeSection === "overview" && (
+              <section className="admin-overview" id="overview">
                 <div>
-                  <small>ŘÍZENÍ PROVOZU</small>
-                  <strong>Zakázky</strong>
+                  <p className="eyebrow">AKTUÁLNÍ STAV PROVOZU</p>
+                  <h2>Vše pod kontrolou.</h2>
+                  <p>
+                    Souhrnný pohled na stav zakázek. Podrobné agendy otevřete
+                    v navigaci vlevo.
+                  </p>
                 </div>
-              </div>
-              {projectOverview}
-              {projectForms}
-            </section>
-            <section className="admin-section-anchor" id="project-day">
-              <ProjectDayPanel user={user} projects={projects} />
-            </section>
-            {canApprove && (
-              <section className="admin-section-anchor" id="approvals">
-                <ApprovalPanel />
+                <div className="overview-metrics">
+                  <article>
+                    <small>Všechny zakázky</small>
+                    <strong>{loadingProjects ? "—" : projects.length}</strong>
+                    <span>v evidenci</span>
+                  </article>
+                  <article>
+                    <small>Aktivní zakázky</small>
+                    <strong>{loadingProjects ? "—" : openProjects}</strong>
+                    <span>otevřené</span>
+                  </article>
+                  <article>
+                    <small>Archiv zakázek</small>
+                    <strong>{loadingProjects ? "—" : closedProjects}</strong>
+                    <span>uzavřené</span>
+                  </article>
+                </div>
               </section>
             )}
-            {canReport && (
+            {activeSection === "projects" && (
+              <section className="admin-section-view" id="projects">
+                <div className="content-section-label">
+                  <span>01</span>
+                  <div>
+                    <small>ŘÍZENÍ PROVOZU</small>
+                    <strong>Zakázky</strong>
+                  </div>
+                </div>
+                {projectOverview}
+                {projectForms}
+              </section>
+            )}
+            {activeSection === "project-day" && (
+              <section className="admin-section-view" id="project-day">
+                <ProjectDayPanel user={user} projects={projects} />
+              </section>
+            )}
+            {activeSection === "daily-report" && canReport && (
               <section className="admin-section-anchor" id="daily-report">
                 <ReportPanel />
               </section>
             )}
-            {canReport && (
-              <section className="admin-section-anchor" id="monthly-report">
+            {activeSection === "monthly-report" && canReport && (
+              <section className="admin-section-view" id="monthly-report">
                 <MonthlyPanel user={user} />
               </section>
             )}
-            <section className="admin-section-anchor" id="records">
-              <AdminRecordsPanel projects={projects} />
-            </section>
-            {canManageAssets && (
-              <section className="admin-section-anchor" id="assets">
+            {activeSection === "records" && (
+              <section className="admin-section-view" id="records">
+                <AdminRecordsPanel projects={projects} />
+              </section>
+            )}
+            {activeSection === "assets" && canManageAssets && (
+              <section className="admin-section-view" id="assets">
                 <AssetPanel
                   onChanged={async () => setAssetVersion((value) => value + 1)}
                 />
               </section>
             )}
-            {canManageEmployees && (
-              <section className="admin-section-anchor" id="employees">
+            {activeSection === "employees" && canManageEmployees && (
+              <section className="admin-section-view" id="employees">
                 <EmployeePanel user={user} />
               </section>
             )}

@@ -23,7 +23,7 @@ Last updated: 2026-09-26
 - four primary choices are Machine Mowing, Tree Cutting, Reprofiling and Manual Mowing
 - user-facing `Project` terminology is renamed to Czech `Zakázka`; internal
   schema/API identifiers remain stable to avoid a risky data migration
-- Admin/Leader dashboard focuses on orders, approvals and operational assets
+- Admin dashboard uses mutually exclusive navigation sections; Leader dashboard focuses on approvals and operational assets
 - active machine, attachment and vehicle lists are visible with catalogue controls
 - entire application uses a responsive dark operating theme
 

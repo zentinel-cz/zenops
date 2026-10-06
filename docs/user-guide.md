@@ -49,10 +49,11 @@ a administrativní schvalování.
 ### Orientace v administraci
 
 Administrátorské rozhraní používá stálý boční panel, který rozděluje agendu do
-samostatných provozních sekcí: Přehled, Zakázky, Denní provoz, Schvalování,
-Denní report, Měsíční přehled, Opravy záznamů, Technika a Zaměstnanci. Volba
-sekce přesune administrátora přímo na odpovídající pracovní část bez hledání v
-dlouhé stránce. Na menším displeji se panel změní na vodorovnou lištu ikon.
+samostatných provozních sekcí: Přehled, Zakázky, Denní provoz, Denní report,
+Měsíční přehled, Opravy záznamů, Technika a Zaměstnanci. Volba zobrazí pouze
+vybranou agendu; ostatní sekce zůstanou skryté a stránka mezi nimi neroluje.
+Na menším displeji se panel změní na vodorovnou lištu ikon se stejným
+přepínáním. Schvalování práce je dostupné pouze Vedoucímu v jeho dashboardu.
 
 Horní přehled ukazuje celkový počet Zakázek a odděleně otevřené a uzavřené
 Zakázky. Uživatelský účet, změna hesla a bezpečné odhlášení zůstávají v horní
