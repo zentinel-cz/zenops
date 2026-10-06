@@ -172,7 +172,7 @@ integration("authentication integration", () => {
         method: "POST",
         url: "/api/auth/login",
         headers: { origin },
-        payload: { email, password },
+        payload: { identifier: email, password },
       });
       const setCookie = login.headers["set-cookie"];
       const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
@@ -1308,7 +1308,7 @@ integration("authentication integration", () => {
       url: "/api/auth/login",
       headers: { origin },
       payload: {
-        email: "admin@zenops.test",
+        identifier: "admin@zenops.test",
         password: "A-New-Secure-Password-2026!",
       },
     });

@@ -8,7 +8,7 @@ const idParams = z.object({ workDayId: z.string().uuid() });
 
 async function getOwnedWorkDay(db: Database, workDayId: string, employeeId: string) {
   const rows = await db<Array<{ id: string; workDate: string; shiftType: string; state: string }>>`
-    select id, work_date, shift_type, state from work_days
+    select id, work_date::text as work_date, shift_type, state from work_days
     where id = ${workDayId} and employee_id = ${employeeId} limit 1
   `;
   return rows[0] ?? null;
