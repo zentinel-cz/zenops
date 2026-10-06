@@ -63,7 +63,7 @@ export function buildApp(config: AppConfig, db: Database): FastifyInstance {
     const parsed = loginSchema.safeParse(request.body);
     if (!parsed.success) return reply.code(400).send({ error: "Neplatné přihlašovací údaje." });
     const user = await authenticate(db, parsed.data.identifier, parsed.data.password);
-    if (!user) return reply.code(401).send({ error: "Nesprávný e-mail nebo heslo." });
+    if (!user) return reply.code(401).send({ error: "Nesprávné uživatelské jméno, e-mail nebo heslo." });
     const userAgent = request.headers["user-agent"];
     const session = await createSession(db, user.id, config.SESSION_TTL_HOURS, {
       ipAddress: request.ip,
