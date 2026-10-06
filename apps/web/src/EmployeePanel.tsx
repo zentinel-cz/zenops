@@ -44,6 +44,7 @@ export function EmployeePanel({ user }: { user: SessionUser }) {
         body: JSON.stringify({
           employeeNumber: data.get("employeeNumber"),
           displayName: data.get("displayName"),
+          username: data.get("username"),
           email: data.get("email"),
           ...(!employee && { password: data.get("password") }),
           roles: role ? [role] : [],
@@ -110,6 +111,18 @@ export function EmployeePanel({ user }: { user: SessionUser }) {
           required
           maxLength={160}
           defaultValue={employee?.displayName}
+        />
+      </label>
+      <label>
+        Uživatelské jméno
+        <input
+          name="username"
+          required
+          minLength={3}
+          maxLength={40}
+          pattern="[A-Za-z0-9][A-Za-z0-9._-]*"
+          autoComplete="username"
+          defaultValue={employee?.username}
         />
       </label>
       <label>
@@ -198,7 +211,7 @@ export function EmployeePanel({ user }: { user: SessionUser }) {
             <div>
               <strong>{employee.displayName}</strong>
               <span>
-                {employee.employeeNumber} · {employee.email}
+                {employee.employeeNumber} · @{employee.username} · {employee.email}
               </span>
             </div>
             <span className="role-list">{employee.roles[0]}</span>

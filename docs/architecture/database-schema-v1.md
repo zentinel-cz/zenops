@@ -6,6 +6,8 @@ application schema yet.
 ## Identity and authorization
 
 - `users`: authentication identity, status, password hash and employee link.
+- `users`: účet s unikátním normalizovaným uživatelským jménem, unikátním
+  e-mailem a Argon2id hashem hesla; přihlášení přijímá jméno i e-mail.
 - `roles`, `permissions`, `role_permissions`, `user_roles`: extensible RBAC.
 - `sessions`: hashed server-side sessions with expiry and revocation.
 - `employees`: operational profile, active state and immutable identifier.

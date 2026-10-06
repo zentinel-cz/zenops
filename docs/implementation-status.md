@@ -220,7 +220,7 @@ Approval/return behavior is implemented in milestone 8 below.
 
 - machines, attachments and vehicles are editable list items with activation
   state, mandatory correction reason and immutable before/after audit
-- employee identity, email and role assignment are editable; existing sessions
+- employee identity, username, email and role assignment are editable; existing sessions
   are revoked after a change
 - Admin can list every employee WorkDay by date and correct WorkEntry content
   while the month is open

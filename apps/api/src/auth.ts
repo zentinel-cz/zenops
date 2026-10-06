@@ -5,6 +5,7 @@ import { createOpaqueToken, hashToken } from "./security.js";
 
 type UserRow = {
   id: string;
+  username: string;
   email: string;
   passwordHash: string;
   displayName: string;
@@ -13,14 +14,14 @@ type UserRow = {
 
 export async function authenticate(
   db: Database,
-  email: string,
+  identifier: string,
   password: string,
 ): Promise<UserRow | null> {
   const rows = await db<UserRow[]>`
-    select u.id, u.email, u.password_hash, e.display_name, u.is_active
+    select u.id, u.username, u.email, u.password_hash, e.display_name, u.is_active
     from users u
     join employees e on e.id = u.employee_id
-    where lower(u.email) = lower(${email})
+    where lower(u.email) = lower(${identifier}) or lower(u.username) = lower(${identifier})
     limit 1
   `;
   const user = rows[0];
@@ -49,6 +50,7 @@ export async function getSessionUser(db: Database, token: string): Promise<Sessi
     select
       u.id,
       e.id as employee_id,
+      u.username,
       u.email,
       e.display_name,
       coalesce(array_agg(distinct r.code) filter (where r.code is not null), '{}') as roles,
@@ -63,7 +65,7 @@ export async function getSessionUser(db: Database, token: string): Promise<Sessi
     where s.token_hash = ${hashToken(token)}
       and s.revoked_at is null
       and s.expires_at > now()
-    group by u.id, u.email, e.id, e.display_name
+    group by u.id, u.username, u.email, e.id, e.display_name
     limit 1
   `;
   const row = rows[0];

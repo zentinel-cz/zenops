@@ -716,7 +716,7 @@ export function App() {
       credentials: "include",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        email: data.get("email"),
+        identifier: data.get("identifier"),
         password: data.get("password"),
       }),
     });
@@ -772,8 +772,8 @@ export function App() {
           <h2>Přihlášení</h2>
           <p className="muted">Použijte svůj firemní účet ZenOps.</p>
           <label>
-            E-mail
-            <input name="email" type="email" autoComplete="username" required />
+            E-mail nebo uživatelské jméno
+            <input name="identifier" type="text" autoComplete="username" required />
           </label>
           <label>
             Heslo

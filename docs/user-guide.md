@@ -7,7 +7,7 @@ se rozšiřovat současně s aplikací. Testovací náhled běží na adrese
 ## Přihlášení a odhlášení
 
 1. Otevřete přihlašovací stránku ZenOps.
-2. Zadejte firemní e-mail a heslo s nejméně 12 znaky.
+2. Zadejte své uživatelské jméno nebo firemní e-mail a heslo s nejméně 12 znaky.
 3. Po přihlášení se zobrazí dashboard podle vašich oprávnění.
 4. Pro bezpečné ukončení relace použijte tlačítko **Odhlásit** vpravo nahoře.
 
@@ -117,15 +117,15 @@ vlastníkem společného palivového záznamu.
 ## Zaměstnanci a účty — Admin
 
 1. V sekci **Zaměstnanci** zvolte **Nový zaměstnanec**.
-2. Vyplňte osobní číslo, jméno, e-mail a dočasné heslo.
+2. Vyplňte osobní číslo, jméno, unikátní uživatelské jméno, e-mail a dočasné heslo.
 3. Vyberte právě jednu roli: Pracovník, Vedoucí nebo Admin.
-4. Účet vytvořte. E-mail i osobní číslo musí být jedinečné.
+4. Účet vytvořte. Uživatelské jméno, e-mail i osobní číslo musí být jedinečné.
 
 Admin může účet deaktivovat nebo znovu aktivovat. Vždy musí uvést důvod.
 Deaktivovaný zaměstnanec ani jeho účet se nemažou a nemůže se přihlásit.
 Aktuálně přihlášený Admin nemůže deaktivovat sám sebe.
 
-Admin může tlačítkem **Upravit** změnit osobní číslo, jméno, e-mail a roli
+Admin může tlačítkem **Upravit** změnit osobní číslo, jméno, uživatelské jméno, e-mail a roli
 kteréhokoli zaměstnance. Každá změna vyžaduje důvod, zapisuje se do auditu a
 ukončí dosavadní relace upraveného účtu, aby se nová oprávnění použila ihned.
 

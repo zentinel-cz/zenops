@@ -51,8 +51,8 @@ integration("authentication integration", () => {
       insert into employees (employee_number, display_name) values ('TEST-001', 'Test Pracovník') returning id
     `;
     const [user] = await db<Array<{ id: string }>>`
-      insert into users (employee_id, email, password_hash)
-      values (${employee!.id}, 'worker@zenops.test', ${passwordHash}) returning id
+      insert into users (employee_id, username, email, password_hash)
+      values (${employee!.id}, 'worker', 'worker@zenops.test', ${passwordHash}) returning id
     `;
     await db`
       insert into user_roles (user_id, role_id)
@@ -63,8 +63,8 @@ integration("authentication integration", () => {
     `;
     passengerEmployeeId = passengerEmployee!.id;
     const [passengerUser] = await db<Array<{ id: string }>>`
-      insert into users (employee_id, email, password_hash)
-      values (${passengerEmployeeId}, 'passenger@zenops.test', ${passwordHash}) returning id
+      insert into users (employee_id, username, email, password_hash)
+      values (${passengerEmployeeId}, 'passenger', 'passenger@zenops.test', ${passwordHash}) returning id
     `;
     await db`insert into user_roles (user_id, role_id) select ${passengerUser!.id}, id from roles where code = 'WORKER'`;
     const [leaderEmployee] = await db<Array<{ id: string }>>`
@@ -72,8 +72,8 @@ integration("authentication integration", () => {
     `;
     leaderEmployeeId = leaderEmployee!.id;
     const [leaderUser] = await db<Array<{ id: string }>>`
-      insert into users (employee_id, email, password_hash)
-      values (${leaderEmployeeId}, 'leader@zenops.test', ${passwordHash}) returning id
+      insert into users (employee_id, username, email, password_hash)
+      values (${leaderEmployeeId}, 'leader', 'leader@zenops.test', ${passwordHash}) returning id
     `;
     await db`
       insert into user_roles (user_id, role_id)
@@ -83,8 +83,8 @@ integration("authentication integration", () => {
       insert into employees (employee_number, display_name) values ('TEST-003', 'Test Administrátor') returning id
     `;
     const [adminUser] = await db<Array<{ id: string }>>`
-      insert into users (employee_id, email, password_hash)
-      values (${adminEmployee!.id}, 'admin@zenops.test', ${passwordHash}) returning id
+      insert into users (employee_id, username, email, password_hash)
+      values (${adminEmployee!.id}, 'admin', 'admin@zenops.test', ${passwordHash}) returning id
     `;
     await db`
       insert into user_roles (user_id, role_id)
@@ -102,7 +102,7 @@ integration("authentication integration", () => {
     const response = await app.inject({
       method: "POST",
       url: "/api/auth/login",
-      payload: { email: "worker@zenops.test", password },
+      payload: { identifier: "worker@zenops.test", password },
     });
     expect(response.statusCode).toBe(403);
   });
@@ -112,7 +112,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "worker@zenops.test", password: "Incorrect-Password!" },
+      payload: { identifier: "worker@zenops.test", password: "Incorrect-Password!" },
     });
     expect(response.statusCode).toBe(401);
     const [count] = await db<
@@ -121,12 +121,12 @@ integration("authentication integration", () => {
     expect(count!.count).toBe(0);
   });
 
-  it("creates, resolves and revokes an opaque session", async () => {
+  it("accepts username or email and creates, resolves and revokes an opaque session", async () => {
     const login = await app.inject({
       method: "POST",
       url: "/api/auth/login",
       headers: { origin, "user-agent": "ZenOps test" },
-      payload: { email: "WORKER@ZENOPS.TEST", password },
+      payload: { identifier: "WORKER", password },
     });
     expect(login.statusCode).toBe(204);
     const setCookie = login.headers["set-cookie"];
@@ -141,6 +141,7 @@ integration("authentication integration", () => {
     });
     expect(me.statusCode).toBe(200);
     expect(me.json().user).toMatchObject({
+      username: "worker",
       email: "worker@zenops.test",
       displayName: "Test Pracovník",
       roles: ["WORKER"],
@@ -197,7 +198,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "leader@zenops.test", password },
+      payload: { identifier: "leader@zenops.test", password },
     });
     const setCookie = login.headers["set-cookie"];
     const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
@@ -244,7 +245,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "leader@zenops.test", password },
+      payload: { identifier: "leader@zenops.test", password },
     });
     const setCookie = login.headers["set-cookie"];
     const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
@@ -316,7 +317,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "leader@zenops.test", password },
+      payload: { identifier: "leader@zenops.test", password },
     });
     const setCookie = login.headers["set-cookie"];
     const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
@@ -366,7 +367,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "admin@zenops.test", password },
+      payload: { identifier: "admin@zenops.test", password },
     });
     const setCookie = login.headers["set-cookie"];
     const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
@@ -435,7 +436,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "admin@zenops.test", password },
+      payload: { identifier: "admin@zenops.test", password },
     });
     const setCookie = login.headers["set-cookie"];
     const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
@@ -447,6 +448,7 @@ integration("authentication integration", () => {
       payload: {
         employeeNumber: "new-004",
         displayName: "Nový Pracovník",
+        username: "new.worker",
         email: "new.worker@zenops.test",
         password: "New-Worker-2026!",
         roles: ["WORKER"],
@@ -466,6 +468,7 @@ integration("authentication integration", () => {
       payload: {
         employeeNumber: "INVALID-ROLE",
         displayName: "Neplatná kombinace",
+        username: "invalid.roles",
         email: "invalid.roles@zenops.test",
         password: "Invalid-Roles-2026!",
         roles: ["WORKER", "LEADER"],
@@ -511,7 +514,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "admin@zenops.test", password },
+      payload: { identifier: "admin@zenops.test", password },
     });
     const adminSetCookie = adminLogin.headers["set-cookie"];
     const adminCookieHeader = Array.isArray(adminSetCookie)
@@ -522,7 +525,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "passenger@zenops.test", password },
+      payload: { identifier: "passenger@zenops.test", password },
     });
     const workerSetCookie = workerLogin.headers["set-cookie"];
     const workerCookieHeader = Array.isArray(workerSetCookie)
@@ -536,6 +539,7 @@ integration("authentication integration", () => {
       payload: {
         employeeNumber: "TEST-004",
         displayName: "Upravený Cestující",
+        username: "passenger",
         email: "passenger@zenops.test",
         roles: ["WORKER"],
         reason: "Oprava osobních údajů",
@@ -544,6 +548,7 @@ integration("authentication integration", () => {
     expect(changed.statusCode, changed.body).toBe(200);
     expect(changed.json().employee).toMatchObject({
       displayName: "Upravený Cestující",
+      username: "passenger",
       roles: ["WORKER"],
     });
     const revoked = await app.inject({
@@ -563,7 +568,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "admin@zenops.test", password },
+      payload: { identifier: "admin@zenops.test", password },
     });
     const setCookie = login.headers["set-cookie"];
     const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
@@ -605,7 +610,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "admin@zenops.test", password },
+      payload: { identifier: "admin@zenops.test", password },
     });
     const setCookie = login.headers["set-cookie"];
     const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
@@ -663,7 +668,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "worker@zenops.test", password },
+      payload: { identifier: "worker@zenops.test", password },
     });
     const setCookie = login.headers["set-cookie"];
     const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
@@ -837,7 +842,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "passenger@zenops.test", password },
+      payload: { identifier: "passenger@zenops.test", password },
     });
     const setCookie = login.headers["set-cookie"];
     const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
@@ -874,7 +879,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "admin@zenops.test", password },
+      payload: { identifier: "admin@zenops.test", password },
     });
     const adminSetCookie = adminLogin.headers["set-cookie"];
     const adminCookieHeader = Array.isArray(adminSetCookie)
@@ -892,7 +897,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "leader@zenops.test", password },
+      payload: { identifier: "leader@zenops.test", password },
     });
     const setCookie = login.headers["set-cookie"];
     const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
@@ -956,7 +961,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "worker@zenops.test", password },
+      payload: { identifier: "worker@zenops.test", password },
     });
     const setCookie = login.headers["set-cookie"];
     const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
@@ -982,7 +987,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "leader@zenops.test", password },
+      payload: { identifier: "leader@zenops.test", password },
     });
     const leaderSetCookie = leaderLogin.headers["set-cookie"];
     const leaderCookieHeader = Array.isArray(leaderSetCookie)
@@ -1015,7 +1020,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "worker@zenops.test", password },
+      payload: { identifier: "worker@zenops.test", password },
     });
     const workerSetCookie = workerLogin.headers["set-cookie"];
     const workerCookieHeader = Array.isArray(workerSetCookie)
@@ -1035,7 +1040,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "admin@zenops.test", password },
+      payload: { identifier: "admin@zenops.test", password },
     });
     const adminSetCookie = adminLogin.headers["set-cookie"];
     const adminCookieHeader = Array.isArray(adminSetCookie)
@@ -1092,7 +1097,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "leader@zenops.test", password },
+      payload: { identifier: "leader@zenops.test", password },
     });
     const leaderSetCookie = leaderLogin.headers["set-cookie"];
     const leaderCookieHeader = Array.isArray(leaderSetCookie)
@@ -1155,7 +1160,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "admin@zenops.test", password },
+      payload: { identifier: "admin@zenops.test", password },
     });
     const setCookie = login.headers["set-cookie"];
     const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
@@ -1260,7 +1265,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "admin@zenops.test", password },
+      payload: { identifier: "admin@zenops.test", password },
     });
     const setCookie = login.headers["set-cookie"];
     const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
@@ -1295,7 +1300,7 @@ integration("authentication integration", () => {
       method: "POST",
       url: "/api/auth/login",
       headers: { origin },
-      payload: { email: "admin@zenops.test", password },
+      payload: { identifier: "admin@zenops.test", password },
     });
     expect(oldLogin.statusCode).toBe(401);
     const newLogin = await app.inject({

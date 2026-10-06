@@ -4,18 +4,14 @@ export const roleCodeSchema = z.enum(["ADMIN", "LEADER", "WORKER"]);
 export type RoleCode = z.infer<typeof roleCodeSchema>;
 
 export const loginSchema = z.object({
-  email: z
-    .string()
-    .trim()
-    .email()
-    .max(254)
-    .transform((value) => value.toLowerCase()),
+  identifier: z.string().trim().min(1).max(254).transform((value) => value.toLowerCase()),
   password: z.string().min(12).max(200),
 });
 
 export const sessionUserSchema = z.object({
   id: z.string().uuid(),
   employeeId: z.string().uuid(),
+  username: z.string(),
   email: z.string().email(),
   displayName: z.string().min(1),
   roles: z.array(roleCodeSchema),
@@ -101,6 +97,13 @@ export const createEmployeeUserSchema = z.object({
     .max(40)
     .transform((value) => value.toUpperCase()),
   displayName: z.string().trim().min(2).max(160),
+  username: z
+    .string()
+    .trim()
+    .min(3)
+    .max(40)
+    .regex(/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/)
+    .transform((value) => value.toLowerCase()),
   email: z
     .string()
     .trim()
@@ -125,6 +128,13 @@ export const updateEmployeeUserSchema = z.object({
     .max(40)
     .transform((value) => value.toUpperCase()),
   displayName: z.string().trim().min(2).max(160),
+  username: z
+    .string()
+    .trim()
+    .min(3)
+    .max(40)
+    .regex(/^[a-zA-Z0-9][a-zA-Z0-9._-]*$/)
+    .transform((value) => value.toLowerCase()),
   email: z
     .string()
     .trim()
@@ -144,6 +154,7 @@ export const employeeSummarySchema = z.object({
   id: z.string().uuid(),
   employeeNumber: z.string(),
   displayName: z.string(),
+  username: z.string(),
   email: z.string().email(),
   isActive: z.boolean(),
   roles: z.array(roleCodeSchema),
