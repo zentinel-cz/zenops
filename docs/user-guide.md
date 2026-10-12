@@ -44,7 +44,7 @@ zakázkách, které aktuálně vede.
 Admin nevytváří vlastní denní záznamy ani neschvaluje práci. Má globální provozní dashboard se
 seznamem otevřených i uzavřených zakázek, techniky, příslušenství a vozidel.
 Může zakázky uzavřít nebo znovu otevřít, spravuje zaměstnance a jejich přístupy
-a administrativní schvalování.
+auditované administrativní opravy provozních záznamů.
 
 ### Orientace v administraci
 
@@ -75,19 +75,19 @@ důvod. Vedoucí se určí při založení zakázky a později se nemění.
 
 ## Můj pracovní den
 
-1. Na jednoduchém dashboardu zvolte **Přidat denní záznam**.
-2. Pokud pracovní den ještě neexistuje, zvolte ranní nebo noční směnu.
-3. Vyberte Strojní sečení, Kácení, Reprofilaci nebo Ruční sečení.
-4. Teprve v otevřeném formuláři vyberte Zakázku a zadejte čas práce.
-5. Přidejte případné další pracovní úseky, přestávky, stroj nebo jízdu.
-6. U Kácení vyberte aktivitu (například Pilař nebo Manipulace).
-7. Přestávku zapište jako samostatný časový interval.
-8. Chybný rozpracovaný úsek nebo přestávku lze odstranit a zadat znovu.
-9. Po dokončení použijte **Odeslat pracovní den**.
+1. Na úvodní obrazovce klepněte na **Kde dnes pracuji?**. Tato nabídka se zavře a otevře se výběr směny.
+2. Klepněte na **Ranní směna** nebo **Noční směna**. Volba se ihned uloží a zobrazí se další krok.
+3. Vyberte druh práce: Strojní sečení, Kácení, Reprofilace nebo Ruční sečení. Nabídka po výběru zmizí.
+4. Ve formuláři vyberte otevřenou Zakázku a zadejte skutečný začátek a konec práce. U Kácení vyberte také činnost.
+5. Potvrďte **Uložit pracovní úsek**. Další práci přidáte stejným postupem; záznamy uvidíte v seznamu dne.
+6. Přestávku přidávejte přes **Přidat přestávku**. Stroj přiřadíte tlačítkem **Přidat stroj** u příslušného pracovního úseku.
+7. Jízdu přes **Zapsat jízdu vozidlem** zaznamenává řidič. Vyplní vozidlo, časy a stavy tachometru; cestující označí jednotlivě. Řidič sám sebe jako cestujícího vybírat nemůže.
+8. Před odesláním zkontrolujte seznam úseků a časů. Tlačítko **Zkontrolovat a odeslat pracovní den** zobrazí potvrzení. Po odeslání už běžné úpravy nejsou možné.
 
-Práce ani přestávky se nesmějí časově překrývat. Uzavřenou zakázku nelze
-použít pro nový úsek. Po odeslání je pracovní den uzamčen pro běžné úpravy a
-čeká na schválení podle zakázky.
+Práce a přestávky se nesmějí časově překrývat. Uzavřenou zakázku nelze použít
+pro nový úsek. Chybové hlášení se zobrazí nad formulářem; při chybě spojení
+zkontrolujte připojení a operaci zopakujte. Odstranění úseku nebo přestávky
+vyžaduje potvrzení.
 
 ## Schvalování práce — Vedoucí a Admin
 

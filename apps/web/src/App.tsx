@@ -623,7 +623,7 @@ function Dashboard({
           </button>
         </div>
       </header>
-      <section className="welcome">
+      {(!isWorkerOnly || !showDailyRecord) && <section className="welcome">
         <p className="eyebrow">PROVOZ DNEŠNÍHO DNE</p>
         <h2>Dobré ráno, {user.displayName.split(" ")[0]}</h2>
         <p>
@@ -631,31 +631,21 @@ function Dashboard({
             ? "Denní záznam rychle a bez zbytečných kroků."
             : "Zakázky, technika a provozní přehled na jednom místě."}
         </p>
-      </section>
+      </section>}
       {isWorkerOnly ? (
-        <section className="worker-home">
-          <button
-            className="daily-record-card"
-            onClick={() => setShowDailyRecord((visible) => !visible)}
-          >
-            <span>+</span>
-            <strong>
-              {showDailyRecord ? "Zavřít denní záznam" : "Přidat denní záznam"}
-            </strong>
-            <small>Strojní sečení, kácení, reprofilace nebo ruční sečení</small>
+        !showDailyRecord && <section className="worker-home">
+          <button className="daily-record-card" onClick={() => setShowDailyRecord(true)}>
+            <span className="worker-home-icon" aria-hidden="true">→</span>
+            <span className="worker-home-copy"><small>DNEŠNÍ ZÁZNAM</small><strong>Kde dnes pracuji?</strong><small>Zapsat směnu a práci</small></span>
+            <span className="worker-home-cta">Začít</span>
           </button>
-          <article className="future-card">
-            <span>BRZY</span>
-            <strong>Dovolená a žádosti</strong>
-            <small>Tuto část připravíme později.</small>
-          </article>
         </section>
       ) : (
         projectOverview
       )}
       {projectForms}
       {isWorkerOnly && showDailyRecord && (
-        <WorkDayPanel projects={projects} assetVersion={assetVersion} />
+        <WorkDayPanel projects={projects} assetVersion={assetVersion} employeeId={user.employeeId} onClose={() => setShowDailyRecord(false)} />
       )}
       <ProjectDayPanel user={user} projects={projects} />
       {canApprove && <ApprovalPanel />}
