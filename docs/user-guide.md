@@ -49,10 +49,14 @@ Admin nevytváří vlastní denní záznamy ani neschvaluje práci. Má globáln
 seznamem otevřených i uzavřených zakázek, techniky, příslušenství a vozidel.
 Může zakázky uzavřít nebo znovu otevřít, spravuje zaměstnance a jejich přístupy
 auditované administrativní opravy provozních záznamů.
+V části **Zaměstnanci** může vytvořit uživatelský účet a zvolit roli **Účetní**.
+V části **Vybavení pracovníků** má stejný přístup jako Účetní: může prohlížet
+a spravovat profily, katalog a evidenci vydaných a vrácených věcí.
 
 ### Účetní
 
-Admin vytvoří účet v části **Zaměstnanci** a přidělí mu roli **Účetní**. Účetní
+Admin v části **Zaměstnanci** zvolí **Vytvořit uživatelský účet**, vyplní
+osobní údaje, přihlašovací údaje a jako jedinou roli vybere **Účetní**. Účetní
 pak spravuje profily pracovníků, katalog pracovních oděvů a vybavení a
 záznamy o vydání a vrácení. Oprava již zapsaného vydání vyžaduje důvod a je
 auditována. Účetní nemá přístup ke směnám, schvalování práce ani správě účtů a
