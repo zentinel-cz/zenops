@@ -1,6 +1,7 @@
 import { hash } from "@node-rs/argon2";
 import { createEmployeeUserSchema, employeeStateSchema, updateEmployeeUserSchema } from "@zenops/contracts";
 import type { FastifyInstance } from "fastify";
+import type postgres from "postgres";
 import { requirePermission, type AuthorizationHook } from "./authorization.js";
 import type { Database } from "./db.js";
 
@@ -13,6 +14,23 @@ type EmployeeRow = {
   isActive: boolean;
   roles: string[];
 };
+
+class RoleAssignmentError extends Error {}
+
+async function assignRoles(
+  transaction: postgres.TransactionSql,
+  userId: string,
+  roles: string[],
+): Promise<void> {
+  const assigned = await transaction<Array<{ roleId: string }>>`
+    insert into user_roles (user_id, role_id)
+    select ${userId}, id from roles where code = any(${transaction.array(roles)})
+    returning role_id
+  `;
+  if (assigned.length !== roles.length) {
+    throw new RoleAssignmentError("Requested role is not configured in the database.");
+  }
+}
 
 export function registerEmployeeRoutes(app: FastifyInstance, db: Database, requireTrustedOrigin: AuthorizationHook): void {
   app.get("/api/employees", { preHandler: requirePermission("employee.manage") }, async () => {
@@ -61,10 +79,7 @@ export function registerEmployeeRoutes(app: FastifyInstance, db: Database, requi
           values (${createdEmployee!.id}, ${parsed.data.username}, ${parsed.data.email}, ${passwordHash})
           returning id, username, email
         `;
-        await transaction`
-          insert into user_roles (user_id, role_id)
-          select ${createdUser!.id}, id from roles where code = any(${transaction.array(parsed.data.roles)})
-        `;
+        await assignRoles(transaction, createdUser!.id, parsed.data.roles);
         const auditData = { ...createdEmployee!, username: createdUser!.username, email: createdUser!.email, roles: parsed.data.roles };
         await transaction`
           insert into audit_logs (actor_user_id, action, entity_type, entity_id, after_data)
@@ -74,6 +89,9 @@ export function registerEmployeeRoutes(app: FastifyInstance, db: Database, requi
       });
       return reply.code(201).send({ employee });
     } catch (error) {
+      if (error instanceof RoleAssignmentError) {
+        return reply.code(409).send({ error: "Vybraná role není v systému připravena. Obraťte se na správce." });
+      }
       if (typeof error === "object" && error && "code" in error && error.code === "23505") {
         return reply.code(409).send({ error: "Uživatelské jméno, e-mail nebo osobní číslo již existuje." });
       }
@@ -137,7 +155,7 @@ export function registerEmployeeRoutes(app: FastifyInstance, db: Database, requi
         await transaction`update employees set employee_number=${parsed.data.employeeNumber}, display_name=${parsed.data.displayName}, updated_at=now() where id=${employeeId}`;
         await transaction`update users set username=${parsed.data.username}, email=${parsed.data.email}, updated_at=now() where id=${account!.id}`;
         await transaction`delete from user_roles where user_id=${account!.id}`;
-        await transaction`insert into user_roles (user_id, role_id) select ${account!.id}, id from roles where code=any(${transaction.array(parsed.data.roles)})`;
+        await assignRoles(transaction, account!.id, parsed.data.roles);
         await transaction`update sessions set revoked_at=now() where user_id=${account!.id} and revoked_at is null`;
         const after = { id: employeeId, employeeNumber: parsed.data.employeeNumber, displayName: parsed.data.displayName, username: parsed.data.username, email: parsed.data.email, isActive: beforeRows[0].isActive, roles: parsed.data.roles };
         await transaction`insert into audit_logs (actor_user_id, action, entity_type, entity_id, before_data, after_data, reason) values (${request.sessionUser!.id}, 'EMPLOYEE_UPDATED', 'EMPLOYEE', ${employeeId}, ${transaction.json(beforeRows[0])}, ${transaction.json(after)}, ${parsed.data.reason})`;
@@ -145,6 +163,10 @@ export function registerEmployeeRoutes(app: FastifyInstance, db: Database, requi
       });
       if (!employee) return reply.code(404).send({ error: "Zaměstnanec nebyl nalezen." });
       return { employee, sessionsRevoked: true };
-    } catch (error) { if (typeof error === "object" && error && "code" in error && error.code === "23505") return reply.code(409).send({ error: "Uživatelské jméno, e-mail nebo osobní číslo již existuje." }); throw error; }
+    } catch (error) {
+      if (error instanceof RoleAssignmentError) return reply.code(409).send({ error: "Vybraná role není v systému připravena. Obraťte se na správce." });
+      if (typeof error === "object" && error && "code" in error && error.code === "23505") return reply.code(409).send({ error: "Uživatelské jméno, e-mail nebo osobní číslo již existuje." });
+      throw error;
+    }
   });
 }

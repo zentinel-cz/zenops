@@ -65,6 +65,10 @@ záznamy o vydání a vrácení. Oprava již zapsaného vydání vyžaduje důvo
 auditována. Účetní nemá přístup ke směnám, schvalování práce ani správě účtů a
 rolí.
 
+Pokud vybraná role není v databázi správně připravena, ZenOps vytvoření nebo
+úpravu účtu odmítne a nezanechá aktivní účet bez role. Správce musí nejprve
+dokončit databázovou migraci.
+
 1. V seznamu vlevo vyberte pracovníka. Neaktivní pracovníci zůstávají
    dostupní pro kontrolu historie, nové věci jim vydat nelze.
 2. V profilu upravte telefon nebo velikosti. Každá změna vyžaduje vyplnění

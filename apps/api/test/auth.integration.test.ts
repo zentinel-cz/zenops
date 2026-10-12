@@ -166,31 +166,29 @@ integration("authentication integration", () => {
     expect(session!.revoked).toBe(true);
   });
 
-  it("keeps daily records exclusive to Worker accounts", async () => {
-    for (const email of ["leader@zenops.test", "admin@zenops.test"]) {
-      const login = await app.inject({
-        method: "POST",
-        url: "/api/auth/login",
-        headers: { origin },
-        payload: { identifier: email, password },
-      });
-      const setCookie = login.headers["set-cookie"];
-      const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
-      const cookie = cookieHeader?.split(";", 1)[0];
-      const me = await app.inject({
-        method: "GET",
-        url: "/api/auth/me",
-        headers: { cookie: cookie! },
-      });
-      expect(me.json().user.permissions).not.toContain("workday.own.manage");
-      const create = await app.inject({
-        method: "POST",
-        url: "/api/workdays",
-        headers: { origin, cookie: cookie! },
-        payload: { workDate: "2026-09-24", shiftType: "MORNING" },
-      });
-      expect(create.statusCode).toBe(403);
-    }
+  it("keeps own daily-record management unavailable to Leader accounts", async () => {
+    const login = await app.inject({
+      method: "POST",
+      url: "/api/auth/login",
+      headers: { origin },
+      payload: { identifier: "leader@zenops.test", password },
+    });
+    const setCookie = login.headers["set-cookie"];
+    const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
+    const cookie = cookieHeader?.split(";", 1)[0];
+    const me = await app.inject({
+      method: "GET",
+      url: "/api/auth/me",
+      headers: { cookie: cookie! },
+    });
+    expect(me.json().user.permissions).not.toContain("workday.own.manage");
+    const create = await app.inject({
+      method: "POST",
+      url: "/api/workdays",
+      headers: { origin, cookie: cookie! },
+      payload: { workDate: "2026-09-24", shiftType: "MORNING" },
+    });
+    expect(create.statusCode).toBe(403);
   });
 
   it("enforces RBAC and creates an audited project for a Leader", async () => {
@@ -460,6 +458,33 @@ integration("authentication integration", () => {
       employeeNumber: "NEW-004",
       roles: ["WORKER"],
     });
+
+    const accountant = await app.inject({
+      method: "POST",
+      url: "/api/employees",
+      headers: { origin, cookie: cookie! },
+      payload: {
+        employeeNumber: "ACC-004",
+        displayName: "Test Účetní",
+        username: "accountant.test",
+        email: "accountant.test@zenops.test",
+        password: "Accountant-2026!",
+        roles: ["ACCOUNTANT"],
+      },
+    });
+    expect(accountant.statusCode, accountant.body).toBe(201);
+    expect(accountant.json().employee).toMatchObject({
+      employeeNumber: "ACC-004",
+      roles: ["ACCOUNTANT"],
+    });
+    const [storedAccountant] = await db<Array<{ role: string }>>`
+      select r.code as role
+      from users u
+      join user_roles ur on ur.user_id = u.id
+      join roles r on r.id = ur.role_id
+      where u.username = 'accountant.test'
+    `;
+    expect(storedAccountant?.role).toBe("ACCOUNTANT");
 
     const multipleRoles = await app.inject({
       method: "POST",
