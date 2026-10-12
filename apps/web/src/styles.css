@@ -269,3 +269,89 @@ button:focus-visible,input:focus-visible,select:focus-visible { outline:3px soli
   .timeline-item .row-actions { grid-column:1/-1; }
 }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; transition:none!important; animation:none!important; } }
+
+/* Small-screen layout: keep every control inside the viewport and easy to tap. */
+@media (max-width: 600px) {
+  .dashboard { min-width: 0; padding: 16px 14px 32px; }
+  .dashboard > .topbar { align-items: center; gap: 10px; padding-bottom: 14px; }
+  .dashboard > .topbar h1 { font-size: 22px; }
+  .dashboard > .topbar .account { min-width: 0; flex-direction: row; align-items: center; gap: 8px; }
+  .dashboard > .topbar .user-chip { max-width: 42vw; overflow-wrap: anywhere; text-align: right; }
+  .dashboard > .topbar .user-chip span { font-size: 12px; }
+  .dashboard > .topbar .user-chip small { font-size: 10px; }
+  .dashboard > .topbar .account > .ghost { flex: 0 0 auto; padding: 8px 9px; font-size: 11px; }
+  .dashboard > .welcome { margin: 28px 0 18px; }
+  .dashboard > .welcome h2 { font-size: clamp(28px, 8vw, 38px); line-height: 1.05; overflow-wrap: anywhere; }
+  .worker-home { width: 100%; margin: 12px auto; }
+  .daily-record-card { grid-template-columns: 42px minmax(0, 1fr); gap: 10px; padding: 15px; }
+  .daily-record-card .worker-home-copy { min-width: 0; }
+  .worker-home-copy strong { font-size: 19px; line-height: 1.2; }
+  .daily-record-card .worker-home-cta { grid-column: 2; }
+
+  .workday-panel { width: 100%; min-width: 0; margin: 12px 0; padding: 15px 13px; border-radius: 14px; }
+  .worker-panel-heading { grid-template-columns: minmax(0, 1fr) auto; gap: 8px; margin-bottom: 14px; padding-bottom: 14px; }
+  .worker-panel-heading .worker-back { min-height: 44px; padding: 9px 11px; font-size: 13px; }
+  .worker-panel-heading > div { min-width: 0; }
+  .worker-panel-heading .eyebrow { font-size: 9px; letter-spacing: .09em; overflow-wrap: anywhere; }
+  .worker-panel-heading h3 { font-size: 23px; }
+  .worker-panel-heading > .state-badge { max-width: 42vw; padding: 6px 8px; font-size: 10px; text-align: center; white-space: normal; }
+
+  .worker-step { grid-template-columns: 30px minmax(0, 1fr); gap: 8px 10px; margin: 12px 0; padding: 14px 12px; }
+  .worker-step-number { width: 28px; height: 28px; font-size: 14px; }
+  .worker-step > div:nth-child(2) { min-width: 0; }
+  .worker-step > div:nth-child(2) h4 { font-size: 19px; line-height: 1.25; }
+  .worker-step > div:nth-child(2) p { font-size: 13px; }
+  .shift-picker { grid-template-columns: minmax(0, 1fr); gap: 9px; }
+  .shift-picker button { grid-template-columns: 40px minmax(0, 1fr); min-height: 76px; padding: 12px; }
+  .shift-picker button > span { width: 36px; height: 36px; }
+  .shift-picker button strong { font-size: 17px; }
+
+  .worker-records-heading { margin-top: 16px; }
+  .timeline { min-width: 0; }
+  .timeline-item { grid-template-columns: minmax(68px, auto) minmax(0, 1fr); gap: 7px; }
+  .timeline-item > span { min-width: 0; overflow-wrap: anywhere; }
+  .timeline-item > span small { overflow-wrap: anywhere; }
+  .timeline-item .row-actions { grid-column: 1 / -1; flex-wrap: wrap; }
+  .timeline-item .row-actions button { min-height: 42px; }
+
+  .work-type-picker > div { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .work-type-picker button { grid-template-columns: minmax(0, 1fr) auto; min-height: 60px; padding: 12px; }
+  .workday-forms { min-width: 0; grid-template-columns: minmax(0, 1fr); }
+  .workday-forms form { min-width: 0; padding: 15px 13px; }
+  .workday-forms label { min-width: 0; overflow-wrap: anywhere; }
+  .workday-forms input, .workday-forms select { min-width: 0; padding: 13px 11px; font-size: 16px; }
+  .workday-forms button { min-height: 48px; }
+  .workday-forms button.ghost { width: 100%; margin-top: 8px; }
+  .vehicle-trip-form { grid-template-columns: minmax(0, 1fr); }
+  .vehicle-trip-form > * { min-width: 0; }
+  .machine-usage-form { min-width: 0; grid-template-columns: minmax(0, 1fr); padding: 14px; }
+  .machine-usage-form > div, .machine-usage-form fieldset { grid-column: auto; min-width: 0; }
+  .machine-usage-form > div { align-items: flex-start; gap: 8px; }
+  .machine-usage-form > div h4 { min-width: 0; overflow-wrap: anywhere; }
+  .machine-usage-form label { min-width: 0; }
+  .worker-extra-actions { padding: 14px; }
+  .worker-extra-actions button { min-height: 48px; }
+  .submit-day-wrap { padding: 14px; }
+  .submit-day-wrap .submit-day { float: none; display: block; width: 100%; min-width: 0; min-height: 52px; margin: 0; padding: 13px; line-height: 1.35; white-space: normal; }
+
+  /* Keep paired and toolbar actions from inheriting the global full-width button. */
+  .button-group { align-items: stretch; }
+  .button-group button { width: 100%; min-width: 0; min-height: 44px; white-space: normal; }
+  .decision-dialog > div { align-items: stretch; flex-direction: column; }
+  .decision-dialog > div button { width: 100%; min-width: 0; min-height: 44px; white-space: normal; }
+  .row-actions { min-width: 0; flex-wrap: wrap; }
+  .row-actions button { min-width: 0; min-height: 44px; white-space: normal; }
+  .table-action, .project-state { max-width: 100%; overflow-wrap: anywhere; }
+  .admin-sidebar nav button { min-height: 44px; }
+}
+
+@media (max-width: 360px) {
+  .dashboard { padding-right: 10px; padding-left: 10px; }
+  .dashboard > .topbar h1 { font-size: 20px; }
+  .dashboard > .topbar .user-chip { max-width: 38vw; }
+  .dashboard > .topbar .account > .ghost { padding: 7px; font-size: 10px; }
+  .workday-panel { padding-right: 10px; padding-left: 10px; }
+  .worker-panel-heading .worker-back { grid-column: 1 / -1; justify-self: start; }
+  .worker-panel-heading > div { grid-column: 1; grid-row: 2; }
+  .worker-panel-heading > .state-badge { grid-column: 2; grid-row: 2; }
+}
