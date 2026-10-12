@@ -7,6 +7,9 @@ erDiagram
     ROLE }o--o{ PERMISSION : grants
 
     EMPLOYEE ||--o{ WORK_DAY : owns
+    EMPLOYEE ||--o{ EMPLOYEE_ITEM_ISSUE : receives
+    ISSUED_ITEM_TYPE ||--o{ EMPLOYEE_ITEM_ISSUE : classifies
+    EMPLOYEE_ITEM_ISSUE ||--o{ EMPLOYEE_ITEM_RETURN : returned
     WORK_DAY ||--o{ WORK_ENTRY : contains
     WORK_DAY ||--o{ BREAK_ENTRY : contains
 

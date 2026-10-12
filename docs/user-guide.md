@@ -22,16 +22,20 @@ Změna se auditovaně zaznamená bez uložení samotného hesla. Ukončení vše
 relací chrání účet i v případě, že zůstal přihlášený na jiném zařízení.
 
 Přístup vytváří Admin. Neexistuje žádný společný ani výchozí účet.
-Každý účet má právě jednu roli; role Pracovník, Vedoucí a Admin se nekombinují.
+Každý účet má právě jednu roli; role Pracovník, Vedoucí, Admin a Účetní se
+nekombinují.
 
 ## Role
 
 ### Pracovník
 
-- má jednoduchý dashboard s hlavní volbou **Přidat denní záznam**;
+- má jednoduchý dashboard s hlavní volbou **Kde dnes pracuji?** a odkazem
+  **Můj profil a svěřené věci**;
 - vidí všechny otevřené zakázky až uvnitř formuláře denního záznamu;
 - spravuje vlastní pracovní den, úseky práce, jízdy a přestávky;
-- zvolí ranní nebo noční směnu; noční směna může pokračovat přes půlnoc.
+- zvolí ranní nebo noční směnu; noční směna může pokračovat přes půlnoc;
+- ve svém profilu může pouze prohlížet kontaktní údaje, velikosti a historii
+  pracovních oděvů a vybavení.
 
 ### Vedoucí
 
@@ -45,6 +49,34 @@ Admin nevytváří vlastní denní záznamy ani neschvaluje práci. Má globáln
 seznamem otevřených i uzavřených zakázek, techniky, příslušenství a vozidel.
 Může zakázky uzavřít nebo znovu otevřít, spravuje zaměstnance a jejich přístupy
 auditované administrativní opravy provozních záznamů.
+
+### Účetní
+
+Admin vytvoří účet v části **Zaměstnanci** a přidělí mu roli **Účetní**. Účetní
+pak spravuje profily pracovníků, katalog pracovních oděvů a vybavení a
+záznamy o vydání a vrácení. Oprava již zapsaného vydání vyžaduje důvod a je
+auditována. Účetní nemá přístup ke směnám, schvalování práce ani správě účtů a
+rolí.
+
+1. V seznamu vlevo vyberte pracovníka. Neaktivní pracovníci zůstávají
+   dostupní pro kontrolu historie, nové věci jim vydat nelze.
+2. V profilu upravte telefon nebo velikosti. Každá změna vyžaduje vyplnění
+   důvodu.
+3. Katalog rozšiřte zadáním názvu nové věci. Položku lze upravit nebo vyřadit;
+   její starší výdejky zůstanou zachované.
+4. Ve formuláři **Vydat věc pracovníkovi** vyberte druh, množství, případnou
+   velikost a datum. Vydání se objeví v historii pracovníka.
+5. U nevydaného zbytku zvolte **Zapsat vrácení**. Lze vrátit část nebo celé
+   množství; vrácený součet nesmí překročit vydané množství.
+6. Opravu výdejky otevřete přes **Opravit vydání** a uveďte důvod. Historie
+   vrácení se vede jako samostatné události a nemaže se.
+
+### Profil pracovníka
+
+Pracovník si přes **Můj profil** může zobrazit své kontaktní údaje, velikosti
+oděvů a obuvi a historii svěřených věcí. Tyto údaje může měnit Účetní.
+Vydání obsahuje věc, množství, velikost a datum. Vrácení se zapisuje zvlášť,
+takže zůstane zachována historie a přehled toho, co má pracovník stále u sebe.
 
 ### Orientace v administraci
 

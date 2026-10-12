@@ -1,7 +1,7 @@
 # Roles and Permissions
 
-Each account has exactly one role. Worker, Leader and Admin are mutually
-exclusive operating modes.
+Each account has exactly one role. Worker, Leader, Admin and Accountant are
+mutually exclusive operating modes.
 
 ## Worker
 
@@ -38,6 +38,22 @@ Projects assigned to that Leader.
 -   close/reopen monthly periods
 -   administrative corrections
 -   global reporting and audit access
+
+## Accountant
+
+- view and edit profiles of Workers, including contact phone and workwear and
+  shoe sizes
+- manage the catalogue of company-issued workwear and equipment
+- record issues and dated partial or complete returns for Workers
+- correct an issue only with a reason; changes are audited
+- view issue and return history
+- cannot create or submit WorkDays, approve work, manage projects or manage
+  employee accounts and role assignments
+
+## Worker profile access
+
+- view only their own profile and issued-item history
+- cannot edit profile details, catalogue items, issue records or returns
 
 Permissions must be backend-enforced and extensible rather than
 hard-coded only in UI.

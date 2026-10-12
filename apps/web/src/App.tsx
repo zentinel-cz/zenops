@@ -9,6 +9,8 @@ import { ReportPanel } from "./ReportPanel";
 import { MonthlyPanel } from "./MonthlyPanel";
 import { AccountPanel } from "./AccountPanel";
 import { AdminRecordsPanel } from "./AdminRecordsPanel";
+import { AccountantPanel } from "./AccountantPanel";
+import { WorkerProfilePanel } from "./WorkerProfilePanel";
 
 type AuthState =
   | { status: "loading" }
@@ -111,10 +113,12 @@ function Dashboard({
   const [projectError, setProjectError] = useState("");
   const [assetVersion, setAssetVersion] = useState(0);
   const [showDailyRecord, setShowDailyRecord] = useState(false);
+  const [showWorkerProfile, setShowWorkerProfile] = useState(false);
   const [activeSection, setActiveSection] = useState("overview");
   const canCreateProject = user.permissions.includes("project.create");
   const canManageProjects = user.permissions.includes("project.close");
   const canManageEmployees = user.permissions.includes("employee.manage");
+  const canManageIssuedItems = user.permissions.includes("employee.items.manage");
   const canManageAssets = user.permissions.includes("asset.manage");
   const canApprove = user.permissions.includes("approval.project.manage");
   const canReport =
@@ -125,6 +129,7 @@ function Dashboard({
     !user.roles.includes("LEADER") &&
     !user.roles.includes("ADMIN");
   const isAdmin = user.roles.includes("ADMIN");
+  const isAccountant = user.roles.includes("ACCOUNTANT");
 
   const loadProjects = () =>
     fetch(canManageProjects ? "/api/projects" : "/api/projects/open", {
@@ -138,6 +143,10 @@ function Dashboard({
       .then((body) => setProjects(body.projects));
 
   useEffect(() => {
+    if (isAccountant) {
+      setLoadingProjects(false);
+      return;
+    }
     void loadProjects()
       .catch(() => setProjectError("Zakázky se nepodařilo načíst."))
       .finally(() => setLoadingProjects(false));
@@ -452,6 +461,22 @@ function Dashboard({
     </>
   );
 
+  if (isAccountant) {
+    return (
+      <main className="admin-shell accountant-shell">
+        <aside className="admin-sidebar">
+          <div className="sidebar-brand"><span className="brand-mark">Z</span><div><strong>ZENOPS</strong><small>PERSONÁLNÍ EVIDENCE</small></div></div>
+          <nav aria-label="Hlavní navigace"><button className="active" type="button" aria-current="page"><NavIcon name="people" /><span>Pracovníci a vybavení</span></button></nav>
+          <div className="sidebar-status"><span /><div><strong>Systém online</strong><small>Personální evidence</small></div></div>
+        </aside>
+        <div className="admin-workspace">
+          <header className="admin-topbar"><div><span className="topbar-context">PERSONÁLNÍ EVIDENCE</span><h1>Pracovníci a svěřené věci</h1></div><div className="account"><div className="user-chip"><span>{user.displayName}</span><small>Účetní</small></div><AccountPanel onPasswordChanged={onLogout} /><button className="ghost" onClick={onLogout}>Odhlásit</button></div></header>
+          <div className="admin-content"><AccountantPanel /></div>
+        </div>
+      </main>
+    );
+  }
+
   if (isAdmin) {
     const openProjects = projects.filter(
       (project) => project.status === "OPEN",
@@ -469,6 +494,7 @@ function Dashboard({
         { id: "records", label: "Opravy záznamů", icon: "records" },
         { id: "assets", label: "Technika", icon: "assets" },
         { id: "employees", label: "Zaměstnanci", icon: "people" },
+        { id: "workers", label: "Vybavení pracovníků", icon: "assets" },
       ];
     const currentSection =
       navItems.find((item) => item.id === activeSection) ?? navItems[0]!;
@@ -599,6 +625,11 @@ function Dashboard({
                 <EmployeePanel user={user} />
               </section>
             )}
+            {activeSection === "workers" && canManageIssuedItems && (
+              <section className="admin-section-view" id="workers">
+                <AccountantPanel />
+              </section>
+            )}
           </div>
         </div>
       </main>
@@ -623,7 +654,7 @@ function Dashboard({
           </button>
         </div>
       </header>
-      {(!isWorkerOnly || !showDailyRecord) && <section className="welcome">
+      {(!isWorkerOnly || (!showDailyRecord && !showWorkerProfile)) && <section className="welcome">
         <p className="eyebrow">PROVOZ DNEŠNÍHO DNE</p>
         <h2>Dobré ráno, {user.displayName.split(" ")[0]}</h2>
         <p>
@@ -633,12 +664,13 @@ function Dashboard({
         </p>
       </section>}
       {isWorkerOnly ? (
-        !showDailyRecord && <section className="worker-home">
+        !showDailyRecord && !showWorkerProfile && <section className="worker-home">
           <button className="daily-record-card" onClick={() => setShowDailyRecord(true)}>
             <span className="worker-home-icon" aria-hidden="true">→</span>
             <span className="worker-home-copy"><small>DNEŠNÍ ZÁZNAM</small><strong>Kde dnes pracuji?</strong><small>Zapsat směnu a práci</small></span>
             <span className="worker-home-cta">Začít</span>
           </button>
+          <button className="worker-profile-shortcut" onClick={() => setShowWorkerProfile(true)}>Můj profil a svěřené věci <span aria-hidden="true">→</span></button>
         </section>
       ) : (
         projectOverview
@@ -647,6 +679,7 @@ function Dashboard({
       {isWorkerOnly && showDailyRecord && (
         <WorkDayPanel projects={projects} assetVersion={assetVersion} employeeId={user.employeeId} onClose={() => setShowDailyRecord(false)} />
       )}
+      {isWorkerOnly && showWorkerProfile && <WorkerProfilePanel onClose={() => setShowWorkerProfile(false)} />}
       <ProjectDayPanel user={user} projects={projects} />
       {canApprove && <ApprovalPanel />}
       {canReport && <ReportPanel />}

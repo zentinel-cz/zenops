@@ -5,6 +5,7 @@ const roleOptions: Array<{ code: RoleCode; name: string }> = [
   { code: "WORKER", name: "Pracovník" },
   { code: "LEADER", name: "Vedoucí" },
   { code: "ADMIN", name: "Admin" },
+  { code: "ACCOUNTANT", name: "Účetní" },
 ];
 
 export function EmployeePanel({ user }: { user: SessionUser }) {

@@ -355,3 +355,70 @@ button:focus-visible,input:focus-visible,select:focus-visible { outline:3px soli
   .worker-panel-heading > div { grid-column: 1; grid-row: 2; }
   .worker-panel-heading > .state-badge { grid-column: 2; grid-row: 2; }
 }
+
+/* Employee profiles and issued-item records */
+.worker-profile-shortcut { display:flex; align-items:center; justify-content:space-between; width:100%; min-height:58px; margin:0; padding:15px 18px; border:1px solid #294638; color:#d9e8de; background:#101c16; text-align:left; }
+.worker-profile-shortcut span { color:#80e5a0; font-size:20px; }
+.worker-profile-details { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:16px 0; }
+.worker-profile-details>div { min-width:0; padding:14px; border:1px solid #293e33; border-radius:8px; background:#0b1711; }
+.worker-profile-details dt { margin-bottom:5px; color:#91a499; font-size:11px; font-weight:700; }
+.worker-profile-details dd { margin:0; overflow-wrap:anywhere; font-size:14px; font-weight:700; }
+.worker-profile-history { margin-top:28px; }
+.accountant-workspace { min-width:0; }
+.accountant-workspace>.section-heading { margin-bottom:18px; }
+.accountant-workspace>.section-heading h2 { margin:4px 0; font-size:clamp(25px,3vw,34px); }
+.accountant-layout { display:grid; grid-template-columns:minmax(190px,250px) minmax(0,1fr); gap:18px; align-items:start; }
+.accountant-worker-list,.accountant-card { min-width:0; padding:18px; border:1px solid #293e33; border-radius:8px; background:#0d1310; }
+.accountant-worker-list { position:sticky; top:102px; }
+.accountant-worker-list h3 { margin:0 0 12px; font-size:16px; }
+.accountant-worker-list>button { display:grid; gap:5px; min-height:56px; margin:0; padding:11px; border:1px solid transparent; border-radius:6px; color:#e7eee9; background:transparent; text-align:left; }
+.accountant-worker-list>button:hover,.accountant-worker-list>button.active { border-color:#315640; background:#17271e; }
+.accountant-worker-list>button small { color:#91a499; font-weight:500; }
+.accountant-main { display:grid; min-width:0; gap:16px; }
+.accountant-card>.section-heading { margin-bottom:12px; }
+.accountant-card>.section-heading h3 { margin:3px 0; font-size:20px; }
+.profile-edit-form { width:100%; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.profile-edit-form label,.catalog-create-form label,.issued-catalog-list label { min-width:0; margin:0; }
+.profile-edit-form input,.catalog-create-form input,.issued-catalog-list input,.issue-create-form input,.issue-create-form select,.inline-record-form input,.inline-record-form select { min-width:0; }
+.profile-edit-form .profile-edit-reason { grid-column:1/-1; }
+.profile-edit-form>button { grid-column:1/-1; margin:0; }
+.issued-item-list { display:grid; gap:10px; }
+.issued-item-list article { min-width:0; padding:14px; border:1px solid #293e33; border-radius:7px; background:#0b1711; }
+.issued-item-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+.issued-item-heading strong { overflow-wrap:anywhere; font-size:15px; }
+.issued-item-heading span,.issued-item-list article small { flex:0 0 auto; color:#91a499; font-size:12px; }
+.issued-item-list article p { margin:9px 0; color:#c1cec6; font-size:13px; line-height:1.5; }
+.issued-item-list ul { display:grid; gap:5px; margin:12px 0 0; padding-left:18px; color:#91a499; font-size:12px; }
+.issued-item-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.issued-item-actions button { width:auto; min-height:40px; }
+.issue-create-form,.inline-record-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:16px; padding:15px; border:1px solid #293e33; border-radius:7px; background:#101c16; }
+.issue-create-form h4,.inline-record-form h4 { grid-column:1/-1; margin:0; }
+.issue-create-form label,.inline-record-form label { min-width:0; margin:0; }
+.issue-create-form>button,.inline-record-form>button { min-width:0; margin:0; }
+.issue-create-form>button:last-child,.inline-record-form>button:nth-last-child(2) { grid-column:1/-1; }
+.inline-record-form .ghost { grid-column:1/-1; width:100%; }
+.issued-catalog { margin-top:0; }
+.catalog-create-form { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:10px; }
+.catalog-create-form button { width:auto; min-width:140px; margin:0; }
+.issued-catalog-list { display:grid; gap:10px; margin-top:16px; }
+.issued-catalog-list>div { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:10px; padding:12px; border:1px solid #293e33; border-radius:7px; }
+.issued-catalog-list>div.inactive { opacity:.65; }
+.issued-catalog-list form { width:100%; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto; align-items:end; gap:10px; }
+.issued-catalog-list form>button { width:auto; margin:0; }
+.issued-catalog-list>div>.table-action { min-height:42px; }
+.accountant-shell .admin-content { max-width:1500px; }
+@media(max-width:760px) {
+  .worker-profile-details { grid-template-columns:1fr; }
+  .accountant-layout { grid-template-columns:minmax(0,1fr); }
+  .accountant-worker-list { position:static; overflow:hidden; }
+  .accountant-worker-list>button { display:inline-grid; width:auto; min-width:160px; margin-right:6px; vertical-align:top; }
+  .accountant-main,.accountant-card { min-width:0; }
+  .profile-edit-form,.issue-create-form,.inline-record-form { grid-template-columns:minmax(0,1fr); }
+  .profile-edit-form .profile-edit-reason,.profile-edit-form>button,.issue-create-form h4,.inline-record-form h4,.issue-create-form>button,.inline-record-form>button,.inline-record-form .ghost { grid-column:auto; }
+  .catalog-create-form { grid-template-columns:minmax(0,1fr); }
+  .catalog-create-form button { width:100%; }
+  .issued-catalog-list>div,.issued-catalog-list form { grid-template-columns:minmax(0,1fr); }
+  .issued-catalog-list form>button,.issued-catalog-list>div>.table-action { width:100%; }
+  .issued-item-heading { flex-direction:column; gap:4px; }
+  .accountant-workspace>.section-heading { align-items:flex-start; }
+}

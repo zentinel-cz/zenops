@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const roleCodeSchema = z.enum(["ADMIN", "LEADER", "WORKER"]);
+export const roleCodeSchema = z.enum(["ADMIN", "LEADER", "WORKER", "ACCOUNTANT"]);
 export type RoleCode = z.infer<typeof roleCodeSchema>;
 
 export const loginSchema = z.object({
@@ -160,6 +160,57 @@ export const employeeSummarySchema = z.object({
   roles: z.array(roleCodeSchema),
 });
 export type EmployeeSummary = z.infer<typeof employeeSummarySchema>;
+
+export const workerProfileSchema = z.object({
+  id: z.string().uuid(),
+  employeeNumber: z.string(),
+  displayName: z.string(),
+  email: z.string().email(),
+  phone: z.string().nullable(),
+  upperWorkwearSize: z.string().nullable(),
+  lowerWorkwearSize: z.string().nullable(),
+  shoeSize: z.string().nullable(),
+  isActive: z.boolean(),
+});
+export type WorkerProfile = z.infer<typeof workerProfileSchema>;
+
+const workerProfileFieldsSchema = z.object({
+  phone: z.string().trim().max(40).nullable(),
+  upperWorkwearSize: z.string().trim().max(40).nullable(),
+  lowerWorkwearSize: z.string().trim().max(40).nullable(),
+  shoeSize: z.string().trim().max(40).nullable(),
+});
+
+export const updateWorkerProfileSchema = workerProfileFieldsSchema.extend({
+  reason: z.string().trim().min(3).max(500),
+});
+
+export const createIssuedItemTypeSchema = z.object({
+  name: z.string().trim().min(2).max(120),
+});
+
+export const updateIssuedItemTypeSchema = createIssuedItemTypeSchema.extend({
+  active: z.boolean(),
+  reason: z.string().trim().min(3).max(500),
+});
+
+export const createEmployeeItemIssueSchema = z.object({
+  itemTypeId: z.string().uuid(),
+  quantity: z.number().int().positive().max(2_147_483_647),
+  size: z.string().trim().max(40).nullable().optional(),
+  issuedOn: z.iso.date(),
+  note: z.string().trim().max(1000).nullable().optional(),
+});
+
+export const updateEmployeeItemIssueSchema = createEmployeeItemIssueSchema.extend({
+  reason: z.string().trim().min(3).max(500),
+});
+
+export const createEmployeeItemReturnSchema = z.object({
+  quantity: z.number().int().positive().max(2_147_483_647),
+  returnedOn: z.iso.date(),
+  note: z.string().trim().max(1000).nullable().optional(),
+});
 
 export const shiftTypeSchema = z.enum(["MORNING", "NIGHT"]);
 export const workStateSchema = z.enum([

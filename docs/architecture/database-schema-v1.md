@@ -10,7 +10,14 @@ application schema yet.
   e-mailem a Argon2id hashem hesla; přihlášení přijímá jméno i e-mail.
 - `roles`, `permissions`, `role_permissions`, `user_roles`: extensible RBAC.
 - `sessions`: hashed server-side sessions with expiry and revocation.
-- `employees`: operational profile, active state and immutable identifier.
+- `employees`: operational profile, active state, immutable identifier,
+  contact phone and clothing/shoe sizes.
+- `issued_item_types`: editable catalogue of workwear and equipment types;
+  catalogue items are deactivated rather than deleted.
+- `employee_item_issues`: dated issue records with employee, item type,
+  quantity, size and optional note. Item name is snapshotted for history.
+- `employee_item_returns`: append-only dated return events with quantity.
+  Issue and return records retain the responsible user and are audited.
 
 ## Projects and calendar context
 

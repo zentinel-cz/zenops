@@ -64,3 +64,17 @@
     completed/submitted, but no new entry may be created.
 -   **BR-048** All authorization and critical validation must be
     enforced server-side.
+-   **BR-049** Each user has exactly one role. `ACCOUNTANT` is a separate
+    role and does not inherit Worker, Leader or Admin permissions.
+-   **BR-050** A Worker can read only their own profile and issued-item
+    history. Only Accountant and Admin can manage Worker profiles and
+    issued-item records.
+-   **BR-051** A Worker profile stores contact phone, upper-body and lower-body
+    workwear sizes, and shoe size. Changes are audited.
+-   **BR-052** An issue records a Worker, catalogue item, positive quantity,
+    optional size and note, and issue date. Returns are separate dated
+    quantity events and may be partial. Returned quantity cannot exceed the
+    issued quantity.
+-   **BR-053** Issued-item and return history is retained. Issue corrections
+    require a reason and an audit record. Catalogue types are deactivated,
+    not deleted. The feature does not track purchase cost or warehouse stock.

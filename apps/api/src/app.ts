@@ -19,6 +19,7 @@ import { registerVehicleRoutes } from "./vehicles.js";
 import { registerReportRoutes } from "./reports.js";
 import { registerPeriodRoutes } from "./periods.js";
 import { registerAdminRecordRoutes } from "./admin-records.js";
+import { registerWorkerProfileRoutes } from "./worker-profiles.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -117,6 +118,7 @@ export function buildApp(config: AppConfig, db: Database): FastifyInstance {
   registerReportRoutes(app, db);
   registerPeriodRoutes(app, db, requireTrustedOrigin);
   registerAdminRecordRoutes(app, db, requireTrustedOrigin);
+  registerWorkerProfileRoutes(app, db, requireTrustedOrigin);
 
   return app;
 }

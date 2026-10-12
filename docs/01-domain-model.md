@@ -9,12 +9,22 @@ Authentication identity.
 ### Employee
 
 Operational employee profile. Employees are deactivated rather than
-hard-deleted.
+hard-deleted. Worker profiles include contact phone and upper-body, lower-body
+and shoe sizes. Workers can read their own profile and issued-item history;
+Accountants can manage Worker profiles and company-issued item records.
 
 ### Role / Permission
 
-Initial roles: `ADMIN`, `LEADER`, `WORKER`. Permissions should be
-extensible.
+Initial roles: `ADMIN`, `LEADER`, `WORKER`, `ACCOUNTANT`. Each account has
+exactly one role. Permissions should be extensible.
+
+### IssuedItemType / EmployeeItemIssue / EmployeeItemReturn
+
+The item catalogue describes types of company-provided workwear and equipment.
+An issue records the item, worker, quantity, optional size, issue date and
+optional note. Returns are dated quantity events, allowing partial returns
+and a history of what remains with each worker. Catalogue items are
+deactivated rather than deleted. Costs and warehouse stock are outside scope.
 
 ### Project
 

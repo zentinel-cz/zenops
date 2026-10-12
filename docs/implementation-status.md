@@ -1,6 +1,6 @@
 # Implementation Status
 
-Last updated: 2026-09-26
+Last updated: 2026-10-12
 
 ## Preview deployment
 
@@ -26,6 +26,16 @@ Last updated: 2026-09-26
 - Admin dashboard uses mutually exclusive navigation sections; Leader dashboard focuses on approvals and operational assets
 - active machine, attachment and vehicle lists are visible with catalogue controls
 - entire application uses a responsive dark operating theme
+
+## Worker profiles and issued workwear/equipment — complete
+
+- accepted scope adds a standalone Accountant role while preserving one role
+  per account
+- Workers can read their own profile and issued-item history
+- Accountant manages Worker profiles, the item catalogue, issues and returns
+- issue corrections require a reason and are audited; returns are retained as
+  dated quantity events
+- costs and warehouse stock are outside scope
 
 ## Milestone 1 — foundation and authentication — complete
 
