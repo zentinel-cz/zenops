@@ -52,6 +52,9 @@ auditované administrativní opravy provozních záznamů.
 V části **Zaměstnanci** může vytvořit uživatelský účet a zvolit roli **Účetní**.
 V části **Vybavení pracovníků** má stejný přístup jako Účetní: může prohlížet
 a spravovat profily, katalog a evidenci vydaných a vrácených věcí.
+Admin má přístup ke všem oprávněním aplikace. Pracovní den za něj vytváří
+Pracovník a odeslanou práci schvaluje příslušný Vedoucí; Admin může použít
+administrativní opravy.
 
 ### Účetní
 

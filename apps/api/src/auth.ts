@@ -61,7 +61,7 @@ export async function getSessionUser(db: Database, token: string): Promise<Sessi
     left join user_roles ur on ur.user_id = u.id
     left join roles r on r.id = ur.role_id
     left join role_permissions rp on rp.role_id = r.id
-    left join permissions p on p.id = rp.permission_id
+    left join permissions p on p.id = rp.permission_id or r.code = 'ADMIN'
     where s.token_hash = ${hashToken(token)}
       and s.revoked_at is null
       and s.expires_at > now()

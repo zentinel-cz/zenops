@@ -31,6 +31,8 @@ Projects assigned to that Leader.
 
 ## Admin
 
+-   receives every registered application permission, including permissions
+    added by later features
 - cannot create, edit or submit a WorkDay
 -   global operational administration
 -   employee/user administration
@@ -38,6 +40,11 @@ Projects assigned to that Leader.
 -   close/reopen monthly periods
 -   administrative corrections
 -   global reporting and audit access
+
+Admin's global permissions include employee profile and issued-item management.
+Two domain rules remain role-bound: only a Worker creates their own WorkDay, and
+only the current Project Leader approves or returns submitted work for that
+Project. Admin can use the administrative correction workflows instead.
 
 ## Accountant
 
