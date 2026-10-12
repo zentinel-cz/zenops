@@ -8,6 +8,10 @@ const roleOptions: Array<{ code: RoleCode; name: string }> = [
   { code: "ACCOUNTANT", name: "Účetní" },
 ];
 
+const roleNames = Object.fromEntries(
+  roleOptions.map((role) => [role.code, role.name]),
+) as Record<RoleCode, string>;
+
 export function EmployeePanel({ user }: { user: SessionUser }) {
   const [employees, setEmployees] = useState<EmployeeSummary[]>([]);
   const [showCreate, setShowCreate] = useState(false);
@@ -142,7 +146,7 @@ export function EmployeePanel({ user }: { user: SessionUser }) {
         </label>
       )}
       <fieldset>
-        <legend>Role — vyberte jednu</legend>
+        <legend>Přístup do ZenOps — vyberte jednu roli</legend>
         {roleOptions.map((role) => (
           <label className="checkbox" key={role.code}>
             <input
@@ -184,7 +188,7 @@ export function EmployeePanel({ user }: { user: SessionUser }) {
       <div className="section-heading">
         <div>
           <p className="eyebrow">SPRÁVA PŘÍSTUPŮ</p>
-          <h3>Zaměstnanci a práva</h3>
+          <h3>Zaměstnanci a uživatelské účty</h3>
         </div>
         <button
           className="inline-action"
@@ -193,7 +197,7 @@ export function EmployeePanel({ user }: { user: SessionUser }) {
             setEditTarget(null);
           }}
         >
-          {showCreate ? "Zavřít" : "Nový zaměstnanec"}
+          {showCreate ? "Zavřít" : "Vytvořit uživatelský účet"}
         </button>
       </div>
       {error && (
@@ -215,7 +219,9 @@ export function EmployeePanel({ user }: { user: SessionUser }) {
                 {employee.employeeNumber} · @{employee.username} · {employee.email}
               </span>
             </div>
-            <span className="role-list">{employee.roles[0]}</span>
+            <span className="role-list">
+              {roleNames[employee.roles[0] as RoleCode] ?? employee.roles[0]}
+            </span>
             <div className="row-actions">
               <button
                 className="table-action"
