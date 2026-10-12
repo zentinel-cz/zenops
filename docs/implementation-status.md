@@ -36,6 +36,8 @@ Last updated: 2026-10-12
 - issue corrections require a reason and are audited; returns are retained as
   dated quantity events
 - issue history records the place of issue alongside the item, quantity and date
+- location tracking is committed but not yet deployed; apply migration 0015
+  before running the updated API
 - costs and warehouse stock are outside scope
 
 ## Milestone 1 — foundation and authentication — complete
