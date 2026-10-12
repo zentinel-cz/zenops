@@ -15,7 +15,8 @@ application schema yet.
 - `issued_item_types`: editable catalogue of workwear and equipment types;
   catalogue items are deactivated rather than deleted.
 - `employee_item_issues`: dated issue records with employee, item type,
-  quantity, size and optional note. Item name is snapshotted for history.
+  quantity, size, place of issue and optional note. Item name is snapshotted
+  for history.
 - `employee_item_returns`: append-only dated return events with quantity.
   Issue and return records retain the responsible user and are audited.
 

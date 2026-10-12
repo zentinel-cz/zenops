@@ -10,7 +10,7 @@ edit these records.
 The `ACCOUNTANT` role is a standalone, mutually exclusive role. Accountants can
 view and update Worker profiles, manage an item-type catalogue, record dated
 item issues and record dated partial or complete returns. Issue records store
-item, quantity, optional size, date and note. Existing issue records may be
+item, quantity, optional size, date, location and note. Existing issue records may be
 corrected only with a reason; the correction is audited. Returns are separate
 dated quantity events and cannot exceed the issued quantity. Catalogue items
 are deactivated rather than deleted. Admin receives the same management

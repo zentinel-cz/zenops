@@ -72,7 +72,8 @@ rolí.
 3. Katalog rozšiřte zadáním názvu nové věci. Položku lze upravit nebo vyřadit;
    její starší výdejky zůstanou zachované.
 4. Ve formuláři **Vydat věc pracovníkovi** vyberte druh, množství, případnou
-   velikost a datum. Vydání se objeví v historii pracovníka.
+   velikost, datum a místo výdeje. Vydání se objeví v historii pracovníka;
+   uvidíte v ní co, kdy, kde a v jakém množství pracovník převzal.
 5. U nevydaného zbytku zvolte **Zapsat vrácení**. Lze vrátit část nebo celé
    množství; vrácený součet nesmí překročit vydané množství.
 6. Opravu výdejky otevřete přes **Opravit vydání** a uveďte důvod. Historie
@@ -82,7 +83,7 @@ rolí.
 
 Pracovník si přes **Můj profil** může zobrazit své kontaktní údaje, velikosti
 oděvů a obuvi a historii svěřených věcí. Tyto údaje může měnit Účetní.
-Vydání obsahuje věc, množství, velikost a datum. Vrácení se zapisuje zvlášť,
+Vydání obsahuje věc, množství, velikost, datum a místo. Vrácení se zapisuje zvlášť,
 takže zůstane zachována historie a přehled toho, co má pracovník stále u sebe.
 
 ### Orientace v administraci

@@ -199,6 +199,7 @@ export const createEmployeeItemIssueSchema = z.object({
   quantity: z.number().int().positive().max(2_147_483_647),
   size: z.string().trim().max(40).nullable().optional(),
   issuedOn: z.iso.date(),
+  location: z.string().trim().min(2).max(160),
   note: z.string().trim().max(1000).nullable().optional(),
 });
 

@@ -72,7 +72,7 @@
 -   **BR-051** A Worker profile stores contact phone, upper-body and lower-body
     workwear sizes, and shoe size. Changes are audited.
 -   **BR-052** An issue records a Worker, catalogue item, positive quantity,
-    optional size and note, and issue date. Returns are separate dated
+    optional size and note, issue date and issue location. Returns are separate dated
     quantity events and may be partial. Returned quantity cannot exceed the
     issued quantity.
 -   **BR-053** Issued-item and return history is retained. Issue corrections

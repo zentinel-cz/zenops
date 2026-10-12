@@ -21,8 +21,8 @@ exactly one role. Permissions should be extensible.
 ### IssuedItemType / EmployeeItemIssue / EmployeeItemReturn
 
 The item catalogue describes types of company-provided workwear and equipment.
-An issue records the item, worker, quantity, optional size, issue date and
-optional note. Returns are dated quantity events, allowing partial returns
+An issue records the item, worker, quantity, optional size, issue date, place
+of issue and optional note. Returns are dated quantity events, allowing partial returns
 and a history of what remains with each worker. Catalogue items are
 deactivated rather than deleted. Costs and warehouse stock are outside scope.
 

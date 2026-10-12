@@ -42,11 +42,11 @@ async function getWorkerProfile(db: Database, employeeId: string) {
   const profile = employees[0];
   const issues = await db<Array<{
     id: string; itemTypeId: string; itemName: string; quantity: number;
-    size: string | null; issuedOn: string; note: string | null;
+    size: string | null; issuedOn: string; location: string | null; note: string | null;
     returnedQuantity: number;
   }>>`
     select i.id, i.item_type_id, i.item_name_snapshot as item_name, i.quantity,
-      i.size, i.issued_on, i.note,
+      i.size, i.issued_on, i.issued_at_location as location, i.note,
       coalesce(sum(ret.quantity), 0)::int as returned_quantity
     from employee_item_issues i
     left join employee_item_returns ret on ret.issue_id = i.id
@@ -220,9 +220,9 @@ export function registerWorkerProfileRoutes(
       const types = await tx`select id, name from issued_item_types where id = ${parsed.data.itemTypeId} and is_active for share`;
       if (!types[0]) return { error: "Vybraný druh věci není aktivní." } as const;
       const [created] = await tx`
-        insert into employee_item_issues (employee_id, item_type_id, item_name_snapshot, quantity, size, issued_on, note, created_by_user_id, updated_by_user_id)
-        values (${employeeId}, ${types[0].id}, ${types[0].name}, ${parsed.data.quantity}, ${parsed.data.size ?? null}, ${parsed.data.issuedOn}, ${parsed.data.note ?? null}, ${request.sessionUser!.id}, ${request.sessionUser!.id})
-        returning id, employee_id, item_type_id, item_name_snapshot, quantity, size, issued_on, note
+        insert into employee_item_issues (employee_id, item_type_id, item_name_snapshot, quantity, size, issued_on, issued_at_location, note, created_by_user_id, updated_by_user_id)
+        values (${employeeId}, ${types[0].id}, ${types[0].name}, ${parsed.data.quantity}, ${parsed.data.size ?? null}, ${parsed.data.issuedOn}, ${parsed.data.location}, ${parsed.data.note ?? null}, ${request.sessionUser!.id}, ${request.sessionUser!.id})
+        returning id, employee_id, item_type_id, item_name_snapshot, quantity, size, issued_on, issued_at_location as location, note
       `;
       await tx`
         insert into audit_logs (actor_user_id, action, entity_type, entity_id, after_data)
@@ -240,7 +240,7 @@ export function registerWorkerProfileRoutes(
     if (!issueId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(issueId) || !parsed.success) return reply.code(400).send({ error: "Zkontrolujte opravu vydané věci." });
     const result = await db.begin(async (tx) => {
       const rows = await tx`
-        select i.id, i.employee_id, i.item_type_id, i.item_name_snapshot, i.quantity, i.size, i.issued_on, i.note
+        select i.id, i.employee_id, i.item_type_id, i.item_name_snapshot, i.quantity, i.size, i.issued_on, i.issued_at_location as location, i.note
         from employee_item_issues i where i.id = ${issueId} for update
       `;
       const before = rows[0];
@@ -252,9 +252,10 @@ export function registerWorkerProfileRoutes(
       const [after] = await tx`
         update employee_item_issues set item_type_id = ${types[0].id}, item_name_snapshot = ${types[0].name},
           quantity = ${parsed.data.quantity}, size = ${parsed.data.size ?? null}, issued_on = ${parsed.data.issuedOn},
+          issued_at_location = ${parsed.data.location},
           note = ${parsed.data.note ?? null}, updated_by_user_id = ${request.sessionUser!.id}, updated_at = now()
         where id = ${issueId}
-        returning id, employee_id, item_type_id, item_name_snapshot, quantity, size, issued_on, note
+        returning id, employee_id, item_type_id, item_name_snapshot, quantity, size, issued_on, issued_at_location as location, note
       `;
       await tx`
         insert into audit_logs (actor_user_id, action, entity_type, entity_id, before_data, after_data, reason)

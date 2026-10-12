@@ -35,6 +35,7 @@ Last updated: 2026-10-12
 - Accountant manages Worker profiles, the item catalogue, issues and returns
 - issue corrections require a reason and are audited; returns are retained as
   dated quantity events
+- issue history records the place of issue alongside the item, quantity and date
 - costs and warehouse stock are outside scope
 
 ## Milestone 1 — foundation and authentication — complete
