@@ -10,6 +10,7 @@ const databaseUrl = process.env.TEST_DATABASE_URL;
 const integration = databaseUrl ? describe : describe.skip;
 const origin = "https://zenops.test";
 const password = "Correct-Horse-2026!";
+let loginRequestNumber = 0;
 
 integration("authentication integration", () => {
   const db = postgres(databaseUrl!, { transform: postgres.camel, max: 2 });
@@ -102,6 +103,7 @@ integration("authentication integration", () => {
     const response = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       payload: { identifier: "worker@zenops.test", password },
     });
     expect(response.statusCode).toBe(403);
@@ -111,6 +113,7 @@ integration("authentication integration", () => {
     const response = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "worker@zenops.test", password: "Incorrect-Password!" },
     });
@@ -125,6 +128,7 @@ integration("authentication integration", () => {
     const login = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin, "user-agent": "ZenOps test" },
       payload: { identifier: "WORKER", password },
     });
@@ -170,6 +174,7 @@ integration("authentication integration", () => {
     const login = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "leader@zenops.test", password },
     });
@@ -195,6 +200,7 @@ integration("authentication integration", () => {
     const login = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "leader@zenops.test", password },
     });
@@ -242,6 +248,7 @@ integration("authentication integration", () => {
     const login = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "leader@zenops.test", password },
     });
@@ -314,6 +321,7 @@ integration("authentication integration", () => {
     const login = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "leader@zenops.test", password },
     });
@@ -364,6 +372,7 @@ integration("authentication integration", () => {
     const login = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "admin@zenops.test", password },
     });
@@ -433,6 +442,7 @@ integration("authentication integration", () => {
     const login = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "admin@zenops.test", password },
     });
@@ -538,6 +548,7 @@ integration("authentication integration", () => {
     const adminLogin = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "admin@zenops.test", password },
     });
@@ -549,6 +560,7 @@ integration("authentication integration", () => {
     const workerLogin = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "passenger@zenops.test", password },
     });
@@ -592,6 +604,7 @@ integration("authentication integration", () => {
     const login = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "admin@zenops.test", password },
     });
@@ -634,6 +647,7 @@ integration("authentication integration", () => {
     const login = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "admin@zenops.test", password },
     });
@@ -692,6 +706,7 @@ integration("authentication integration", () => {
     const login = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "worker@zenops.test", password },
     });
@@ -866,6 +881,7 @@ integration("authentication integration", () => {
     const login = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "passenger@zenops.test", password },
     });
@@ -903,6 +919,7 @@ integration("authentication integration", () => {
     const adminLogin = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "admin@zenops.test", password },
     });
@@ -921,6 +938,7 @@ integration("authentication integration", () => {
     const login = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "leader@zenops.test", password },
     });
@@ -985,12 +1003,27 @@ integration("authentication integration", () => {
     const login = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "worker@zenops.test", password },
     });
     const setCookie = login.headers["set-cookie"];
     const cookieHeader = Array.isArray(setCookie) ? setCookie[0] : setCookie;
     const cookie = cookieHeader?.split(";", 1)[0];
+    const current = await app.inject({ method: "GET", url: "/api/workdays/current?date=2026-09-25", headers: { cookie: cookie! } });
+    const returnedEntry = current.json().workDay.entries.find((entry: { id: string }) => entry.id === submittedEntryIds[1]);
+    expect(returnedEntry.returnReason).toBe("Doplňte prosím vykázaný čas.");
+    const payload = { projectId: returnedEntry.projectId, workTypeCode: returnedEntry.workTypeCode,
+      workActivityCode: returnedEntry.workActivityCode, startAt: returnedEntry.startAt, endAt: returnedEntry.endAt,
+      description: "Doplněný popis vrácené práce" };
+    const corrected = await app.inject({ method: "PATCH", url: `/api/workdays/${submittedWorkDayId}/entries/${returnedEntry.id}`,
+      headers: { origin, cookie: cookie! }, payload });
+    expect(corrected.statusCode, corrected.body).toBe(200);
+    const history = await db`select id from approvals where work_entry_id=${returnedEntry.id}`;
+    expect(history).toHaveLength(1);
+    const locked = await app.inject({ method: "PATCH", url: `/api/workdays/${submittedWorkDayId}/entries/${submittedEntryIds[0]}`,
+      headers: { origin, cookie: cookie! }, payload });
+    expect(locked.statusCode).toBe(409);
     const submitted = await app.inject({
       method: "POST",
       url: `/api/workdays/${submittedWorkDayId}/submit`,
@@ -1011,6 +1044,7 @@ integration("authentication integration", () => {
     const leaderLogin = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "leader@zenops.test", password },
     });
@@ -1044,6 +1078,7 @@ integration("authentication integration", () => {
     const workerLogin = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "worker@zenops.test", password },
     });
@@ -1064,6 +1099,7 @@ integration("authentication integration", () => {
     const adminLogin = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "admin@zenops.test", password },
     });
@@ -1121,6 +1157,7 @@ integration("authentication integration", () => {
     const leaderLogin = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "leader@zenops.test", password },
     });
@@ -1146,6 +1183,8 @@ integration("authentication integration", () => {
     });
     expect(closed.statusCode, closed.body).toBe(200);
     expect(closed.json().period.state).toBe("CLOSED");
+    await expect(db`update work_entries set description='Změna uzavřeného měsíce' where id=${submittedEntryIds[0]!}`).rejects.toMatchObject({ code: "55000" });
+
     const closedEdit = await app.inject({
       method: "PUT",
       url: `/api/projects/${projectId}/day?date=2026-09-25`,
@@ -1184,6 +1223,7 @@ integration("authentication integration", () => {
     const login = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "admin@zenops.test", password },
     });
@@ -1208,12 +1248,18 @@ integration("authentication integration", () => {
         projectId: entry!.projectId,
         workTypeCode: "MACHINE_MOWING",
         startAt: entry!.startAt.toISOString(),
-        endAt: entry!.endAt.toISOString(),
+        endAt: new Date(entry!.endAt.getTime() - 60000).toISOString(),
         description: "Administrativně ověřeno",
         reason: "Oprava popisu",
       },
     });
     expect(corrected.statusCode, corrected.body).toBe(200);
+    const mismatches = await db`select mu.id from machine_usages mu join work_entries we on we.id=mu.work_entry_id
+      where we.id=${entry!.id} and (mu.start_at<>we.start_at or mu.end_at<>we.end_at)
+      union all select au.id from attachment_usages au join work_entries we on we.id=au.work_entry_id
+      where we.id=${entry!.id} and (au.start_at<>we.start_at or au.end_at<>we.end_at)`;
+    expect(mismatches).toHaveLength(0);
+
     const [breakEntry] = await db<
       Array<{ id: string; startAt: Date; endAt: Date }>
     >`select id,start_at,end_at from break_entries limit 1`;
@@ -1289,6 +1335,7 @@ integration("authentication integration", () => {
     const login = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "admin@zenops.test", password },
     });
@@ -1324,6 +1371,7 @@ integration("authentication integration", () => {
     const oldLogin = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: { identifier: "admin@zenops.test", password },
     });
@@ -1331,6 +1379,7 @@ integration("authentication integration", () => {
     const newLogin = await app.inject({
       method: "POST",
       url: "/api/auth/login",
+      remoteAddress: `192.0.2.${++loginRequestNumber}`,
       headers: { origin },
       payload: {
         identifier: "admin@zenops.test",

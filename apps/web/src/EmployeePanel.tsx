@@ -1,3 +1,5 @@
+import { useMutation } from "./useMutation";
+import { roleLabel } from "@zenops/contracts/labels";
 import type { EmployeeSummary, RoleCode, SessionUser } from "@zenops/contracts";
 import { type FormEvent, useEffect, useState } from "react";
 import { ListSearch, matchesSearch } from "./ListSearch";
@@ -5,7 +7,7 @@ import { ListSearch, matchesSearch } from "./ListSearch";
 const roleOptions: Array<{ code: RoleCode; name: string }> = [
   { code: "WORKER", name: "Pracovník" },
   { code: "LEADER", name: "Vedoucí" },
-  { code: "ADMIN", name: "Admin" },
+  { code: "ADMIN", name: roleLabel("ADMIN") },
   { code: "ACCOUNTANT", name: "Účetní" },
 ];
 
@@ -19,6 +21,7 @@ export function EmployeePanel({ user }: { user: SessionUser }) {
   const [editTarget, setEditTarget] = useState<EmployeeSummary | null>(null);
   const [stateTarget, setStateTarget] = useState<EmployeeSummary | null>(null);
   const [error, setError] = useState("");
+  const { busy, runMutation } = useMutation(setError);
   const [query, setQuery] = useState("");
 
   const load = () =>
@@ -38,6 +41,8 @@ export function EmployeePanel({ user }: { user: SessionUser }) {
     event: FormEvent<HTMLFormElement>,
     employee?: EmployeeSummary,
   ) {
+event.preventDefault(); return runMutation(async () => {
+
     event.preventDefault();
     setError("");
     const data = new FormData(event.currentTarget);
@@ -70,9 +75,13 @@ export function EmployeePanel({ user }: { user: SessionUser }) {
     setEditTarget(null);
     await load();
     if (employee?.id === user.employeeId) window.location.reload();
-  }
+
+});
+}
 
   async function changeState(event: FormEvent<HTMLFormElement>) {
+event.preventDefault(); return runMutation(async () => {
+
     event.preventDefault();
     if (!stateTarget) return;
     const data = new FormData(event.currentTarget);
@@ -94,7 +103,9 @@ export function EmployeePanel({ user }: { user: SessionUser }) {
     }
     setStateTarget(null);
     await load();
-  }
+
+});
+}
 
   const employeeForm = (employee?: EmployeeSummary) => (
     <form
@@ -172,9 +183,9 @@ export function EmployeePanel({ user }: { user: SessionUser }) {
           <input name="reason" required minLength={3} maxLength={500} />
         </label>
       )}
-      <button>{employee ? "Uložit zaměstnance" : "Vytvořit účet"}</button>
+      <button disabled={busy}>{employee ? "Uložit zaměstnance" : "Vytvořit účet"}</button>
       {employee && (
-        <button
+        <button disabled={busy}
           type="button"
           className="ghost"
           onClick={() => setEditTarget(null)}
@@ -192,7 +203,7 @@ export function EmployeePanel({ user }: { user: SessionUser }) {
           <p className="eyebrow">SPRÁVA PŘÍSTUPŮ</p>
           <h3>Zaměstnanci a uživatelské účty</h3>
         </div>
-        <button
+        <button disabled={busy}
           className="inline-action"
           onClick={() => {
             setShowCreate((value) => !value);
@@ -223,10 +234,10 @@ export function EmployeePanel({ user }: { user: SessionUser }) {
               </span>
             </div>
             <span className="role-list">
-              {roleNames[employee.roles[0] as RoleCode] ?? employee.roles[0]}
+              {roleLabel(employee.roles[0] ?? "")}
             </span>
             <div className="row-actions">
-              <button
+              <button disabled={busy}
                 className="table-action"
                 onClick={() => {
                   setEditTarget(employee);
@@ -237,7 +248,7 @@ export function EmployeePanel({ user }: { user: SessionUser }) {
               </button>
               <button
                 className="table-action"
-                disabled={employee.id === user.employeeId}
+                disabled={busy || (employee.id === user.employeeId)}
                 onClick={() => setStateTarget(employee)}
               >
                 {employee.isActive ? "Deaktivovat" : "Aktivovat"}
@@ -254,7 +265,7 @@ export function EmployeePanel({ user }: { user: SessionUser }) {
               {stateTarget.isActive ? "Deaktivovat" : "Aktivovat"}:{" "}
               {stateTarget.displayName}
             </strong>
-            <button
+            <button disabled={busy}
               type="button"
               className="close-button"
               onClick={() => setStateTarget(null)}
@@ -272,7 +283,7 @@ export function EmployeePanel({ user }: { user: SessionUser }) {
               autoFocus
             />
           </label>
-          <button>
+          <button disabled={busy}>
             {stateTarget.isActive ? "Potvrdit deaktivaci" : "Potvrdit aktivaci"}
           </button>
         </form>

@@ -309,3 +309,42 @@ vrácený den uzávěrku zablokuje.
 
 Uzavřený měsíc nepovolí běžné provozní změny. Pokud je nutná oprava, Admin
 musí uvést důvod znovuotevření. Uzavření i znovuotevření se auditují.
+
+
+## České názvy a hlášení
+
+Nabídky činností, role, stavy práce, směny a stavy zakázek se zobrazují česky
+v jednotlivých rolích i v exportovaném PDF. V administrativní opravě práce
+vybíráte aktivitu kácení z možností **Pilař**, **Řidič traktoru**, **Manipulace**,
+**Úklid** a **Ostatní**. Stavy pracovního dne jsou **Rozpracováno**,
+**Odesláno ke schválení**, **Částečně schváleno**, **Schváleno** a **Vráceno k opravě**.
+V měsíčním přehledu vidíte **Ranní směna** nebo **Noční směna** a zakázky jako
+**Otevřená** nebo **Uzavřená**. Vyhledávání podle těchto údajů přijímá české názvy.
+
+Pokud překročíte počet povolených pokusů o přihlášení nebo změnu hesla, zobrazí
+se česká výzva k vyčkání. Technické chyby serveru se zobrazují jako české hlášení.
+Názvy a poznámky zadané uživateli se zobrazují tak, jak byly uloženy.
+
+## Opravy a přehlednost pracovních postupů
+
+- V části **Zakázky** je seznam přes celou šířku obsahu. Administrátor vidí
+  všechny dostupné zakázky; seznam už není omezen na prvních pět položek.
+- Denní report se na telefonu skládá do karet s popisky údajů. Seznamy a
+  formuláře zalamují dlouhé názvy a ovládací tlačítka.
+- V **Moje směna** zvolíte datum pracovního dne. Můžete otevřít i starší den.
+  U vráceného úseku vidíte důvod vedoucího a tlačítko **Opravit práci**.
+  Opravený úsek znovu odešlete ke schválení. Schválené úseky jsou zamčené;
+  úseky s historií rozhodnutí se opravují bez mazání této historie.
+- Při změně času úseku se upraví i čas obsazení připojeného stroje a
+  příslušenství. Pokud by vznikl souběh techniky, celá oprava se odmítne.
+- Uzavřený měsíc chrání i databáze. Pro opravu jej musí administrátor nejprve
+  znovu otevřít s uvedením důvodu.
+- Při změně zakázky v denním provozu vyčkejte na načtení údajů. Uložit lze
+  až načtenou zakázku. Pokud se uloží údaje dne, ale selže uložení paliva,
+  aplikace tuto skutečnost výslovně oznámí.
+- Po změně data nebo měsíce reportu se předchozí údaje skryjí. Při selhání
+  načítání aplikace nezobrazuje starý report jako aktuální.
+- Během ukládání je opakovaný zápis zablokován. Při přerušení spojení
+  ověřte uložený stav před opakováním operace.
+
+Denní report zobrazuje pod pracovními úseky také jízdy, řidiče, spolucestující, tachometr a palivo. Samostatná část uvádí sdílené palivo zakázek včetně autora a poznámky. Počet pracovníků rozlišuje i osoby se stejným jménem.

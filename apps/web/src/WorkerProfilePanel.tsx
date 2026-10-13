@@ -18,7 +18,7 @@ export function WorkerProfilePanel({ onClose }: { onClose: () => void }) {
         return response.json() as Promise<{ profile: WorkerProfile; issues: Issue[] }>;
       })
       .then((data) => { setProfile(data.profile); setIssues(data.issues); })
-      .catch((cause) => setError(cause instanceof Error ? cause.message : "Profil se nepodařilo načíst."));
+      .catch((cause) => setError(cause instanceof Error && !(cause instanceof TypeError) ? cause.message : "Profil se nepodařilo načíst."));
   }, []);
 
   return <section className="management-panel worker-profile-panel">

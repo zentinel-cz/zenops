@@ -605,3 +605,53 @@ button:focus-visible,input:focus-visible,select:focus-visible { outline:3px soli
 .admin-shell .list-search label { color:#91a499; }
 .admin-shell .list-search input { background:#0d1210; }
 @media (max-width: 760px) { .list-search { width:100%; } }
+
+/* Shared layouts must shrink inside sidebars, tablets and long translated labels. */
+.admin-workspace,.admin-content,.management-panel,.section-heading>div,
+.employee-row>div,.admin-entry>span,.monthly-list,.asset-lists>div { min-width:0; }
+.section-heading,.report-controls,.button-group { flex-wrap:wrap; }
+button,a,input,select,textarea { -webkit-tap-highlight-color:transparent; }
+button { white-space:normal; overflow-wrap:anywhere; }
+button:disabled { cursor:not-allowed; }
+button:focus-visible,a:focus-visible { outline:3px solid #80e5a0; outline-offset:3px; }
+label,fieldset { min-width:0; }
+input,select,textarea { min-width:0; max-width:100%; }
+.employee-row span,.admin-entry small,.monthly-list strong,.monthly-list small,
+.issued-item-list p,.issued-item-list small,.worker-profile-details dd { overflow-wrap:anywhere; }
+.admin-shell .project-directory { grid-template-columns:minmax(0,1fr); }
+.project-directory .projects-card { min-width:0; }
+.project-directory .projects-card li { grid-template-columns:minmax(90px,.4fr) minmax(0,2fr) auto; gap:16px; padding:16px 0; }
+.project-directory .projects-card li>span { overflow-wrap:anywhere; }
+.project-directory .row-actions { display:flex; flex-wrap:wrap; gap:8px; }
+.monthly-list>.list-search { display:grid; grid-template-columns:minmax(0,1fr); align-items:stretch; gap:6px; border:0; padding:0; width:100%; }
+.list-search label { color:#a9b9af; line-height:1.5; }
+.state-dialog { position:relative; inset:auto; width:100%; margin:20px 0 0; box-shadow:none; }
+.account-panel { max-height:calc(100dvh - 150px); overflow-y:auto; overscroll-behavior:contain; }
+.admin-entry-form { max-height:calc(100dvh - 32px); overscroll-behavior:contain; }
+.employee-form fieldset { flex-wrap:wrap; }
+@media (max-width:1100px) {
+  .asset-lists,.monthly-grids { grid-template-columns:minmax(0,1fr); }
+  .employee-form,.asset-form,.project-day-form { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (max-width:760px) {
+  .employee-form,.asset-form,.project-day-form { grid-template-columns:minmax(0,1fr); }
+  .project-directory .projects-card li { grid-template-columns:minmax(0,1fr); gap:8px; }
+  .project-directory .projects-card .row-actions { grid-column:auto; }
+  .admin-day>div:first-child,.admin-entry { flex-wrap:wrap; }
+  .admin-entry>.row-actions { width:100%; }
+  .report-table { overflow:visible; }
+  .report-row { min-width:0; grid-template-columns:minmax(0,1fr); gap:12px; padding:18px 0; }
+  .report-head { display:none; }
+  .report-row>span[data-label]::before { content:attr(data-label); color:#91a499; font-size:11px; }
+  .report-row>span { min-width:0; overflow-wrap:anywhere; }
+  input,select,textarea { font-size:16px; }
+  .table-action,.project-state,.ghost { min-height:44px; }
+  .admin-shell .admin-sidebar nav button { flex:0 0 auto; width:auto; padding:0 12px; gap:8px; }
+  .admin-shell .admin-sidebar nav button span { display:block; white-space:nowrap; }
+}
+
+.report-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 12px; margin-top: 24px; }
+.report-details > h4, .report-details > .muted { grid-column: 1 / -1; margin: 0; }
+.report-detail-card { min-width: 0; padding: 16px; border: 1px solid #dce5e0; border-radius: 12px; overflow-wrap: anywhere; }
+.report-detail-card p { margin: 8px 0 0; }
+.download-button[aria-disabled="true"] { opacity: .5; pointer-events: none; }

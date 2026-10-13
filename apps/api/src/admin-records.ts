@@ -48,6 +48,8 @@ export function registerAdminRecordRoutes(
         return reply
           .code(400)
           .send({ error: "Neplatná oprava pracovního úseku." });
+      if (parsed.data.workTypeCode === "OTHER" && !parsed.data.description?.trim())
+        return reply.code(422).send({ error: "U ostatní práce je povinný popis." });
       try {
         const result = await db.begin(async (transaction) => {
           const before = await transaction<
@@ -57,7 +59,7 @@ export function registerAdminRecordRoutes(
               workDate: string;
               state: string;
             }>
-          >`select we.id,we.work_day_id,wd.work_date,we.state from work_entries we join work_days wd on wd.id=we.work_day_id join monthly_periods mp on mp.id=wd.monthly_period_id where we.id=${params.data.entryId} and mp.state='OPEN' for update of we`;
+          >`select we.*,wd.work_date from work_entries we join work_days wd on wd.id=we.work_day_id join monthly_periods mp on mp.id=wd.monthly_period_id where we.id=${params.data.entryId} and mp.state='OPEN' for update of we`;
           if (!before[0]) return null;
           const context = await transaction<
             Array<{

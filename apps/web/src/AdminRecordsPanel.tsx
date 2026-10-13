@@ -1,5 +1,7 @@
+import { useMutation } from "./useMutation";
+import { workActivities, workStateLabel, shiftLabel } from "@zenops/contracts/labels";
 import type { ProjectSummary } from "@zenops/contracts";
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { ListSearch, matchesSearch } from "./ListSearch";
 type MachineUsage = {
   id: string;
@@ -57,7 +59,7 @@ const types = [
   ["BRUSHCUTTER", "Ruční sečení"],
   ["OTHER", "Ostatní"],
 ];
-const activities = ["SAWYER", "TRACTOR_DRIVER", "HANDLING", "CLEANUP", "OTHER"];
+const activities = workActivities;
 export function AdminRecordsPanel({
   projects,
 }: {
@@ -68,17 +70,26 @@ export function AdminRecordsPanel({
   const [days, setDays] = useState<Day[]>([]);
   const [target, setTarget] = useState<Entry | null>(null);
   const [message, setMessage] = useState("");
+  const { busy, runMutation } = useMutation(setMessage);
   const [query, setQuery] = useState("");
-  const load = () =>
-    fetch(`/api/admin/workdays?date=${date}`, { credentials: "include" })
+  const requestVersion = useRef(0);
+  const load = () => {
+    const version = ++requestVersion.current;
+    setDays([]);
+    return fetch(`/api/admin/workdays?date=${date}`, { credentials: "include" })
       .then(async (r) =>
         r.ok ? (r.json() as Promise<{ workDays: Day[] }>) : Promise.reject(),
       )
-      .then((b) => setDays(b.workDays));
+      .then((b) => { if (version === requestVersion.current) setDays(b.workDays); });
+  };
   useEffect(() => {
+    setTarget(null); setMessage("");
     void load().catch(() => setMessage("Záznamy se nepodařilo načíst."));
+    return () => { requestVersion.current++; };
   }, [date]);
   async function edit(e: FormEvent<HTMLFormElement>) {
+e.preventDefault(); return runMutation(async () => {
+
     e.preventDefault();
     if (!target) return;
     const d = new FormData(e.currentTarget);
@@ -103,8 +114,12 @@ export function AdminRecordsPanel({
     setTarget(null);
     setMessage("Denní záznam byl auditovaně opraven.");
     await load();
-  }
+
+});
+}
   async function patch(url: string, body: object) {
+return runMutation(async () => {
+
     const reason = window.prompt("Důvod administrativní opravy:");
     if (!reason) return;
     const r = await fetch(url, {
@@ -119,7 +134,9 @@ export function AdminRecordsPanel({
     }
     setMessage("Provozní údaj byl auditovaně opraven.");
     await load();
-  }
+
+});
+}
   function editBreak(item: Break) {
     const start = window.prompt("Začátek přestávky:", local(item.startAt));
     const end = window.prompt("Konec přestávky:", local(item.endAt));
@@ -167,6 +184,7 @@ export function AdminRecordsPanel({
         </div>
         <input
           className="month-input"
+          aria-label="Datum denních záznamů"
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
@@ -177,12 +195,12 @@ export function AdminRecordsPanel({
       {days.length === 0 ? (
         <p className="muted">Pro zvolené datum nejsou záznamy.</p>
       ) : (
-        days.filter((day) => matchesSearch(query, day.displayName, day.workDate, day.shiftType, day.state, day.entries.map((entry) => `${entry.projectCode} ${entry.projectName} ${entry.workTypeName} ${entry.machineUsage?.machineCode ?? ""} ${entry.description ?? ""}`).join(" "))).map((day) => (
+        days.filter((day) => matchesSearch(query, day.displayName, day.workDate, shiftLabel(day.shiftType), workStateLabel(day.state), day.entries.map((entry) => `${entry.projectCode} ${entry.projectName} ${entry.workTypeName} ${entry.machineUsage?.machineCode ?? ""} ${entry.description ?? ""}`).join(" "))).map((day) => (
           <div className="admin-day" key={day.id}>
             <div>
               <strong>{day.displayName}</strong>
               <span className={`state-badge ${day.state.toLowerCase()}`}>
-                {day.state}
+                {workStateLabel(day.state)}
               </span>
             </div>
             {day.entries.map((entry) => (
@@ -200,21 +218,21 @@ export function AdminRecordsPanel({
                     })}
                   </b>
                   <small>
-                    {entry.projectCode} · {entry.workTypeName} · {entry.state}
+                    {entry.projectCode} · {entry.workTypeName} · {workStateLabel(entry.state)}
                     {entry.machineUsage
                       ? ` · ${entry.machineUsage.machineCode}`
                       : ""}
                   </small>
                 </span>
                 <div className="row-actions">
-                  <button
+                  <button disabled={busy}
                     className="table-action"
                     onClick={() => setTarget(entry)}
                   >
                     Upravit práci
                   </button>
                   {entry.machineUsage && (
-                    <button
+                    <button disabled={busy}
                       className="table-action"
                       onClick={() => editMachine(entry.machineUsage!)}
                     >
@@ -240,7 +258,7 @@ export function AdminRecordsPanel({
                   </b>
                   <small>Přestávka</small>
                 </span>
-                <button
+                <button disabled={busy}
                   className="table-action"
                   onClick={() => editBreak(item)}
                 >
@@ -256,7 +274,7 @@ export function AdminRecordsPanel({
                     {item.startOdometerKm}–{item.endOdometerKm} km
                   </small>
                 </span>
-                <button className="table-action" onClick={() => editTrip(item)}>
+                <button disabled={busy} className="table-action" onClick={() => editTrip(item)}>
                   Upravit jízdu
                 </button>
               </div>
@@ -264,12 +282,12 @@ export function AdminRecordsPanel({
           </div>
         ))
       )}
-      {days.length > 0 && !days.some((day) => matchesSearch(query, day.displayName, day.workDate, day.shiftType, day.state, day.entries.map((entry) => `${entry.projectCode} ${entry.projectName} ${entry.workTypeName} ${entry.machineUsage?.machineCode ?? ""} ${entry.description ?? ""}`).join(" "))) && <p className="muted">Žádný den neodpovídá hledání.</p>}
+      {days.length > 0 && !days.some((day) => matchesSearch(query, day.displayName, day.workDate, shiftLabel(day.shiftType), workStateLabel(day.state), day.entries.map((entry) => `${entry.projectCode} ${entry.projectName} ${entry.workTypeName} ${entry.machineUsage?.machineCode ?? ""} ${entry.description ?? ""}`).join(" "))) && <p className="muted">Žádný den neodpovídá hledání.</p>}
       {target && (
-        <form className="admin-entry-form" onSubmit={edit}>
+        <form key={target.id} className="admin-entry-form" onSubmit={edit}>
           <div>
             <strong>Upravit pracovní úsek</strong>
-            <button
+            <button disabled={busy}
               type="button"
               className="close-button"
               onClick={() => setTarget(null)}
@@ -304,8 +322,8 @@ export function AdminRecordsPanel({
               defaultValue={target.workActivityCode ?? ""}
             >
               <option value="">Bez aktivity</option>
-              {activities.map((a) => (
-                <option key={a}>{a}</option>
+              {activities.map(([code, name]) => (
+                <option key={code} value={code}>{name}</option>
               ))}
             </select>
           </label>
@@ -335,7 +353,7 @@ export function AdminRecordsPanel({
             Důvod opravy
             <input name="reason" minLength={3} required />
           </label>
-          <button>Uložit auditovanou opravu</button>
+          <button disabled={busy}>Uložit auditovanou opravu</button>
         </form>
       )}
     </section>

@@ -1,3 +1,5 @@
+import { useMutation } from "./useMutation";
+import { roleLabel, projectStatusLabel } from "@zenops/contracts/labels";
 import { type FormEvent, type ReactNode, useEffect, useState } from "react";
 import type { ProjectSummary, SessionUser } from "@zenops/contracts";
 import { EmployeePanel } from "./EmployeePanel";
@@ -113,6 +115,7 @@ function Dashboard({
     null,
   );
   const [projectError, setProjectError] = useState("");
+  const { busy, runMutation } = useMutation(setProjectError);
   const [assetVersion, setAssetVersion] = useState(0);
   const [showDailyRecord, setShowDailyRecord] = useState(false);
   const [showWorkerProfile, setShowWorkerProfile] = useState(false);
@@ -168,6 +171,8 @@ function Dashboard({
   }, []);
 
   async function createProject(event: FormEvent<HTMLFormElement>) {
+event.preventDefault(); return runMutation(async () => {
+
     event.preventDefault();
     setProjectError("");
     const form = event.currentTarget;
@@ -197,9 +202,13 @@ function Dashboard({
     form.reset();
     setShowProjectForm(false);
     await loadProjects();
-  }
+
+});
+}
 
   async function changeProjectState(project: ProjectSummary) {
+return runMutation(async () => {
+
     setProjectError("");
     const response = await fetch(`/api/projects/${project.id}/state`, {
       method: "PATCH",
@@ -219,10 +228,12 @@ function Dashboard({
       return;
     }
     await loadProjects();
-  }
+
+});
+}
 
   async function updateProject(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+    event.preventDefault(); return runMutation(async () => {
     if (!editingProject) return;
     setProjectError("");
     const data = new FormData(event.currentTarget);
@@ -252,18 +263,19 @@ function Dashboard({
     }
     setEditingProject(null);
     await loadProjects();
+    });
   }
 
   const projectOverview = (
-    <section className="module-grid" aria-label="Moduly">
+    <section className="module-grid project-directory" aria-label="Seznam zakázek">
       <article className="projects-card">
         <span>01 · {loadingProjects ? "…" : projects.length}</span>
         <h3>{canManageProjects ? "Zakázky" : "Otevřené zakázky"}</h3>
         {projects.length ? (
           <>
-          {projects.length > 5 && <ListSearch value={projectQuery} onChange={setProjectQuery} label="Hledat zakázku podle kódu, názvu nebo místa" />}
+          {projects.length > 0 && <ListSearch value={projectQuery} onChange={setProjectQuery} label="Hledat zakázku podle kódu, názvu nebo místa" />}
           <ul>
-        {projects.filter((project) => matchesSearch(projectQuery, project.code, project.name, project.location, project.status)).slice(0, isAdmin && !projectQuery ? 5 : projects.length).map((project) => (
+        {projects.filter((project) => matchesSearch(projectQuery, project.code, project.name, project.location, projectStatusLabel(project.status))).map((project) => (
               <li
                 className={project.status === "CLOSED" ? "closed" : ""}
                 key={project.id}
@@ -274,13 +286,13 @@ function Dashboard({
                 </span>
                 {canManageProjects && (
                   <span className="row-actions">
-                    <button
+                    <button disabled={busy}
                       className="project-state"
                       onClick={() => setEditingProject(project)}
                     >
                       Upravit
                     </button>
-                    <button
+                    <button disabled={busy}
                       className="project-state"
                       onClick={() => void changeProjectState(project)}
                     >
@@ -291,6 +303,7 @@ function Dashboard({
               </li>
             ))}
           </ul>
+          {!projects.some((project) => matchesSearch(projectQuery, project.code, project.name, project.location, projectStatusLabel(project.status))) && <p className="muted">Žádná zakázka neodpovídá hledání.</p>}
           </>
         ) : (
           <p>
@@ -300,7 +313,7 @@ function Dashboard({
           </p>
         )}
         {canCreateProject && (
-          <button
+          <button disabled={busy}
             className="inline-action"
             onClick={() => setShowProjectForm((visible) => !visible)}
           >
@@ -308,18 +321,6 @@ function Dashboard({
           </button>
         )}
         <b>PROVOZNÍ PŘEHLED</b>
-      </article>
-      <article>
-        <span>02</span>
-        <h3>Technika</h3>
-        <p>Stroje, příslušenství a vozidla v jednom přehledu.</p>
-        <b>SPRÁVA PROSTŘEDKŮ</b>
-      </article>
-      <article>
-        <span>03</span>
-        <h3>Schvalování</h3>
-        <p>Kontrola práce podle vedoucích zakázek.</p>
-        <b>PRACOVNÍ TOK</b>
       </article>
     </section>
   );
@@ -370,7 +371,7 @@ function Dashboard({
                 {projectError}
               </p>
             )}
-            <button>Vytvořit zakázku</button>
+            <button disabled={busy}>Vytvořit zakázku</button>
           </form>
         </section>
       )}
@@ -378,7 +379,7 @@ function Dashboard({
         <form className="admin-entry-form" onSubmit={updateProject}>
           <div>
             <strong>Upravit zakázku</strong>
-            <button
+            <button disabled={busy}
               type="button"
               className="close-button"
               onClick={() => setEditingProject(null)}
@@ -456,7 +457,7 @@ function Dashboard({
             <input name="reason" minLength={3} maxLength={500} required />
           </label>
           {projectError && <p className="error">{projectError}</p>}
-          <button>Uložit auditovanou změnu</button>
+          <button disabled={busy}>Uložit auditovanou změnu</button>
         </form>
       )}
       {!showProjectForm && projectError && (
@@ -472,11 +473,11 @@ function Dashboard({
       <main className="admin-shell accountant-shell">
         <aside className="admin-sidebar">
           <div className="sidebar-brand"><span className="brand-mark">Z</span><div><strong>ZENOPS</strong><small>PERSONÁLNÍ EVIDENCE</small></div></div>
-          <nav aria-label="Hlavní navigace"><button className="active" type="button" aria-current="page"><NavIcon name="people" /><span>Uživatelé a vybavení</span></button></nav>
-          <div className="sidebar-status"><span /><div><strong>Systém online</strong><small>Personální evidence</small></div></div>
+          <nav aria-label="Hlavní navigace"><button disabled={busy} className="active" type="button" aria-current="page"><NavIcon name="people" /><span>Uživatelé a vybavení</span></button></nav>
+          <div className="sidebar-status"><span /><div><strong>Systém je dostupný</strong><small>Personální evidence</small></div></div>
         </aside>
         <div className="admin-workspace">
-          <header className="admin-topbar"><div><span className="topbar-context">PERSONÁLNÍ EVIDENCE</span><h1>Uživatelé a svěřené věci</h1></div><div className="account"><div className="user-chip"><span>{user.displayName}</span><small>Účetní</small></div><AccountPanel onPasswordChanged={onLogout} /><button className="ghost" onClick={onLogout}>Odhlásit</button></div></header>
+          <header className="admin-topbar"><div><span className="topbar-context">PERSONÁLNÍ EVIDENCE</span><h1>Uživatelé a svěřené věci</h1></div><div className="account"><div className="user-chip"><span>{user.displayName}</span><small>Účetní</small></div><AccountPanel onPasswordChanged={onLogout} /><button disabled={busy} className="ghost" onClick={onLogout}>Odhlásit</button></div></header>
           <div className="admin-content"><AccountantPanel /></div>
         </div>
       </main>
@@ -512,7 +513,7 @@ function Dashboard({
           </div>
           <nav aria-label="Hlavní navigace Vedoucího">
             {navItems.map((item) => (
-              <button
+              <button disabled={busy}
                 className={activeSection === item.id ? "active" : ""}
                 key={item.id}
                 title={item.label}
@@ -524,7 +525,7 @@ function Dashboard({
               </button>
             ))}
           </nav>
-          <div className="sidebar-status"><span /><div><strong>Systém online</strong><small>Provozní agenda</small></div></div>
+          <div className="sidebar-status"><span /><div><strong>Systém je dostupný</strong><small>Provozní agenda</small></div></div>
         </aside>
         <div className="admin-workspace">
           <header className="admin-topbar">
@@ -532,7 +533,7 @@ function Dashboard({
             <div className="account">
               <div className="user-chip"><span>{user.displayName}</span><small>Vedoucí</small></div>
               <AccountPanel onPasswordChanged={onLogout} />
-              <button className="ghost" onClick={onLogout}>Odhlásit</button>
+              <button disabled={busy} className="ghost" onClick={onLogout}>Odhlásit</button>
             </div>
           </header>
           <div className="admin-content leader-content">
@@ -552,7 +553,7 @@ function Dashboard({
                 <div className="leader-actions-heading"><p className="eyebrow">RYCHLÝ PŘÍSTUP</p><h2 id="leader-actions-title">Co potřebujete udělat?</h2></div>
                 <div className="leader-action-grid">
                   {navItems.filter((item) => item.id !== "overview").map((item) => (
-                    <button className={`leader-action-card ${item.id === "approvals" ? "primary" : ""}`} type="button" key={item.id} onClick={() => setActiveSection(item.id)}>
+                    <button disabled={busy} className={`leader-action-card ${item.id === "approvals" ? "primary" : ""}`} type="button" key={item.id} onClick={() => setActiveSection(item.id)}>
                       <span className="leader-action-icon"><NavIcon name={item.icon} /></span>
                       <span className="leader-action-copy"><strong>{item.label === "Schvalování" ? "Zkontrolovat práci" : item.label}</strong><small>{actionHints[item.id]}</small></span>
                       <span className="leader-action-cta">Otevřít <b aria-hidden="true">→</b></span>
@@ -600,12 +601,12 @@ function Dashboard({
             <span className="brand-mark">Z</span>
             <div>
               <strong>ZENOPS</strong>
-              <small>OPERATIONS CONTROL</small>
+              <small>ŘÍZENÍ PROVOZU</small>
             </div>
           </div>
           <nav aria-label="Hlavní navigace">
             {navItems.map((item) => (
-              <button
+              <button disabled={busy}
                 className={activeSection === item.id ? "active" : ""}
                 key={item.id}
                 title={item.label}
@@ -621,7 +622,7 @@ function Dashboard({
           <div className="sidebar-status">
             <span />
             <div>
-              <strong>Systém online</strong>
+              <strong>Systém je dostupný</strong>
               <small>Produkční prostředí</small>
             </div>
           </div>
@@ -640,7 +641,7 @@ function Dashboard({
                 <small>Administrátor</small>
               </div>
               <AccountPanel onPasswordChanged={onLogout} />
-              <button className="ghost" onClick={onLogout}>
+              <button disabled={busy} className="ghost" onClick={onLogout}>
                 Odhlásit
               </button>
             </div>
@@ -741,10 +742,10 @@ function Dashboard({
         <div className="account">
           <div className="user-chip">
             <span>{user.displayName}</span>
-            <small>{isWorkerOnly ? "Pracovník" : user.roles.join(" · ")}</small>
+            <small>{isWorkerOnly ? "Pracovník" : user.roles.map(roleLabel).join(" · ")}</small>
           </div>
           <AccountPanel onPasswordChanged={onLogout} />
-          <button className="ghost" onClick={onLogout}>
+          <button disabled={busy} className="ghost" onClick={onLogout}>
             Odhlásit
           </button>
         </div>
@@ -760,12 +761,12 @@ function Dashboard({
       </section>}
       {isWorkerOnly ? (
         !showDailyRecord && !showWorkerProfile && <section className="worker-home">
-          <button className="daily-record-card" onClick={() => setShowDailyRecord(true)}>
+          <button disabled={busy} className="daily-record-card" onClick={() => setShowDailyRecord(true)}>
             <span className="worker-home-icon" aria-hidden="true">→</span>
             <span className="worker-home-copy"><small>DNEŠNÍ ZÁZNAM</small><strong>Kde dnes pracuji?</strong><small>Zapsat směnu a práci</small></span>
             <span className="worker-home-cta">Začít</span>
           </button>
-          <button className="worker-profile-shortcut" onClick={() => setShowWorkerProfile(true)}>Můj profil a svěřené věci <span aria-hidden="true">→</span></button>
+          <button disabled={busy} className="worker-profile-shortcut" onClick={() => setShowWorkerProfile(true)}>Můj profil a svěřené věci <span aria-hidden="true">→</span></button>
         </section>
       ) : (
         projectOverview
@@ -810,6 +811,7 @@ export function App() {
     setError("");
     setSubmitting(true);
     const data = new FormData(event.currentTarget);
+    try {
     const response = await fetch("/api/auth/login", {
       method: "POST",
       credentials: "include",
@@ -832,11 +834,16 @@ export function App() {
     const user = await getCurrentUser();
     setSubmitting(false);
     setAuth(user ? { status: "authenticated", user } : { status: "guest" });
+    } catch { setError("Nepodařilo se spojit se serverem. Zkuste přihlášení znovu."); }
+    finally { setSubmitting(false); }
   }
 
   async function logout() {
-    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-    setAuth({ status: "guest" });
+    try {
+      const response = await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+      if (!response.ok) throw new Error();
+      setAuth({ status: "guest" });
+    } catch { window.alert("Odhlášení se nepodařilo. Zkontrolujte připojení a zkuste to znovu."); }
   }
 
   if (auth.status === "loading") {
@@ -859,7 +866,7 @@ export function App() {
           <span>ZENTINEL</span>
         </div>
         <div className="brand-message">
-          <p className="eyebrow">OPERATIONS, IN FOCUS.</p>
+          <p className="eyebrow">PROVOZ POD KONTROLOU.</p>
           <h1>ZenOps</h1>
           <p>Práce v terénu. Přesná data. Jeden společný provozní obraz.</p>
         </div>

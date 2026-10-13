@@ -79,7 +79,12 @@ export function registerApprovalRoutes(
       const decision = approvalDecisionSchema.safeParse(request.body);
       if (!params.success || !decision.success)
         return reply.code(400).send({ error: "Neplatné rozhodnutí." });
+      if (!request.sessionUser!.roles.includes("LEADER")) return reply.code(403).send({ error: "K této operaci nemáte oprávnění." });
       const result = await db.begin(async (transaction) => {
+        // Serialize decisions for the whole day before reading the aggregate state.
+        await transaction`select wd.id from work_days wd join work_entries we on we.work_day_id=wd.id
+          join projects p on p.id=we.project_id where we.id=${params.data.entryId}
+          and p.current_leader_employee_id=${request.sessionUser!.employeeId} for update of wd`;
         const rows = await transaction<PendingEntry[]>`
         select we.id, wd.id as work_day_id, owner.id as employee_id, owner.display_name as employee_name,
           wd.work_date, we.start_at, we.end_at, p.id as project_id, p.code as project_code, p.name as project_name,

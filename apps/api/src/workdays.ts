@@ -7,9 +7,10 @@ import type { Database } from "./db.js";
 const idParams = z.object({ workDayId: z.string().uuid() });
 
 async function getOwnedWorkDay(db: Database, workDayId: string, employeeId: string) {
-  const rows = await db<Array<{ id: string; workDate: string; shiftType: string; state: string }>>`
-    select id, work_date::text as work_date, shift_type, state from work_days
-    where id = ${workDayId} and employee_id = ${employeeId} limit 1
+  const rows = await db<Array<{ id: string; workDate: string; shiftType: string; state: string; periodState: string }>>`
+    select wd.id, wd.work_date::text as work_date, wd.shift_type, wd.state, mp.state as period_state from work_days wd
+    join monthly_periods mp on mp.id = wd.monthly_period_id
+    where wd.id = ${workDayId} and wd.employee_id = ${employeeId} limit 1
   `;
   return rows[0] ?? null;
 }
@@ -22,7 +23,9 @@ async function getWorkDayDetail(db: Database, workDayId: string, employeeId: str
       p.code as project_code, p.name as project_name, wt.code as work_type_code,
       wt.name as work_type_name, wa.code as work_activity_code, wa.name as work_activity_name,
       mu.id as machine_usage_id, m.code as machine_code, m.name as machine_name,
-      mu.entered_start_mth, mu.end_mth, mu.fuel_consumed, mu.fuel_refuelled
+      mu.entered_start_mth, mu.end_mth, mu.fuel_consumed, mu.fuel_refuelled,
+      (select a.reason from approvals a where a.work_entry_id = we.id and a.action = 'RETURNED' order by a.created_at desc limit 1) as return_reason,
+      exists(select 1 from approvals a where a.work_entry_id = we.id) as has_approval_history
     from work_entries we
     join projects p on p.id = we.project_id
     join work_types wt on wt.id = we.work_type_id
@@ -190,6 +193,44 @@ export function registerWorkDayRoutes(app: FastifyInstance, db: Database, requir
     return { workDay: updated };
   });
 
+  app.patch("/api/workdays/:workDayId/entries/:entryId", { preHandler: [requireTrustedOrigin, own] }, async (request, reply) => {
+    const params = z.object({ workDayId: z.string().uuid(), entryId: z.string().uuid() }).safeParse(request.params);
+    const parsed = createWorkEntrySchema.safeParse(request.body);
+    if (!params.success || !parsed.success) return reply.code(400).send({ error: "Neplatná oprava pracovního úseku." });
+    if (parsed.data.workTypeCode === "OTHER" && !parsed.data.description?.trim()) return reply.code(422).send({ error: "U ostatní práce je povinný popis." });
+    try {
+      const entry = await db.begin(async (t) => {
+        const [day] = await t`select wd.id, wd.work_date from work_days wd join monthly_periods mp on mp.id=wd.monthly_period_id
+          where wd.id=${params.data.workDayId} and wd.employee_id=${request.sessionUser!.employeeId}
+          and wd.state in ('DRAFT','RETURNED') and mp.state='OPEN' for update of wd, mp`;
+        if (!day) return null;
+        const [before] = await t`select * from work_entries where id=${params.data.entryId} and work_day_id=${day.id}
+          and state in ('DRAFT','RETURNED') for update`;
+        if (!before) return null;
+        const [context] = await t`select p.id as project_id, wt.id as work_type_id, wa.id as work_activity_id
+          from projects p join work_types wt on wt.code=${parsed.data.workTypeCode} and wt.is_active
+          left join work_activities wa on wa.work_type_id=wt.id and wa.code=${parsed.data.workActivityCode ?? null} and wa.is_active
+          where p.id=${parsed.data.projectId} and (p.status='OPEN' or p.id=${before.projectId})
+          and (not wt.requires_activity or wa.id is not null)`;
+        if (!context) return null;
+        const [projectDay] = await t`insert into project_days(project_id,work_date) values(${context.projectId},${day.workDate})
+          on conflict(project_id,work_date) do update set project_id=excluded.project_id returning id`;
+        const [after] = await t`update work_entries set project_id=${context.projectId},project_day_id=${projectDay!.id},
+          work_type_id=${context.workTypeId},work_activity_id=${context.workActivityId},start_at=${parsed.data.startAt},end_at=${parsed.data.endAt},
+          description=${parsed.data.description ?? null},updated_at=now() where id=${before.id} returning *`;
+        await t`insert into audit_logs(actor_user_id,action,entity_type,entity_id,before_data,after_data)
+          values(${request.sessionUser!.id},'WORK_ENTRY_CORRECTED','WORK_ENTRY',${before.id},${t.json(before)},${t.json(after!)})`;
+        return after;
+      });
+      if (!entry) return reply.code(409).send({ error: "Úsek nelze upravit: zkontrolujte stav dne, měsíce a zakázky." });
+      return { entry };
+    } catch (error) {
+      if (typeof error === "object" && error && "code" in error && error.code === "23P01")
+        return reply.code(409).send({ error: "Opravený čas koliduje s prací, přestávkou nebo použitím techniky." });
+      throw error;
+    }
+  });
+
   app.delete("/api/workdays/:workDayId/entries/:entryId", { preHandler: [requireTrustedOrigin, own] }, async (request, reply) => {
     const params = z.object({ workDayId: z.string().uuid(), entryId: z.string().uuid() }).safeParse(request.params);
     if (!params.success) return reply.code(400).send({ error: "Neplatný pracovní úsek." });
@@ -197,7 +238,8 @@ export function registerWorkDayRoutes(app: FastifyInstance, db: Database, requir
       delete from work_entries we using work_days wd
       where we.id = ${params.data.entryId} and we.work_day_id = ${params.data.workDayId}
         and wd.id = we.work_day_id and wd.employee_id = ${request.sessionUser!.employeeId}
-        and wd.state in ('DRAFT', 'RETURNED') and we.state in ('DRAFT', 'RETURNED') returning we.id
+        and wd.state in ('DRAFT', 'RETURNED') and we.state in ('DRAFT', 'RETURNED')
+        and not exists(select 1 from approvals a where a.work_entry_id=we.id) returning we.id
     `;
     if (!removed[0]) return reply.code(404).send({ error: "Pracovní úsek nelze odstranit." });
     return reply.code(204).send();

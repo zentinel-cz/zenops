@@ -36,3 +36,4 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: docker compose --profile tools --profile app config --quiet
+      - run: docker compose -f compose.test.yaml config --quiet

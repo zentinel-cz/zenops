@@ -1,3 +1,4 @@
+import { shiftLabel, fuelCategoryLabel } from "@zenops/contracts/labels";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { chromium } from "playwright-core";
 import { z } from "zod";
@@ -8,7 +9,7 @@ const querySchema = z.object({ date: z.iso.date() });
 const monthQuerySchema = z.object({ month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/) });
 
 type ReportEntry = {
-  id: string; employeeName: string; shiftType: string; workDayState: string; entryState: string;
+  id: string; employeeId: string; employeeName: string; shiftType: string; workDayState: string; entryState: string;
   projectCode: string; projectName: string; workTypeName: string; workActivityName: string | null;
   startAt: Date; endAt: Date; workedMinutes: number; breakMinutes: number;
   machineCode: string | null; machineName: string | null; enteredStartMth: string | null; endMth: string | null;
@@ -26,7 +27,7 @@ async function requireReportAccess(request: FastifyRequest, reply: FastifyReply)
 async function buildDailyReport(db: Database, request: FastifyRequest, date: string) {
   const isGlobal = request.sessionUser!.permissions.includes("report.global.read");
   const entries = await db<ReportEntry[]>`
-    select we.id, e.display_name as employee_name, wd.shift_type, wd.state as work_day_state,
+    select we.id, e.id as employee_id, e.display_name as employee_name, wd.shift_type, wd.state as work_day_state,
       we.state as entry_state, p.code as project_code, p.name as project_name,
       wt.name as work_type_name, wa.name as work_activity_name, we.start_at, we.end_at,
       round(extract(epoch from (we.end_at - we.start_at)) / 60)::int as worked_minutes,
@@ -68,7 +69,7 @@ async function buildDailyReport(db: Database, request: FastifyRequest, date: str
   const provisionalMinutes = entries.filter((item) => item.entryState !== "APPROVED").reduce((sum, item) => sum + item.workedMinutes, 0);
   return {
     date, scope: isGlobal ? "GLOBAL" : "LEADER", generatedAt: new Date().toISOString(),
-    summary: { entries: entries.length, workers: new Set(entries.map((item) => item.employeeName)).size, approvedMinutes, provisionalMinutes },
+    summary: { entries: entries.length, workers: new Set(entries.map((item) => item.employeeId)).size, approvedMinutes, provisionalMinutes },
     entries, trips, fuelRecords,
   };
 }
@@ -77,9 +78,9 @@ const esc = (value: unknown) => String(value ?? "").replace(/[&<>"']/g, (charact
 const hours = (minutes: number) => `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
 
 function reportHtml(report: Awaited<ReturnType<typeof buildDailyReport>>): string {
-  const rows = report.entries.map((item) => `<tr><td>${esc(item.projectCode)}<small>${esc(item.projectName)}</small></td><td>${esc(item.employeeName)}<small>${esc(item.shiftType)}</small></td><td>${esc(item.workTypeName)}${item.workActivityName ? `<small>${esc(item.workActivityName)}</small>` : ""}</td><td>${hours(item.workedMinutes)}<small>Přestávky dne: ${item.breakMinutes} min</small></td><td>${item.machineCode ? `${esc(item.machineCode)}<small>MTH ${esc(item.enteredStartMth)}–${esc(item.endMth)} · palivo ${esc(item.machineFuelConsumed ?? "–")}/${esc(item.machineFuelRefuelled ?? "–")}</small>` : "–"}</td><td><span class="state ${item.entryState === "APPROVED" ? "approved" : "provisional"}">${esc(item.entryState === "APPROVED" ? "SCHVÁLENO" : "PŘEDBĚŽNÉ")}</span></td></tr>`).join("");
+  const rows = report.entries.map((item) => `<tr><td>${esc(item.projectCode)}<small>${esc(item.projectName)}</small></td><td>${esc(item.employeeName)}<small>${esc(shiftLabel(item.shiftType))}</small></td><td>${esc(item.workTypeName)}${item.workActivityName ? `<small>${esc(item.workActivityName)}</small>` : ""}</td><td>${hours(item.workedMinutes)}<small>Přestávky dne: ${item.breakMinutes} min</small></td><td>${item.machineCode ? `${esc(item.machineCode)}<small>MTH ${esc(item.enteredStartMth)}–${esc(item.endMth)} · palivo ${esc(item.machineFuelConsumed ?? "–")}/${esc(item.machineFuelRefuelled ?? "–")}</small>` : "–"}</td><td><span class="state ${item.entryState === "APPROVED" ? "approved" : "provisional"}">${esc(item.entryState === "APPROVED" ? "SCHVÁLENO" : "PŘEDBĚŽNÉ")}</span></td></tr>`).join("");
   const tripRows = report.trips.map((item: any) => `<tr><td>${esc(item.vehicleCode)} · ${esc(item.registrationNumber)}</td><td>${esc(item.driverName)}</td><td>${esc(item.startOdometerKm)}–${esc(item.endOdometerKm)} km</td><td>${esc(item.fuelConsumed ?? "–")} / ${esc(item.fuelRefuelled ?? "–")}</td><td>${esc(item.passengers.join(", ") || "–")}</td></tr>`).join("");
-  const fuelRows = report.fuelRecords.map((item: any) => `<tr><td>${esc(item.projectCode)} · ${esc(item.projectName)}</td><td>${esc(item.category)}</td><td>${esc(item.fuelConsumed ?? "–")}</td><td>${esc(item.fuelRefuelled ?? "–")}</td><td>${esc(item.recordedByName)}</td></tr>`).join("");
+  const fuelRows = report.fuelRecords.map((item: any) => `<tr><td>${esc(item.projectCode)} · ${esc(item.projectName)}</td><td>${esc(fuelCategoryLabel(item.category))}</td><td>${esc(item.fuelConsumed ?? "–")}</td><td>${esc(item.fuelRefuelled ?? "–")}</td><td>${esc(item.recordedByName)}</td></tr>`).join("");
   return `<!doctype html><html lang="cs"><head><meta charset="utf-8"><style>@page{size:A4 landscape;margin:14mm}*{box-sizing:border-box}body{font:12px Arial;color:#17231c}header{display:flex;justify-content:space-between;border-bottom:3px solid #177847;padding-bottom:12px}h1{margin:0;font-size:25px}h2{margin:22px 0 8px;font-size:15px}.meta{color:#657269}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0}.summary div{padding:10px;border:1px solid #d7e0da;border-radius:7px}.summary strong{display:block;font-size:18px;color:#176b41}table{width:100%;border-collapse:collapse}th,td{padding:7px;border-bottom:1px solid #dfe5e1;text-align:left;vertical-align:top}th{background:#eef4ef;font-size:10px;text-transform:uppercase}small{display:block;color:#69776e;margin-top:3px}.state{padding:4px 6px;border-radius:10px;font-size:9px;font-weight:bold}.approved{color:#145c36;background:#d9f0e1}.provisional{color:#765315;background:#fff0c9}.empty{color:#758178}</style></head><body><header><div><b>ZENTINEL · ZENOPS</b><h1>Denní provozní report</h1></div><div class="meta">Datum: ${esc(report.date)}<br>Vygenerováno: ${esc(new Date(report.generatedAt).toLocaleString("cs-CZ"))}</div></header><section class="summary"><div><strong>${report.summary.workers}</strong>pracovníků</div><div><strong>${report.summary.entries}</strong>pracovních úseků</div><div><strong>${hours(report.summary.approvedMinutes)}</strong>schváleno</div><div><strong>${hours(report.summary.provisionalMinutes)}</strong>předběžně</div></section><h2>Práce a technika</h2>${rows ? `<table><thead><tr><th>Zakázka</th><th>Pracovník</th><th>Práce</th><th>Čas</th><th>Stroj / palivo</th><th>Stav</th></tr></thead><tbody>${rows}</tbody></table>` : '<p class="empty">Pro tento den nejsou dostupná data.</p>'}<h2>Vozidla</h2>${tripRows ? `<table><thead><tr><th>Vozidlo</th><th>Řidič</th><th>Kilometry</th><th>Spotřeba / tankování</th><th>Cestující</th></tr></thead><tbody>${tripRows}</tbody></table>` : '<p class="empty">Bez jízd.</p>'}<h2>Sdílené palivo zakázek</h2>${fuelRows ? `<table><thead><tr><th>Zakázka</th><th>Kategorie</th><th>Spotřeba</th><th>Tankování</th><th>Zapsal</th></tr></thead><tbody>${fuelRows}</tbody></table>` : '<p class="empty">Bez sdílených záznamů.</p>'}</body></html>`;
 }
 

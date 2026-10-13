@@ -1,0 +1,34 @@
+# Disposable database integration environment. No production volumes or published ports.
+name: zenops-test
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: zenops_test
+      POSTGRES_USER: zenops_test
+      POSTGRES_HOST_AUTH_METHOD: trust
+      TZ: Europe/Prague
+    tmpfs:
+      - /var/lib/postgresql/data
+    networks: [test]
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U zenops_test -d zenops_test']
+      interval: 2s
+      timeout: 5s
+      retries: 30
+  tests:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+      target: build
+    environment:
+      TEST_DATABASE_URL: postgresql://zenops_test@postgres:5432/zenops_test
+      TZ: Europe/Prague
+    command: [pnpm, --filter, '@zenops/api', test]
+    networks: [test]
+    depends_on:
+      postgres:
+        condition: service_healthy
+networks:
+  test:
+    internal: true

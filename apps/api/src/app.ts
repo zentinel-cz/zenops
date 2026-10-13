@@ -3,7 +3,7 @@ import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
 import { changePasswordSchema, loginSchema, type SessionUser } from "@zenops/contracts";
-import Fastify, { type FastifyInstance, type FastifyRequest } from "fastify";
+import Fastify, { type FastifyInstance, type FastifyRequest, type FastifyError } from "fastify";
 import { authenticate, changePassword, createSession, getSessionUser, revokeSession } from "./auth.js";
 import { requireAuthentication } from "./authorization.js";
 import type { AppConfig } from "./config.js";
@@ -35,6 +35,36 @@ export function buildApp(config: AppConfig, db: Database): FastifyInstance {
   app.register(cors, { origin: config.WEB_ORIGIN, credentials: true });
   app.register(rateLimit, { global: false });
 
+  // Fastify and plugins otherwise return English status/error text to the UI.
+  const publicMessages = new Set([
+    "Nedůvěryhodný původ požadavku.", "Stroj vyžaduje počáteční i konečný MTH.",
+    "Řidič nemůže být cestující.", "Neplatný cestující.", "Měsíc je uzavřen.",
+  ]);
+  const statusMessages: Record<number, string> = {
+    400: "Požadavek obsahuje neplatné údaje.",
+    401: "Přihlaste se prosím znovu.",
+    403: "K této operaci nemáte oprávnění.",
+    404: "Požadovaná stránka nebo záznam nebyly nalezeny.",
+    409: "Záznam se mezitím změnil. Obnovte stránku a zkuste to znovu.",
+    413: "Odeslané údaje jsou příliš velké.",
+    415: "Nepodporovaný formát odeslaných údajů.",
+    422: "Zkontrolujte vyplněné údaje.",
+    429: "Příliš mnoho pokusů. Chvíli počkejte a zkuste to znovu.",
+  };
+  app.setErrorHandler<FastifyError>((error, request, reply) => {
+    if (error.code === "55000") {
+      void reply.code(409).send({ error: "Uzavřený měsíc nelze měnit. Nejprve jej znovu otevřete." });
+      return;
+    }
+    const status = error.statusCode && error.statusCode >= 400 && error.statusCode <= 599 ? error.statusCode : 500;
+    if (status >= 500) request.log.error({ err: error }, "Request failed");
+    const message = status < 500 && publicMessages.has(error.message)
+      ? error.message
+      : statusMessages[status] ?? "Požadavek se nepodařilo zpracovat. Zkuste to prosím později.";
+    void reply.code(status).send({ error: message });
+  });
+  app.setNotFoundHandler((_request, reply) => reply.code(404).send({ error: statusMessages[404] }));
+
   app.decorateRequest("sessionUser", null);
   app.addHook("onRequest", async (request) => {
     const token = request.cookies[config.SESSION_COOKIE_NAME];
@@ -47,6 +77,8 @@ export function buildApp(config: AppConfig, db: Database): FastifyInstance {
     }
   };
 
+  // Register routes after plugins so rate-limit hooks apply to real endpoints.
+  app.after(() => {
   app.get("/health", async () => ({ status: "ok" }));
   app.get("/ready", async (_request, reply) => {
     try {
@@ -119,6 +151,7 @@ export function buildApp(config: AppConfig, db: Database): FastifyInstance {
   registerPeriodRoutes(app, db, requireTrustedOrigin);
   registerAdminRecordRoutes(app, db, requireTrustedOrigin);
   registerWorkerProfileRoutes(app, db, requireTrustedOrigin);
+  });
 
   return app;
 }

@@ -1,3 +1,5 @@
+import { useMutation } from "./useMutation";
+import { roleLabel } from "@zenops/contracts/labels";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import type { WorkerProfile } from "@zenops/contracts";
 import { ListSearch, matchesSearch } from "./ListSearch";
@@ -16,6 +18,7 @@ export function AccountantPanel() {
   const [detailLoading, setDetailLoading] = useState(false);
   const detailRequest = useRef(0);
   const [error, setError] = useState("");
+  const { busy, runMutation } = useMutation(setError);
   const [message, setMessage] = useState("");
   const [editIssue, setEditIssue] = useState<Issue | null>(null);
   const [returnIssueId, setReturnIssueId] = useState<string | null>(null);
@@ -53,10 +56,12 @@ export function AccountantPanel() {
     }
   }
 
-  useEffect(() => { void loadLists().catch((cause) => setError(cause instanceof Error ? cause.message : "Data se nepodařilo načíst.")); }, []);
-  useEffect(() => { setDetail(null); void loadDetail(selectedId).catch((cause) => setError(cause instanceof Error ? cause.message : "Kartu uživatele se nepodařilo načíst.")); }, [selectedId]);
+  useEffect(() => { void loadLists().catch((cause) => setError(cause instanceof Error && !(cause instanceof TypeError) ? cause.message : "Data se nepodařilo načíst.")); }, []);
+  useEffect(() => { setDetail(null); void loadDetail(selectedId).catch((cause) => setError(cause instanceof Error && !(cause instanceof TypeError) ? cause.message : "Kartu uživatele se nepodařilo načíst.")); }, [selectedId]);
 
   async function submitProfile(event: FormEvent<HTMLFormElement>) {
+event.preventDefault(); return runMutation(async () => {
+
     event.preventDefault(); if (!detail) return;
     const data = new FormData(event.currentTarget);
     const response = await fetch(`/api/employee-profiles/${detail.profile.id}`, {
@@ -65,65 +70,95 @@ export function AccountantPanel() {
     });
     if (!response.ok) { setError(await errorFrom(response, "Profil se nepodařilo uložit.")); return; }
     setMessage("Profil byl uložen a změna zaznamenána."); await loadDetail(detail.profile.id);
-  }
+
+});
+}
 
   async function createItemType(event: FormEvent<HTMLFormElement>) {
+event.preventDefault(); return runMutation(async () => {
+
     event.preventDefault(); const form = event.currentTarget;
     const response = await fetch("/api/issued-item-types", { method: "POST", credentials: "include", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: new FormData(form).get("name") }) });
     if (!response.ok) { setError(await errorFrom(response, "Druh věci se nepodařilo vytvořit.")); return; }
     form.reset(); setMessage("Druh věci byl přidán do katalogu."); await loadLists();
-  }
+
+});
+}
 
   async function editItemType(event: FormEvent<HTMLFormElement>, item: ItemType) {
+event.preventDefault(); return runMutation(async () => {
+
     event.preventDefault(); const data = new FormData(event.currentTarget);
     const response = await fetch(`/api/issued-item-types/${item.id}`, { method: "PATCH", credentials: "include", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: data.get("name"), active: item.isActive, reason: data.get("reason") }) });
     if (!response.ok) { setError(await errorFrom(response, "Druh věci se nepodařilo upravit.")); return; }
     setMessage("Katalog byl upraven."); await loadLists();
-  }
+
+});
+}
 
   async function setItemTypeActive(item: ItemType) {
+return runMutation(async () => {
+
     const reason = window.prompt(item.isActive ? "Proč chcete tento druh věci vyřadit z nabídky?" : "Proč chcete tento druh věci znovu aktivovat?");
     if (!reason || reason.trim().length < 3) return;
     const response = await fetch(`/api/issued-item-types/${item.id}`, { method: "PATCH", credentials: "include", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: item.name, active: !item.isActive, reason }) });
     if (!response.ok) { setError(await errorFrom(response, "Stav katalogové položky se nepodařilo změnit.")); return; }
     setMessage("Stav katalogové položky byl změněn."); await loadLists();
-  }
+
+});
+}
 
   async function createIssue(event: FormEvent<HTMLFormElement>) {
+event.preventDefault(); return runMutation(async () => {
+
     event.preventDefault(); if (!detail) return; const form = event.currentTarget; const data = new FormData(form);
     const response = await fetch(`/api/employee-profiles/${detail.profile.id}/issues`, { method: "POST", credentials: "include", headers: { "content-type": "application/json" }, body: JSON.stringify({ itemTypeId: data.get("itemTypeId"), quantity: Number(data.get("quantity")), size: nullable(data.get("size")), issuedOn: data.get("issuedOn"), location: data.get("location"), note: nullable(data.get("note")) }) });
     if (!response.ok) { setError(await errorFrom(response, "Vydání se nepodařilo uložit.")); return; }
     setMessage("Vydání bylo zaznamenáno."); form.reset(); await loadDetail(detail.profile.id);
-  }
+
+});
+}
 
   async function correctIssue(event: FormEvent<HTMLFormElement>) {
+event.preventDefault(); return runMutation(async () => {
+
     event.preventDefault(); if (!detail || !editIssue) return; const data = new FormData(event.currentTarget);
     const response = await fetch(`/api/employee-item-issues/${editIssue.id}`, { method: "PATCH", credentials: "include", headers: { "content-type": "application/json" }, body: JSON.stringify({ itemTypeId: data.get("itemTypeId"), quantity: Number(data.get("quantity")), size: nullable(data.get("size")), issuedOn: data.get("issuedOn"), location: data.get("location"), note: nullable(data.get("note")), reason: data.get("reason") }) });
     if (!response.ok) { setError(await errorFrom(response, "Opravu vydání se nepodařilo uložit.")); return; }
     setEditIssue(null); setMessage("Vydání bylo opraveno a změna zaznamenána."); await loadDetail(detail.profile.id);
-  }
+
+});
+}
 
   async function addReturn(event: FormEvent<HTMLFormElement>) {
+event.preventDefault(); return runMutation(async () => {
+
     event.preventDefault(); if (!detail || !returnIssueId) return; const data = new FormData(event.currentTarget);
     const response = await fetch(`/api/employee-item-issues/${returnIssueId}/returns`, { method: "POST", credentials: "include", headers: { "content-type": "application/json" }, body: JSON.stringify({ quantity: Number(data.get("quantity")), returnedOn: data.get("returnedOn"), note: nullable(data.get("note")) }) });
     if (!response.ok) { setError(await errorFrom(response, "Vrácení se nepodařilo zaznamenat.")); return; }
     setReturnIssueId(null); setMessage("Vrácení bylo zaznamenáno."); await loadDetail(detail.profile.id);
-  }
+
+});
+}
 
   async function correctReturnDate(event: FormEvent<HTMLFormElement>, returnEntry: ReturnEntry) {
+event.preventDefault(); return runMutation(async () => {
+
     event.preventDefault(); if (!detail) return; const data = new FormData(event.currentTarget);
     const response = await fetch(`/api/employee-item-returns/${returnEntry.id}`, { method: "PATCH", credentials: "include", headers: { "content-type": "application/json" }, body: JSON.stringify({ returnedOn: data.get("returnedOn"), reason: data.get("reason") }) });
     if (!response.ok) { setError(await errorFrom(response, "Datum vrácení se nepodařilo opravit.")); return; }
     setEditReturnId(null); setMessage("Datum vrácení bylo opraveno a změna zaznamenána."); await loadDetail(detail.profile.id);
-  }
+
+});
+}
 
   const catalog = <section className="accountant-card issued-catalog"><div className="section-heading"><div><p className="eyebrow">KATALOG</p><h3>Vydávané věci</h3></div></div>
-    <form className="catalog-create-form" onSubmit={(event) => void createItemType(event)}><label>Nový druh věci<input name="name" minLength={2} maxLength={120} placeholder="Například montérky" required /></label><button>Přidat do katalogu</button></form>
+    <form className="catalog-create-form" onSubmit={(event) => void createItemType(event)}><label>Nový druh věci<input name="name" minLength={2} maxLength={120} placeholder="Například montérky" required /></label><button disabled={busy}>Přidat do katalogu</button></form>
     {itemTypes.length === 0 && <p className="muted">Katalog je prázdný. Přidejte nejprve věc, například montérky nebo obuv.</p>}
     {itemTypes.length > 0 && <ListSearch value={catalogQuery} onChange={setCatalogQuery} label="Hledat druh věci v katalogu" />}
     <div className="issued-catalog-list">{itemTypes.filter((item) => matchesSearch(catalogQuery, item.name, item.isActive ? "aktivní" : "vyřazený")).map((item) => <div className={!item.isActive ? "inactive" : ""} key={item.id}>
-      <form onSubmit={(event) => void editItemType(event, item)}><input aria-label={`Název: ${item.name}`} name="name" defaultValue={item.name} minLength={2} maxLength={120} required /><label>Důvod změny<input name="reason" minLength={3} maxLength={500} placeholder="Důvod pro audit" required /></label><button>Uložit</button></form>
-      <button type="button" className="table-action" onClick={() => void setItemTypeActive(item)}>{item.isActive ? "Vyřadit" : "Aktivovat"}</button>
+      <form onSubmit={(event) => void editItemType(event, item)}><input aria-label={`Název: ${item.name}`} name="name" defaultValue={item.name} minLength={2} maxLength={120} required /><label>Důvod změny<input name="reason" minLength={3} maxLength={500} placeholder="Důvod pro audit" required /></label><button disabled={busy}>Uložit</button></form>
+      <button disabled={busy} type="button" className="table-action" onClick={() => void setItemTypeActive(item)}>{item.isActive ? "Vyřadit" : "Aktivovat"}</button>
     </div>)}{itemTypes.length > 0 && !itemTypes.some((item) => matchesSearch(catalogQuery, item.name, item.isActive ? "aktivní" : "vyřazený")) && <p className="muted">Žádný druh věci neodpovídá hledání.</p>}</div>
   </section>;
 
@@ -131,10 +166,10 @@ export function AccountantPanel() {
     <div className="section-heading"><div><p className="eyebrow">PERSONÁLNÍ EVIDENCE</p><h2>Uživatelé a svěřené věci</h2></div></div>
     {error && <p className="error" role="alert">{error}</p>}{message && <p className="form-message" role="status">{message}</p>}
     {selectedId ? <div className="accountant-detail-view">
-      <button type="button" className="accountant-back" onClick={() => { setSelectedId(""); setDetail(null); setEditIssue(null); setReturnIssueId(null); setEditReturnId(null); setMessage(""); setError(""); }}>← Zpět na seznam uživatelů</button>
+      <button disabled={busy} type="button" className="accountant-back" onClick={() => { setSelectedId(""); setDetail(null); setEditIssue(null); setReturnIssueId(null); setEditReturnId(null); setMessage(""); setError(""); }}>← Zpět na seznam uživatelů</button>
       {detailLoading && <section className="accountant-card"><p className="muted">Načítám kartu uživatele…</p></section>}
       {detail?.profile.id === selectedId && <div className="accountant-main">
-        <section className="accountant-card"><div className="section-heading"><div><p className="eyebrow">PROFIL UŽIVATELE · {detail.profile.roleName}</p><h3>{detail.profile.displayName}</h3></div><span className="state-badge">{detail.profile.isActive ? "Aktivní" : "Neaktivní"}</span></div>
+        <section className="accountant-card"><div className="section-heading"><div><p className="eyebrow">PROFIL UŽIVATELE · {roleLabel(detail.profile.roleCode)}</p><h3>{detail.profile.displayName}</h3></div><span className="state-badge">{detail.profile.isActive ? "Aktivní" : "Neaktivní"}</span></div>
           <dl className="worker-profile-details"><div><dt>Osobní číslo</dt><dd>{detail.profile.employeeNumber}</dd></div><div><dt>E-mail</dt><dd>{detail.profile.email}</dd></div></dl>
           {detail.profile.roleCode === "WORKER" && <form className="profile-edit-form" onSubmit={(event) => void submitProfile(event)}>
             <label>Telefon<input name="phone" type="tel" maxLength={40} defaultValue={detail.profile.phone ?? ""} /></label>
@@ -142,7 +177,7 @@ export function AccountantPanel() {
             <label>Velikost kalhot<input name="lowerWorkwearSize" maxLength={40} defaultValue={detail.profile.lowerWorkwearSize ?? ""} /></label>
             <label>Velikost obuvi<input name="shoeSize" maxLength={40} defaultValue={detail.profile.shoeSize ?? ""} /></label>
             <label className="profile-edit-reason">Důvod změny<input name="reason" required minLength={3} maxLength={500} /></label>
-            <button>Uložit profil</button>
+            <button disabled={busy}>Uložit profil</button>
           </form>}
         </section>
         <section className="accountant-card"><div className="section-heading"><div><p className="eyebrow">NAFASOVANÉ VĚCI</p><h3>Výdej a vrácení</h3></div></div>
@@ -151,8 +186,8 @@ export function AccountantPanel() {
             <div className="issued-item-heading"><strong>{issue.itemName}</strong><span>{formatDate(issue.issuedOn)}</span></div>
             <p>Vydáno {issue.quantity}{issue.size ? ` · Velikost ${issue.size}` : ""} · Místo: {issue.location || "Neuvedeno"} · Vráceno {issue.returnedQuantity} · U uživatele {issue.outstandingQuantity}</p>
             {issue.note && <small>{issue.note}</small>}
-            <div className="issued-item-actions"><button type="button" className="table-action" onClick={() => setEditIssue(issue)}>Opravit vydání</button>{issue.outstandingQuantity > 0 && <button type="button" className="table-action" onClick={() => setReturnIssueId(returnIssueId === issue.id ? null : issue.id)}>Zapsat vrácení</button>}</div>
-            {issue.returns.length > 0 && <ul>{issue.returns.map((item) => <li key={item.id}>Vráceno {item.quantity} · {formatDate(item.returnedOn)}{item.note ? ` · ${item.note}` : ""} · {item.recordedBy} <button type="button" className="table-action" onClick={() => setEditReturnId(editReturnId === item.id ? null : item.id)}>Opravit datum</button>{editReturnId === item.id && <ReturnDateForm entry={item} onSubmit={(event) => void correctReturnDate(event, item)} onCancel={() => setEditReturnId(null)} />}</li>)}</ul>}
+            <div className="issued-item-actions"><button disabled={busy} type="button" className="table-action" onClick={() => setEditIssue(issue)}>Opravit vydání</button>{issue.outstandingQuantity > 0 && <button disabled={busy} type="button" className="table-action" onClick={() => setReturnIssueId(returnIssueId === issue.id ? null : issue.id)}>Zapsat vrácení</button>}</div>
+            {issue.returns.length > 0 && <ul>{issue.returns.map((item) => <li key={item.id}>Vráceno {item.quantity} · {formatDate(item.returnedOn)}{item.note ? ` · ${item.note}` : ""} · {item.recordedBy} <button disabled={busy} type="button" className="table-action" onClick={() => setEditReturnId(editReturnId === item.id ? null : item.id)}>Opravit datum</button>{editReturnId === item.id && <ReturnDateForm entry={item} onSubmit={(event) => void correctReturnDate(event, item)} onCancel={() => setEditReturnId(null)} />}</li>)}</ul>}
             {editIssue?.id === issue.id && <IssueForm key={`edit-${issue.id}`} itemTypes={itemTypes} issue={issue} onSubmit={(event) => void correctIssue(event)} onCancel={() => setEditIssue(null)} />}
             {returnIssueId === issue.id && <ReturnForm key={`return-${issue.id}`} maxQuantity={issue.outstandingQuantity} onSubmit={(event) => void addReturn(event)} onCancel={() => setReturnIssueId(null)} />}
           </article>)}{detail.issues.length > 0 && !detail.issues.some((issue) => matchesSearch(issueQuery, issue.itemName, issue.size, issue.issuedOn, issue.location, issue.note, issue.quantity, issue.returnedQuantity, issue.returns.map((item) => `${item.returnedOn} ${item.note ?? ""}`).join(" "))) && <p className="muted">Žádná výdejka neodpovídá hledání.</p>}</div>}
@@ -163,16 +198,16 @@ export function AccountantPanel() {
             <label>Datum vydání<input name="issuedOn" type="date" defaultValue={today()} required /></label>
             <label>Místo výdeje<input name="location" minLength={2} maxLength={160} placeholder="Např. sklad nebo pracoviště" required /></label>
             <label>Poznámka (nepovinná)<input name="note" maxLength={1000} /></label>
-            <button disabled={itemTypes.every((item) => !item.isActive)}>Zaznamenat vydání</button>
+            <button disabled={busy || (itemTypes.every((item) => !item.isActive))}>Zaznamenat vydání</button>
           </form>}
         </section>
       </div>}
     </div> : <div className="accountant-directory-view">
       <section className="accountant-card accountant-user-directory"><div className="section-heading"><div><p className="eyebrow">SPRÁVA VYBAVENÍ</p><h3>Vyberte uživatele</h3></div><span className="state-badge">{profiles.length} uživatelů</span></div>
         {profiles.length > 0 && <ListSearch value={userQuery} onChange={setUserQuery} label="Hledat uživatele podle jména, osobního čísla, role nebo stavu" />}
-        {profiles.length === 0 ? <p className="muted">Zatím tu nejsou uživatelské účty. Účty a jejich profily vytváří Admin v části Zaměstnanci.</p> : <div className="accountant-user-list">{profiles.filter((profile) => matchesSearch(userQuery, profile.displayName, profile.employeeNumber, profile.roleName, profile.email, profile.phone, profile.isActive ? "aktivní" : "neaktivní")).map((profile) => <button type="button" className="accountant-user-card" key={profile.id} onClick={() => { setSelectedId(profile.id); setDetail(null); setEditIssue(null); setReturnIssueId(null); setEditReturnId(null); setError(""); setMessage(""); }}>
-          <span className="accountant-user-avatar" aria-hidden="true">{profile.displayName.trim().slice(0, 1).toLocaleUpperCase("cs-CZ")}</span><span className="accountant-user-copy"><strong>{profile.displayName}</strong><small>{profile.roleName} · osobní číslo {profile.employeeNumber}</small></span><span className={profile.isActive ? "accountant-user-state" : "accountant-user-state inactive"}>{profile.isActive ? "Aktivní" : "Neaktivní"}</span><span className="accountant-user-chevron" aria-hidden="true">›</span>
-        </button>)}{profiles.length > 0 && !profiles.some((profile) => matchesSearch(userQuery, profile.displayName, profile.employeeNumber, profile.roleName, profile.email, profile.phone, profile.isActive ? "aktivní" : "neaktivní")) && <p className="muted">Žádný uživatel neodpovídá hledání.</p>}</div>}
+        {profiles.length === 0 ? <p className="muted">Zatím tu nejsou uživatelské účty. Účty a jejich profily vytváří administrátor v části Zaměstnanci.</p> : <div className="accountant-user-list">{profiles.filter((profile) => matchesSearch(userQuery, profile.displayName, profile.employeeNumber, roleLabel(profile.roleCode), profile.email, profile.phone, profile.isActive ? "aktivní" : "neaktivní")).map((profile) => <button disabled={busy} type="button" className="accountant-user-card" key={profile.id} onClick={() => { setSelectedId(profile.id); setDetail(null); setEditIssue(null); setReturnIssueId(null); setEditReturnId(null); setError(""); setMessage(""); }}>
+          <span className="accountant-user-avatar" aria-hidden="true">{profile.displayName.trim().slice(0, 1).toLocaleUpperCase("cs-CZ")}</span><span className="accountant-user-copy"><strong>{profile.displayName}</strong><small>{roleLabel(profile.roleCode)} · osobní číslo {profile.employeeNumber}</small></span><span className={profile.isActive ? "accountant-user-state" : "accountant-user-state inactive"}>{profile.isActive ? "Aktivní" : "Neaktivní"}</span><span className="accountant-user-chevron" aria-hidden="true">›</span>
+        </button>)}{profiles.length > 0 && !profiles.some((profile) => matchesSearch(userQuery, profile.displayName, profile.employeeNumber, roleLabel(profile.roleCode), profile.email, profile.phone, profile.isActive ? "aktivní" : "neaktivní")) && <p className="muted">Žádný uživatel neodpovídá hledání.</p>}</div>}
       </section>
       {catalog}
     </div>}

@@ -16,6 +16,7 @@ export function AccountPanel({ onPasswordChanged }: { onPasswordChanged: () => v
       return;
     }
     setSubmitting(true);
+    try {
     const response = await fetch("/api/auth/password", {
       method: "POST",
       credentials: "include",
@@ -30,6 +31,8 @@ export function AccountPanel({ onPasswordChanged }: { onPasswordChanged: () => v
     }
     form.reset();
     onPasswordChanged();
+    } catch { setError("Nepodařilo se spojit se serverem. Zkuste to znovu."); }
+    finally { setSubmitting(false); }
   }
 
   return (
