@@ -431,3 +431,95 @@ button:focus-visible,input:focus-visible,select:focus-visible { outline:3px soli
   .issued-item-heading { flex-direction:column; gap:4px; }
   .accountant-workspace>.section-heading { align-items:flex-start; }
 }
+
+/* Worker workspace polish: centered reading width and one clear form card. */
+.worker-dashboard { padding:24px clamp(16px,4vw,44px) 64px; }
+.worker-dashboard>.topbar { width:min(100%,1080px); margin:0 auto; }
+.worker-dashboard>.topbar h1 { letter-spacing:-.04em; }
+.worker-dashboard>.topbar .user-chip { max-width:260px; min-width:0; }
+.worker-dashboard>.topbar .user-chip span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.worker-dashboard .account { position:relative; }
+.worker-dashboard .account-panel { top:calc(100% + 12px); right:0; }
+.worker-dashboard>.welcome { width:min(100%,760px); margin:clamp(34px,7vh,76px) auto 30px; text-align:center; }
+.worker-dashboard>.welcome h2 { line-height:1.05; }
+.worker-dashboard>.welcome>p:last-child { max-width:560px; margin:12px auto 0; line-height:1.6; }
+.worker-dashboard .worker-home { width:min(100%,760px); gap:12px; margin:0 auto; }
+.worker-dashboard .daily-record-card { box-shadow:0 20px 55px rgba(0,0,0,.22); transition:transform .18s,border-color .18s,box-shadow .18s; }
+.worker-dashboard .daily-record-card:hover { transform:translateY(-2px); border-color:#67d991; box-shadow:0 24px 60px rgba(0,0,0,.3); }
+.worker-dashboard .worker-profile-shortcut { border-radius:12px; transition:border-color .18s,background .18s; }
+.worker-dashboard .worker-profile-shortcut:hover { border-color:#4d825e; background:#14231a; }
+.worker-dashboard .worker-home button:focus-visible,.worker-dashboard .account button:focus-visible { outline:3px solid #a4f2ba; outline-offset:3px; }
+.worker-profile-panel { width:min(100%,820px); margin:24px auto; padding:clamp(18px,4vw,32px); }
+.worker-profile-heading { display:flex; align-items:center; justify-content:space-between; gap:20px; margin-bottom:22px; padding-bottom:18px; border-bottom:1px solid #24372d; }
+.worker-profile-heading>div { display:grid; gap:5px; }
+.worker-profile-heading .eyebrow { margin:0; }
+.worker-profile-heading h3 { margin:0; font-size:clamp(24px,4vw,32px); }
+.worker-profile-heading p:last-child { margin:0; color:#9bad9f; font-size:14px; line-height:1.5; }
+.worker-profile-heading .worker-back { flex:0 0 auto; width:auto; min-height:46px; margin:0; padding:10px 14px; border:1px solid #34493d; color:#d6e6dc; background:#142219; font-size:14px; }
+.worker-profile-panel .worker-profile-history>.section-heading { margin-bottom:14px; }
+.worker-profile-panel .worker-profile-history>.section-heading h3 { margin:0; }
+.worker-profile-panel .issued-item-list article { padding:18px; border-radius:12px; background:linear-gradient(145deg,#102219,#0b1711); }
+.worker-profile-panel .issued-item-list article p { line-height:1.7; }
+.worker-profile-panel .issued-item-list ul { padding:12px 0 0 20px; border-top:1px solid #293e33; line-height:1.6; }
+.worker-step,.worker-extra-actions,.submit-day-wrap { box-shadow:0 12px 32px rgba(0,0,0,.12); }
+.worker-step,.worker-extra-actions,.submit-day-wrap,.timeline,.workday-forms,.machine-usage-form { min-width:0; }
+.worker-step>div:nth-child(2) { min-width:0; }
+.workday-forms { display:block; }
+.workday-forms>form { width:min(100%,680px); margin:0 auto; padding:clamp(18px,3vw,28px); border:1px solid #304c3b; border-radius:16px; background:linear-gradient(145deg,#102219,#0b1711); box-shadow:0 14px 36px rgba(0,0,0,.16); }
+.workday-forms form>h4 { font-size:21px; }
+.workday-forms label { gap:8px; line-height:1.4; }
+.workday-forms input,.workday-forms select { min-height:50px; border-color:#385443; border-radius:10px; color:#f0f7f2; background:#0c1510; font-size:16px; }
+.workday-forms input::placeholder { color:#718278; }
+.workday-forms label small { color:#91a499; font-size:12px; font-weight:500; line-height:1.5; }
+.workday-forms form>button { min-height:50px; margin-top:8px; border-radius:10px; }
+.workday-forms form>button.ghost { border:1px solid #34493d; color:#d6e6dc; background:#142219; }
+.workday-forms .vehicle-trip-form { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.workday-forms .vehicle-trip-form>h4,.workday-forms .vehicle-trip-form>.form-hint,.workday-forms .vehicle-trip-form>.worker-passengers,.workday-forms .vehicle-trip-form>button { grid-column:1/-1; }
+.machine-usage-form { width:min(100%,760px); display:grid; grid-template-columns:minmax(0,1fr); gap:18px; margin:16px auto 24px; padding:clamp(18px,4vw,30px); border:1px solid #3b5c46; border-radius:18px; background:linear-gradient(145deg,#11251a,#0b1711 72%); box-shadow:0 18px 46px rgba(0,0,0,.22); }
+.machine-form-heading { display:flex; align-items:center; justify-content:space-between; gap:14px; padding-bottom:16px; border-bottom:1px solid #294436; }
+.machine-form-heading>div { display:grid; gap:5px; }
+.machine-form-heading .eyebrow { margin:0; font-size:9px; }
+.machine-form-heading h4 { margin:0; font-size:clamp(21px,3vw,26px); }
+.machine-form-heading .close-button { flex:0 0 44px; width:44px; height:44px; display:grid; place-items:center; border:1px solid #3a5142; border-radius:12px; color:#dcebe0; background:#142219; font-size:26px; line-height:1; }
+.machine-target { display:grid; gap:4px; padding:13px 15px; border:1px solid #2d4939; border-radius:12px; background:rgba(6,16,10,.45); }
+.machine-target span { color:#91cfa4; font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
+.machine-target strong { color:#f0f7f2; font-size:14px; }
+.machine-target small { color:#9bad9f; font-size:12px; }
+.machine-form-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:2px 16px; }
+.machine-form-fields label { min-width:0; margin:6px 0 12px; line-height:1.4; }
+.machine-form-fields label:first-child { grid-column:1/-1; }
+.machine-form-fields input,.machine-form-fields select { min-width:0; min-height:50px; border-color:#385443; border-radius:10px; color:#f0f7f2; background:#0c1510; font-size:16px; }
+.machine-form-fields label small { color:#91a499; font-size:12px; font-weight:500; line-height:1.5; }
+.machine-attachments { min-width:0; margin:0; padding:14px; border:1px solid #2d4939; border-radius:12px; }
+.machine-attachments legend { padding:0 7px; color:#c7d5cd; font-size:13px; font-weight:800; }
+.machine-attachments>div { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+.machine-attachments .checkbox { display:flex; align-items:center; min-width:0; min-height:48px; gap:10px; margin:0; padding:10px 12px; border:1px solid #293e33; border-radius:9px; background:#0d1912; }
+.machine-attachments .checkbox input { flex:0 0 20px; width:20px; height:20px; margin:0; accent-color:#62d98b; }
+.machine-attachments .checkbox span { min-width:0; overflow-wrap:anywhere; color:#d2ded6; font-size:13px; }
+.machine-form-actions { display:grid; grid-template-columns:minmax(0,.8fr) minmax(0,1.4fr); gap:10px; }
+.machine-form-actions button { min-width:0; min-height:50px; margin:0; border-radius:10px; white-space:normal; }
+.machine-form-actions .ghost { width:100%; border:1px solid #34493d; color:#d6e6dc; background:#142219; font-size:14px; }
+.machine-form-actions button[type="submit"] { background:#1d8a50; }
+.machine-form-actions button[type="submit"]:hover { background:#25a762; }
+.worker-dashboard .error { border:1px solid #714346; color:#ffd7d7; background:#351f21; line-height:1.5; }
+@media(max-width:760px) {
+  .worker-dashboard { padding:16px 16px 44px; }
+  .worker-dashboard>.topbar { align-items:center; }
+  .worker-dashboard>.topbar .user-chip { max-width:32vw; }
+  .worker-dashboard>.topbar .account { gap:8px; }
+  .worker-dashboard>.topbar .account>.ghost { padding:9px 10px; }
+  .worker-dashboard>.welcome { margin:38px auto 22px; }
+  .worker-dashboard>.welcome h2 { font-size:clamp(31px,8vw,42px); }
+  .worker-dashboard .daily-record-card { border-radius:18px; }
+  .worker-profile-panel { margin:14px auto; padding:18px 15px; }
+  .worker-profile-heading { align-items:flex-start; flex-direction:column; gap:14px; margin-bottom:18px; }
+  .worker-profile-heading .worker-back { width:100%; }
+  .worker-profile-panel .issued-item-list article { padding:14px; }
+  .workday-forms .vehicle-trip-form { grid-template-columns:minmax(0,1fr); }
+  .workday-forms .vehicle-trip-form>h4,.workday-forms .vehicle-trip-form>.form-hint,.workday-forms .vehicle-trip-form>.worker-passengers,.workday-forms .vehicle-trip-form>button { grid-column:auto; }
+  .machine-form-fields,.machine-attachments>div { grid-template-columns:minmax(0,1fr); }
+  .machine-form-fields label:first-child { grid-column:auto; }
+  .machine-attachments .checkbox { min-height:52px; }
+  .machine-form-actions { grid-template-columns:minmax(0,1fr); }
+  .machine-form-actions button[type="submit"] { grid-row:1; }
+}

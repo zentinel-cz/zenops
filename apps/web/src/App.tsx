@@ -637,7 +637,7 @@ function Dashboard({
   }
 
   return (
-    <main className="dashboard">
+    <main className={isWorkerOnly ? "dashboard worker-dashboard" : "dashboard"}>
       <header className="topbar">
         <div>
           <span className="eyebrow">ZENTINEL</span>
@@ -646,7 +646,7 @@ function Dashboard({
         <div className="account">
           <div className="user-chip">
             <span>{user.displayName}</span>
-            <small>{user.roles.join(" · ")}</small>
+            <small>{isWorkerOnly ? "Pracovník" : user.roles.join(" · ")}</small>
           </div>
           <AccountPanel onPasswordChanged={onLogout} />
           <button className="ghost" onClick={onLogout}>

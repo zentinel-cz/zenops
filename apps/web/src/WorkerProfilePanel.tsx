@@ -20,7 +20,7 @@ export function WorkerProfilePanel({ onClose }: { onClose: () => void }) {
   }, []);
 
   return <section className="management-panel worker-profile-panel">
-    <div className="section-heading"><div><p className="eyebrow">MOJE ÚDAJE</p><h3>Můj profil</h3></div><button type="button" className="ghost" onClick={onClose}>Zpět</button></div>
+    <div className="worker-profile-heading"><div><p className="eyebrow">MOJE ÚDAJE</p><h3>Můj profil</h3><p>Vaše kontaktní údaje a přehled věcí převzatých od firmy.</p></div><button type="button" className="worker-back" onClick={onClose}>← Zpět na úvod</button></div>
     {error && <p className="error" role="alert">{error}</p>}
     {!profile && !error && <p className="muted">Načítám profil…</p>}
     {profile && <>

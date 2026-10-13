@@ -32,6 +32,8 @@ Každý účet má svůj profil zaměstnance, který při založení účtu vytv
 
 - má jednoduchý dashboard s hlavní volbou **Kde dnes pracuji?** a odkazem
   **Můj profil a svěřené věci**;
+- denní záznam, profil i formuláře zobrazuje v přehledném sloupci vycentrovaném
+  na stránce; na telefonu skládá související údaje pod sebe;
 - vidí všechny otevřené zakázky až uvnitř formuláře denního záznamu;
 - spravuje vlastní pracovní den, úseky práce, jízdy a přestávky;
 - zvolí ranní nebo noční směnu; noční směna může pokračovat přes půlnoc;
@@ -130,7 +132,12 @@ důvod. Vedoucí se určí při založení zakázky a později se nemění.
 3. Vyberte druh práce: Strojní sečení, Kácení, Reprofilace nebo Ruční sečení. Nabídka po výběru zmizí.
 4. Ve formuláři vyberte otevřenou Zakázku a zadejte skutečný začátek a konec práce. U Kácení vyberte také činnost.
 5. Potvrďte **Uložit pracovní úsek**. Další práci přidáte stejným postupem; záznamy uvidíte v seznamu dne.
-6. Přestávku přidávejte přes **Přidat přestávku**. Stroj přiřadíte tlačítkem **Přidat stroj** u příslušného pracovního úseku.
+6. Přestávku přidávejte přes **Přidat přestávku**. Tlačítkem **Přidat stroj**
+   u příslušného pracovního úseku otevřete formulář, který ukáže vybranou
+   zakázku, druh práce a čas. Vyberte stroj; u strojů se sledováním MTH je
+   počáteční stav předvyplněný posledním známým údajem a lze jej upravit.
+   Příslušenství zaškrtněte jen tehdy, pokud jste ho použili. Formulář uložte
+   tlačítkem **Uložit stroj k úseku**, nebo jej zavřete přes **Zrušit**.
 7. Jízdu přes **Zapsat jízdu vozidlem** zaznamenává řidič. Vyplní vozidlo, časy a stavy tachometru; cestující označí jednotlivě. Řidič sám sebe jako cestujícího vybírat nemůže.
 8. Před odesláním zkontrolujte seznam úseků a časů. Tlačítko **Zkontrolovat a odeslat pracovní den** zobrazí potvrzení. Po odeslání už běžné úpravy nejsou možné.
 
