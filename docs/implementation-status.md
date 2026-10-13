@@ -1,6 +1,6 @@
 # Implementation Status
 
-Last updated: 2026-10-12
+Last updated: 2026-10-13
 
 ## Preview deployment
 
@@ -31,13 +31,16 @@ Last updated: 2026-10-12
 
 - accepted scope adds a standalone Accountant role while preserving one role
   per account
+- Every account has a required Employee profile; only Admin creates accounts
+  and profiles
 - Workers can read their own profile and issued-item history
-- Accountant manages Worker profiles, the item catalogue, issues and returns
-- issue corrections require a reason and are audited; returns are retained as
-  dated quantity events
+- Accountant can browse every user and manage the item catalogue, issues and
+  returns for all roles
+- issue and return date corrections require a reason and are audited; returns
+  are retained as dated quantity events
 - issue history records the place of issue alongside the item, quantity and date
-- location tracking is committed but not yet deployed; apply migration 0015
-  before running the updated API
+- all-user issue tracking and audited return-date correction are committed but
+  not yet deployed; apply migrations 0015 and 0016 before running the updated API
 - costs and warehouse stock are outside scope
 
 ## Milestone 1 — foundation and authentication — complete

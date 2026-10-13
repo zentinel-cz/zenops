@@ -48,16 +48,18 @@ Project. Admin can use the administrative correction workflows instead.
 
 ## Accountant
 
-- view and edit profiles of Workers, including contact phone and workwear and
-  shoe sizes
+- browse the directory and profiles of all users; cannot create users or profiles
+- edit Worker contact phone and workwear and shoe sizes, with an audit reason
 - manage the catalogue of company-issued workwear and equipment
-- record issues and dated partial or complete returns for Workers
-- correct an issue only with a reason; changes are audited
+- record issues and dated partial or complete returns for users of every role
+- correct an issue or return date only with a reason; changes are audited
 - view issue and return history
 - cannot create or submit WorkDays, approve work, manage projects or manage
   employee accounts and role assignments
 
-## Worker profile access
+## Profile creation and Worker profile access
+
+- only Admin creates a user account and its required Employee profile
 
 - view only their own profile and issued-item history
 - cannot edit profile details, catalogue items, issue records or returns

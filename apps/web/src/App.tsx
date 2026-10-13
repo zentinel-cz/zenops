@@ -466,11 +466,11 @@ function Dashboard({
       <main className="admin-shell accountant-shell">
         <aside className="admin-sidebar">
           <div className="sidebar-brand"><span className="brand-mark">Z</span><div><strong>ZENOPS</strong><small>PERSONÁLNÍ EVIDENCE</small></div></div>
-          <nav aria-label="Hlavní navigace"><button className="active" type="button" aria-current="page"><NavIcon name="people" /><span>Pracovníci a vybavení</span></button></nav>
+          <nav aria-label="Hlavní navigace"><button className="active" type="button" aria-current="page"><NavIcon name="people" /><span>Uživatelé a vybavení</span></button></nav>
           <div className="sidebar-status"><span /><div><strong>Systém online</strong><small>Personální evidence</small></div></div>
         </aside>
         <div className="admin-workspace">
-          <header className="admin-topbar"><div><span className="topbar-context">PERSONÁLNÍ EVIDENCE</span><h1>Pracovníci a svěřené věci</h1></div><div className="account"><div className="user-chip"><span>{user.displayName}</span><small>Účetní</small></div><AccountPanel onPasswordChanged={onLogout} /><button className="ghost" onClick={onLogout}>Odhlásit</button></div></header>
+          <header className="admin-topbar"><div><span className="topbar-context">PERSONÁLNÍ EVIDENCE</span><h1>Uživatelé a svěřené věci</h1></div><div className="account"><div className="user-chip"><span>{user.displayName}</span><small>Účetní</small></div><AccountPanel onPasswordChanged={onLogout} /><button className="ghost" onClick={onLogout}>Odhlásit</button></div></header>
           <div className="admin-content"><AccountantPanel /></div>
         </div>
       </main>
@@ -494,7 +494,7 @@ function Dashboard({
         { id: "records", label: "Opravy záznamů", icon: "records" },
         { id: "assets", label: "Technika", icon: "assets" },
         { id: "employees", label: "Zaměstnanci", icon: "people" },
-        { id: "workers", label: "Vybavení pracovníků", icon: "assets" },
+        { id: "workers", label: "Vybavení uživatelů", icon: "assets" },
       ];
     const currentSection =
       navItems.find((item) => item.id === activeSection) ?? navItems[0]!;

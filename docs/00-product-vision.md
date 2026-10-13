@@ -19,6 +19,7 @@ reality around employees and projects.
 -   Monthly employee, project, machinery and fuel reports.
 -   Monthly closing/locking for payroll and reward preparation.
 -   Audit trail.
+-   User profiles and auditable company-issued workwear/equipment records.
 
 ## Future modules
 

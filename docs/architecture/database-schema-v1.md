@@ -17,8 +17,9 @@ application schema yet.
 - `employee_item_issues`: dated issue records with employee, item type,
   quantity, size, place of issue and optional note. Item name is snapshotted
   for history.
-- `employee_item_returns`: append-only dated return events with quantity.
-  Issue and return records retain the responsible user and are audited.
+- `employee_item_returns`: dated return events with quantity. Returns cannot
+  be deleted or have their quantity changed; correcting a return date is
+  audited. Issue and return records retain the responsible user.
 
 ## Projects and calendar context
 

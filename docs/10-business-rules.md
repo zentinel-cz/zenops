@@ -67,14 +67,24 @@
 -   **BR-049** Each user has exactly one role. `ACCOUNTANT` is a separate
     role and does not inherit Worker, Leader or Admin permissions.
 -   **BR-050** A Worker can read only their own profile and issued-item
-    history. Only Accountant and Admin can manage Worker profiles and
-    issued-item records.
+    history. Admin creates user accounts and profiles. Accountant can browse
+    all users and manage issued-item records across all roles.
 -   **BR-051** A Worker profile stores contact phone, upper-body and lower-body
     workwear sizes, and shoe size. Changes are audited.
--   **BR-052** An issue records a Worker, catalogue item, positive quantity,
+-   **BR-052** An issue records a user, catalogue item, positive quantity,
     optional size and note, issue date and issue location. Returns are separate dated
     quantity events and may be partial. Returned quantity cannot exceed the
     issued quantity.
 -   **BR-053** Issued-item and return history is retained. Issue corrections
     require a reason and an audit record. Catalogue types are deactivated,
     not deleted. The feature does not track purchase cost or warehouse stock.
+-   **BR-054** Every user account has exactly one Employee profile. Only Admin
+    may create user accounts and their profiles. Accountant can view the
+    directory of all users and manage issued-item records for any user.
+-   **BR-055** Accountant may correct the issue date through the audited issue
+    correction workflow and may correct a return date only with a reason and
+    an audit record. Return quantity and ownership remain unchanged by a date
+    correction; return records cannot be deleted.
+
+See accepted ADR-009 for the expanded all-user equipment scope; ADR-007 remains
+the source for the original worker profile fields and role separation.

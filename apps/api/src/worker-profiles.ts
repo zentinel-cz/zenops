@@ -5,6 +5,7 @@ import {
   updateEmployeeItemIssueSchema,
   updateIssuedItemTypeSchema,
   updateWorkerProfileSchema,
+  correctEmployeeItemReturnSchema,
 } from "@zenops/contracts";
 import type { FastifyInstance } from "fastify";
 import { requirePermission, type AuthorizationHook } from "./authorization.js";
@@ -20,6 +21,8 @@ type ProfileRow = {
   lowerWorkwearSize: string | null;
   shoeSize: string | null;
   isActive: boolean;
+  roleCode: string;
+  roleName: string;
 };
 
 function employeeIdFrom(request: { params: unknown }): string | null {
@@ -27,14 +30,15 @@ function employeeIdFrom(request: { params: unknown }): string | null {
   return typeof id === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id) ? id : null;
 }
 
-async function getWorkerProfile(db: Database, employeeId: string) {
+async function getEmployeeProfile(db: Database, employeeId: string) {
   const employees = await db<ProfileRow[]>`
     select e.id, e.employee_number, e.display_name, u.email, e.contact_phone as phone,
-      e.upper_workwear_size, e.lower_workwear_size, e.shoe_size, e.is_active
+      e.upper_workwear_size, e.lower_workwear_size, e.shoe_size, e.is_active,
+      r.code as role_code, r.name as role_name
     from employees e
     join users u on u.employee_id = e.id
     join user_roles ur on ur.user_id = u.id
-    join roles r on r.id = ur.role_id and r.code = 'WORKER'
+    join roles r on r.id = ur.role_id
     where e.id = ${employeeId}
     limit 1
   `;
@@ -83,46 +87,49 @@ export function registerWorkerProfileRoutes(
   requireTrustedOrigin: AuthorizationHook,
 ): void {
   app.get("/api/profile", { preHandler: requirePermission("employee.profile.own.read") }, async (request, reply) => {
-    const data = await getWorkerProfile(db, request.sessionUser!.employeeId);
-    if (!data) return reply.code(404).send({ error: "Profil pracovníka nebyl nalezen." });
+    const data = await getEmployeeProfile(db, request.sessionUser!.employeeId);
+    if (!data) return reply.code(404).send({ error: "Profil uživatele nebyl nalezen." });
     return data;
   });
 
-  app.get("/api/worker-profiles", { preHandler: requirePermission("employee.profile.manage") }, async () => {
+  app.get("/api/employee-profiles", { preHandler: requirePermission("employee.profile.manage") }, async () => {
     const profiles = await db<ProfileRow[]>`
       select e.id, e.employee_number, e.display_name, u.email, e.contact_phone as phone,
-        e.upper_workwear_size, e.lower_workwear_size, e.shoe_size, e.is_active
+        e.upper_workwear_size, e.lower_workwear_size, e.shoe_size, e.is_active,
+        r.code as role_code, r.name as role_name
       from employees e
       join users u on u.employee_id = e.id
       join user_roles ur on ur.user_id = u.id
-      join roles r on r.id = ur.role_id and r.code = 'WORKER'
+      join roles r on r.id = ur.role_id
       order by e.is_active desc, e.display_name
     `;
     return { profiles };
   });
 
-  app.get("/api/worker-profiles/:employeeId", { preHandler: requirePermission("employee.profile.manage") }, async (request, reply) => {
+  app.get("/api/employee-profiles/:employeeId", { preHandler: requirePermission("employee.profile.manage") }, async (request, reply) => {
     const employeeId = employeeIdFrom(request);
-    if (!employeeId) return reply.code(400).send({ error: "Neplatný pracovník." });
-    const data = await getWorkerProfile(db, employeeId);
-    if (!data) return reply.code(404).send({ error: "Profil pracovníka nebyl nalezen." });
+    if (!employeeId) return reply.code(400).send({ error: "Neplatný uživatel." });
+    const data = await getEmployeeProfile(db, employeeId);
+    if (!data) return reply.code(404).send({ error: "Profil uživatele nebyl nalezen." });
     return data;
   });
 
-  app.patch("/api/worker-profiles/:employeeId", { preHandler: [requireTrustedOrigin, requirePermission("employee.profile.manage")] }, async (request, reply) => {
+  app.patch("/api/employee-profiles/:employeeId", { preHandler: [requireTrustedOrigin, requirePermission("employee.profile.manage")] }, async (request, reply) => {
     const employeeId = employeeIdFrom(request);
     const parsed = updateWorkerProfileSchema.safeParse(request.body);
-    if (!employeeId || !parsed.success) return reply.code(400).send({ error: "Neplatné údaje profilu." });
+    if (!employeeId || !parsed.success) return reply.code(400).send({ error: "Neplatné údaje profilu uživatele." });
     const updated = await db.begin(async (tx) => {
       const beforeRows = await tx<ProfileRow[]>`
         select e.id, e.employee_number, e.display_name, u.email, e.contact_phone as phone,
-          e.upper_workwear_size, e.lower_workwear_size, e.shoe_size, e.is_active
+          e.upper_workwear_size, e.lower_workwear_size, e.shoe_size, e.is_active,
+          r.code as role_code, r.name as role_name
         from employees e join users u on u.employee_id = e.id
-        join user_roles ur on ur.user_id = u.id join roles r on r.id = ur.role_id and r.code = 'WORKER'
+        join user_roles ur on ur.user_id = u.id join roles r on r.id = ur.role_id
         where e.id = ${employeeId} for update of e
       `;
       const before = beforeRows[0];
       if (!before) return null;
+      if (before.roleCode !== "WORKER") return null;
       const [after] = await tx<ProfileRow[]>`
         update employees set contact_phone = ${parsed.data.phone},
           upper_workwear_size = ${parsed.data.upperWorkwearSize},
@@ -206,17 +213,16 @@ export function registerWorkerProfileRoutes(
     }
   });
 
-  app.post("/api/worker-profiles/:employeeId/issues", { preHandler: [requireTrustedOrigin, requirePermission("employee.items.manage")] }, async (request, reply) => {
+  app.post("/api/employee-profiles/:employeeId/issues", { preHandler: [requireTrustedOrigin, requirePermission("employee.items.manage")] }, async (request, reply) => {
     const employeeId = employeeIdFrom(request);
     const parsed = createEmployeeItemIssueSchema.safeParse(request.body);
     if (!employeeId || !parsed.success) return reply.code(400).send({ error: "Zkontrolujte údaje o vydané věci." });
     const issue = await db.begin(async (tx) => {
       const employees = await tx`
         select e.id from employees e join users u on u.employee_id = e.id and u.is_active
-        join user_roles ur on ur.user_id = u.id join roles r on r.id = ur.role_id and r.code = 'WORKER'
         where e.id = ${employeeId} and e.is_active for update of e
       `;
-      if (!employees[0]) return { error: "Pracovník není aktivní nebo nebyl nalezen." } as const;
+      if (!employees[0]) return { error: "Uživatel není aktivní nebo nebyl nalezen." } as const;
       const types = await tx`select id, name from issued_item_types where id = ${parsed.data.itemTypeId} and is_active for share`;
       if (!types[0]) return { error: "Vybraný druh věci není aktivní." } as const;
       const [created] = await tx`
@@ -234,7 +240,7 @@ export function registerWorkerProfileRoutes(
     return reply.code(201).send(issue);
   });
 
-  app.patch("/api/worker-item-issues/:issueId", { preHandler: [requireTrustedOrigin, requirePermission("employee.items.manage")] }, async (request, reply) => {
+  app.patch("/api/employee-item-issues/:issueId", { preHandler: [requireTrustedOrigin, requirePermission("employee.items.manage")] }, async (request, reply) => {
     const issueId = (request.params as { issueId?: string }).issueId;
     const parsed = updateEmployeeItemIssueSchema.safeParse(request.body);
     if (!issueId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(issueId) || !parsed.success) return reply.code(400).send({ error: "Zkontrolujte opravu vydané věci." });
@@ -268,7 +274,7 @@ export function registerWorkerProfileRoutes(
     return result;
   });
 
-  app.post("/api/worker-item-issues/:issueId/returns", { preHandler: [requireTrustedOrigin, requirePermission("employee.items.manage")] }, async (request, reply) => {
+  app.post("/api/employee-item-issues/:issueId/returns", { preHandler: [requireTrustedOrigin, requirePermission("employee.items.manage")] }, async (request, reply) => {
     const issueId = (request.params as { issueId?: string }).issueId;
     const parsed = createEmployeeItemReturnSchema.safeParse(request.body);
     if (!issueId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(issueId) || !parsed.success) return reply.code(400).send({ error: "Zkontrolujte údaje o vrácení." });
@@ -293,5 +299,32 @@ export function registerWorkerProfileRoutes(
       if (typeof error === "object" && error && "code" in error && error.code === "23514") return reply.code(409).send({ error: "Vrácené množství je vyšší než dosud nevrácené množství." });
       throw error;
     }
+  });
+
+  app.patch("/api/employee-item-returns/:returnId", { preHandler: [requireTrustedOrigin, requirePermission("employee.items.manage")] }, async (request, reply) => {
+    const returnId = (request.params as { returnId?: string }).returnId;
+    const parsed = correctEmployeeItemReturnSchema.safeParse(request.body);
+    if (!returnId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(returnId) || !parsed.success) return reply.code(400).send({ error: "Zkontrolujte opravu data vrácení." });
+    const result = await db.begin(async (tx) => {
+      const rows = await tx`
+        select ret.id, ret.issue_id, ret.quantity, ret.returned_on, ret.note
+        from employee_item_returns ret where ret.id = ${returnId} for update
+      `;
+      const before = rows[0];
+      if (!before) return null;
+      const [after] = await tx`
+        update employee_item_returns set returned_on = ${parsed.data.returnedOn}
+        where id = ${returnId}
+        returning id, issue_id, quantity, returned_on, note
+      `;
+      await tx`
+        insert into audit_logs (actor_user_id, action, entity_type, entity_id, before_data, after_data, reason)
+        values (${request.sessionUser!.id}, 'EMPLOYEE_ITEM_RETURN_CORRECTED', 'EMPLOYEE_ITEM_RETURN', ${returnId},
+          ${tx.json(before)}, ${tx.json(after!)}, ${parsed.data.reason})
+      `;
+      return after;
+    });
+    if (!result) return reply.code(404).send({ error: "Záznam o vrácení nebyl nalezen." });
+    return { returned: result };
   });
 }

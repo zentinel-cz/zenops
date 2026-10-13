@@ -213,6 +213,11 @@ export const createEmployeeItemReturnSchema = z.object({
   note: z.string().trim().max(1000).nullable().optional(),
 });
 
+export const correctEmployeeItemReturnSchema = z.object({
+  returnedOn: z.iso.date(),
+  reason: z.string().trim().min(3).max(500),
+});
+
 export const shiftTypeSchema = z.enum(["MORNING", "NIGHT"]);
 export const workStateSchema = z.enum([
   "DRAFT",

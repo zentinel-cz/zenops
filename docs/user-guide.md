@@ -24,6 +24,7 @@ relací chrání účet i v případě, že zůstal přihlášený na jiném za�
 Přístup vytváří Admin. Neexistuje žádný společný ani výchozí účet.
 Každý účet má právě jednu roli; role Pracovník, Vedoucí, Admin a Účetní se
 nekombinují.
+Každý účet má svůj profil zaměstnance, který při založení účtu vytváří Admin.
 
 ## Role
 
@@ -50,7 +51,7 @@ seznamem otevřených i uzavřených zakázek, techniky, příslušenství a voz
 Může zakázky uzavřít nebo znovu otevřít, spravuje zaměstnance a jejich přístupy
 auditované administrativní opravy provozních záznamů.
 V části **Zaměstnanci** může vytvořit uživatelský účet a zvolit roli **Účetní**.
-V části **Vybavení pracovníků** má stejný přístup jako Účetní: může prohlížet
+V části **Vybavení uživatelů** má stejný přístup jako Účetní: může prohlížet
 a spravovat profily, katalog a evidenci vydaných a vrácených věcí.
 Admin má přístup ke všem oprávněním aplikace. Pracovní den za něj vytváří
 Pracovník a odeslanou práci schvaluje příslušný Vedoucí; Admin může použít
@@ -60,28 +61,31 @@ administrativní opravy.
 
 Admin v části **Zaměstnanci** zvolí **Vytvořit uživatelský účet**, vyplní
 osobní údaje, přihlašovací údaje a jako jedinou roli vybere **Účetní**. Účetní
-pak spravuje profily pracovníků, katalog pracovních oděvů a vybavení a
-záznamy o vydání a vrácení. Oprava již zapsaného vydání vyžaduje důvod a je
-auditována. Účetní nemá přístup ke směnám, schvalování práce ani správě účtů a
-rolí.
+pak spravuje katalog pracovních oděvů a vybavení a záznamy o vydání a vrácení
+pro uživatele všech rolí. Účetní nemůže vytvářet uživatele ani jejich profily,
+spravovat přihlašovací údaje nebo role. Nemá přístup ke směnám ani schvalování
+práce.
 
 Pokud vybraná role není v databázi správně připravena, ZenOps vytvoření nebo
 úpravu účtu odmítne a nezanechá aktivní účet bez role. Správce musí nejprve
 dokončit databázovou migraci.
 
-1. V seznamu vlevo vyberte pracovníka. Neaktivní pracovníci zůstávají
-   dostupní pro kontrolu historie, nové věci jim vydat nelze.
-2. V profilu upravte telefon nebo velikosti. Každá změna vyžaduje vyplnění
-   důvodu.
+1. V seznamu **Všichni uživatelé** vyberte osobu. Seznam obsahuje Pracovníky,
+   Vedoucí, Adminy i Účetní. Neaktivní uživatelé zůstávají dostupní pro
+   kontrolu historie; nové věci jim vydat nelze.
+2. Otevřete kartu uživatele a zkontrolujte jeho údaje a evidenci věcí.
+   Účetní může upravit kontaktní údaje a velikosti profilu Pracovníka; každá
+   změna vyžaduje důvod.
 3. Katalog rozšiřte zadáním názvu nové věci. Položku lze upravit nebo vyřadit;
    její starší výdejky zůstanou zachované.
-4. Ve formuláři **Vydat věc pracovníkovi** vyberte druh, množství, případnou
-   velikost, datum a místo výdeje. Vydání se objeví v historii pracovníka;
-   uvidíte v ní co, kdy, kde a v jakém množství pracovník převzal.
+4. Ve formuláři **Zaznamenat výdej uživateli** vyberte druh, množství, případnou
+   velikost, datum a místo výdeje. Vydání se objeví v historii uživatele;
+   uvidíte v ní co, kdy, kde a v jakém množství převzal.
 5. U nevydaného zbytku zvolte **Zapsat vrácení**. Lze vrátit část nebo celé
    množství; vrácený součet nesmí překročit vydané množství.
-6. Opravu výdejky otevřete přes **Opravit vydání** a uveďte důvod. Historie
-   vrácení se vede jako samostatné události a nemaže se.
+6. Datum výdeje opravte přes **Opravit vydání** a uveďte důvod. Datum konkrétního
+   vrácení opravte tlačítkem **Opravit datum** a také uveďte důvod. Opravy se
+   auditují; vrácení nelze smazat ani změnit jeho množství.
 
 ### Profil pracovníka
 
