@@ -46,6 +46,20 @@ Vedoucí nevytváří vlastní denní záznamy. Zakládá zakázky, spravuje den
 techniku a provozní palivo a schvaluje jednotlivé pracovní úseky pracovníků na
 zakázkách, které aktuálně vede.
 
+Po přihlášení uvidí přehled s rychlými odkazy na své agendy. V postranní
+navigaci na počítači nebo v pojmenované vodorovné nabídce na telefonu otevře
+vždy jednu sekci:
+
+- **Schvalování**: kontrola a schválení nebo vrácení práce čekající na jeho
+  rozhodnutí. Vidí pouze práci na zakázkách, které aktuálně vede.
+- **Zakázky**: přehled otevřených zakázek a jejich založení.
+- **Denní provoz**: počasí, teplota, poznámka a společné palivo zakázky.
+- **Reporty**: denní i měsíční provozní přehledy na jednom místě.
+- **Technika**: správa strojů, příslušenství a vozidel.
+
+Přehled nabízí přímé tlačítko pro každou dostupnou agendu. Obsah ostatních
+sekcí se při otevření vybrané agendy skryje.
+
 ### Admin
 
 Admin nevytváří vlastní denní záznamy ani neschvaluje práci. Má globální provozní dashboard se
@@ -146,7 +160,7 @@ pro nový úsek. Chybové hlášení se zobrazí nad formulářem; při chybě s
 zkontrolujte připojení a operaci zopakujte. Odstranění úseku nebo přestávky
 vyžaduje potvrzení.
 
-## Schvalování práce — Vedoucí a Admin
+## Schvalování práce — Vedoucí
 
 1. V části **Práce ke schválení** otevřete čekající pracovní úsek.
 2. Zkontrolujte pracovníka, zakázku, druh práce a vykázaný čas.

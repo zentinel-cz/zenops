@@ -129,6 +129,7 @@ function Dashboard({
     !user.roles.includes("LEADER") &&
     !user.roles.includes("ADMIN");
   const isAdmin = user.roles.includes("ADMIN");
+  const isLeader = user.roles.includes("LEADER") && !isAdmin;
   const isAccountant = user.roles.includes("ACCOUNTANT");
 
   const loadProjects = () =>
@@ -258,7 +259,7 @@ function Dashboard({
         <h3>{canManageProjects ? "Zakázky" : "Otevřené zakázky"}</h3>
         {projects.length ? (
           <ul>
-            {projects.slice(0, 5).map((project) => (
+        {projects.slice(0, isAdmin ? 5 : projects.length).map((project) => (
               <li
                 className={project.status === "CLOSED" ? "closed" : ""}
                 key={project.id}
@@ -472,6 +473,95 @@ function Dashboard({
         <div className="admin-workspace">
           <header className="admin-topbar"><div><span className="topbar-context">PERSONÁLNÍ EVIDENCE</span><h1>Uživatelé a svěřené věci</h1></div><div className="account"><div className="user-chip"><span>{user.displayName}</span><small>Účetní</small></div><AccountPanel onPasswordChanged={onLogout} /><button className="ghost" onClick={onLogout}>Odhlásit</button></div></header>
           <div className="admin-content"><AccountantPanel /></div>
+        </div>
+      </main>
+    );
+  }
+
+  if (isLeader) {
+    const leaderProjects = projects.filter(
+      (project) => project.leaderEmployeeId === user.employeeId,
+    );
+    const navItems: Array<{ id: string; label: string; icon: NavIconName }> = [
+      { id: "overview", label: "Přehled", icon: "overview" },
+      ...(canApprove ? [{ id: "approvals", label: "Schvalování", icon: "approval" as const }] : []),
+      ...(canCreateProject ? [{ id: "projects", label: "Zakázky", icon: "projects" as const }] : []),
+      ...(user.permissions.includes("project_day.manage") ? [{ id: "project-day", label: "Denní provoz", icon: "calendar" as const }] : []),
+      ...(canReport ? [{ id: "reports", label: "Reporty", icon: "report" as const }] : []),
+      ...(canManageAssets ? [{ id: "assets", label: "Technika", icon: "assets" as const }] : []),
+    ];
+    const currentSection = navItems.find((item) => item.id === activeSection) ?? navItems[0]!;
+    const actionHints: Record<string, string> = {
+      approvals: "Zkontrolovat čekající práci a rozhodnout o schválení.",
+      projects: "Otevřené zakázky a jejich založení.",
+      "project-day": "Počasí, teplota, poznámka a společné palivo.",
+      reports: "Denní a měsíční přehled provozu.",
+      assets: "Stroje, příslušenství a vozidla.",
+    };
+    return (
+      <main className="admin-shell leader-shell">
+        <aside className="admin-sidebar">
+          <div className="sidebar-brand">
+            <span className="brand-mark">Z</span>
+            <div><strong>ZENOPS</strong><small>PROVOZ ZAKÁZEK</small></div>
+          </div>
+          <nav aria-label="Hlavní navigace Vedoucího">
+            {navItems.map((item) => (
+              <button
+                className={activeSection === item.id ? "active" : ""}
+                key={item.id}
+                title={item.label}
+                type="button"
+                aria-current={activeSection === item.id ? "page" : undefined}
+                onClick={() => setActiveSection(item.id)}
+              >
+                <NavIcon name={item.icon} /><span>{item.label}</span>
+              </button>
+            ))}
+          </nav>
+          <div className="sidebar-status"><span /><div><strong>Systém online</strong><small>Provozní agenda</small></div></div>
+        </aside>
+        <div className="admin-workspace">
+          <header className="admin-topbar">
+            <div><span className="topbar-context">VEDOUCÍ / {currentSection.label.toUpperCase()}</span><h1>{currentSection.label}</h1></div>
+            <div className="account">
+              <div className="user-chip"><span>{user.displayName}</span><small>Vedoucí</small></div>
+              <AccountPanel onPasswordChanged={onLogout} />
+              <button className="ghost" onClick={onLogout}>Odhlásit</button>
+            </div>
+          </header>
+          <div className="admin-content leader-content">
+            {activeSection === "overview" && <>
+              <section className="admin-overview leader-overview">
+                <div>
+                  <p className="eyebrow">VAŠE PROVOZNÍ AGENDA</p>
+                  <h2>Dnešní práce na jednom místě.</h2>
+                  <p>Vyberte úkol. Zakázky i schvalování jsou omezené na váš rozsah oprávnění.</p>
+                </div>
+                <div className="overview-metrics">
+                  <article><small>Otevřené zakázky</small><strong>{loadingProjects ? "—" : projects.length}</strong><span>dostupné v ZenOps</span></article>
+                  <article><small>Zakázky, které vedete</small><strong>{loadingProjects ? "—" : leaderProjects.length}</strong><span>vaše otevřené zakázky</span></article>
+                </div>
+              </section>
+              <section className="leader-quick-actions" aria-labelledby="leader-actions-title">
+                <div className="leader-actions-heading"><p className="eyebrow">RYCHLÝ PŘÍSTUP</p><h2 id="leader-actions-title">Co potřebujete udělat?</h2></div>
+                <div className="leader-action-grid">
+                  {navItems.filter((item) => item.id !== "overview").map((item) => (
+                    <button className={`leader-action-card ${item.id === "approvals" ? "primary" : ""}`} type="button" key={item.id} onClick={() => setActiveSection(item.id)}>
+                      <span className="leader-action-icon"><NavIcon name={item.icon} /></span>
+                      <span className="leader-action-copy"><strong>{item.label === "Schvalování" ? "Zkontrolovat práci" : item.label}</strong><small>{actionHints[item.id]}</small></span>
+                      <span className="leader-action-cta">Otevřít <b aria-hidden="true">→</b></span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            </>}
+            {activeSection === "approvals" && canApprove && <section className="admin-section-view"><div className="content-section-label"><span>01</span><div><small>PRÁCE PRACOVNÍKŮ</small><strong>Schvalování</strong></div></div><ApprovalPanel /></section>}
+            {activeSection === "projects" && canCreateProject && <section className="admin-section-view"><div className="content-section-label"><span>02</span><div><small>ORGANIZACE PRÁCE</small><strong>Zakázky</strong></div></div>{projectOverview}{projectForms}</section>}
+            {activeSection === "project-day" && user.permissions.includes("project_day.manage") && <section className="admin-section-view"><div className="content-section-label"><span>03</span><div><small>ÚDAJE KAŽDÉHO DNE</small><strong>Denní provoz</strong></div></div><ProjectDayPanel user={user} projects={projects} /></section>}
+            {activeSection === "reports" && canReport && <section className="admin-section-view leader-report-stack"><div className="content-section-label"><span>04</span><div><small>VÝSLEDKY PROVOZU</small><strong>Reporty</strong></div></div><ReportPanel /><MonthlyPanel user={user} /></section>}
+            {activeSection === "assets" && canManageAssets && <section className="admin-section-view"><div className="content-section-label"><span>05</span><div><small>PROVOZNÍ PROSTŘEDKY</small><strong>Technika</strong></div></div><AssetPanel onChanged={async () => setAssetVersion((value) => value + 1)} /></section>}
+          </div>
         </div>
       </main>
     );

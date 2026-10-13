@@ -523,3 +523,78 @@ button:focus-visible,input:focus-visible,select:focus-visible { outline:3px soli
   .machine-form-actions { grid-template-columns:minmax(0,1fr); }
   .machine-form-actions button[type="submit"] { grid-row:1; }
 }
+
+/* Leader workspace follows the Admin section navigation, with task-first links. */
+.leader-shell .sidebar-brand small { color:#80aa8e; }
+.leader-shell .admin-topbar .account { position:relative; }
+.leader-shell .leader-content { max-width:1420px; }
+.leader-shell .leader-overview { grid-template-columns:minmax(300px,1fr) minmax(360px,.85fr); align-items:center; }
+.leader-shell .leader-overview h2 { max-width:600px; }
+.leader-shell .leader-overview>div>p:last-child { max-width:580px; }
+.leader-shell .leader-overview .overview-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.leader-shell .leader-overview .overview-metrics article { border-right:1px solid #2b3731; }
+.leader-shell .leader-overview .overview-metrics article:last-child { border-right:0; }
+.leader-quick-actions { margin-top:34px; }
+.leader-actions-heading { margin-bottom:16px; }
+.leader-actions-heading .eyebrow { margin:0 0 7px; }
+.leader-actions-heading h2 { margin:0; font-size:clamp(22px,3vw,30px); letter-spacing:-.03em; }
+.leader-action-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.leader-action-card { display:grid; grid-template-columns:48px minmax(0,1fr) auto; align-items:center; gap:14px; width:100%; min-width:0; min-height:112px; margin:0; padding:18px; border:1px solid #2b3731; border-radius:10px; color:#e8eee9; background:#121815; text-align:left; transition:transform .16s,border-color .16s,background .16s; }
+.leader-action-card:hover { transform:translateY(-2px); border-color:#426d50; background:#17221b; }
+.leader-action-card:focus-visible { outline:3px solid #80e5a0; outline-offset:3px; }
+.leader-action-card.primary { grid-column:1/-1; min-height:132px; border-color:#38664a; background:linear-gradient(110deg,#183725,#121a15 72%); }
+.leader-action-icon { display:grid; place-items:center; width:46px; height:46px; border:1px solid #365641; border-radius:10px; color:#7fe09a; background:#17291e; }
+.leader-action-icon svg { width:21px; height:21px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+.leader-action-card.primary .leader-action-icon { width:54px; height:54px; border-color:#4a8259; color:#0b2115; background:#80e5a0; }
+.leader-action-copy { display:grid; min-width:0; gap:6px; }
+.leader-action-copy strong { font-size:16px; }
+.leader-action-copy small { color:#91a499; font-size:12px; line-height:1.45; }
+.leader-action-card.primary .leader-action-copy strong { font-size:20px; }
+.leader-action-cta { display:flex; align-items:center; gap:8px; color:#80e5a0; font-size:12px; font-weight:800; white-space:nowrap; }
+.leader-action-cta b { font-size:18px; font-weight:500; }
+.leader-shell .admin-section-view>.content-section-label { margin-bottom:18px; }
+.leader-shell .leader-report-stack { display:grid; gap:18px; }
+.leader-shell .leader-report-stack>.content-section-label { margin-bottom:0; }
+.leader-shell .leader-report-stack>.management-panel { margin:0; }
+.leader-shell .admin-section-view>.management-panel { margin:0; }
+.leader-shell .account-panel { right:0; }
+@media(max-width:1100px) and (min-width:761px) {
+  .leader-shell .admin-sidebar { width:252px; padding:22px 14px; }
+  .leader-shell .admin-sidebar nav button { justify-content:flex-start; padding:0 12px; }
+  .leader-shell .admin-sidebar nav button span { display:block; }
+  .leader-shell .admin-sidebar nav button.active::before { left:-15px; }
+  .leader-shell .sidebar-brand { justify-content:flex-start; padding-left:10px; padding-right:10px; }
+  .leader-shell .sidebar-brand>div,.leader-shell .sidebar-status>div { display:grid; }
+  .leader-shell .sidebar-status { justify-content:flex-start; }
+  .leader-shell .admin-workspace { margin-left:252px; }
+  .leader-shell .leader-overview { grid-template-columns:1fr; gap:24px; }
+  .leader-shell .leader-overview .overview-metrics { max-width:none; }
+}
+@media(max-width:760px) {
+  .leader-shell .admin-sidebar { width:100%; padding:9px 10px; }
+  .leader-shell .admin-sidebar nav { gap:6px; padding-bottom:2px; }
+  .leader-shell .admin-sidebar nav button { flex:0 0 auto; width:auto; min-height:46px; justify-content:flex-start; gap:8px; padding:0 12px; border-color:#263a2d; background:#141b17; }
+  .leader-shell .admin-sidebar nav button span { display:block; font-size:12px; white-space:nowrap; }
+  .leader-shell .admin-sidebar nav button svg { flex:0 0 17px; }
+  .leader-shell .leader-content { padding:24px 14px 52px; }
+  .leader-shell .leader-overview { grid-template-columns:minmax(0,1fr); gap:20px; padding-bottom:24px; }
+  .leader-shell .leader-overview h2 { font-size:clamp(31px,8vw,40px); }
+  .leader-shell .leader-overview .overview-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .leader-shell .leader-overview .overview-metrics article { min-height:96px; padding:15px; border-bottom:0; }
+  .leader-quick-actions { margin-top:26px; }
+  .leader-action-grid { grid-template-columns:minmax(0,1fr); gap:9px; }
+  .leader-action-card,.leader-action-card.primary { grid-column:auto; grid-template-columns:42px minmax(0,1fr) auto; min-height:88px; gap:11px; padding:13px; }
+  .leader-action-card.primary .leader-action-icon,.leader-action-icon { width:40px; height:40px; }
+  .leader-action-card.primary .leader-action-copy strong { font-size:16px; }
+  .leader-action-copy strong { font-size:14px; }
+  .leader-action-copy small { font-size:11px; }
+  .leader-action-cta { gap:4px; font-size:11px; }
+}
+@media(max-width:420px) {
+  .leader-shell .leader-overview .overview-metrics { grid-template-columns:minmax(0,1fr); }
+  .leader-shell .leader-overview .overview-metrics article { min-height:78px; border-right:0; border-bottom:1px solid #2b3731; }
+  .leader-shell .leader-overview .overview-metrics article:last-child { border-bottom:0; }
+  .leader-action-card,.leader-action-card.primary { grid-template-columns:38px minmax(0,1fr); }
+  .leader-action-icon,.leader-action-card.primary .leader-action-icon { width:36px; height:36px; }
+  .leader-action-cta { grid-column:2; justify-self:start; }
+}
