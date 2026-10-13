@@ -70,10 +70,12 @@ Pokud vybraná role není v databázi správně připravena, ZenOps vytvoření 
 úpravu účtu odmítne a nezanechá aktivní účet bez role. Správce musí nejprve
 dokončit databázovou migraci.
 
-1. V seznamu **Všichni uživatelé** vyberte osobu. Seznam obsahuje Pracovníky,
-   Vedoucí, Adminy i Účetní. Neaktivní uživatelé zůstávají dostupní pro
-   kontrolu historie; nové věci jim vydat nelze.
-2. Otevřete kartu uživatele a zkontrolujte jeho údaje a evidenci věcí.
+1. Otevře se samostatný seznam **Všichni uživatelé**. Klepnutím na řádek
+   otevřete detail vybrané osoby. Seznam obsahuje Pracovníky, Vedoucí, Adminy
+   i Účetní. Neaktivní uživatelé zůstávají dostupní pro kontrolu historie;
+   nové věci jim vydat nelze.
+2. V detailu uživatele zkontrolujte jeho údaje a evidenci věcí. Tlačítkem
+   **Zpět na seznam uživatelů** se kdykoli vrátíte do seznamu.
    Účetní může upravit kontaktní údaje a velikosti profilu Pracovníka; každá
    změna vyžaduje důvod.
 3. Katalog rozšiřte zadáním názvu nové věci. Položku lze upravit nebo vyřadit;
