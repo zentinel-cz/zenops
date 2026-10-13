@@ -1,5 +1,6 @@
 import type { SessionUser } from "@zenops/contracts";
 import { useEffect, useState } from "react";
+import { ListSearch, matchesSearch } from "./ListSearch";
 
 type MonthlyReport = {
   month: string;
@@ -48,5 +49,7 @@ export function MonthlyPanel({ user }: { user: SessionUser }) {
 }
 
 function SummaryList({ title, rows }: { title: string; rows: Array<{ key: string; title: string; detail: string; value: string }> }) {
-  return <div className="monthly-list"><h4>{title}</h4>{rows.length === 0 ? <p className="muted">Bez dat.</p> : rows.map((row) => <div key={row.key}><span><strong>{row.title}</strong><small>{row.detail}</small></span><b>{row.value}</b></div>)}</div>;
+  const [query, setQuery] = useState("");
+  const filtered = rows.filter((row) => matchesSearch(query, row.title, row.detail, row.value));
+  return <div className="monthly-list"><h4>{title}</h4>{rows.length === 0 ? <p className="muted">Bez dat.</p> : <><ListSearch value={query} onChange={setQuery} label={`Hledat: ${title.toLocaleLowerCase("cs-CZ")}`} />{filtered.length ? filtered.map((row) => <div key={row.key}><span><strong>{row.title}</strong><small>{row.detail}</small></span><b>{row.value}</b></div>) : <p className="muted">Žádná položka neodpovídá hledání.</p>}</>}</div>;
 }

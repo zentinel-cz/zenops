@@ -38,7 +38,7 @@ Každý účet má svůj profil zaměstnance, který při založení účtu vytv
 - spravuje vlastní pracovní den, úseky práce, jízdy a přestávky;
 - zvolí ranní nebo noční směnu; noční směna může pokračovat přes půlnoc;
 - ve svém profilu může pouze prohlížet kontaktní údaje, velikosti a historii
-  pracovních oděvů a vybavení.
+  pracovních oděvů a vybavení; v delší historii může záznamy vyhledat podle názvu, data, velikosti nebo místa výdeje.
 
 ### Vedoucí
 
@@ -51,11 +51,14 @@ navigaci na počítači nebo v pojmenované vodorovné nabídce na telefonu otev
 vždy jednu sekci:
 
 - **Schvalování**: kontrola a schválení nebo vrácení práce čekající na jeho
-  rozhodnutí. Vidí pouze práci na zakázkách, které aktuálně vede.
-- **Zakázky**: přehled otevřených zakázek a jejich založení.
+  rozhodnutí. Vidí pouze práci na zakázkách, které aktuálně vede. Seznam lze
+  vyhledat podle pracovníka, zakázky nebo druhu práce.
+- **Zakázky**: přehled otevřených zakázek a jejich založení. Seznam lze
+  vyhledat podle kódu, názvu nebo místa.
 - **Denní provoz**: počasí, teplota, poznámka a společné palivo zakázky.
 - **Reporty**: denní i měsíční provozní přehledy na jednom místě.
-- **Technika**: správa strojů, příslušenství a vozidel.
+- **Technika**: správa strojů, příslušenství a vozidel. Každý katalog lze
+  samostatně vyhledat podle kódu, názvu, typu nebo SPZ.
 
 Přehled nabízí přímé tlačítko pro každou dostupnou agendu. Obsah ostatních
 sekcí se při otevření vybrané agendy skryje.
@@ -67,6 +70,8 @@ seznamem otevřených i uzavřených zakázek, techniky, příslušenství a voz
 Může zakázky uzavřít nebo znovu otevřít, spravuje zaměstnance a jejich přístupy
 auditované administrativní opravy provozních záznamů.
 V části **Zaměstnanci** může vytvořit uživatelský účet a zvolit roli **Účetní**.
+Seznam zaměstnanců lze vyhledat podle jména, osobního čísla, přihlašovacího
+jména, e-mailu, role nebo stavu účtu.
 V části **Vybavení uživatelů** má stejný přístup jako Účetní: může prohlížet
 a spravovat profily, katalog a evidenci vydaných a vrácených věcí.
 Admin má přístup ke všem oprávněním aplikace. Pracovní den za něj vytváří
@@ -90,7 +95,10 @@ dokončit databázovou migraci.
    otevřete detail vybrané osoby. Seznam obsahuje Pracovníky, Vedoucí, Adminy
    i Účetní. Neaktivní uživatelé zůstávají dostupní pro kontrolu historie;
    nové věci jim vydat nelze.
-2. V detailu uživatele zkontrolujte jeho údaje a evidenci věcí. Tlačítkem
+1. Seznam uživatelů lze vyhledat podle jména, osobního čísla, role, kontaktu
+   nebo stavu. Katalog věcí má vlastní vyhledávání podle názvu a stavu.
+2. V detailu uživatele zkontrolujte jeho údaje a evidenci věcí. Delší historii
+   výdejek lze vyhledat podle názvu, data, místa, velikosti nebo poznámky. Tlačítkem
    **Zpět na seznam uživatelů** se kdykoli vrátíte do seznamu.
    Účetní může upravit kontaktní údaje a velikosti profilu Pracovníka; každá
    změna vyžaduje důvod.
@@ -227,8 +235,13 @@ všech zaměstnanců. Může opravit Zakázku, druh práce, aktivitu, čas a pop
 také přidat nové opravné rozhodnutí Schválit/Vrátit. Původní schválení se
 nepřepisuje ani nemaže. Každá korekce vyžaduje důvod a vytváří auditní stopu.
 Uzavřený měsíc je chráněný; před opravou jej musí Admin vědomě znovu otevřít.
+Záznamy vybraného dne lze vyhledat podle pracovníka, směny, stavu, zakázky nebo
+druhu práce.
 Ve stejném přehledu může opravit přestávku, MTH a palivo stroje, přiřazené
 příslušenství i kilometry, palivo, cestující a poznámku jízdy vozidlem.
+
+Seznam dnešních pracovních úseků, přestávek a jízd lze vyhledat podle zakázky,
+druhu práce, stroje nebo vozidla.
 
 Pracovník u rozpracovaného pracovního úseku zvolí **Přidat stroj** a vyplní:
 
@@ -270,8 +283,8 @@ Report rozlišuje:
 
 Souhrn ukazuje počet pracovníků a úseků, schválený a předběžný čas. Detail
 obsahuje Zakázku, pracovníka, druh práce, přestávky, stroje, MTH, příslušenství,
-palivo, vozidla, kilometry a společné palivo zakázky. Tlačítkem **Stáhnout PDF**
-se stáhne profesionální report ve stejném oprávněném rozsahu.
+palivo, vozidla, kilometry a společné palivo zakázky. Seznam úseků lze vyhledat podle zakázky, pracovníka, druhu práce, stroje nebo
+stavu. Tlačítkem **Stáhnout PDF** se stáhne profesionální report ve stejném oprávněném rozsahu.
 
 ## Měsíční report — Vedoucí a Admin
 
@@ -283,7 +296,8 @@ Sekce **Souhrny a uzávěrka** nabízí pro vybraný měsíc:
 - kilometry a palivo podle vozidel;
 - společné palivo podle Zakázek.
 
-Vedoucí vidí pouze Zakázky, které vede. Admin vidí globální souhrn. Report je
+Vedoucí vidí pouze Zakázky, které vede. Admin vidí globální souhrn. V každém
+souhrnném seznamu lze vyhledávat podle názvu, kódu nebo zobrazených údajů. Report je
 provozní podklad pro odměny a mzdy, ale ZenOps mzdy sám nepočítá.
 
 ### Uzávěrka měsíce — Admin

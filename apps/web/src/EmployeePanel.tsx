@@ -1,5 +1,6 @@
 import type { EmployeeSummary, RoleCode, SessionUser } from "@zenops/contracts";
 import { type FormEvent, useEffect, useState } from "react";
+import { ListSearch, matchesSearch } from "./ListSearch";
 
 const roleOptions: Array<{ code: RoleCode; name: string }> = [
   { code: "WORKER", name: "Pracovník" },
@@ -18,6 +19,7 @@ export function EmployeePanel({ user }: { user: SessionUser }) {
   const [editTarget, setEditTarget] = useState<EmployeeSummary | null>(null);
   const [stateTarget, setStateTarget] = useState<EmployeeSummary | null>(null);
   const [error, setError] = useState("");
+  const [query, setQuery] = useState("");
 
   const load = () =>
     fetch("/api/employees", { credentials: "include" })
@@ -207,8 +209,9 @@ export function EmployeePanel({ user }: { user: SessionUser }) {
       )}
       {showCreate && employeeForm()}
       {editTarget && employeeForm(editTarget)}
+      <ListSearch value={query} onChange={setQuery} label="Hledat zaměstnance podle jména, čísla, účtu nebo role" />
       <div className="employee-list">
-        {employees.map((employee) => (
+        {employees.filter((employee) => matchesSearch(query, employee.displayName, employee.employeeNumber, employee.username, employee.email, roleNames[employee.roles[0] as RoleCode], employee.isActive ? "aktivní" : "neaktivní")).map((employee) => (
           <div
             className={`employee-row ${employee.isActive ? "" : "inactive"}`}
             key={employee.id}
@@ -242,6 +245,7 @@ export function EmployeePanel({ user }: { user: SessionUser }) {
             </div>
           </div>
         ))}
+        {employees.length > 0 && !employees.some((employee) => matchesSearch(query, employee.displayName, employee.employeeNumber, employee.username, employee.email, roleNames[employee.roles[0] as RoleCode], employee.isActive ? "aktivní" : "neaktivní")) && <p className="muted">Žádný zaměstnanec neodpovídá hledání.</p>}
       </div>
       {stateTarget && (
         <form className="state-dialog" onSubmit={changeState}>

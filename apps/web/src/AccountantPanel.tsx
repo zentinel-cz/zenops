@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import type { WorkerProfile } from "@zenops/contracts";
+import { ListSearch, matchesSearch } from "./ListSearch";
 
 type ItemType = { id: string; name: string; isActive: boolean };
 type ReturnEntry = { id: string; quantity: number; returnedOn: string; note: string | null; recordedBy: string };
@@ -19,6 +20,9 @@ export function AccountantPanel() {
   const [editIssue, setEditIssue] = useState<Issue | null>(null);
   const [returnIssueId, setReturnIssueId] = useState<string | null>(null);
   const [editReturnId, setEditReturnId] = useState<string | null>(null);
+  const [userQuery, setUserQuery] = useState("");
+  const [catalogQuery, setCatalogQuery] = useState("");
+  const [issueQuery, setIssueQuery] = useState("");
 
   async function loadLists() {
     const [profileResponse, typeResponse] = await Promise.all([
@@ -116,10 +120,11 @@ export function AccountantPanel() {
   const catalog = <section className="accountant-card issued-catalog"><div className="section-heading"><div><p className="eyebrow">KATALOG</p><h3>Vydávané věci</h3></div></div>
     <form className="catalog-create-form" onSubmit={(event) => void createItemType(event)}><label>Nový druh věci<input name="name" minLength={2} maxLength={120} placeholder="Například montérky" required /></label><button>Přidat do katalogu</button></form>
     {itemTypes.length === 0 && <p className="muted">Katalog je prázdný. Přidejte nejprve věc, například montérky nebo obuv.</p>}
-    <div className="issued-catalog-list">{itemTypes.map((item) => <div className={!item.isActive ? "inactive" : ""} key={item.id}>
+    {itemTypes.length > 0 && <ListSearch value={catalogQuery} onChange={setCatalogQuery} label="Hledat druh věci v katalogu" />}
+    <div className="issued-catalog-list">{itemTypes.filter((item) => matchesSearch(catalogQuery, item.name, item.isActive ? "aktivní" : "vyřazený")).map((item) => <div className={!item.isActive ? "inactive" : ""} key={item.id}>
       <form onSubmit={(event) => void editItemType(event, item)}><input aria-label={`Název: ${item.name}`} name="name" defaultValue={item.name} minLength={2} maxLength={120} required /><label>Důvod změny<input name="reason" minLength={3} maxLength={500} placeholder="Důvod pro audit" required /></label><button>Uložit</button></form>
       <button type="button" className="table-action" onClick={() => void setItemTypeActive(item)}>{item.isActive ? "Vyřadit" : "Aktivovat"}</button>
-    </div>)}</div>
+    </div>)}{itemTypes.length > 0 && !itemTypes.some((item) => matchesSearch(catalogQuery, item.name, item.isActive ? "aktivní" : "vyřazený")) && <p className="muted">Žádný druh věci neodpovídá hledání.</p>}</div>
   </section>;
 
   return <section className="accountant-workspace">
@@ -141,7 +146,8 @@ export function AccountantPanel() {
           </form>}
         </section>
         <section className="accountant-card"><div className="section-heading"><div><p className="eyebrow">NAFASOVANÉ VĚCI</p><h3>Výdej a vrácení</h3></div></div>
-          {detail.issues.length === 0 ? <p className="muted">Tento uživatel zatím nemá žádné výdejky. Vyberte věc v katalogu a zapište výdej ve formuláři níže.</p> : <div className="issued-item-list">{detail.issues.map((issue) => <article key={issue.id}>
+          {detail.issues.length > 0 && <ListSearch value={issueQuery} onChange={setIssueQuery} label="Hledat ve výdejkách tohoto uživatele" />}
+          {detail.issues.length === 0 ? <p className="muted">Tento uživatel zatím nemá žádné výdejky. Vyberte věc v katalogu a zapište výdej ve formuláři níže.</p> : <div className="issued-item-list">{detail.issues.filter((issue) => matchesSearch(issueQuery, issue.itemName, issue.size, issue.issuedOn, issue.location, issue.note, issue.quantity, issue.returnedQuantity, issue.returns.map((item) => `${item.returnedOn} ${item.note ?? ""}`).join(" "))).map((issue) => <article key={issue.id}>
             <div className="issued-item-heading"><strong>{issue.itemName}</strong><span>{formatDate(issue.issuedOn)}</span></div>
             <p>Vydáno {issue.quantity}{issue.size ? ` · Velikost ${issue.size}` : ""} · Místo: {issue.location || "Neuvedeno"} · Vráceno {issue.returnedQuantity} · U uživatele {issue.outstandingQuantity}</p>
             {issue.note && <small>{issue.note}</small>}
@@ -149,7 +155,7 @@ export function AccountantPanel() {
             {issue.returns.length > 0 && <ul>{issue.returns.map((item) => <li key={item.id}>Vráceno {item.quantity} · {formatDate(item.returnedOn)}{item.note ? ` · ${item.note}` : ""} · {item.recordedBy} <button type="button" className="table-action" onClick={() => setEditReturnId(editReturnId === item.id ? null : item.id)}>Opravit datum</button>{editReturnId === item.id && <ReturnDateForm entry={item} onSubmit={(event) => void correctReturnDate(event, item)} onCancel={() => setEditReturnId(null)} />}</li>)}</ul>}
             {editIssue?.id === issue.id && <IssueForm key={`edit-${issue.id}`} itemTypes={itemTypes} issue={issue} onSubmit={(event) => void correctIssue(event)} onCancel={() => setEditIssue(null)} />}
             {returnIssueId === issue.id && <ReturnForm key={`return-${issue.id}`} maxQuantity={issue.outstandingQuantity} onSubmit={(event) => void addReturn(event)} onCancel={() => setReturnIssueId(null)} />}
-          </article>)}</div>}
+          </article>)}{detail.issues.length > 0 && !detail.issues.some((issue) => matchesSearch(issueQuery, issue.itemName, issue.size, issue.issuedOn, issue.location, issue.note, issue.quantity, issue.returnedQuantity, issue.returns.map((item) => `${item.returnedOn} ${item.note ?? ""}`).join(" "))) && <p className="muted">Žádná výdejka neodpovídá hledání.</p>}</div>}
           {detail.profile.isActive && <form className="issue-create-form" onSubmit={(event) => void createIssue(event)}><h4>Zaznamenat výdej uživateli</h4>
             <label>Druh věci<select name="itemTypeId" required defaultValue=""><option value="" disabled>Vyberte z katalogu</option>{itemTypes.filter((item) => item.isActive).map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
             <label>Množství<input name="quantity" type="number" min="1" step="1" defaultValue="1" required /></label>
@@ -163,9 +169,10 @@ export function AccountantPanel() {
       </div>}
     </div> : <div className="accountant-directory-view">
       <section className="accountant-card accountant-user-directory"><div className="section-heading"><div><p className="eyebrow">SPRÁVA VYBAVENÍ</p><h3>Vyberte uživatele</h3></div><span className="state-badge">{profiles.length} uživatelů</span></div>
-        {profiles.length === 0 ? <p className="muted">Zatím tu nejsou uživatelské účty. Účty a jejich profily vytváří Admin v části Zaměstnanci.</p> : <div className="accountant-user-list">{profiles.map((profile) => <button type="button" className="accountant-user-card" key={profile.id} onClick={() => { setSelectedId(profile.id); setDetail(null); setEditIssue(null); setReturnIssueId(null); setEditReturnId(null); setError(""); setMessage(""); }}>
+        {profiles.length > 0 && <ListSearch value={userQuery} onChange={setUserQuery} label="Hledat uživatele podle jména, osobního čísla, role nebo stavu" />}
+        {profiles.length === 0 ? <p className="muted">Zatím tu nejsou uživatelské účty. Účty a jejich profily vytváří Admin v části Zaměstnanci.</p> : <div className="accountant-user-list">{profiles.filter((profile) => matchesSearch(userQuery, profile.displayName, profile.employeeNumber, profile.roleName, profile.email, profile.phone, profile.isActive ? "aktivní" : "neaktivní")).map((profile) => <button type="button" className="accountant-user-card" key={profile.id} onClick={() => { setSelectedId(profile.id); setDetail(null); setEditIssue(null); setReturnIssueId(null); setEditReturnId(null); setError(""); setMessage(""); }}>
           <span className="accountant-user-avatar" aria-hidden="true">{profile.displayName.trim().slice(0, 1).toLocaleUpperCase("cs-CZ")}</span><span className="accountant-user-copy"><strong>{profile.displayName}</strong><small>{profile.roleName} · osobní číslo {profile.employeeNumber}</small></span><span className={profile.isActive ? "accountant-user-state" : "accountant-user-state inactive"}>{profile.isActive ? "Aktivní" : "Neaktivní"}</span><span className="accountant-user-chevron" aria-hidden="true">›</span>
-        </button>)}</div>}
+        </button>)}{profiles.length > 0 && !profiles.some((profile) => matchesSearch(userQuery, profile.displayName, profile.employeeNumber, profile.roleName, profile.email, profile.phone, profile.isActive ? "aktivní" : "neaktivní")) && <p className="muted">Žádný uživatel neodpovídá hledání.</p>}</div>}
       </section>
       {catalog}
     </div>}

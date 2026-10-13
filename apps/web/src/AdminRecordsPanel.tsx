@@ -1,5 +1,6 @@
 import type { ProjectSummary } from "@zenops/contracts";
 import { type FormEvent, useEffect, useState } from "react";
+import { ListSearch, matchesSearch } from "./ListSearch";
 type MachineUsage = {
   id: string;
   machineId: string;
@@ -67,6 +68,7 @@ export function AdminRecordsPanel({
   const [days, setDays] = useState<Day[]>([]);
   const [target, setTarget] = useState<Entry | null>(null);
   const [message, setMessage] = useState("");
+  const [query, setQuery] = useState("");
   const load = () =>
     fetch(`/api/admin/workdays?date=${date}`, { credentials: "include" })
       .then(async (r) =>
@@ -171,10 +173,11 @@ export function AdminRecordsPanel({
         />
       </div>
       {message && <p className="form-message">{message}</p>}
+      {days.length > 0 && <ListSearch value={query} onChange={setQuery} label="Hledat pracovníka nebo záznam práce" />}
       {days.length === 0 ? (
         <p className="muted">Pro zvolené datum nejsou záznamy.</p>
       ) : (
-        days.map((day) => (
+        days.filter((day) => matchesSearch(query, day.displayName, day.workDate, day.shiftType, day.state, day.entries.map((entry) => `${entry.projectCode} ${entry.projectName} ${entry.workTypeName} ${entry.machineUsage?.machineCode ?? ""} ${entry.description ?? ""}`).join(" "))).map((day) => (
           <div className="admin-day" key={day.id}>
             <div>
               <strong>{day.displayName}</strong>
@@ -261,6 +264,7 @@ export function AdminRecordsPanel({
           </div>
         ))
       )}
+      {days.length > 0 && !days.some((day) => matchesSearch(query, day.displayName, day.workDate, day.shiftType, day.state, day.entries.map((entry) => `${entry.projectCode} ${entry.projectName} ${entry.workTypeName} ${entry.machineUsage?.machineCode ?? ""} ${entry.description ?? ""}`).join(" "))) && <p className="muted">Žádný den neodpovídá hledání.</p>}
       {target && (
         <form className="admin-entry-form" onSubmit={edit}>
           <div>

@@ -1,5 +1,6 @@
 import type { ProjectSummary } from "@zenops/contracts";
 import { type FormEvent, useEffect, useState } from "react";
+import { ListSearch, matchesSearch } from "./ListSearch";
 
 type WorkDay = {
   id: string; workDate: string; shiftType: string; state: string;
@@ -33,6 +34,7 @@ export function WorkDayPanel({ projects, assetVersion, employeeId, onClose }: { 
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [machineEntryId, setMachineEntryId] = useState<string | null>(null);
   const [selectedMachineId, setSelectedMachineId] = useState("");
+  const [timelineQuery, setTimelineQuery] = useState("");
 
   const load = async () => {
     const response = await fetch(`/api/workdays/current?date=${today}`, { credentials: "include" });
@@ -117,7 +119,7 @@ export function WorkDayPanel({ projects, assetVersion, employeeId, onClose }: { 
         <div className="worker-records-heading"><h4>Dnešní záznamy</h4><span>{workDay.entries.length} {workDay.entries.length === 1 ? "pracovní úsek" : "pracovních úseků"}</span></div>
         {workDay.entries.length + workDay.breaks.length + workDay.vehicleTrips.length === 0
           ? <p className="worker-empty-state">Zatím tu nic není. Níže přidejte první pracovní úsek.</p>
-          : <div className="timeline">{timelineItems.map((item) => <div className={`timeline-item ${item.kind}`} key={`${item.kind}-${item.id}`}><strong>{formatInterval(item.startAt, item.endAt)}</strong><span><b>{item.label}</b>{item.detail && <small>{item.detail}</small>}</span><div className="row-actions">{editable && item.entryId && !workDay.entries.find((entry) => entry.id === item.entryId)?.machineUsageId && machines.length > 0 && <button className="table-action" disabled={saving} onClick={() => setMachineEntryId(item.entryId)}>Přidat stroj</button>}{editable && item.entryId && <button className="table-action" disabled={saving} onClick={() => { if (window.confirm("Opravdu chcete tento pracovní úsek odstranit?")) void mutate(`/api/workdays/${workDay.id}/entries/${item.entryId}`, "DELETE"); }}>Odstranit</button>}{editable && item.breakId && <button className="table-action" disabled={saving} onClick={() => { if (window.confirm("Opravdu chcete tuto přestávku odstranit?")) void mutate(`/api/workdays/${workDay.id}/breaks/${item.breakId}`, "DELETE"); }}>Odstranit</button>}</div></div>)}</div>}
+          : <><ListSearch value={timelineQuery} onChange={setTimelineQuery} label="Hledat v dnešních záznamech" /><div className="timeline">{timelineItems.filter((item) => matchesSearch(timelineQuery, item.label, item.detail, item.kind, item.startAt, item.endAt)).map((item) => <div className={`timeline-item ${item.kind}`} key={`${item.kind}-${item.id}`}><strong>{formatInterval(item.startAt, item.endAt)}</strong><span><b>{item.label}</b>{item.detail && <small>{item.detail}</small>}</span><div className="row-actions">{editable && item.entryId && !workDay.entries.find((entry) => entry.id === item.entryId)?.machineUsageId && machines.length > 0 && <button className="table-action" disabled={saving} onClick={() => setMachineEntryId(item.entryId)}>Přidat stroj</button>}{editable && item.entryId && <button className="table-action" disabled={saving} onClick={() => { if (window.confirm("Opravdu chcete tento pracovní úsek odstranit?")) void mutate(`/api/workdays/${workDay.id}/entries/${item.entryId}`, "DELETE"); }}>Odstranit</button>}{editable && item.breakId && <button className="table-action" disabled={saving} onClick={() => { if (window.confirm("Opravdu chcete tuto přestávku odstranit?")) void mutate(`/api/workdays/${workDay.id}/breaks/${item.breakId}`, "DELETE"); }}>Odstranit</button>}</div></div>)}{timelineItems.length > 0 && !timelineItems.some((item) => matchesSearch(timelineQuery, item.label, item.detail, item.kind, item.startAt, item.endAt)) && <p className="muted">Žádný dnešní záznam neodpovídá hledání.</p>}</div></>}
         {editable && machineEntryId && <form className="machine-usage-form" onSubmit={addMachine}>
           <header className="machine-form-heading">
             <div>

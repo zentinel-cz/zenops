@@ -598,3 +598,10 @@ button:focus-visible,input:focus-visible,select:focus-visible { outline:3px soli
   .leader-action-icon,.leader-action-card.primary .leader-action-icon { width:36px; height:36px; }
   .leader-action-cta { grid-column:2; justify-self:start; }
 }
+
+.list-search { display:grid; grid-template-columns:minmax(0,1fr); gap:6px; width:min(100%, 520px); margin:12px 0; }
+.list-search label { margin:0; color:#637168; font-size:11px; font-weight:700; }
+.list-search input { min-height:42px; padding:10px 13px; }
+.admin-shell .list-search label { color:#91a499; }
+.admin-shell .list-search input { background:#0d1210; }
+@media (max-width: 760px) { .list-search { width:100%; } }

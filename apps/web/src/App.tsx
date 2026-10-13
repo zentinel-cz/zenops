@@ -11,6 +11,7 @@ import { AccountPanel } from "./AccountPanel";
 import { AdminRecordsPanel } from "./AdminRecordsPanel";
 import { AccountantPanel } from "./AccountantPanel";
 import { WorkerProfilePanel } from "./WorkerProfilePanel";
+import { ListSearch, matchesSearch } from "./ListSearch";
 
 type AuthState =
   | { status: "loading" }
@@ -102,6 +103,7 @@ function Dashboard({
   onLogout: () => void;
 }) {
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
+  const [projectQuery, setProjectQuery] = useState("");
   const [loadingProjects, setLoadingProjects] = useState(true);
   const [leaders, setLeaders] = useState<
     Array<{ id: string; displayName: string }>
@@ -258,8 +260,10 @@ function Dashboard({
         <span>01 · {loadingProjects ? "…" : projects.length}</span>
         <h3>{canManageProjects ? "Zakázky" : "Otevřené zakázky"}</h3>
         {projects.length ? (
+          <>
+          {projects.length > 5 && <ListSearch value={projectQuery} onChange={setProjectQuery} label="Hledat zakázku podle kódu, názvu nebo místa" />}
           <ul>
-        {projects.slice(0, isAdmin ? 5 : projects.length).map((project) => (
+        {projects.filter((project) => matchesSearch(projectQuery, project.code, project.name, project.location, project.status)).slice(0, isAdmin && !projectQuery ? 5 : projects.length).map((project) => (
               <li
                 className={project.status === "CLOSED" ? "closed" : ""}
                 key={project.id}
@@ -287,6 +291,7 @@ function Dashboard({
               </li>
             ))}
           </ul>
+          </>
         ) : (
           <p>
             {loadingProjects

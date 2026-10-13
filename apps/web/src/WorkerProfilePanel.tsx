@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { WorkerProfile } from "@zenops/contracts";
+import { ListSearch, matchesSearch } from "./ListSearch";
 
 type ReturnEntry = { id: string; quantity: number; returnedOn: string; note: string | null; recordedBy: string };
 type Issue = { id: string; itemName: string; quantity: number; returnedQuantity: number; outstandingQuantity: number; size: string | null; issuedOn: string; location: string | null; note: string | null; returns: ReturnEntry[] };
@@ -8,6 +9,7 @@ export function WorkerProfilePanel({ onClose }: { onClose: () => void }) {
   const [profile, setProfile] = useState<WorkerProfile | null>(null);
   const [issues, setIssues] = useState<Issue[]>([]);
   const [error, setError] = useState("");
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
     void fetch("/api/profile", { credentials: "include" })
@@ -34,12 +36,12 @@ export function WorkerProfilePanel({ onClose }: { onClose: () => void }) {
         <div><dt>Velikost obuvi</dt><dd>{profile.shoeSize || "Není uvedena"}</dd></div>
       </dl>
       <div className="worker-profile-history"><div className="section-heading"><div><p className="eyebrow">PŘEVZATÉ VĚCI</p><h3>Moje výdejky</h3></div></div>
-        {issues.length === 0 ? <p className="muted">Zatím nemáte evidované vydané věci.</p> : <div className="issued-item-list">{issues.map((issue) => <article key={issue.id}>
+        {issues.length === 0 ? <p className="muted">Zatím nemáte evidované vydané věci.</p> : <><ListSearch value={query} onChange={setQuery} label="Hledat v mých výdejkách" /><div className="issued-item-list">{issues.filter((issue) => matchesSearch(query, issue.itemName, issue.size, issue.issuedOn, issue.location, issue.note, issue.quantity, issue.returnedQuantity, issue.returns.map((item) => `${item.returnedOn} ${item.note ?? ""}`).join(" "))).map((issue) => <article key={issue.id}>
           <div className="issued-item-heading"><strong>{issue.itemName}</strong><span>{formatDate(issue.issuedOn)}</span></div>
           <p>Vydáno: {issue.quantity}{issue.size ? ` · Velikost ${issue.size}` : ""} · Místo: {issue.location || "Neuvedeno"} · Vráceno: {issue.returnedQuantity} · Máte u sebe: {issue.outstandingQuantity}</p>
           {issue.note && <small>{issue.note}</small>}
           {issue.returns.length > 0 && <ul>{issue.returns.map((item) => <li key={item.id}>Vráceno {item.quantity} · {formatDate(item.returnedOn)}{item.note ? ` · ${item.note}` : ""}</li>)}</ul>}
-        </article>)}</div>}
+        </article>)}{issues.length > 0 && !issues.some((issue) => matchesSearch(query, issue.itemName, issue.size, issue.issuedOn, issue.location, issue.note, issue.quantity, issue.returnedQuantity)) && <p className="muted">Žádná výdejka neodpovídá hledání.</p>}</div></>}
       </div>
     </>}
   </section>;
