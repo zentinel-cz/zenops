@@ -7,14 +7,14 @@ se rozšiřovat současně s aplikací. Testovací náhled běží na adrese
 ## Přihlášení a odhlášení
 
 1. Otevřete přihlašovací stránku ZenOps.
-2. Zadejte své uživatelské jméno nebo firemní e-mail a heslo s nejméně 12 znaky.
+2. Zadejte své uživatelské jméno nebo firemní e-mail a heslo.
 3. Po přihlášení se zobrazí dashboard podle vašich oprávnění.
 4. Pro bezpečné ukončení relace použijte tlačítko **Odhlásit** vpravo nahoře.
 
 ### Změna vlastního hesla
 
 1. Po přihlášení otevřete vpravo nahoře **Můj účet**.
-2. Zadejte současné heslo a dvakrát nové heslo s nejméně 12 znaky.
+2. Zadejte současné heslo a dvakrát nové heslo.
 3. Po úspěšné změně systém ukončí všechna přihlášení tohoto účtu.
 4. Přihlaste se znovu novým heslem.
 
@@ -379,3 +379,10 @@ V **Denním provozu** lze vybrat datum a zobrazit i uzavřenou zakázku pouze
 pro čtení. Admin vidí všechny zakázky, Vedoucí pouze aktuálně přiřazené.
 Pracovník nemá přístup ke společným poznámkám ani souhrnům paliva; vlastní
 historii práce a nabídku otevřených zakázek má nadále dostupnou.
+
+### Délka hesla
+
+Při založení účtu, přihlášení ani změně hesla není vyžadováno 12 znaků.
+Heslo musí být neprázdné a může mít nejvýše 200 znaků. Při změně musí být nové
+heslo odlišné od současného. Změna validace nevyžaduje migraci databáze;
+uložená hesla zůstávají platná.

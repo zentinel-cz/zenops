@@ -155,7 +155,7 @@ event.preventDefault(); return runMutation(async () => {
       {!employee && (
         <label>
           Dočasné heslo
-          <input name="password" type="password" required minLength={12} />
+          <input name="password" type="password" required minLength={1} />
         </label>
       )}
       <fieldset>

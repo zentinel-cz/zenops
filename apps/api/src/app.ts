@@ -129,7 +129,7 @@ export function buildApp(config: AppConfig, db: Database): FastifyInstance {
     preHandler: [requireTrustedOrigin, requireAuthentication],
   }, async (request, reply) => {
     const parsed = changePasswordSchema.safeParse(request.body);
-    if (!parsed.success) return reply.code(400).send({ error: "Heslo musí mít nejméně 12 znaků a musí být nové." });
+    if (!parsed.success) return reply.code(400).send({ error: "Vyplňte současné heslo a odlišné nové heslo, nejvýše 200 znaků." });
     const changed = await changePassword(
       db,
       request.sessionUser!.id,

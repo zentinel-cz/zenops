@@ -5,7 +5,7 @@ export type RoleCode = z.infer<typeof roleCodeSchema>;
 
 export const loginSchema = z.object({
   identifier: z.string().trim().min(1).max(254).transform((value) => value.toLowerCase()),
-  password: z.string().min(12).max(200),
+  password: z.string().min(1).max(200),
 });
 
 export const sessionUserSchema = z.object({
@@ -23,8 +23,8 @@ export type SessionUser = z.infer<typeof sessionUserSchema>;
 
 export const changePasswordSchema = z
   .object({
-    currentPassword: z.string().min(12).max(200),
-    newPassword: z.string().min(12).max(200),
+    currentPassword: z.string().min(1).max(200),
+    newPassword: z.string().min(1).max(200),
   })
   .refine((value) => value.currentPassword !== value.newPassword, {
     message: "Nové heslo musí být odlišné od současného.",
@@ -111,7 +111,7 @@ export const createEmployeeUserSchema = z.object({
     .email()
     .max(254)
     .transform((value) => value.toLowerCase()),
-  password: z.string().min(12).max(200),
+  password: z.string().min(1).max(200),
   roles: z.array(roleCodeSchema).length(1),
 });
 export type CreateEmployeeUserInput = z.infer<typeof createEmployeeUserSchema>;

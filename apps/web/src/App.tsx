@@ -894,7 +894,7 @@ export function App() {
               name="password"
               type="password"
               autoComplete="current-password"
-              minLength={12}
+              minLength={1}
               required
             />
           </label>

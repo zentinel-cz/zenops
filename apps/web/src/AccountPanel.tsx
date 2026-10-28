@@ -41,9 +41,9 @@ export function AccountPanel({ onPasswordChanged }: { onPasswordChanged: () => v
       {open && <section className="account-panel" aria-label="Můj účet">
         <form onSubmit={submit}>
           <div><p className="eyebrow">ZABEZPEČENÍ ÚČTU</p><h3>Změnit heslo</h3></div>
-          <label>Současné heslo<input name="currentPassword" type="password" autoComplete="current-password" minLength={12} required /></label>
-          <label>Nové heslo<input name="newPassword" type="password" autoComplete="new-password" minLength={12} required /></label>
-          <label>Nové heslo znovu<input name="confirmation" type="password" autoComplete="new-password" minLength={12} required /></label>
+          <label>Současné heslo<input name="currentPassword" type="password" autoComplete="current-password" minLength={1} required /></label>
+          <label>Nové heslo<input name="newPassword" type="password" autoComplete="new-password" minLength={1} required /></label>
+          <label>Nové heslo znovu<input name="confirmation" type="password" autoComplete="new-password" minLength={1} required /></label>
           {error && <p className="error" role="alert">{error}</p>}
           <p className="account-hint">Po změně hesla budou bezpečně ukončena všechna přihlášení včetně tohoto.</p>
           <button disabled={submitting}>{submitting ? "Měním heslo…" : "Změnit heslo"}</button>

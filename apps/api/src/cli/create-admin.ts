@@ -7,7 +7,7 @@ const [emailInput, displayName, password] = process.argv.slice(2);
 if (!emailInput || !displayName || !password) {
   throw new Error("Usage: pnpm --filter @zenops/api user:create-admin -- <email> <display-name> <password>");
 }
-if (password.length < 12) throw new Error("Password must contain at least 12 characters.");
+if (password.length < 1 || password.length > 200) throw new Error("Heslo je povinné a může mít nejvýše 200 znaků.");
 const email = emailInput.trim().toLowerCase();
 const username = email.split("@", 1)[0]!.replace(/[^a-z0-9._-]/g, "");
 if (!/^[a-z0-9][a-z0-9._-]{2,39}$/.test(username)) {
