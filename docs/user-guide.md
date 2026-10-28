@@ -8,7 +8,10 @@ se rozšiřovat současně s aplikací. Testovací náhled běží na adrese
 
 1. Otevřete přihlašovací stránku ZenOps.
 2. Zadejte své uživatelské jméno nebo firemní e-mail a heslo.
-3. Po přihlášení se zobrazí dashboard podle vašich oprávnění.
+3. Tlačítkem **Zobrazit** vedle hesla můžete zkontrolovat jeho zápis; tlačítkem
+   **Skrýt** jej opět skryjete. Poté zvolte **Přihlásit se**. Během ověřování
+   tlačítko zobrazuje **Přihlašuji…**. Případná chyba se objeví nad tlačítkem.
+   Po přihlášení se zobrazí dashboard podle vašich oprávnění.
 4. Pro bezpečné ukončení relace použijte tlačítko **Odhlásit** vpravo nahoře.
 
 ### Změna vlastního hesla
@@ -386,3 +389,8 @@ Při založení účtu, přihlášení ani změně hesla není vyžadováno 12 z
 Heslo musí být neprázdné a může mít nejvýše 200 znaků. Při změně musí být nové
 heslo odlišné od současného. Změna validace nevyžaduje migraci databáze;
 uložená hesla zůstávají platná.
+
+### Úprava přihlašovací obrazovky
+
+Přihlášení se zobrazuje v jedné vycentrované kartě na počítači i telefonu.
+Tato úprava vzhledu nevyžaduje změnu databáze ani novou migraci.

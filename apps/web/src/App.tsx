@@ -804,6 +804,7 @@ export function App() {
   const [auth, setAuth] = useState<AuthState>({ status: "loading" });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     void getCurrentUser()
@@ -866,51 +867,38 @@ export function App() {
   }
 
   return (
-    <main className="login-layout">
-      <section className="brand-panel">
-        <div className="brand">
-          <span className="brand-mark">Z</span>
-          <span>ZENTINEL</span>
-        </div>
-        <div className="brand-message">
-          <p className="eyebrow">PROVOZ POD KONTROLOU.</p>
-          <h1>ZenOps</h1>
-          <p>Práce v terénu. Přesná data. Jeden společný provozní obraz.</p>
-        </div>
-        <p className="copyright">© {new Date().getFullYear()} Zentinel.cz</p>
-      </section>
-      <section className="form-panel">
-        <form onSubmit={login}>
-          <p className="eyebrow">VÍTEJTE ZPĚT</p>
-          <h2>Přihlášení</h2>
-          <p className="muted">Použijte svůj firemní účet ZenOps.</p>
-          <label>
-            E-mail nebo uživatelské jméno
-            <input name="identifier" type="text" autoComplete="username" required />
-          </label>
-          <label>
-            Heslo
-            <input
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              minLength={1}
-              required
-            />
-          </label>
-          {error && (
-            <p className="error" role="alert">
-              {error}
-            </p>
-          )}
-          <button disabled={submitting}>
-            {submitting ? "Ověřuji…" : "Přihlásit se"}
-          </button>
-          <small className="support">
-            Potřebujete přístup? Kontaktujte správce systému.
-          </small>
-        </form>
-      </section>
+    <main className="signin-page">
+      <div className="signin-content">
+        <header className="signin-brand" aria-label="ZenOps od Zentinel.cz">
+          <span className="signin-mark" aria-hidden="true">Z</span>
+          <div><span className="signin-name">ZenOps</span><span className="signin-maker">od Zentinel.cz</span></div>
+        </header>
+        <section className="signin-card" aria-labelledby="signin-title">
+          <header className="signin-heading">
+            <p className="signin-kicker">VÁŠ PRACOVNÍ DEN ZAČÍNÁ TADY</p>
+            <h1 id="signin-title">Vítejte zpět</h1>
+            <p>Přihlaste se ke svému účtu.</p>
+          </header>
+          <form onSubmit={login} aria-busy={submitting}>
+            <label htmlFor="signin-identifier">E-mail nebo uživatelské jméno</label>
+            <input id="signin-identifier" name="identifier" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} required />
+            <label htmlFor="signin-password">Heslo</label>
+            <div className="signin-password">
+              <input id="signin-password" name="password" type={showPassword ? "text" : "password"} autoComplete="current-password" minLength={1} required />
+              <button type="button" className="signin-reveal" aria-label={showPassword ? "Skrýt heslo" : "Zobrazit heslo"} aria-controls="signin-password" onClick={() => setShowPassword((value) => !value)}>
+                {showPassword ? "Skrýt" : "Zobrazit"}
+              </button>
+            </div>
+            {error && <p className="error" role="alert">{error}</p>}
+            <button className="signin-submit" type="submit" disabled={submitting}>
+              {submitting ? "Přihlašuji…" : "Přihlásit se"}
+              {!submitting && <span aria-hidden="true">→</span>}
+            </button>
+            <p className="signin-help">Nemůžete se přihlásit?<br /><span>Obraťte se na správce ve vaší firmě.</span></p>
+          </form>
+        </section>
+        <footer className="signin-footer">© {new Date().getFullYear()} Zentinel.cz · ZenOps</footer>
+      </div>
     </main>
   );
 }
