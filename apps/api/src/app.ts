@@ -1,3 +1,4 @@
+import { registerLeaderRecordRoutes } from "./leader-records.js";
 import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
@@ -38,7 +39,7 @@ export function buildApp(config: AppConfig, db: Database): FastifyInstance {
   // Fastify and plugins otherwise return English status/error text to the UI.
   const publicMessages = new Set([
     "Nedůvěryhodný původ požadavku.", "Stroj vyžaduje počáteční i konečný MTH.",
-    "Řidič nemůže být cestující.", "Neplatný cestující.", "Měsíc je uzavřen.",
+    "Řidič nemůže být cestující.", "Neplatný cestující.", "Měsíc je uzavřen.", "Vedoucí zakázky musí být aktivní uživatel s rolí Vedoucí.", "Pracovní den nelze upravit v aktuálním stavu.",
   ]);
   const statusMessages: Record<number, string> = {
     400: "Požadavek obsahuje neplatné údaje.",
@@ -149,6 +150,7 @@ export function buildApp(config: AppConfig, db: Database): FastifyInstance {
   registerVehicleRoutes(app, db, requireTrustedOrigin);
   registerReportRoutes(app, db);
   registerPeriodRoutes(app, db, requireTrustedOrigin);
+  registerLeaderRecordRoutes(app, db, requireTrustedOrigin);
   registerAdminRecordRoutes(app, db, requireTrustedOrigin);
   registerWorkerProfileRoutes(app, db, requireTrustedOrigin);
   });

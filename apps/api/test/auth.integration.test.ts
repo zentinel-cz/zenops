@@ -3,6 +3,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import postgres from "postgres";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { createSession, getSessionUser } from "../src/auth.js";
 import { buildApp } from "../src/app.js";
 import type { AppConfig } from "../src/config.js";
 
@@ -511,6 +512,8 @@ integration("authentication integration", () => {
     });
     expect(multipleRoles.statusCode).toBe(400);
 
+    const [deactivationAccount] = await db`select id from users where employee_id=${employeeId}`;
+    const oldSession = await createSession(db, deactivationAccount!.id, 1, {});
     const deactivated = await app.inject({
       method: "PATCH",
       url: `/api/employees/${employeeId}/state`,
@@ -528,6 +531,9 @@ integration("authentication integration", () => {
       from employees e join users u on u.employee_id = e.id where e.id = ${employeeId}
     `;
     expect(stored).toEqual({ employeeActive: false, userActive: false });
+    const [revocation] = await db`select revoked_at from sessions where user_id=${deactivationAccount!.id}`;
+    expect(revocation!.revokedAt).not.toBeNull();
+    expect(await getSessionUser(db, oldSession.token)).toBeNull();
     const listing = await app.inject({
       method: "GET",
       url: "/api/employees",
@@ -875,6 +881,7 @@ integration("authentication integration", () => {
       },
     });
     expect(locked.statusCode).toBe(409);
+
   });
 
   it("shows a shared trip to its passenger without duplicating operational data", async () => {
@@ -1024,6 +1031,11 @@ integration("authentication integration", () => {
     const locked = await app.inject({ method: "PATCH", url: `/api/workdays/${submittedWorkDayId}/entries/${submittedEntryIds[0]}`,
       headers: { origin, cookie: cookie! }, payload });
     expect(locked.statusCode).toBe(409);
+    const lockedMachine = await app.inject({ method: "POST",
+      url: `/api/workdays/${submittedWorkDayId}/entries/${submittedEntryIds[0]}/machine`,
+      headers: { origin, cookie: cookie! },
+      payload: { machineId, startMth: 100, endMth: 101, attachmentIds: [] } });
+    expect(lockedMachine.statusCode, lockedMachine.body).toBe(404);
     const submitted = await app.inject({
       method: "POST",
       url: `/api/workdays/${submittedWorkDayId}/submit`,
@@ -1329,6 +1341,103 @@ integration("authentication integration", () => {
       Array<{ count: number }>
     >`select count(*)::int as count from audit_logs where action in ('WORK_ENTRY_ADMIN_CORRECTED','BREAK_ADMIN_CORRECTED','MACHINE_USAGE_ADMIN_CORRECTED','VEHICLE_TRIP_ADMIN_CORRECTED')`;
     expect(audit!.count).toBe(4);
+    const [machineAudit] = await db`select before_data,after_data from audit_logs where action='MACHINE_USAGE_ADMIN_CORRECTED' and entity_id=${usage!.id}`;
+    expect(machineAudit!.beforeData).toHaveProperty("attachmentIds");
+    expect(machineAudit!.afterData.attachmentIds).toEqual([attachmentId]);
+    const [tripAudit] = await db`select before_data,after_data from audit_logs where action='VEHICLE_TRIP_ADMIN_CORRECTED' and entity_id=${trip!.id}`;
+    expect(tripAudit!.beforeData).toHaveProperty("passengerEmployeeIds");
+    expect(tripAudit!.afterData.passengerEmployeeIds).toEqual([passengerEmployeeId]);
+  });
+
+  it("hands over history to the current Leader and limits approved-work corrections", async () => {
+    const [admin] = await db`select id from users where username='admin'`;
+    const [former] = await db`select id from users where username='leader'`;
+    const [worker] = await db`select id from users where username='worker'`;
+    const cookieFor = async (id: string) => `zenops_session=${(await createSession(db,id,1,{})).token}`;
+    const adminCookie = await cookieFor(admin!.id);
+    const formerCookie = await cookieFor(former!.id);
+    const workerCookie = await cookieFor(worker!.id);
+    const created = await app.inject({ method: "POST", url: "/api/employees", headers: { origin, cookie: adminCookie },
+      payload: { employeeNumber: "LEADER-NEW", displayName: "Nový vedoucí", username: "replacement", email: "replacement@zenops.test", password, roles: ["LEADER"] } });
+    expect(created.statusCode,created.body).toBe(201);
+    const replacementId = created.json().employee.id as string;
+    const [replacement] = await db`select id from users where employee_id=${replacementId}`;
+    const replacementCookie = await cookieFor(replacement!.id);
+    const [project] = await db`select code,name,location,besip,start_date::text as start_date,end_date::text as end_date,note from projects where id=${projectId}`;
+    const body = { ...project, leaderEmployeeId: replacementId, reason: "Předání zakázky novému vedoucímu" };
+    const pendingDay = await app.inject({method:"POST",url:"/api/workdays",headers:{origin,cookie:workerCookie},payload:{workDate:"2026-10-02",shiftType:"MORNING"}});
+    expect(pendingDay.statusCode,pendingDay.body).toBe(201);
+    const pendingEntry = await app.inject({method:"POST",url:`/api/workdays/${pendingDay.json().workDay.id}/entries`,headers:{origin,cookie:workerCookie},payload:{projectId,workTypeCode:"OTHER",description:"Čekající práce k předání",startAt:"2026-10-02T06:00:00Z",endAt:"2026-10-02T07:00:00Z"}});
+    expect(pendingEntry.statusCode,pendingEntry.body).toBe(201);
+    expect((await app.inject({method:"POST",url:`/api/workdays/${pendingDay.json().workDay.id}/submit`,headers:{origin,cookie:workerCookie}})).statusCode).toBe(200);
+    const approvalsBefore = await db`select * from approvals order by id`;
+    await expect(db`update projects set current_leader_employee_id=${replacementId} where id=${projectId}`).rejects.toMatchObject({ code: "42501" });
+    const denied = await app.inject({ method: "PATCH", url: `/api/projects/${projectId}`, headers: { origin, cookie: formerCookie }, payload: body });
+    expect(denied.statusCode).toBe(403);
+    const invalid = await app.inject({ method: "PATCH", url: `/api/projects/${projectId}`, headers: { origin, cookie: adminCookie }, payload: { ...body, leaderEmployeeId: passengerEmployeeId } });
+    expect(invalid.statusCode).toBe(422);
+    const missingReason = await app.inject({method:"PATCH",url:`/api/projects/${projectId}`,headers:{origin,cookie:adminCookie},payload:{...body,reason:""}});
+    expect(missingReason.statusCode).toBe(400);
+    const changed = await app.inject({ method: "PATCH", url: `/api/projects/${projectId}`, headers: { origin, cookie: adminCookie }, payload: body });
+    expect(changed.statusCode,changed.body).toBe(200);
+    const [history] = await db`select count(*)::int as total,count(*) filter(where effective_to is null)::int as current from project_leader_history where project_id=${projectId}`;
+    expect(history).toEqual({total:2,current:1});
+    const oldQueue = await app.inject({url:"/api/approvals/pending",headers:{cookie:formerCookie}});
+    const newQueue = await app.inject({url:"/api/approvals/pending",headers:{cookie:replacementCookie}});
+    expect(oldQueue.json().entries.some((entry:{id:string})=>entry.id===pendingEntry.json().entry.id)).toBe(false);
+    expect(newQueue.json().entries.some((entry:{id:string})=>entry.id===pendingEntry.json().entry.id)).toBe(true);
+    const oldDecision = await app.inject({method:"POST",url:`/api/approvals/${pendingEntry.json().entry.id}/decision`,headers:{origin,cookie:formerCookie},payload:{action:"APPROVED"}});
+    expect(oldDecision.statusCode).toBe(403);
+    const oldList = await app.inject({url:"/api/projects",headers:{cookie:formerCookie}});
+    expect(oldList.json().projects.some((p: {id:string})=>p.id===projectId)).toBe(false);
+    const newList = await app.inject({url:"/api/projects",headers:{cookie:replacementCookie}});
+    expect(newList.json().projects.some((p: {id:string})=>p.id===projectId)).toBe(true);
+    for (const [cookie,status] of [[formerCookie,404],[replacementCookie,200],[workerCookie,403]] as const) {
+      const day = await app.inject({url:`/api/projects/${projectId}/day?date=2026-09-25`,headers:{cookie}});
+      expect(day.statusCode,day.body).toBe(status);
+    }
+    const [entry] = await db`select we.id,we.start_at,we.end_at,wt.code as work_type_code,wa.code as work_activity_code
+      from work_entries we join work_types wt on wt.id=we.work_type_id left join work_activities wa on wa.id=we.work_activity_id
+      where we.project_id=${projectId} and we.state='APPROVED' order by we.start_at limit 1`;
+    const correction = { projectId, workTypeCode:entry!.workTypeCode, workActivityCode:entry!.workActivityCode,
+      startAt:entry!.startAt.toISOString(),endAt:entry!.endAt.toISOString(),description:"Ověřeno novým vedoucím",reason:"Kontrola po předání" };
+    const unapprovedEdit = await app.inject({method:"PATCH",url:`/api/leader/work-entries/${pendingEntry.json().entry.id}`,headers:{origin,cookie:replacementCookie},payload:correction});
+    expect(unapprovedEdit.statusCode).toBe(409);
+    const movingEdit = await app.inject({method:"PATCH",url:`/api/leader/work-entries/${entry!.id}`,headers:{origin,cookie:replacementCookie},payload:{...correction,projectId:passengerEmployeeId}});
+    expect(movingEdit.statusCode).toBe(409);
+    const oldEdit = await app.inject({method:"PATCH",url:`/api/leader/work-entries/${entry!.id}`,headers:{origin,cookie:formerCookie},payload:correction});
+    expect(oldEdit.statusCode).toBe(409);
+    const newEdit = await app.inject({method:"PATCH",url:`/api/leader/work-entries/${entry!.id}`,headers:{origin,cookie:replacementCookie},payload:correction});
+    expect(newEdit.statusCode,newEdit.body).toBe(200);
+    expect(newEdit.json().entry.state).toBe("APPROVED");
+    expect(await db`select * from approvals order by id`).toEqual(approvalsBefore);
+    const newDecision = await app.inject({method:"POST",url:`/api/approvals/${pendingEntry.json().entry.id}/decision`,headers:{origin,cookie:replacementCookie},payload:{action:"APPROVED"}});
+    expect(newDecision.statusCode,newDecision.body).toBe(200);
+    const [decisionAuthor] = await db`select approver_employee_id from approvals where work_entry_id=${pendingEntry.json().entry.id}`;
+    expect(decisionAuthor!.approverEmployeeId).toBe(replacementId);
+    const oldReport = await app.inject({url:"/api/reports/daily?date=2026-09-25",headers:{cookie:formerCookie}});
+    expect(oldReport.json().report.entries.some((item:{projectCode:string})=>item.projectCode===project!.code)).toBe(false);
+
+    const listing = await app.inject({url:"/api/leader/workdays?date=2026-09-25",headers:{cookie:replacementCookie}});
+    expect(listing.statusCode).toBe(200);
+    expect(listing.json().workDays.length).toBeGreaterThan(0);
+    expect(listing.json().workDays.every((day: {breaks:unknown[];vehicleTrips:unknown[]})=>day.breaks.length===0 && day.vehicleTrips.length===0)).toBe(true);
+    const closed = await app.inject({method:"POST",url:"/api/periods/2026-09/action",headers:{origin,cookie:adminCookie},payload:{action:"CLOSE"}});
+    expect(closed.statusCode,closed.body).toBe(200);
+    const closedEdit = await app.inject({method:"PATCH",url:`/api/leader/work-entries/${entry!.id}`,headers:{origin,cookie:replacementCookie},payload:correction});
+    expect(closedEdit.statusCode).toBe(409);
+    await app.inject({method:"POST",url:"/api/periods/2026-09/action",headers:{origin,cookie:adminCookie},payload:{action:"REOPEN",reason:"Pokračování testu"}});
+    const closedProject = await app.inject({method:"PATCH",url:`/api/projects/${projectId}/state`,headers:{origin,cookie:adminCookie},payload:{status:"CLOSED"}});
+    expect(closedProject.statusCode).toBe(200);
+    const historyRead = await app.inject({url:`/api/projects/${projectId}/day?date=2026-09-25`,headers:{cookie:replacementCookie}});
+    expect(historyRead.statusCode).toBe(200);
+    const demoted = await app.inject({method:"PATCH",url:`/api/employees/${replacementId}`,headers:{origin,cookie:adminCookie},payload:{employeeNumber:"LEADER-NEW",displayName:"Nový vedoucí",username:"replacement",email:"replacement@zenops.test",roles:["WORKER"],reason:"Změna pracovní role"}});
+    expect(demoted.statusCode,demoted.body).toBe(200);
+    expect((await app.inject({url:"/api/leader/workdays?date=2026-09-25",headers:{cookie:replacementCookie}})).statusCode).toBe(401);
+    const demotedCookie = await cookieFor(replacement!.id);
+    expect((await app.inject({url:`/api/projects/${projectId}/day?date=2026-09-25`,headers:{cookie:demotedCookie}})).statusCode).toBe(403);
+    const restored = await app.inject({method:"PATCH",url:`/api/projects/${projectId}`,headers:{origin,cookie:adminCookie},payload:{...body,leaderEmployeeId,reason:"Obnovení vedoucího po testu"}});
+    expect(restored.statusCode,restored.body).toBe(200);
   });
 
   it("changes the authenticated password, audits it and revokes every session", async () => {

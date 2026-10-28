@@ -88,3 +88,7 @@
 
 See accepted ADR-009 for the expanded all-user equipment scope; ADR-007 remains
 the source for the original worker profile fields and role separation.
+
+- **BR-056** Only Admin replaces the current Project Leader with a reason and assignment history. Access follows current assignment and current role; historical approvals retain their authors (ADR-010).
+- **BR-057** Current Leader may correct approved work entries on own projects in open months with a reason and audit. Project transfer, breaks, trips and machine-meter corrections remain Admin-only.
+- **BR-058** Shared ProjectDay notes and fuel are visible only to Admin and the current Leader, including historical dates and closed projects.

@@ -1,3 +1,4 @@
+import { lockEditableWorkDay } from "./workday-lock.js";
 import { createBreakEntrySchema, createWorkDaySchema, createWorkEntrySchema } from "@zenops/contracts";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
@@ -106,9 +107,10 @@ export function registerWorkDayRoutes(app: FastifyInstance, db: Database, requir
     const workDay = await getOwnedWorkDay(db, params.data.workDayId, request.sessionUser!.employeeId);
     if (!workDay) return reply.code(404).send({ error: "Pracovní den nebyl nalezen." });
     if (!['DRAFT', 'RETURNED'].includes(workDay.state)) return reply.code(409).send({ error: "Odeslaný pracovní den nelze běžně upravovat." });
-    if (parsed.data.workTypeCode === "OTHER" && !parsed.data.description) return reply.code(422).send({ error: "U ostatní práce je povinný popis." });
+    if (parsed.data.workTypeCode === "OTHER" && !parsed.data.description?.trim()) return reply.code(422).send({ error: "U ostatní práce je povinný popis." });
     try {
       const entry = await db.begin(async (transaction) => {
+        await lockEditableWorkDay(transaction, workDay.id, request.sessionUser!.employeeId);
         const context = await transaction<Array<{ projectId: string; workTypeId: string; workActivityId: string | null }>>`
           select p.id as project_id, wt.id as work_type_id, wa.id as work_activity_id
           from projects p join work_types wt on wt.code = ${parsed.data.workTypeCode} and wt.is_active
@@ -149,10 +151,14 @@ export function registerWorkDayRoutes(app: FastifyInstance, db: Database, requir
     if (!workDay) return reply.code(404).send({ error: "Pracovní den nebyl nalezen." });
     if (!['DRAFT', 'RETURNED'].includes(workDay.state)) return reply.code(409).send({ error: "Odeslaný pracovní den nelze běžně upravovat." });
     try {
-      const [entry] = await db`
-        insert into break_entries (work_day_id, start_at, end_at)
-        values (${workDay.id}, ${parsed.data.startAt}, ${parsed.data.endAt}) returning id, start_at, end_at
-      `;
+      const entry = await db.begin(async (transaction) => {
+        await lockEditableWorkDay(transaction, workDay.id, request.sessionUser!.employeeId);
+        const [created] = await transaction`
+          insert into break_entries (work_day_id, start_at, end_at)
+          values (${workDay.id}, ${parsed.data.startAt}, ${parsed.data.endAt}) returning id, start_at, end_at
+        `;
+        return created;
+      });
       return reply.code(201).send({ break: entry });
     } catch (error) {
       if (typeof error === "object" && error && "code" in error && error.code === "23P01") {
@@ -168,12 +174,12 @@ export function registerWorkDayRoutes(app: FastifyInstance, db: Database, requir
     const workDay = await getOwnedWorkDay(db, params.data.workDayId, request.sessionUser!.employeeId);
     if (!workDay) return reply.code(404).send({ error: "Pracovní den nebyl nalezen." });
     const updated = await db.begin(async (transaction) => {
-      const rows = await transaction<Array<{ count: number }>>`select count(*)::int as count from work_entries where work_day_id = ${workDay.id}`;
-      if (rows[0]!.count === 0) return null;
       const [locked] = await transaction`
         select id from work_days where id = ${workDay.id} and state in ('DRAFT', 'RETURNED') for update
       `;
       if (locked) {
+        const rows = await transaction<Array<{ count: number }>>`select count(*)::int as count from work_entries where work_day_id = ${workDay.id}`;
+        if (rows[0]!.count === 0) return null;
         await transaction`update work_entries set state = 'SUBMITTED', updated_at = now() where work_day_id = ${workDay.id} and state in ('DRAFT', 'RETURNED')`;
         const states = await transaction<Array<{ state: string }>>`select state from work_entries where work_day_id = ${workDay.id}`;
         const aggregate = states.some((item) => item.state === 'APPROVED') ? 'PARTIALLY_APPROVED' : 'SUBMITTED';
@@ -200,10 +206,7 @@ export function registerWorkDayRoutes(app: FastifyInstance, db: Database, requir
     if (parsed.data.workTypeCode === "OTHER" && !parsed.data.description?.trim()) return reply.code(422).send({ error: "U ostatní práce je povinný popis." });
     try {
       const entry = await db.begin(async (t) => {
-        const [day] = await t`select wd.id, wd.work_date from work_days wd join monthly_periods mp on mp.id=wd.monthly_period_id
-          where wd.id=${params.data.workDayId} and wd.employee_id=${request.sessionUser!.employeeId}
-          and wd.state in ('DRAFT','RETURNED') and mp.state='OPEN' for update of wd, mp`;
-        if (!day) return null;
+        const day = await lockEditableWorkDay(t, params.data.workDayId, request.sessionUser!.employeeId);
         const [before] = await t`select * from work_entries where id=${params.data.entryId} and work_day_id=${day.id}
           and state in ('DRAFT','RETURNED') for update`;
         if (!before) return null;
@@ -234,13 +237,16 @@ export function registerWorkDayRoutes(app: FastifyInstance, db: Database, requir
   app.delete("/api/workdays/:workDayId/entries/:entryId", { preHandler: [requireTrustedOrigin, own] }, async (request, reply) => {
     const params = z.object({ workDayId: z.string().uuid(), entryId: z.string().uuid() }).safeParse(request.params);
     if (!params.success) return reply.code(400).send({ error: "Neplatný pracovní úsek." });
-    const removed = await db`
+    const removed = await db.begin(async (transaction) => {
+      await lockEditableWorkDay(transaction, params.data.workDayId, request.sessionUser!.employeeId);
+      return transaction`
       delete from work_entries we using work_days wd
       where we.id = ${params.data.entryId} and we.work_day_id = ${params.data.workDayId}
         and wd.id = we.work_day_id and wd.employee_id = ${request.sessionUser!.employeeId}
         and wd.state in ('DRAFT', 'RETURNED') and we.state in ('DRAFT', 'RETURNED')
         and not exists(select 1 from approvals a where a.work_entry_id=we.id) returning we.id
     `;
+    });
     if (!removed[0]) return reply.code(404).send({ error: "Pracovní úsek nelze odstranit." });
     return reply.code(204).send();
   });
@@ -248,12 +254,15 @@ export function registerWorkDayRoutes(app: FastifyInstance, db: Database, requir
   app.delete("/api/workdays/:workDayId/breaks/:breakId", { preHandler: [requireTrustedOrigin, own] }, async (request, reply) => {
     const params = z.object({ workDayId: z.string().uuid(), breakId: z.string().uuid() }).safeParse(request.params);
     if (!params.success) return reply.code(400).send({ error: "Neplatná přestávka." });
-    const removed = await db`
+    const removed = await db.begin(async (transaction) => {
+      await lockEditableWorkDay(transaction, params.data.workDayId, request.sessionUser!.employeeId);
+      return transaction`
       delete from break_entries b using work_days wd
       where b.id = ${params.data.breakId} and b.work_day_id = ${params.data.workDayId}
         and wd.id = b.work_day_id and wd.employee_id = ${request.sessionUser!.employeeId}
         and wd.state in ('DRAFT', 'RETURNED') returning b.id
     `;
+    });
     if (!removed[0]) return reply.code(404).send({ error: "Přestávku nelze odstranit." });
     return reply.code(204).send();
   });

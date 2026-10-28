@@ -138,14 +138,14 @@ sekcí.
 
 Admin může u existující zakázky použít tlačítko **Upravit**. Lze změnit kód,
 název, místo, začátek a konec, poznámku a příznak BESIP. Každá změna vyžaduje
-důvod. Vedoucí se určí při založení zakázky a později se nemění.
+důvod. Vedoucího může později změnit pouze Admin s uvedením důvodu.
 
 - Otevřené zakázky jsou dostupné pracovníkům při vytváření denního záznamu.
 - Vedoucí nebo Admin vytvoří zakázku tlačítkem **Nová zakázka**.
-- Každá zakázka má právě jednoho neměnného Vedoucího.
+- Každá zakázka má právě jednoho aktuálního Vedoucího.
 - Zakázku může uzavřít nebo znovu otevřít pouze Admin.
 - Uzavřená zakázka zůstává v administrátorském přehledu; nemaže se.
-- Při auditované úpravě zakázky nelze jejího Vedoucího změnit.
+- Admin může při úpravě zakázky vybrat nového aktivního Vedoucího; předání se audituje.
 
 ## Můj pracovní den
 
@@ -348,3 +348,34 @@ Názvy a poznámky zadané uživateli se zobrazují tak, jak byly uloženy.
   ověřte uložený stav před opakováním operace.
 
 Denní report zobrazuje pod pracovními úseky také jízdy, řidiče, spolucestující, tachometr a palivo. Samostatná část uvádí sdílené palivo zakázek včetně autora a poznámky. Počet pracovníků rozlišuje i osoby se stejným jménem.
+
+### Ochrana záznamů a přihlášení při souběžných změnách
+
+Zápis a odstranění práce či přestávky se zpracovává postupně vůči odeslání
+a schvalování téhož pracovního dne. Pokud se stav mezitím změní, aplikace
+změnu odmítne; načtěte aktuální den znovu. Stroj lze připojit pouze k vlastnímu
+rozpracovanému nebo vrácenému úseku, nikoli ke schválené práci v částečně
+vráceném dni.
+
+Deaktivace účtu ukončí jeho dosavadní přihlášení. Po opětovné aktivaci se musí
+uživatel znovu přihlásit. Historie administrativních oprav techniky a jízd
+nově zachycuje také seznam příslušenství a cestujících před opravou a po ní.
+Starší auditní záznamy se zpětně nedoplňují.
+
+
+## Předání zakázky a opravy vedoucím
+
+Admin otevře **Zakázky → Upravit zakázku**, vybere nového Vedoucího a uvede
+ důvod změny. Předání zahrnuje historii i čekající schvalování. Původní vedoucí
+ ztratí přístup k dané zakázce; starší schválení si ponechají původního autora.
+ Odebrání role Vedoucí zruší existující přihlášení a další přístup podle této role.
+
+Vedoucí najde **Opravy práce** v hlavní navigaci. Vybere datum a schválený
+úsek své zakázky. Může změnit čas, druh práce, aktivitu a popis, vždy s důvodem.
+Zakázku úseku nepřevádí; tuto opravu provádí Admin. Uzavřený měsíc změny odmítne.
+Přestávky, sdílené jízdy a opravy motohodin zůstávají v administraci.
+
+V **Denním provozu** lze vybrat datum a zobrazit i uzavřenou zakázku pouze
+pro čtení. Admin vidí všechny zakázky, Vedoucí pouze aktuálně přiřazené.
+Pracovník nemá přístup ke společným poznámkám ani souhrnům paliva; vlastní
+historii práce a nabídku otevřených zakázek má nadále dostupnou.

@@ -39,3 +39,7 @@ duplicated by employees: - date - weather - temperature - note
 
 ProjectDay creation must be resilient. Do not rely exclusively on a
 midnight job; use idempotent creation/lazy fallback.
+
+## Leader replacement (ADR-010)
+
+Only Admin can replace the Leader, with a reason and retained assignment history. The new active Leader inherits access to the whole project history and pending work. The former Leader loses scoped access immediately on subsequent requests. Closed projects can also be handed over.

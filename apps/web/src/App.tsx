@@ -138,7 +138,7 @@ function Dashboard({
   const isAccountant = user.roles.includes("ACCOUNTANT");
 
   const loadProjects = () =>
-    fetch(canManageProjects ? "/api/projects" : "/api/projects/open", {
+    fetch(canManageProjects || isLeader ? "/api/projects" : "/api/projects/open", {
       credentials: "include",
     })
       .then(async (response) =>
@@ -243,6 +243,7 @@ return runMutation(async () => {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         code: data.get("code"),
+        leaderEmployeeId: data.get("leaderEmployeeId"),
         name: data.get("name"),
         location: data.get("location"),
         startDate: data.get("startDate"),
@@ -270,7 +271,7 @@ return runMutation(async () => {
     <section className="module-grid project-directory" aria-label="Seznam zakázek">
       <article className="projects-card">
         <span>01 · {loadingProjects ? "…" : projects.length}</span>
-        <h3>{canManageProjects ? "Zakázky" : "Otevřené zakázky"}</h3>
+        <h3>{canManageProjects || isLeader ? "Zakázky" : "Otevřené zakázky"}</h3>
         {projects.length ? (
           <>
           {projects.length > 0 && <ListSearch value={projectQuery} onChange={setProjectQuery} label="Hledat zakázku podle kódu, názvu nebo místa" />}
@@ -282,7 +283,7 @@ return runMutation(async () => {
               >
                 <strong>{project.code}</strong>
                 <span>
-                  {project.name} · {project.location}
+                  {project.name} · {project.location}{project.status === "CLOSED" ? " · Uzavřeno" : ""}
                 </span>
                 {canManageProjects && (
                   <span className="row-actions">
@@ -416,9 +417,12 @@ return runMutation(async () => {
           </label>
           <label>
             Vedoucí
-            <input value={editingProject.leaderName} disabled />
+            <select name="leaderEmployeeId" defaultValue={editingProject.leaderEmployeeId} required>
+              {!leaders.some((leader) => leader.id === editingProject.leaderEmployeeId) && <option value={editingProject.leaderEmployeeId}>{editingProject.leaderName} (dosavadní vedoucí)</option>}
+              {leaders.map((leader) => <option key={leader.id} value={leader.id}>{leader.displayName}</option>)}
+            </select>
           </label>
-          <small>Vedoucí je pevně určen při založení zakázky.</small>
+          <small>Změna vedoucího předá přístup k historii i čekajícímu schvalování. Důvod změny bude uložen.</small>
           <label>
             Začátek
             <input
@@ -490,6 +494,7 @@ return runMutation(async () => {
     );
     const navItems: Array<{ id: string; label: string; icon: NavIconName }> = [
       { id: "overview", label: "Přehled", icon: "overview" },
+      { id: "records", label: "Opravy práce", icon: "calendar" },
       ...(canApprove ? [{ id: "approvals", label: "Schvalování", icon: "approval" as const }] : []),
       ...(canCreateProject ? [{ id: "projects", label: "Zakázky", icon: "projects" as const }] : []),
       ...(user.permissions.includes("project_day.manage") ? [{ id: "project-day", label: "Denní provoz", icon: "calendar" as const }] : []),
@@ -498,8 +503,9 @@ return runMutation(async () => {
     ];
     const currentSection = navItems.find((item) => item.id === activeSection) ?? navItems[0]!;
     const actionHints: Record<string, string> = {
+      records: "Opravit schválenou práci s uvedením důvodu.",
       approvals: "Zkontrolovat čekající práci a rozhodnout o schválení.",
-      projects: "Otevřené zakázky a jejich založení.",
+      projects: "Vlastní zakázky, jejich historie a založení nové zakázky.",
       "project-day": "Počasí, teplota, poznámka a společné palivo.",
       reports: "Denní a měsíční přehled provozu.",
       assets: "Stroje, příslušenství a vozidla.",
@@ -545,8 +551,8 @@ return runMutation(async () => {
                   <p>Vyberte úkol. Zakázky i schvalování jsou omezené na váš rozsah oprávnění.</p>
                 </div>
                 <div className="overview-metrics">
-                  <article><small>Otevřené zakázky</small><strong>{loadingProjects ? "—" : projects.length}</strong><span>dostupné v ZenOps</span></article>
-                  <article><small>Zakázky, které vedete</small><strong>{loadingProjects ? "—" : leaderProjects.length}</strong><span>vaše otevřené zakázky</span></article>
+                  <article><small>Otevřené zakázky</small><strong>{loadingProjects ? "—" : leaderProjects.filter((project) => project.status === "OPEN").length}</strong><span>vaše aktivní zakázky</span></article>
+                  <article><small>Zakázky, které vedete</small><strong>{loadingProjects ? "—" : leaderProjects.length}</strong><span>včetně uzavřených zakázek</span></article>
                 </div>
               </section>
               <section className="leader-quick-actions" aria-labelledby="leader-actions-title">
@@ -562,6 +568,7 @@ return runMutation(async () => {
                 </div>
               </section>
             </>}
+            {activeSection === "records" && <AdminRecordsPanel projects={leaderProjects} leaderMode />}
             {activeSection === "approvals" && canApprove && <section className="admin-section-view"><div className="content-section-label"><span>01</span><div><small>PRÁCE PRACOVNÍKŮ</small><strong>Schvalování</strong></div></div><ApprovalPanel /></section>}
             {activeSection === "projects" && canCreateProject && <section className="admin-section-view"><div className="content-section-label"><span>02</span><div><small>ORGANIZACE PRÁCE</small><strong>Zakázky</strong></div></div>{projectOverview}{projectForms}</section>}
             {activeSection === "project-day" && user.permissions.includes("project_day.manage") && <section className="admin-section-view"><div className="content-section-label"><span>03</span><div><small>ÚDAJE KAŽDÉHO DNE</small><strong>Denní provoz</strong></div></div><ProjectDayPanel user={user} projects={projects} /></section>}

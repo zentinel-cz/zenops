@@ -4,7 +4,7 @@ import {
   updateProjectSchema,
 } from "@zenops/contracts";
 import type { FastifyInstance } from "fastify";
-import { requirePermission, type AuthorizationHook } from "./authorization.js";
+import { requireAuthentication, requirePermission, type AuthorizationHook } from "./authorization.js";
 import type { Database } from "./db.js";
 
 type ProjectRow = {
@@ -28,12 +28,14 @@ export function registerProjectRoutes(
 ): void {
   app.get(
     "/api/projects",
-    { preHandler: requirePermission("project.close") },
-    async () => {
+    { preHandler: requireAuthentication },
+    async (request, reply) => {
+      if (!request.sessionUser!.roles.some((role) => role === "ADMIN" || role === "LEADER")) return reply.code(403).send({ error: "K této operaci nemáte oprávnění." });
       const projects = await db<ProjectRow[]>`
       select p.id, p.code, p.name, p.location, p.besip, p.start_date, p.end_date, p.note, p.status,
         p.current_leader_employee_id as leader_employee_id, e.display_name as leader_name
       from projects p join employees e on e.id = p.current_leader_employee_id
+      where (${request.sessionUser!.roles.includes('ADMIN')} or p.current_leader_employee_id=${request.sessionUser!.employeeId})
       order by (p.status = 'OPEN') desc, p.start_date desc, p.code
     `;
       return { projects };
@@ -43,16 +45,16 @@ export function registerProjectRoutes(
   app.get(
     "/api/projects/open",
     { preHandler: requirePermission("project.read_open") },
-    async () => {
+    async (request) => {
       const projects = await db<ProjectRow[]>`
       select p.id, p.code, p.name, p.location, p.besip, p.start_date, p.end_date, p.note, p.status,
         p.current_leader_employee_id as leader_employee_id, e.display_name as leader_name
       from projects p
       join employees e on e.id = p.current_leader_employee_id
-      where p.status = 'OPEN'
+      where p.status = 'OPEN' and (${!request.sessionUser!.roles.includes('LEADER')} or p.current_leader_employee_id=${request.sessionUser!.employeeId})
       order by p.start_date desc, p.code
     `;
-      return { projects };
+      return { projects: request.sessionUser!.roles.includes("WORKER") ? projects.map((project) => ({ ...project, note: null })) : projects };
     },
   );
 
@@ -80,8 +82,15 @@ export function registerProjectRoutes(
           where p.id=${projectId} for update of p
         `;
           if (!existing[0]) return null;
+          if (parsed.data.leaderEmployeeId && parsed.data.leaderEmployeeId !== existing[0].leaderEmployeeId) {
+            const [leader] = await transaction`select e.id from employees e join users u on u.employee_id=e.id
+              join user_roles ur on ur.user_id=u.id join roles r on r.id=ur.role_id
+              where e.id=${parsed.data.leaderEmployeeId} and e.is_active and u.is_active and r.code='LEADER' for share of e,u`;
+            if (!leader) throw Object.assign(new Error("Vedoucí zakázky musí být aktivní uživatel s rolí Vedoucí."), { statusCode: 422 });
+          }
+          await transaction`select set_config('zenops.actor_user_id',${request.sessionUser!.id},true), set_config('zenops.change_reason',${parsed.data.reason},true)`;
           const [updated] = await transaction<ProjectRow[]>`
-          update projects set code=${parsed.data.code}, name=${parsed.data.name}, location=${parsed.data.location},
+          update projects set current_leader_employee_id=${parsed.data.leaderEmployeeId ?? existing[0].leaderEmployeeId}, code=${parsed.data.code}, name=${parsed.data.name}, location=${parsed.data.location},
             besip=${parsed.data.besip}, start_date=${parsed.data.startDate},
             end_date=${parsed.data.endDate ?? null}, note=${parsed.data.note ?? null}, updated_at=now()
           where id=${projectId}

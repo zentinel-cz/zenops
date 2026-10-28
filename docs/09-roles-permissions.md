@@ -36,6 +36,7 @@ Projects assigned to that Leader.
 - cannot create, edit or submit a WorkDay
 -   global operational administration
 -   employee/user administration
+-   replace a project Leader with an audited reason (ADR-010)
 -   close/reopen projects
 -   close/reopen monthly periods
 -   administrative corrections
@@ -66,3 +67,5 @@ Project. Admin can use the administrative correction workflows instead.
 
 Permissions must be backend-enforced and extensible rather than
 hard-coded only in UI.
+
+Project-day metadata and shared fuel are readable only by Admin and the current Leader, including closed projects. Workers retain own work history and open-project selection; Accountant has no operational project access. Leader approved-entry corrections require an open month and a reason; breaks, trips and machine-meter corrections remain Admin-only.

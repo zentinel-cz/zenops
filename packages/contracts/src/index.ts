@@ -84,6 +84,7 @@ export type ProjectSummary = z.infer<typeof projectSummarySchema>;
 export const updateProjectSchema = projectDatesSchema
   .and(
     z.object({
+      leaderEmployeeId: z.string().uuid().optional(),
       reason: z.string().trim().min(3).max(500),
     }),
   );

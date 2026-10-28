@@ -169,14 +169,14 @@ export function registerAdminRecordRoutes(
       try {
         const result = await db.begin(async (t) => {
           const before =
-            await t`select mu.*,we.start_at as entry_start,we.end_at as entry_end from machine_usages mu join work_entries we on we.id=mu.work_entry_id join work_days wd on wd.id=we.work_day_id join monthly_periods mp on mp.id=wd.monthly_period_id where mu.id=${id.data} and mp.state='OPEN' for update of mu`;
+            await t`select mu.*,coalesce((select json_agg(au.attachment_id order by au.attachment_id) from attachment_usages au where au.machine_usage_id=mu.id),'[]') as attachment_ids,we.start_at as entry_start,we.end_at as entry_end from machine_usages mu join work_entries we on we.id=mu.work_entry_id join work_days wd on wd.id=we.work_day_id join monthly_periods mp on mp.id=wd.monthly_period_id where mu.id=${id.data} and mp.state='OPEN' for update of mu`;
           if (!before[0]) return null;
           const [after] =
             await t`update machine_usages set machine_id=${parsed.data.machineId},entered_start_mth=${parsed.data.startMth ?? null},end_mth=${parsed.data.endMth ?? null},fuel_consumed=${parsed.data.fuelConsumed ?? null},fuel_refuelled=${parsed.data.fuelRefuelled ?? null} where id=${id.data} returning *`;
           await t`delete from attachment_usages where machine_usage_id=${id.data}`;
           for (const attachmentId of parsed.data.attachmentIds)
             await t`insert into attachment_usages(machine_usage_id,work_entry_id,attachment_id,start_at,end_at) values(${id.data},${after!.workEntryId},${attachmentId},${before[0]!.entryStart},${before[0]!.entryEnd})`;
-          await t`insert into audit_logs(actor_user_id,action,entity_type,entity_id,before_data,after_data,reason) values(${request.sessionUser!.id},'MACHINE_USAGE_ADMIN_CORRECTED','MACHINE_USAGE',${id.data},${t.json(before[0]!)},${t.json(after!)},${parsed.data.reason})`;
+          await t`insert into audit_logs(actor_user_id,action,entity_type,entity_id,before_data,after_data,reason) values(${request.sessionUser!.id},'MACHINE_USAGE_ADMIN_CORRECTED','MACHINE_USAGE',${id.data},${t.json(before[0]!)},${t.json({ ...after!, attachmentIds: parsed.data.attachmentIds })},${parsed.data.reason})`;
           return after;
         });
         if (!result)
@@ -222,7 +222,7 @@ export function registerAdminRecordRoutes(
       try {
         const result = await db.begin(async (t) => {
           const before =
-            await t`select vt.* from vehicle_trips vt join work_days wd on wd.id=vt.driver_work_day_id join monthly_periods mp on mp.id=wd.monthly_period_id where vt.id=${id.data} and mp.state='OPEN' for update of vt`;
+            await t`select vt.*,coalesce((select json_agg(vtp.employee_id order by vtp.employee_id) from vehicle_trip_participants vtp where vtp.vehicle_trip_id=vt.id and vtp.role='PASSENGER'),'[]') as passenger_employee_ids from vehicle_trips vt join work_days wd on wd.id=vt.driver_work_day_id join monthly_periods mp on mp.id=wd.monthly_period_id where vt.id=${id.data} and mp.state='OPEN' for update of vt`;
           if (!before[0]) return null;
           if (
             parsed.data.passengerEmployeeIds.includes(
@@ -237,7 +237,7 @@ export function registerAdminRecordRoutes(
           await t`delete from vehicle_trip_participants where vehicle_trip_id=${id.data} and role='PASSENGER'`;
           for (const employeeId of parsed.data.passengerEmployeeIds)
             await t`insert into vehicle_trip_participants(vehicle_trip_id,employee_id,role) values(${id.data},${employeeId},'PASSENGER')`;
-          await t`insert into audit_logs(actor_user_id,action,entity_type,entity_id,before_data,after_data,reason) values(${request.sessionUser!.id},'VEHICLE_TRIP_ADMIN_CORRECTED','VEHICLE_TRIP',${id.data},${t.json(before[0]!)},${t.json(after!)},${parsed.data.reason})`;
+          await t`insert into audit_logs(actor_user_id,action,entity_type,entity_id,before_data,after_data,reason) values(${request.sessionUser!.id},'VEHICLE_TRIP_ADMIN_CORRECTED','VEHICLE_TRIP',${id.data},${t.json(before[0]!)},${t.json({ ...after!, passengerEmployeeIds: parsed.data.passengerEmployeeIds })},${parsed.data.reason})`;
           return after;
         });
         if (!result)

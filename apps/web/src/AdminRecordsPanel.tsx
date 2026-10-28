@@ -62,8 +62,10 @@ const types = [
 const activities = workActivities;
 export function AdminRecordsPanel({
   projects,
+  leaderMode = false,
 }: {
   projects: ProjectSummary[];
+  leaderMode?: boolean;
 }) {
   const today = new Date().toLocaleDateString("en-CA");
   const [date, setDate] = useState(today);
@@ -76,7 +78,7 @@ export function AdminRecordsPanel({
   const load = () => {
     const version = ++requestVersion.current;
     setDays([]);
-    return fetch(`/api/admin/workdays?date=${date}`, { credentials: "include" })
+    return fetch(`/api/${leaderMode ? "leader" : "admin"}/workdays?date=${date}`, { credentials: "include" })
       .then(async (r) =>
         r.ok ? (r.json() as Promise<{ workDays: Day[] }>) : Promise.reject(),
       )
@@ -86,14 +88,14 @@ export function AdminRecordsPanel({
     setTarget(null); setMessage("");
     void load().catch(() => setMessage("Záznamy se nepodařilo načíst."));
     return () => { requestVersion.current++; };
-  }, [date]);
+  }, [date, leaderMode]);
   async function edit(e: FormEvent<HTMLFormElement>) {
 e.preventDefault(); return runMutation(async () => {
 
     e.preventDefault();
     if (!target) return;
     const d = new FormData(e.currentTarget);
-    const r = await fetch(`/api/admin/work-entries/${target.id}`, {
+    const r = await fetch(`/api/${leaderMode ? "leader" : "admin"}/work-entries/${target.id}`, {
       method: "PATCH",
       credentials: "include",
       headers: { "content-type": "application/json" },
@@ -179,7 +181,7 @@ return runMutation(async () => {
     <section className="management-panel">
       <div className="section-heading">
         <div>
-          <p className="eyebrow">ADMINISTRATIVNÍ KOREKCE</p>
+          <p className="eyebrow">{leaderMode ? "OPRAVY SCHVÁLENÉ PRÁCE" : "ADMINISTRATIVNÍ KOREKCE"}</p>
           <h3>Denní záznamy zaměstnanců</h3>
         </div>
         <input
@@ -231,7 +233,7 @@ return runMutation(async () => {
                   >
                     Upravit práci
                   </button>
-                  {entry.machineUsage && (
+                  {!leaderMode && entry.machineUsage && (
                     <button disabled={busy}
                       className="table-action"
                       onClick={() => editMachine(entry.machineUsage!)}
@@ -298,7 +300,7 @@ return runMutation(async () => {
           <label>
             Zakázka
             <select name="projectId" defaultValue={target.projectId}>
-              {projects.map((p) => (
+              {projects.filter((p) => !leaderMode || p.id === target.projectId).map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.code} · {p.name}
                 </option>

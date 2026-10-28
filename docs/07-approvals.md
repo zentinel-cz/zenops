@@ -21,7 +21,7 @@ relevant work is approved by that project's Leader.
 The WorkDay becomes fully approved only after all relevant project work
 is approved.
 
-Only the current Leader assigned when the Project was created may approve or
+Only the current Leader currently assigned to the Project may approve or
 return its submitted WorkEntries. Admin does not participate in operational
 approval. Leader and Admin accounts cannot create WorkDays.
 
@@ -34,3 +34,5 @@ the month is open. Admin may perform administrative corrections.
 Sensitive corrections are audited.
 
 Historical approval identity/timestamp must remain intact.
+
+ADR-010 governs Admin-only audited Leader replacement and scoped corrections. Historical approval authors remain unchanged.

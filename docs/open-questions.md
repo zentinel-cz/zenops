@@ -32,11 +32,9 @@ reporting.
 
 Notification channels and escalation rules are deferred.
 
-## Project leader reassignment — resolved
+## Project leader reassignment — resolved by ADR-010
 
-The Leader is selected when a Project is created and cannot be reassigned.
-Only that current Leader may approve or return submitted WorkEntries for the
-Project. Admin may edit other Project metadata but cannot change its Leader.
+Only Admin can replace the current Leader with a reason and assignment history.
 
 ## Deleting deactivated users — decision required
 
@@ -58,3 +56,10 @@ Choose the retention policy before implementation:
 
 Until this decision is made, user deletion is deferred. No deletion behavior
 may cascade through historical or shared operational records by assumption.
+
+## Leader handover and ProjectDay read scope — resolved
+
+User approved ADR-010: Admin-only handover, current-Leader scoped history and
+approved-work corrections, and restricted shared project-day/fuel reads.
+An inactive or demoted Leader does not retain operational access. Admin can
+assign another active Leader; no Admin approval fallback is introduced.

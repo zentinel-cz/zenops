@@ -81,6 +81,9 @@ export function registerApprovalRoutes(
         return reply.code(400).send({ error: "Neplatné rozhodnutí." });
       if (!request.sessionUser!.roles.includes("LEADER")) return reply.code(403).send({ error: "K této operaci nemáte oprávnění." });
       const result = await db.begin(async (transaction) => {
+        const [project] = await transaction`select p.id from projects p join work_entries we on we.project_id=p.id
+          where we.id=${params.data.entryId} and p.current_leader_employee_id=${request.sessionUser!.employeeId} for share of p`;
+        if (!project) return null;
         // Serialize decisions for the whole day before reading the aggregate state.
         await transaction`select wd.id from work_days wd join work_entries we on we.work_day_id=wd.id
           join projects p on p.id=we.project_id where we.id=${params.data.entryId}

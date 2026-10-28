@@ -8,10 +8,13 @@ const paramsSchema = z.object({ projectId: z.string().uuid() });
 const querySchema = z.object({ date: z.iso.date() });
 
 export function registerProjectDayRoutes(app: FastifyInstance, db: Database, requireTrustedOrigin: AuthorizationHook): void {
-  app.get("/api/projects/:projectId/day", { preHandler: requirePermission("project.read_open") }, async (request, reply) => {
+  app.get("/api/projects/:projectId/day", { preHandler: requirePermission("project_day.manage") }, async (request, reply) => {
     const params = paramsSchema.safeParse(request.params);
     const query = querySchema.safeParse(request.query);
     if (!params.success || !query.success) return reply.code(400).send({ error: "Neplatná zakázka nebo datum." });
+    const [accessible] = await db`select id from projects where id=${params.data.projectId}
+      and (${request.sessionUser!.roles.includes("ADMIN")} or current_leader_employee_id=${request.sessionUser!.employeeId})`;
+    if (!accessible) return reply.code(404).send({ error: "Zakázka nebyla nalezena." });
     const rows = await db`
       select pd.id, pd.project_id, pd.work_date, pd.weather, pd.temperature_c, pd.note,
         pd.updated_at, e.display_name as updated_by_name
@@ -49,6 +52,9 @@ export function registerProjectDayRoutes(app: FastifyInstance, db: Database, req
       return reply.code(403).send({ error: "Denní údaje může měnit pouze aktuální Vedoucí zakázky nebo Admin." });
     }
     const projectDay = await db.begin(async (transaction) => {
+      const [authorized] = await transaction`select id from projects where id=${params.data.projectId}
+        and (${isAdmin} or current_leader_employee_id=${request.sessionUser!.employeeId}) for update`;
+      if (!authorized) throw Object.assign(new Error("K této operaci nemáte oprávnění."), { statusCode: 403 });
       const before = await transaction`
         select id, project_id, work_date, weather, temperature_c, note from project_days
         where project_id = ${params.data.projectId} and work_date = ${query.data.date}
@@ -93,6 +99,11 @@ export function registerProjectDayRoutes(app: FastifyInstance, db: Database, req
     }
     if (projects[0].status !== "OPEN") return reply.code(409).send({ error: "K uzavřené zakázce nelze přidávat provozní údaje." });
     const fuelRecord = await db.begin(async (transaction) => {
+      const [authorized] = await transaction`select id from projects where id=${params.data.projectId}
+        and (${isAdmin} or current_leader_employee_id=${request.sessionUser!.employeeId}) for update`;
+      if (!authorized) throw Object.assign(new Error("K této operaci nemáte oprávnění."), { statusCode: 403 });
+      const [openProject] = await transaction`select id from projects where id=${params.data.projectId} and status='OPEN'`;
+      if (!openProject) throw Object.assign(new Error("K uzavřené zakázce nelze přidávat provozní údaje."), { statusCode: 409 });
       const [projectDay] = await transaction<Array<{ id: string }>>`
         insert into project_days (project_id, work_date) values (${params.data.projectId}, ${query.data.date})
         on conflict (project_id, work_date) do update set project_id = excluded.project_id returning id

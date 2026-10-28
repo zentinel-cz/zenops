@@ -76,7 +76,7 @@ deployment. It remains outside source code and migrations.
 Completed:
 
 - projects schema with normalized unique code and lifecycle constraints
-- exactly one immutable leader selected at project creation
+- exactly one current Leader selected at project creation; audited Admin handover is specified by ADR-010
 - permission-protected API to list open projects
 - Leader/Admin project creation with active-Leader validation
 - transactional project, leader-history and audit creation
@@ -91,10 +91,10 @@ Completed:
 - Admin overview of open/closed projects with close/reopen controls
 - Czech V1 user guide maintained as documentation-as-code
 
-- Admin can edit project code, name, location, dates, note and BESIP while the
-  original Leader remains unchanged
+- Admin can edit project code, name, location, dates, note and BESIP; ADR-010
+  additionally enables audited Leader handover
 - every edit requires a reason and stores immutable before/after audit evidence
-- database and API prevent Leader reassignment after project creation
+- migration 0018 replaces the immutable-Leader guard with an audited Admin-only handover guard; prepared changes require deployment
 
 ## Milestone 3 — WorkDay, WorkEntry and BreakEntry — core complete
 
@@ -245,3 +245,13 @@ Approval/return behavior is implemented in milestone 8 below.
 - Admin can correct breaks, machine MTH/fuel/attachment data and vehicle-trip
   mileage, fuel, passengers and note while the month is open
 - every correction requires a reason and stores immutable audit evidence
+
+
+## ADR-010 — prepared 2026-10-28, not deployed
+
+Admin project editing includes Leader handover with database-enforced assignment
+history and audit. Current Leaders can view their closed projects and historical
+ProjectDay data, and correct approved own work entries in open months. Shared
+notes/fuel are denied to Workers and Accountants. Previous approval events are
+unchanged. Server Docker builds and integration checks are documented in
+operations/leader-handover-release.md; this section does not assert live deployment.

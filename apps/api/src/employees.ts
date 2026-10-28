@@ -123,6 +123,10 @@ export function registerEmployeeRoutes(app: FastifyInstance, db: Database, requi
         update users set is_active = ${parsed.data.active}, deactivated_at = ${deactivatedAt},
           deactivated_by_user_id = ${deactivatedBy}, updated_at = now() where employee_id = ${employeeId}
       `;
+      if (!parsed.data.active) {
+        await transaction`update sessions set revoked_at=now()
+          where user_id in (select id from users where employee_id=${employeeId}) and revoked_at is null`;
+      }
       await transaction`
         insert into audit_logs (actor_user_id, action, entity_type, entity_id, before_data, after_data, reason)
         values (${request.sessionUser!.id}, ${parsed.data.active ? 'EMPLOYEE_REACTIVATED' : 'EMPLOYEE_DEACTIVATED'},

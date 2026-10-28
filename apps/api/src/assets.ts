@@ -1,3 +1,4 @@
+import { lockEditableWorkDay } from "./workday-lock.js";
 import { createAttachmentSchema, createMachineSchema, createVehicleSchema, machineUsageSchema, updateAttachmentSchema, updateMachineSchema, updateVehicleSchema } from "@zenops/contracts";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
@@ -160,6 +161,7 @@ export function registerAssetRoutes(app: FastifyInstance, db: Database, requireT
     if (!params.success || !parsed.success) return reply.code(400).send({ error: "Neplatné použití stroje." });
     try {
       const usage = await db.begin(async (transaction) => {
+        await lockEditableWorkDay(transaction, params.data.workDayId, request.sessionUser!.employeeId);
         const context = await transaction<Array<{ startAt: Date; endAt: Date; tracksMth: boolean; suggestedMth: string | null }>>`
           select we.start_at, we.end_at, mt.tracks_mth,
             (select previous.end_mth from machine_usages previous where previous.machine_id = m.id and previous.end_mth is not null order by previous.end_at desc limit 1) as suggested_mth
@@ -168,6 +170,7 @@ export function registerAssetRoutes(app: FastifyInstance, db: Database, requireT
           join machine_types mt on mt.id = m.machine_type_id
           where we.id = ${params.data.entryId} and wd.id = ${params.data.workDayId}
             and wd.employee_id = ${request.sessionUser!.employeeId} and wd.state in ('DRAFT', 'RETURNED')
+            and we.state in ('DRAFT', 'RETURNED')
           for update of we
         `;
         if (!context[0]) return null;
