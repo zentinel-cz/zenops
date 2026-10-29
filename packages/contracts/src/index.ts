@@ -21,6 +21,19 @@ export const sessionUserSchema = z.object({
 export type LoginInput = z.infer<typeof loginSchema>;
 export type SessionUser = z.infer<typeof sessionUserSchema>;
 
+export type MachineUsageSummary = {
+  id: string;
+  machineId: string;
+  machineCode: string;
+  machineName: string;
+  startMth: string | null;
+  endMth: string | null;
+  fuelConsumed: string | null;
+  fuelRefuelled: string | null;
+  attachments: string[];
+  attachmentIds: string[];
+};
+
 export const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1).max(200),

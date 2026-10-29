@@ -113,3 +113,10 @@ the source for the original worker profile fields and role separation.
   to DRAFT in an OPEN month, with a reason and chosen shift. Restoration
   reuses the same day, preserves cancellation history and blocks closure
   until the day is resolved again. Neither transition deletes history.
+
+- **BR-065** One WorkEntry may use multiple distinct physical machines.
+  Each MachineUsage stores its own MTH, fuel and attachments; one machine
+  cannot be attached twice to the same entry (ADR-013).
+- **BR-066** All attached machines inherit the WorkEntry interval and remain
+  subject to physical-resource conflict checks. Reporting counts the entry
+  and employee time once; machine MTH/fuel totals include each usage once.

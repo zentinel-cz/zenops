@@ -12,6 +12,13 @@ every machine category.
 
 Machines may track operating hours.
 
+Under ADR-013, a WorkEntry can have multiple MachineUsages, one per selected
+physical machine. Each usage retains separate MTH, fuel and attachments. A
+machine can appear only once per entry. All attached usages use the entry's
+interval; correcting it updates every attached machine and attachment in the
+same transaction. WorkEntry counts and worked hours are not multiplied by
+the number of machines.
+
 ## Meter readings
 
 For tracked machines: - start MTH - end MTH - calculated difference

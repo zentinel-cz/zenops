@@ -2,19 +2,11 @@ import { businessDate, businessTimeZone } from "@zenops/contracts/time";
 import { BusinessDateTimeField, readBusinessDateTime } from "./BusinessDateTimeField";
 import { useMutation } from "./useMutation";
 import { workActivities, workStateLabel, shiftLabel } from "@zenops/contracts/labels";
-import type { ProjectSummary } from "@zenops/contracts";
+import type { MachineUsageSummary, ProjectSummary } from "@zenops/contracts";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { ListSearch, matchesSearch } from "./ListSearch";
-type MachineUsage = {
-  id: string;
-  machineId: string;
-  machineCode: string;
-  startMth: string | null;
-  endMth: string | null;
-  fuelConsumed: string | null;
-  fuelRefuelled: string | null;
-  attachmentIds: string[];
-};
+type MachineUsage = MachineUsageSummary;
+
 type Entry = {
   id: string;
   projectId: string;
@@ -27,7 +19,7 @@ type Entry = {
   endAt: string;
   description: string | null;
   state: string;
-  machineUsage: MachineUsage | null;
+  machineUsages: MachineUsage[];
 };
 type Break = { id: string; startAt: string; endAt: string };
 type Trip = {
@@ -221,7 +213,7 @@ return runMutation(async () => {
       {days.length === 0 ? (
         <p className="muted">Pro zvolené datum nejsou záznamy.</p>
       ) : (
-        days.filter((day) => matchesSearch(query, day.displayName, day.workDate, shiftLabel(day.shiftType), workStateLabel(day.state), day.entries.map((entry) => `${entry.projectCode} ${entry.projectName} ${entry.workTypeName} ${entry.machineUsage?.machineCode ?? ""} ${entry.description ?? ""}`).join(" "))).map((day) => (
+        days.filter((day) => matchesSearch(query, day.displayName, day.workDate, shiftLabel(day.shiftType), workStateLabel(day.state), day.entries.map((entry) => `${entry.projectCode} ${entry.projectName} ${entry.workTypeName} ${entry.machineUsages.map((usage) => usage.machineCode).join(" ")} ${entry.description ?? ""}`).join(" "))).map((day) => (
           <div className="admin-day" key={day.id}>
             <div>
               <strong>{day.displayName}</strong>
@@ -249,9 +241,7 @@ return runMutation(async () => {
                   </b>
                   <small>
                     {entry.projectCode} · {entry.workTypeName} · {workStateLabel(entry.state)}
-                    {entry.machineUsage
-                      ? ` · ${entry.machineUsage.machineCode}`
-                      : ""}
+                    {entry.machineUsages.length > 0 ? ` · ${entry.machineUsages.map((usage) => usage.machineCode).join(", ")}` : ""}
                   </small>
                 </span>
                 <div className="row-actions">
@@ -261,14 +251,15 @@ return runMutation(async () => {
                   >
                     Upravit práci
                   </button>
-                  {!leaderMode && entry.machineUsage && (
+                  {!leaderMode && entry.machineUsages.map((usage) => (
                     <button disabled={busy}
                       className="table-action"
-                      onClick={() => editMachine(entry.machineUsage!)}
+                      key={usage.id}
+                      onClick={() => editMachine(usage)}
                     >
-                      MTH/palivo
+                      {usage.machineCode} · MTH/palivo
                     </button>
-                  )}
+                  ))}
                 </div>
               </div>
             ))}
@@ -314,7 +305,7 @@ return runMutation(async () => {
           </div>
         ))
       )}
-      {days.length > 0 && !days.some((day) => matchesSearch(query, day.displayName, day.workDate, shiftLabel(day.shiftType), workStateLabel(day.state), day.entries.map((entry) => `${entry.projectCode} ${entry.projectName} ${entry.workTypeName} ${entry.machineUsage?.machineCode ?? ""} ${entry.description ?? ""}`).join(" "))) && <p className="muted">Žádný den neodpovídá hledání.</p>}
+      {days.length > 0 && !days.some((day) => matchesSearch(query, day.displayName, day.workDate, shiftLabel(day.shiftType), workStateLabel(day.state), day.entries.map((entry) => `${entry.projectCode} ${entry.projectName} ${entry.workTypeName} ${entry.machineUsages.map((usage) => usage.machineCode).join(" ")} ${entry.description ?? ""}`).join(" "))) && <p className="muted">Žádný den neodpovídá hledání.</p>}
       {cancellingDay && <form key={cancellingDay.id} className="admin-entry-form" onSubmit={cancelDay}>
         <strong>Zrušit prázdný den: {cancellingDay.displayName}</strong>
         <p>Datum: {cancellingDay.workDate.slice(0, 10)}. Den i důvod zůstanou v historii. Práce, přestávky ani vlastní jízdy nesmějí být zapsané.</p>

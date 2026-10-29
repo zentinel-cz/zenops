@@ -163,6 +163,9 @@ důvod. Vedoucího může později změnit pouze Admin s uvedením důvodu.
    počáteční stav předvyplněný posledním známým údajem a lze jej upravit.
    Příslušenství zaškrtněte jen tehdy, pokud jste ho použili. Formulář uložte
    tlačítkem **Uložit stroj k úseku**, nebo jej zavřete přes **Zrušit**.
+   Ke stejnému pracovnímu úseku můžete připojit další stroj opět přes
+   **Přidat stroj**. Každý má vlastní MTH, spotřebu, tankování a příslušenství.
+   Již připojený stroj se v nabídce pro tento úsek znovu nenabízí.
 7. Jízdu přes **Zapsat jízdu vozidlem** zaznamenává řidič. Vyplní vozidlo, časy a stavy tachometru; cestující označí jednotlivě. Řidič sám sebe jako cestujícího vybírat nemůže.
 8. Před odesláním zkontrolujte seznam úseků a časů. Tlačítko **Zkontrolovat a odeslat pracovní den** zobrazí potvrzení. Po odeslání už běžné úpravy nejsou možné.
 
@@ -280,6 +283,20 @@ Pracovník u rozpracovaného pracovního úseku zvolí **Přidat stroj** a vypln
 Formulář ukazuje poslední známý konečný MTH jako návrh. Pracovník jej může
 opravit, ale změna se auditovaně uloží. Stejný stroj ani unikátní příslušenství
 nelze v překrývajícím se čase přiřadit dvěma pracovníkům.
+
+## Více strojů u jednoho úseku
+
+Seznam dne zobrazí všechny připojené stroje a jejich vlastní údaje. Čas
+uvedený u pracovního úseku platí pro každý z nich; pokud se časy použití liší,
+zapište samostatné úseky. Oprava času práce posune obsazení všech připojených
+strojů a příslušenství. Při kolizi se celá oprava odmítne.
+
+Admin vidí v opravách u každého stroje samostatné tlačítko s jeho kódem a
+označením **MTH/palivo**, aby opravil správný záznam. Vedoucí v přehledu oprav
+vidí stroje u schválených úseků svých zakázek; opravy motohodin zůstávají
+Adminovi. Denní report i PDF ukazují všechny stroje včetně jejich příslušenství.
+Pracovní úsek a jeho hodiny se započítají pouze jednou; měsíční souhrny techniky
+započítají MTH a palivo každého stroje zvlášť.
 
 ## Vozidla a společné jízdy
 

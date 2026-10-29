@@ -2,6 +2,15 @@
 
 Last updated: 2026-10-13
 
+## Multiple machines per entry — prepared 2026-10-29
+
+ADR-013 and migration 0021 allow multiple distinct machines per WorkEntry.
+Worker history, Admin/Leader record views and daily/PDF reports use ordered
+machineUsages arrays with individual MTH, fuel and attachments. Work entries
+and employee hours are counted once. Verification and rollout prerequisites
+are documented in `operations/multiple-machines-release.md`; not deployed
+from this workspace.
+
 ## Empty-day cancellation — prepared 2026-10-29
 
 ADR-012 and migration 0020 add audited cancellation of empty, never-submitted

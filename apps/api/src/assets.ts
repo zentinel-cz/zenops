@@ -174,6 +174,8 @@ export function registerAssetRoutes(app: FastifyInstance, db: Database, requireT
           for update of we
         `;
         if (!context[0]) return null;
+        const [duplicate] = await transaction`select id from machine_usages where work_entry_id=${params.data.entryId} and machine_id=${parsed.data.machineId}`;
+        if (duplicate) throw Object.assign(new Error("Tento stroj již je k pracovnímu úseku připojen."), { statusCode: 409 });
         if (context[0].tracksMth && (parsed.data.startMth == null || parsed.data.endMth == null)) {
           throw Object.assign(new Error("Stroj vyžaduje počáteční i konečný MTH."), { statusCode: 422 });
         }
@@ -202,7 +204,7 @@ export function registerAssetRoutes(app: FastifyInstance, db: Database, requireT
       return reply.code(201).send({ usage });
     } catch (error) {
       if (typeof error === "object" && error && "code" in error && error.code === "23P01") return reply.code(409).send({ error: "Stroj nebo příslušenství je v tomto čase používáno jinde." });
-      if (typeof error === "object" && error && "code" in error && error.code === "23505") return reply.code(409).send({ error: "K pracovnímu úseku již je stroj připojen." });
+      if (typeof error === "object" && error && "code" in error && error.code === "23505") return reply.code(409).send({ error: "Stroj nebo příslušenství již je k pracovnímu úseku připojeno." });
       throw error;
     }
   });

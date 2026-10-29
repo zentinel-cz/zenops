@@ -19,6 +19,11 @@ brushcutter fuel - approval status
 
 ## Download
 
+Under ADR-013, every WorkEntry appears once with its machineUsages list.
+Each machine retains its own readings, fuel and attachment grouping in the
+live report and PDF. Additional machines do not multiply employee hours or
+entry/worker counts. Monthly machine totals include each physical usage once.
+
 Leader/Admin can download a professional PDF daily report. XLSX may be
 added later.
 

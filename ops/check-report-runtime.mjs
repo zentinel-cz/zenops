@@ -28,7 +28,7 @@ try {
   const daily = await app.inject({url:"/api/reports/daily?date=2026-09-25",headers});
   const report = daily.json().report;
   assert(report.entries.length > 0);
-  const stress = {...report, entries:Array.from({length:80},(_,index)=>({...report.entries[0], employeeName:`Žluťoučký pracovník ${index+1}`, projectName:'Dlouhý název zakázky <script>alert(1)</script> & česká diakritika', attachments:['PŘ-01','PŘ-02']}))};
+  const stress = {...report, entries:Array.from({length:80},(_,index)=>({...report.entries[0], employeeName:`Žluťoučký pracovník ${index+1}`, projectName:'Dlouhý název zakázky <script>alert(1)</script> & česká diakritika', machineUsages:report.entries[0].machineUsages.map(usage=>({...usage,attachments:['PŘ-01','PŘ-02']}))}))};
   const html = reportHtml(stress);
   assert(!html.includes('<script>'));
   assert(html.includes('&lt;script&gt;'));

@@ -38,6 +38,7 @@ export function buildApp(config: AppConfig, db: Database): FastifyInstance {
 
   // Fastify and plugins otherwise return English status/error text to the UI.
   const publicMessages = new Set([
+    "Tento stroj již je k pracovnímu úseku připojen.",
     "Nedůvěryhodný původ požadavku.", "Stroj vyžaduje počáteční i konečný MTH.",
     "Řidič nemůže být cestující.", "Neplatný cestující.", "Měsíc je uzavřen.", "Vedoucí zakázky musí být aktivní uživatel s rolí Vedoucí.", "Pracovní den nelze upravit v aktuálním stavu.",
   ]);

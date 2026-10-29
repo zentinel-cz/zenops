@@ -16,7 +16,7 @@ export function registerLeaderRecordRoutes(app: FastifyInstance, db: Database, o
     const rows = await db`select wd.id, wd.work_date, wd.shift_type, e.id as employee_id, e.display_name,
       json_agg(json_build_object('id',we.id,'projectId',p.id,'projectCode',p.code,'projectName',p.name,
         'workTypeCode',wt.code,'workTypeName',wt.name,'workActivityCode',wa.code,'startAt',we.start_at,
-        'endAt',we.end_at,'description',we.description,'state',we.state,'machineUsage',null) order by we.start_at) as entries
+        'endAt',we.end_at,'description',we.description,'state',we.state,'machineUsages',work_entry_machine_usages(we.id)) order by we.start_at) as entries
       from work_entries we join work_days wd on wd.id=we.work_day_id join employees e on e.id=wd.employee_id
       join projects p on p.id=we.project_id join work_types wt on wt.id=we.work_type_id
       left join work_activities wa on wa.id=we.work_activity_id

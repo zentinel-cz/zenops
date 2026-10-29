@@ -6,6 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createSession, getSessionUser } from "../src/auth.js";
 import { buildApp } from "../src/app.js";
 import type { AppConfig } from "../src/config.js";
+import { reportHtml } from "../src/reports.js";
 
 const databaseUrl = process.env.TEST_DATABASE_URL;
 const integration = databaseUrl ? describe : describe.skip;
@@ -62,6 +63,27 @@ integration("authentication integration", () => {
   async function headersFor(username: string) {
     const [user] = await db`select id from users where username=${username}`;
     return { origin, cookie: `zenops_session=${(await createSession(db,user!.id,1,{})).token}` };
+  }
+
+  async function multipleMachineContext(code: string, date: string) {
+    const context = await intervalContext(`multi-${code}`);
+    const dayId = await context.createDay(date);
+    const entry = await context.addWork(dayId,`${date}T08:00:00+01:00`,`${date}T10:00:00+01:00`);
+    expect(entry.statusCode,entry.body).toBe(201);
+    const [machineType] = await db`insert into machine_types(name,tracks_mth) values(${`Multi ${code}`},true) returning id`;
+    const machines = await db<Array<{id:string;code:string}>>`insert into machines(machine_type_id,code,name) values
+      (${machineType!.id},${`MULTI-${code.toUpperCase()}-A`},'První stroj'),
+      (${machineType!.id},${`MULTI-${code.toUpperCase()}-B`},'Druhý stroj') returning id,code`;
+    const [attachmentType] = await db`insert into attachment_types(name) values(${`Multi ${code}`}) returning id`;
+    const attachments = await db<Array<{id:string;code:string}>>`insert into attachments(attachment_type_id,code,name) values
+      (${attachmentType!.id},${`MULTI-${code.toUpperCase()}-PA`},'První příslušenství'),
+      (${attachmentType!.id},${`MULTI-${code.toUpperCase()}-PB`},'Druhé příslušenství') returning id,code`;
+    const entryId = entry.json().entry.id as string;
+    const addMachine = (machineIndex: number, attachmentIndex=machineIndex) => app.inject({method:'POST',
+      url:`/api/workdays/${dayId}/entries/${entryId}/machine`,headers:context.headers,
+      payload:{machineId:machines[machineIndex]!.id,startMth:100*(machineIndex+1),endMth:100*(machineIndex+1)+machineIndex+2,
+        fuelConsumed:machineIndex+2,fuelRefuelled:machineIndex+3,attachmentIds:[attachments[attachmentIndex]!.id]}});
+    return {...context,dayId,entryId,machines,attachments,addMachine};
   }
 
   beforeAll(async () => {
@@ -1745,6 +1767,128 @@ integration("authentication integration", () => {
       (statuses[0]===200 && statuses[1]===409) || (statuses[0]===409 && statuses[1]===200));
     const [final] = await db`select wd.state,mp.state as period_state from work_days wd join monthly_periods mp on mp.id=wd.monthly_period_id where wd.id=${restoreDay}`;
     expect(final).toEqual(race[0]!.statusCode===200 ? {state:'DRAFT',periodState:'OPEN'} : {state:'CANCELLED',periodState:'CLOSED'});
+  });
+
+  it("records multiple machines without duplicating work, time or resource totals in history and reports", async () => {
+    const context = await multipleMachineContext('report','2040-01-10');
+    const adminHeaders = await headersFor('admin');
+    const leaderHeaders = await headersFor('leader');
+    const first = await context.addMachine(0);
+    expect(first.statusCode,first.body).toBe(201);
+    const conflict = await context.addMachine(1,0);
+    expect(conflict.statusCode,conflict.body).toBe(409);
+    expect(await db`select id from machine_usages where work_entry_id=${context.entryId}`).toHaveLength(1);
+    const second = await context.addMachine(1);
+    expect(second.statusCode,second.body).toBe(201);
+    const duplicate = await context.addMachine(0);
+    expect(duplicate.statusCode).toBe(409);
+    expect(duplicate.json().error).toContain('Tento stroj již');
+    const own = (await app.inject({url:'/api/workdays/current?date=2040-01-10',headers:context.headers})).json().workDay;
+    expect(own.entries).toHaveLength(1);
+    expect(own.entries[0].machineUsages).toEqual([
+      expect.objectContaining({id:first.json().usage.id,machineId:context.machines[0]!.id,startMth:'100.00',endMth:'102.00',fuelConsumed:'2.00',attachments:[context.attachments[0]!.code],attachmentIds:[context.attachments[0]!.id]}),
+      expect.objectContaining({id:second.json().usage.id,machineId:context.machines[1]!.id,startMth:'200.00',endMth:'203.00',fuelConsumed:'3.00',attachments:[context.attachments[1]!.code],attachmentIds:[context.attachments[1]!.id]}),
+    ]);
+    for (const headers of [adminHeaders,leaderHeaders]) {
+      const response = await app.inject({url:'/api/reports/daily?date=2040-01-10',headers});
+      expect(response.statusCode,response.body).toBe(200);
+      const report = response.json().report;
+      expect(report.summary).toEqual({entries:1,workers:1,approvedMinutes:0,provisionalMinutes:120});
+      expect(report.entries).toHaveLength(1);
+      expect(report.entries[0].machineUsages).toEqual(own.entries[0].machineUsages);
+      const html = reportHtml(report);
+      expect(html).toContain(context.machines[0]!.code);
+      expect(html).toContain(context.machines[1]!.code);
+      expect(html).toContain(context.attachments[0]!.code);
+      expect(html).toContain(context.attachments[1]!.code);
+      expect(html.match(/Time multi-report/g)).toHaveLength(1);
+      const monthly = (await app.inject({url:'/api/reports/monthly?month=2040-01',headers})).json().report;
+      expect(monthly.employeeHours.find((row:{id:string}) => row.id===context.employeeId).workedMinutes).toBe(120);
+      expect(monthly.orderHours.find((row:{id:string}) => row.id===context.projectId).workedMinutes).toBe(120);
+      expect(monthly.machines).toEqual(expect.arrayContaining([
+        expect.objectContaining({id:context.machines[0]!.id,mth:'2.00',fuelConsumed:'2.00'}),
+        expect.objectContaining({id:context.machines[1]!.id,mth:'3.00',fuelConsumed:'3.00'}),
+      ]));
+    }
+    const listing = (await app.inject({url:'/api/admin/workdays?date=2040-01-10',headers:adminHeaders})).json().workDays;
+    expect(listing[0].entries).toHaveLength(1);
+    expect(listing[0].entries[0].machineUsages).toEqual(own.entries[0].machineUsages);
+  });
+
+  it("synchronizes every machine and attachment on time corrections and preserves unrelated usage when Admin corrects one machine", async () => {
+    const context = await multipleMachineContext('correct','2040-02-10');
+    const first = await context.addMachine(0);
+    const second = await context.addMachine(1);
+    expect(first.statusCode).toBe(201); expect(second.statusCode).toBe(201);
+    const corrected = await app.inject({method:'PATCH',url:`/api/workdays/${context.dayId}/entries/${context.entryId}`,headers:context.headers,
+      payload:{projectId:context.projectId,workTypeCode:'OTHER',description:'Posun času',startAt:'2040-02-10T09:00:00+01:00',endAt:'2040-02-10T11:00:00+01:00'}});
+    expect(corrected.statusCode,corrected.body).toBe(200);
+    const resources = await db`select start_at,end_at from machine_usages where work_entry_id=${context.entryId}
+      union all select start_at,end_at from attachment_usages where work_entry_id=${context.entryId}`;
+    expect(resources).toHaveLength(4);
+    expect(resources.every((row) => row.startAt.toISOString()==='2040-02-10T08:00:00.000Z' && row.endAt.toISOString()==='2040-02-10T10:00:00.000Z')).toBe(true);
+    const other = await intervalContext('multi-blocker');
+    const otherDay = await other.createDay('2040-02-10');
+    const otherEntry = await other.addWork(otherDay,'2040-02-10T11:00:00+01:00','2040-02-10T12:00:00+01:00');
+    const occupied = await app.inject({method:'POST',url:`/api/workdays/${otherDay}/entries/${otherEntry.json().entry.id}/machine`,headers:other.headers,
+      payload:{machineId:context.machines[1]!.id,startMth:203,endMth:204}});
+    expect(occupied.statusCode,occupied.body).toBe(201);
+    const rejected = await app.inject({method:'PATCH',url:`/api/workdays/${context.dayId}/entries/${context.entryId}`,headers:context.headers,
+      payload:{projectId:context.projectId,workTypeCode:'OTHER',description:'Kolidující posun',startAt:'2040-02-10T10:00:00+01:00',endAt:'2040-02-10T12:00:00+01:00'}});
+    expect(rejected.statusCode,rejected.body).toBe(409);
+    const afterRejected = await db`select start_at,end_at from machine_usages where work_entry_id=${context.entryId}
+      union all select start_at,end_at from attachment_usages where work_entry_id=${context.entryId}`;
+    expect(afterRejected).toEqual(resources);
+    expect((await db`select description from work_entries where id=${context.entryId}`)[0]!.description).toBe('Posun času');
+    expect((await app.inject({method:'DELETE',url:`/api/workdays/${otherDay}/entries/${otherEntry.json().entry.id}`,headers:other.headers})).statusCode).toBe(204);
+    expect((await app.inject({method:'POST',url:`/api/workdays/${otherDay}/cancel`,headers:other.headers,payload:{reason:'Úklid testovacího dne'}})).statusCode).toBe(200);
+    expect((await app.inject({method:'POST',url:`/api/workdays/${context.dayId}/submit`,headers:context.headers})).statusCode).toBe(200);
+    const leaderHeaders = await headersFor('leader');
+    expect((await app.inject({method:'POST',url:`/api/approvals/${context.entryId}/decision`,headers:leaderHeaders,payload:{action:'APPROVED'}})).statusCode).toBe(200);
+    const leader = (await app.inject({url:'/api/leader/workdays?date=2040-02-10',headers:leaderHeaders})).json().workDays;
+    expect(leader[0].entries[0].machineUsages).toHaveLength(2);
+    const [beforeFirst] = await db`select * from machine_usages where id=${first.json().usage.id}`;
+    const approvals = await db`select * from approvals where work_entry_id=${context.entryId}`;
+    const adminHeaders = await headersFor('admin');
+    const correction = await app.inject({method:'PATCH',url:`/api/admin/machine-usages/${second.json().usage.id}`,headers:adminHeaders,
+      payload:{machineId:context.machines[1]!.id,startMth:200,endMth:204,fuelConsumed:3,fuelRefuelled:4,attachmentIds:[context.attachments[1]!.id],reason:'Kontrola druhého stroje'}});
+    expect(correction.statusCode,correction.body).toBe(200);
+    expect((await db`select * from machine_usages where id=${first.json().usage.id}`)[0]).toEqual(beforeFirst);
+    expect(await db`select * from approvals where work_entry_id=${context.entryId}`).toEqual(approvals);
+    const changed = (await app.inject({url:'/api/admin/workdays?date=2040-02-10',headers:adminHeaders})).json().workDays
+      .find((day:{id:string}) => day.id===context.dayId).entries.find((entry:{id:string}) => entry.id===context.entryId);
+    expect(changed.machineUsages[1].endMth).toBe('204.00');
+    expect((await app.inject({method:'POST',url:'/api/periods/2040-02/action',headers:adminHeaders,payload:{action:'CLOSE'}})).statusCode).toBe(200);
+    const locked = await app.inject({method:'PATCH',url:`/api/admin/machine-usages/${second.json().usage.id}`,headers:adminHeaders,
+      payload:{machineId:context.machines[1]!.id,startMth:200,endMth:205,attachmentIds:[context.attachments[1]!.id],reason:'Uzavřený měsíc'}});
+    expect(locked.statusCode).toBe(409);
+  });
+
+  it("keeps machine ownership, physical occupancy and concurrent duplicate protection with multiple usages", async () => {
+    const context = await multipleMachineContext('locks','2040-03-10');
+    const results = await Promise.all([context.addMachine(0),context.addMachine(0)]);
+    expect(results.map((response) => response.statusCode).sort()).toEqual([201,409]);
+    expect((await context.addMachine(1)).statusCode).toBe(201);
+    for (const username of ['admin','leader','accountant.test']) {
+      const denied = await app.inject({method:'POST',url:`/api/workdays/${context.dayId}/entries/${context.entryId}/machine`,headers:await headersFor(username),payload:{machineId:context.machines[0]!.id,startMth:100,endMth:102}});
+      expect(denied.statusCode).toBe(403);
+    }
+    const other = await intervalContext('multi-other');
+    const otherDay = await other.createDay('2040-03-10');
+    const otherEntry = await other.addWork(otherDay,'2040-03-10T08:30:00+01:00','2040-03-10T09:30:00+01:00');
+    const occupied = await app.inject({method:'POST',url:`/api/workdays/${otherDay}/entries/${otherEntry.json().entry.id}/machine`,headers:other.headers,
+      payload:{machineId:context.machines[1]!.id,startMth:203,endMth:204}});
+    expect(occupied.statusCode,occupied.body).toBe(409);
+    const foreign = await app.inject({method:'POST',url:`/api/workdays/${context.dayId}/entries/${context.entryId}/machine`,headers:other.headers,
+      payload:{machineId:context.machines[0]!.id,startMth:100,endMth:102}});
+    expect(foreign.statusCode).toBe(409);
+    expect(await db`select id from machine_usages where work_entry_id=${otherEntry.json().entry.id}`).toHaveLength(0);
+    const resources = await db`select id from machine_usages where work_entry_id=${context.entryId}`;
+    expect(resources).toHaveLength(2);
+    const removed = await app.inject({method:'DELETE',url:`/api/workdays/${context.dayId}/entries/${context.entryId}`,headers:context.headers});
+    expect(removed.statusCode).toBe(204);
+    expect(await db`select id from machine_usages where work_entry_id=${context.entryId}`).toHaveLength(0);
+    expect(await db`select id from attachment_usages where work_entry_id=${context.entryId}`).toHaveLength(0);
   });
 
   it("changes the authenticated password, audits it and revokes every session", async () => {
