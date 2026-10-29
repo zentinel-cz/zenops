@@ -56,7 +56,12 @@ integration("authentication integration", () => {
     const addWork = (dayId: string, startAt: string, endAt: string) => app.inject({method:'POST',url:`/api/workdays/${dayId}/entries`,headers,
       payload:{projectId:project!.id,workTypeCode:'OTHER',description:'Time regression',startAt,endAt}});
     const addBreak = (dayId: string, startAt: string, endAt: string) => app.inject({method:'POST',url:`/api/workdays/${dayId}/breaks`,headers,payload:{startAt,endAt}});
-    return { employeeId: employee!.id, projectId: project!.id, headers, createDay, addWork, addBreak };
+    return { employeeId: employee!.id, userId: user!.id, projectId: project!.id, headers, createDay, addWork, addBreak };
+  }
+
+  async function headersFor(username: string) {
+    const [user] = await db`select id from users where username=${username}`;
+    return { origin, cookie: `zenops_session=${(await createSession(db,user!.id,1,{})).token}` };
   }
 
   beforeAll(async () => {
@@ -1605,6 +1610,141 @@ integration("authentication integration", () => {
       expect(duration!.seconds).toBe(3600);
       expect((await app.inject({method:'POST',url:`/api/workdays/${day}/submit`,headers:context.headers})).statusCode).toBe(200);
     }
+  });
+
+  it("audits empty-day cancellation, permits closure and explicitly restores the same day only in an open month", async () => {
+    const context = await intervalContext('cancel');
+    const adminHeaders = await headersFor('admin');
+    const day = await context.createDay('2030-01-10');
+    const cancel = (reason: string) => app.inject({method:'POST',url:`/api/workdays/${day}/cancel`,headers:context.headers,payload:{reason}});
+    const restore = () => app.inject({method:'POST',url:`/api/workdays/${day}/restore`,headers:context.headers,payload:{reason:'Skutečná směna',shiftType:'MORNING'}});
+    const period = async () => (await app.inject({url:'/api/periods/2030-01',headers:adminHeaders})).json().period;
+    const close = () => app.inject({method:'POST',url:'/api/periods/2030-01/action',headers:adminHeaders,payload:{action:'CLOSE'}});
+    expect(await period()).toMatchObject({totalWorkDays:1,unresolvedWorkDays:1,cancelledWorkDays:0});
+    expect((await close()).statusCode).toBe(409);
+    expect((await cancel('  ')).statusCode).toBe(400);
+    expect((await app.inject({method:'POST',url:`/api/workdays/${day}/cancel`,headers:{cookie:context.headers.cookie},payload:{reason:'Omyl'}})).statusCode).toBe(403);
+    expect((await app.inject({method:'POST',url:`/api/workdays/${day}/cancel`,headers:{origin},payload:{reason:'Omyl'}})).statusCode).toBe(401);
+    const cancelled = await cancel('Omylem vybrané datum');
+    expect(cancelled.statusCode,cancelled.body).toBe(200);
+    expect(cancelled.json().workDay).toMatchObject({id:day,state:'CANCELLED',cancellationReason:'Omylem vybrané datum'});
+    expect(cancelled.json().workDay.cancelledAt).toBeTruthy();
+    const detail = await app.inject({url:'/api/workdays/current?date=2030-01-10',headers:context.headers});
+    expect(detail.json().workDay).toMatchObject({id:day,state:'CANCELLED',canCancel:false});
+    expect((await cancel('Opakování')).statusCode).toBe(409);
+    expect((await app.inject({method:'POST',url:'/api/workdays',headers:context.headers,payload:{workDate:'2030-01-10',shiftType:'MORNING'}})).statusCode).toBe(409);
+    expect((await context.addWork(day,'2030-01-10T08:00:00+01:00','2030-01-10T09:00:00+01:00')).statusCode).toBe(409);
+    expect((await context.addBreak(day,'2030-01-10T08:00:00+01:00','2030-01-10T09:00:00+01:00')).statusCode).toBe(409);
+    expect((await app.inject({method:'POST',url:`/api/workdays/${day}/submit`,headers:context.headers})).statusCode).toBe(409);
+    await expect(db`insert into break_entries(work_day_id,start_at,end_at) values(${day},'2030-01-10T08:00:00+01:00','2030-01-10T09:00:00+01:00')`).rejects.toMatchObject({code:'ZC001'});
+    await expect(db`delete from work_days where id=${day}`).rejects.toMatchObject({code:'ZC001'});
+    expect(await period()).toMatchObject({totalWorkDays:0,unresolvedWorkDays:0,cancelledWorkDays:1});
+    expect((await close()).statusCode).toBe(200);
+    expect((await restore()).statusCode).toBe(409);
+    expect((await app.inject({method:'POST',url:'/api/periods/2030-01/action',headers:adminHeaders,payload:{action:'REOPEN',reason:'Doplnění směny'}})).statusCode).toBe(200);
+    const restored = await restore();
+    expect(restored.statusCode,restored.body).toBe(200);
+    expect(restored.json().workDay).toMatchObject({id:day,state:'DRAFT',shiftType:'MORNING',cancelledAt:null,cancellationReason:null});
+    expect(await period()).toMatchObject({totalWorkDays:1,unresolvedWorkDays:1,cancelledWorkDays:0});
+    expect((await close()).statusCode).toBe(409);
+    const audit = await db`select actor_user_id,action,before_data,after_data,reason from audit_logs where entity_id=${day} order by created_at`;
+    expect(audit).toHaveLength(2);
+    expect(audit[0]).toMatchObject({actorUserId:context.userId,action:'WORKDAY_CANCELLED',reason:'Omylem vybrané datum',beforeData:{state:'DRAFT'},afterData:{state:'CANCELLED'}});
+    expect(audit[1]).toMatchObject({actorUserId:context.userId,action:'WORKDAY_RESTORED',beforeData:{state:'CANCELLED'},afterData:{state:'DRAFT'}});
+    await expect(db`update work_days set state='CANCELLED' where id=${day}`).rejects.toMatchObject({code:'ZC002'});
+    await expect(db`delete from work_days where id=${day}`).rejects.toMatchObject({code:'ZC001'});
+  });
+
+  it("rejects cancellation of work, breaks, driver trips and submitted or returned days without altering approvals", async () => {
+    const context = await intervalContext('cancel-guards');
+    const adminHeaders = await headersFor('admin');
+    const leaderHeaders = await headersFor('leader');
+    const days: string[] = [];
+    for (const date of ['2030-02-01','2030-02-02','2030-02-03','2030-02-04']) days.push(await context.createDay(date));
+    const work = await context.addWork(days[0]!,'2030-02-01T08:00:00+01:00','2030-02-01T09:00:00+01:00');
+    expect(work.statusCode).toBe(201);
+    expect((await context.addBreak(days[1]!,'2030-02-02T08:00:00+01:00','2030-02-02T08:30:00+01:00')).statusCode).toBe(201);
+    const trip = await app.inject({method:'POST',url:`/api/workdays/${days[2]}/vehicle-trips`,headers:context.headers,
+      payload:{vehicleId,startAt:'2030-02-03T08:00:00+01:00',endAt:'2030-02-03T09:00:00+01:00',startOdometerKm:100,endOdometerKm:110}});
+    expect(trip.statusCode,trip.body).toBe(201);
+    const returnedWork = await context.addWork(days[3]!,'2030-02-04T08:00:00+01:00','2030-02-04T09:00:00+01:00');
+    expect(returnedWork.statusCode).toBe(201);
+    expect((await app.inject({method:'POST',url:`/api/workdays/${days[3]}/submit`,headers:context.headers})).statusCode).toBe(200);
+    expect((await app.inject({method:'POST',url:`/api/admin/workdays/${days[3]}/cancel`,headers:adminHeaders,payload:{reason:'Nesmí smazat práci'}})).statusCode).toBe(409);
+    expect((await app.inject({method:'POST',url:`/api/approvals/${returnedWork.json().entry.id}/decision`,headers:leaderHeaders,payload:{action:'RETURNED',reason:'Kontrola záznamu'}})).statusCode).toBe(200);
+    const approvals = await db`select * from approvals where work_entry_id=${returnedWork.json().entry.id}`;
+    for (const day of days) {
+      for (const [prefix,headers] of [['/api/workdays',context.headers],['/api/admin/workdays',adminHeaders]] as const) {
+        const response = await app.inject({method:'POST',url:`${prefix}/${day}/cancel`,headers,payload:{reason:'Nepovolené zrušení'}});
+        expect(response.statusCode,response.body).toBe(409);
+      }
+    }
+    await expect(db.begin(async (transaction) => {
+      await transaction`select set_config('zenops.actor_user_id',${context.userId},true),set_config('zenops.change_reason','Omyl',true)`;
+      await transaction`update work_days set state='CANCELLED' where id=${days[0]!}`;
+    })).rejects.toMatchObject({code:'ZC001'});
+    expect(await db`select * from approvals where work_entry_id=${returnedWork.json().entry.id}`).toEqual(approvals);
+    expect(await db`select id from work_entries where work_day_id in ${db(days)}`).toHaveLength(2);
+    expect(await db`select id from audit_logs where entity_id in ${db(days)} and action='WORKDAY_CANCELLED'`).toHaveLength(0);
+  });
+
+  it("limits cancellation roles, preserves passenger trips and lets Admin resolve an inactive employee's empty day", async () => {
+    const passenger = await intervalContext('cancel-passenger');
+    const driver = await intervalContext('cancel-driver');
+    const adminHeaders = await headersFor('admin');
+    const ownDay = await passenger.createDay('2030-03-01');
+    const inactiveDay = await passenger.createDay('2030-03-02');
+    const driverDay = await driver.createDay('2030-03-01');
+    const trip = await app.inject({method:'POST',url:`/api/workdays/${driverDay}/vehicle-trips`,headers:driver.headers,
+      payload:{vehicleId,startAt:'2030-03-01T08:00:00+01:00',endAt:'2030-03-01T09:00:00+01:00',startOdometerKm:110,endOdometerKm:120,passengerEmployeeIds:[passenger.employeeId]}});
+    expect(trip.statusCode,trip.body).toBe(201);
+    const detail = (await app.inject({url:'/api/workdays/current?date=2030-03-01',headers:passenger.headers})).json().workDay;
+    expect(detail.canCancel).toBe(true);
+    expect(detail.vehicleTrips).toHaveLength(1);
+    for (const username of ['leader','accountant.test','admin']) {
+      const headers = await headersFor(username);
+      expect((await app.inject({method:'POST',url:`/api/workdays/${ownDay}/cancel`,headers,payload:{reason:'Nepovolená role'}})).statusCode).toBe(403);
+    }
+    for (const headers of [await headersFor('leader'),await headersFor('accountant.test'),driver.headers]) {
+      expect((await app.inject({method:'POST',url:`/api/admin/workdays/${ownDay}/cancel`,headers,payload:{reason:'Nepovolená role'}})).statusCode).toBe(403);
+    }
+    expect((await app.inject({method:'POST',url:`/api/workdays/${ownDay}/cancel`,headers:driver.headers,payload:{reason:'Cizí den'}})).statusCode).toBe(404);
+    expect((await app.inject({method:'POST',url:`/api/workdays/${ownDay}/cancel`,headers:passenger.headers,payload:{reason:'Pouze cestující'}})).statusCode).toBe(200);
+    expect(await db`select employee_id from vehicle_trip_participants where vehicle_trip_id=${trip.json().trip.id}`).toHaveLength(2);
+    expect(await db`select id from vehicle_trips where id=${trip.json().trip.id}`).toHaveLength(1);
+    expect((await app.inject({method:'PATCH',url:`/api/employees/${passenger.employeeId}/state`,headers:adminHeaders,payload:{active:false,reason:'Ukončení spolupráce'}})).statusCode).toBe(200);
+    const listing = await app.inject({url:'/api/admin/workdays?date=2030-03-02',headers:adminHeaders});
+    expect(listing.json().workDays.find((day: { id: string }) => day.id===inactiveDay).canCancel).toBe(true);
+    const cancelled = await app.inject({method:'POST',url:`/api/admin/workdays/${inactiveDay}/cancel`,headers:adminHeaders,payload:{reason:'Omyl neaktivního pracovníka'}});
+    expect(cancelled.statusCode,cancelled.body).toBe(200);
+    const [admin] = await db`select id from users where username='admin'`;
+    const [audit] = await db`select actor_user_id,reason from audit_logs where entity_id=${inactiveDay} and action='WORKDAY_CANCELLED'`;
+    expect(audit).toEqual({actorUserId:admin!.id,reason:'Omyl neaktivního pracovníka'});
+    expect((await app.inject({method:'POST',url:`/api/workdays/${inactiveDay}/restore`,headers:adminHeaders,payload:{reason:'Za pracovníka',shiftType:'MORNING'}})).statusCode).toBe(403);
+  });
+
+  it("serializes cancellation against new records and restoration against month closure", async () => {
+    const context = await intervalContext('cancel-races');
+    const adminHeaders = await headersFor('admin');
+    const day = await context.createDay('2030-04-01');
+    const results = await Promise.all([
+      app.inject({method:'POST',url:`/api/workdays/${day}/cancel`,headers:context.headers,payload:{reason:'Omylem založený den'}}),
+      context.addWork(day,'2030-04-01T08:00:00+02:00','2030-04-01T09:00:00+02:00'),
+    ]);
+    expect(results.map((response) => response.statusCode)).toSatisfy((statuses: number[]) =>
+      (statuses[0]===200 && statuses[1]===409) || (statuses[0]===409 && statuses[1]===201));
+    const [stored] = await db`select wd.state,(select count(*)::int from work_entries where work_day_id=wd.id) as entries from work_days wd where wd.id=${day}`;
+    expect(stored).toEqual(results[0]!.statusCode===200 ? {state:'CANCELLED',entries:0} : {state:'DRAFT',entries:1});
+    const restoreDay = await context.createDay('2030-05-01');
+    expect((await app.inject({method:'POST',url:`/api/workdays/${restoreDay}/cancel`,headers:context.headers,payload:{reason:'Omyl'}})).statusCode).toBe(200);
+    const race = await Promise.all([
+      app.inject({method:'POST',url:`/api/workdays/${restoreDay}/restore`,headers:context.headers,payload:{reason:'Skutečná práce',shiftType:'MORNING'}}),
+      app.inject({method:'POST',url:'/api/periods/2030-05/action',headers:adminHeaders,payload:{action:'CLOSE'}}),
+    ]);
+    expect(race.map((response) => response.statusCode)).toSatisfy((statuses: number[]) =>
+      (statuses[0]===200 && statuses[1]===409) || (statuses[0]===409 && statuses[1]===200));
+    const [final] = await db`select wd.state,mp.state as period_state from work_days wd join monthly_periods mp on mp.id=wd.monthly_period_id where wd.id=${restoreDay}`;
+    expect(final).toEqual(race[0]!.statusCode===200 ? {state:'DRAFT',periodState:'OPEN'} : {state:'CANCELLED',periodState:'CLOSED'});
   });
 
   it("changes the authenticated password, audits it and revokes every session", async () => {

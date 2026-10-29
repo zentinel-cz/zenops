@@ -702,3 +702,4 @@ input,select,textarea { min-width:0; max-width:100%; }
 }
 
 .report-controls .download-button { width: auto; margin: 0; min-height: 48px; }
+.state-badge.cancelled { color: #c1c9c4; background: #2c3730; }

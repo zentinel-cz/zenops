@@ -171,6 +171,24 @@ pro nový úsek. Chybové hlášení se zobrazí nad formulářem; při chybě s
 zkontrolujte připojení a operaci zopakujte. Odstranění úseku nebo přestávky
 vyžaduje potvrzení.
 
+## Omylem založený prázdný den
+
+Pokud jste omylem založili směnu, otevřete její datum v **Moje směna** a zvolte
+**Zrušit prázdný den**. Vyplňte důvod (3 až 500 znaků) a potvrďte tlačítkem
+**Potvrdit zrušení**. Volba **Ponechat den** formulář zavře bez změny.
+
+Zrušit lze pouze rozpracovaný den, který nikdy nebyl odeslán a neobsahuje
+práci, přestávku ani jízdu zapsanou vámi jako řidičem. Měsíc musí být otevřený.
+Účast jako cestující na jízdě jiného řidiče zrušení neblokuje; společná jízda
+zůstane zachovaná. Den se nemaže: stav **Zrušeno**, důvod a audit zůstávají
+v historii. Zrušený den už neblokuje měsíční uzávěrku.
+
+Chcete-li pro stejné datum později skutečně pracovat, otevřete zrušený den,
+vyberte směnu a uveďte důvod v části **Obnovit pracovní den**. Obnoví se stejný
+záznam jako rozpracovaný a můžete přidat práci. Obnovený den znovu blokuje
+uzávěrku, dokud není vyřešen. V uzavřeném měsíci je nejprve nutné jeho
+znovuotevření Adminem. Obnovení provádí pouze pracovník, kterému den patří.
+
 ## Schvalování práce — Vedoucí
 
 1. V části **Práce ke schválení** otevřete čekající pracovní úsek.
@@ -232,6 +250,13 @@ ji skryje z nových záznamů a minulá data zůstanou zachována. Oprava vyžad
 důvod a ukládá původní i nový stav do auditu.
 
 ## Administrativní opravy denních záznamů — Admin
+
+U prázdného, dosud neodeslaného dne najde Admin v části **Denní záznamy
+zaměstnanců** tlačítko **Zrušit prázdný den**. Zkontroluje pracovníka a datum,
+uvede důvod a zvolí **Potvrdit zrušení**. Může tak vyřešit i omylem založený
+den již deaktivovaného zaměstnance. Práce, přestávky a vlastní jízdy zrušení
+blokují; uzavřený měsíc je nutné nejprve znovu otevřít. Admin zrušený den
+neobnovuje za pracovníka. Historie a důvod zůstávají zachované.
 
 Admin má sekci **Denní záznamy zaměstnanců**, kde vybere datum a vidí práci
 všech zaměstnanců. Může opravit Zakázku, druh práce, aktivitu, čas a popis a
@@ -314,7 +339,8 @@ Měsíční přehled zatím nemá export do PDF ani XLSX.
 
 Admin vidí stav **Otevřený/Uzavřený**, počet pracovních dnů a počet
 nevyřešených záznamů. Měsíc lze uzavřít pouze tehdy, když jsou všechny
-pracovní dny plně schválené. Rozpracovaný, odeslaný, částečně schválený nebo
+aktivní pracovní dny plně schválené. Výslovně zrušené prázdné dny se zobrazují
+samostatným počtem a uzávěrku neblokují. Rozpracovaný, odeslaný, částečně schválený nebo
 vrácený den uzávěrku zablokuje.
 
 Uzavřený měsíc nepovolí běžné provozní změny. Pokud je nutná oprava, Admin

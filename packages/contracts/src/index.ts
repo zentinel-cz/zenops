@@ -226,12 +226,16 @@ export const workStateSchema = z.enum([
   "PARTIALLY_APPROVED",
   "APPROVED",
   "RETURNED",
+  "CANCELLED",
 ]);
 
 export const createWorkDaySchema = z.object({
   workDate: z.iso.date(),
   shiftType: shiftTypeSchema,
 });
+
+export const cancelWorkDaySchema = z.object({ reason: z.string().trim().min(3).max(500) });
+export const restoreWorkDaySchema = cancelWorkDaySchema.extend({ shiftType: shiftTypeSchema });
 
 const intervalSchema = z
   .object({

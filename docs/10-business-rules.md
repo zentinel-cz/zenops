@@ -55,7 +55,7 @@
 -   **BR-040** Worker may add past records while the month is OPEN.
 -   **BR-041** Monthly period has `OPEN`/`CLOSED` state.
 -   **BR-042** Month cannot close while submitted/returned/unresolved
-    work remains.
+    work remains. Explicitly cancelled empty WorkDays are resolved (ADR-012).
 -   **BR-043** Closed month prevents ordinary operational edits.
 -   **BR-044** Admin may reopen a month only with a recorded reason.
 -   **BR-045** Month close/reopen is audited.
@@ -101,3 +101,15 @@ the source for the original worker profile fields and role separation.
   breaks and driver trips fit within that date and the following calendar day;
   submission and subsequent corrections preserve the starting-date invariant.
   The starting month owns the whole WorkDay (ADR-011).
+
+- **BR-062** A Worker may cancel an own empty, never-submitted DRAFT in an
+  OPEN month with a reason; Admin may cancel such a day for an employee.
+  Work, breaks and driver-owned trips prevent cancellation. Passenger links
+  to another driver's trip are retained and do not prevent it (ADR-012).
+- **BR-063** CANCELLED WorkDays retain their identity and audited history,
+  contain no own operational records and do not block monthly closure.
+  They are counted separately from active and unresolved days.
+- **BR-064** Only the owning Worker may explicitly restore a cancelled day
+  to DRAFT in an OPEN month, with a reason and chosen shift. Restoration
+  reuses the same day, preserves cancellation history and blocks closure
+  until the day is resolved again. Neither transition deletes history.

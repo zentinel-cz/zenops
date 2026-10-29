@@ -28,6 +28,6 @@ with intervals as (
 )
 select wd.id as work_day_id, wd.work_date, min(intervals.start_at) as first_start
 from work_days wd left join intervals on intervals.work_day_id=wd.id
-where wd.state not in ('DRAFT','RETURNED')
+where wd.state not in ('DRAFT','RETURNED','CANCELLED')
 group by wd.id
 having min(intervals.start_at) is null or (min(intervals.start_at) at time zone 'Europe/Prague')::date<>wd.work_date;

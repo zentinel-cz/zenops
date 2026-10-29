@@ -50,6 +50,8 @@ type Day = {
   state: string;
   employeeId: string;
   displayName: string;
+  canCancel?: boolean;
+  cancellationReason?: string | null;
   entries: Entry[];
   breaks: Break[];
   vehicleTrips: Trip[];
@@ -74,6 +76,7 @@ export function AdminRecordsPanel({
   const [days, setDays] = useState<Day[]>([]);
   const [target, setTarget] = useState<Entry | null>(null);
   const [breakTarget, setBreakTarget] = useState<Break | null>(null);
+  const [cancellingDay, setCancellingDay] = useState<Day | null>(null);
   const [message, setMessage] = useState("");
   const { busy, runMutation } = useMutation(setMessage);
   const [query, setQuery] = useState("");
@@ -88,7 +91,7 @@ export function AdminRecordsPanel({
       .then((b) => { if (version === requestVersion.current) setDays(b.workDays); });
   };
   useEffect(() => {
-    setTarget(null); setBreakTarget(null); setMessage("");
+    setTarget(null); setBreakTarget(null); setCancellingDay(null); setMessage("");
     void load().catch(() => setMessage("Záznamy se nepodařilo načíst."));
     return () => { requestVersion.current++; };
   }, [date, leaderMode]);
@@ -142,6 +145,19 @@ return runMutation(async () => {
 
 });
 }
+  async function cancelDay(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    await runMutation(async () => {
+      if (!cancellingDay) return;
+      const response = await fetch(`/api/admin/workdays/${cancellingDay.id}/cancel`, {
+        method: "POST", credentials: "include", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ reason: data.get("reason") }),
+      });
+      if (!response.ok) { setMessage(((await response.json()) as { error: string }).error); return; }
+      setCancellingDay(null); setMessage("Prázdný den byl auditovaně zrušen a neblokuje uzávěrku."); await load();
+    });
+  }
   async function editBreak(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -195,6 +211,7 @@ return runMutation(async () => {
           className="month-input"
           aria-label="Datum denních záznamů"
           type="date"
+          disabled={busy}
           value={date}
           onChange={(e) => setDate(e.target.value)}
         />
@@ -211,7 +228,9 @@ return runMutation(async () => {
               <span className={`state-badge ${day.state.toLowerCase()}`}>
                 {workStateLabel(day.state)}
               </span>
+              {!leaderMode && day.canCancel && <button type="button" className="table-action" disabled={busy} onClick={() => { setTarget(null); setBreakTarget(null); setCancellingDay(day); }}>Zrušit prázdný den</button>}
             </div>
+            {day.cancellationReason && <p>Důvod zrušení: {day.cancellationReason}</p>}
             {day.entries.map((entry) => (
               <div className="admin-entry" key={entry.id}>
                 <span>
@@ -296,6 +315,13 @@ return runMutation(async () => {
         ))
       )}
       {days.length > 0 && !days.some((day) => matchesSearch(query, day.displayName, day.workDate, shiftLabel(day.shiftType), workStateLabel(day.state), day.entries.map((entry) => `${entry.projectCode} ${entry.projectName} ${entry.workTypeName} ${entry.machineUsage?.machineCode ?? ""} ${entry.description ?? ""}`).join(" "))) && <p className="muted">Žádný den neodpovídá hledání.</p>}
+      {cancellingDay && <form key={cancellingDay.id} className="admin-entry-form" onSubmit={cancelDay}>
+        <strong>Zrušit prázdný den: {cancellingDay.displayName}</strong>
+        <p>Datum: {cancellingDay.workDate.slice(0, 10)}. Den i důvod zůstanou v historii. Práce, přestávky ani vlastní jízdy nesmějí být zapsané.</p>
+        <label>Důvod zrušení<input name="reason" required minLength={3} maxLength={500} disabled={busy} /></label>
+        <button disabled={busy}>Potvrdit zrušení</button>
+        <button type="button" className="ghost" disabled={busy} onClick={() => setCancellingDay(null)}>Ponechat den</button>
+      </form>}
       {breakTarget && <form key={breakTarget.id} className="admin-entry-form" onSubmit={editBreak}>
         <strong>Opravit přestávku</strong>
         <BusinessDateTimeField name="startAt" label="Začátek přestávky" defaultValue={breakTarget.startAt} />

@@ -13,6 +13,7 @@ const workStates: Record<string, string> = {
   PARTIALLY_APPROVED: "Částečně schváleno",
   APPROVED: "Schváleno",
   RETURNED: "Vráceno k opravě",
+  CANCELLED: "Zrušeno",
 };
 const shifts: Record<string, string> = { MORNING: "Ranní směna", NIGHT: "Noční směna" };
 const projects: Record<string, string> = { OPEN: "Otevřená", CLOSED: "Uzavřená" };

@@ -11,6 +11,8 @@ mutually exclusive operating modes.
 -   choose morning/night shift
 -   submit records
 -   view own history
+-   cancel an own empty, never-submitted draft and explicitly restore it in
+    an open month, with an audited reason (ADR-012)
 
 ## Leader
 
@@ -33,7 +35,8 @@ Projects assigned to that Leader.
 
 -   receives every registered application permission, including permissions
     added by later features
-- cannot create, edit or submit a WorkDay
+- cannot create, submit or restore a WorkDay for a Worker; can cancel an empty,
+  never-submitted draft through the audited administrative workflow (ADR-012)
 -   global operational administration
 -   employee/user administration
 -   replace a project Leader with an audited reason (ADR-010)

@@ -53,6 +53,12 @@ export function buildApp(config: AppConfig, db: Database): FastifyInstance {
     429: "Příliš mnoho pokusů. Chvíli počkejte a zkuste to znovu.",
   };
   app.setErrorHandler<FastifyError>((error, request, reply) => {
+    if (error.code === "ZC001" || error.code === "ZC002") {
+      void reply.code(error.code === "ZC002" ? 403 : 409).send({ error: error.code === "ZC002"
+        ? "Ke změně stavu tohoto dne nemáte oprávnění nebo chybí důvod."
+        : "Zrušit nebo obnovit lze pouze prázdný a dosud neodeslaný pracovní den. Zrušený den nejprve obnovte." });
+      return;
+    }
     if (error.code === "ZT001" || error.code === "ZT002") {
       void reply.code(422).send({ error: error.code === "ZT001"
         ? "Čas musí patřit k datu pracovního dne nebo následujícímu dni v pásmu Europe/Prague."

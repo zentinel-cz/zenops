@@ -52,3 +52,15 @@ resubmits while the relevant month is open.
 
 Worker may create/fix a past WorkDay while its MonthlyPeriod remains
 OPEN.
+
+## Cancelling an accidentally created day
+
+Under ADR-012, a Worker may cancel an own empty, never-submitted DRAFT in an
+OPEN month with a reason. Admin may perform the same cancellation for an
+employee. A day with work, breaks or driver-owned trips is not empty. Passenger
+references to other drivers' shared trips are preserved and do not block this
+action. Nothing is deleted or silently marked approved.
+
+CANCELLED days remain visible in history and do not block monthly closure.
+Only the owning Worker can explicitly restore the same day to DRAFT in an
+OPEN month, with a reason and selected shift. Both actions are audited.

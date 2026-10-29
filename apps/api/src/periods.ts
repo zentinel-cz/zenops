@@ -19,11 +19,13 @@ export function registerPeriodRoutes(app: FastifyInstance, db: Database, require
     const params = paramsSchema.safeParse(request.params);
     if (!params.success) return reply.code(400).send({ error: "Neplatný měsíc." });
     const period = await ensurePeriod(db, params.data.month);
-    const [status] = await db<Array<{ total: number; unresolved: number }>>`
-      select count(*)::int as total, count(*) filter (where state <> 'APPROVED')::int as unresolved
+    const [status] = await db<Array<{ total: number; unresolved: number; cancelled: number }>>`
+      select count(*) filter (where state <> 'CANCELLED')::int as total,
+        count(*) filter (where state not in ('APPROVED','CANCELLED'))::int as unresolved,
+        count(*) filter (where state='CANCELLED')::int as cancelled
       from work_days where (${period.id}::uuid is not null and monthly_period_id = ${period.id})
     `;
-    return { period: { ...period, totalWorkDays: status!.total, unresolvedWorkDays: status!.unresolved } };
+    return { period: { ...period, totalWorkDays: status!.total, unresolvedWorkDays: status!.unresolved, cancelledWorkDays: status!.cancelled } };
   });
 
   app.post("/api/periods/:month/action", {
@@ -43,7 +45,7 @@ export function registerPeriodRoutes(app: FastifyInstance, db: Database, require
         if (period!.state !== "OPEN") return null;
         const [unresolved] = await transaction<Array<{ count: number }>>`
           select count(*)::int as count from work_days
-          where monthly_period_id = ${period!.id} and state <> 'APPROVED'
+          where monthly_period_id = ${period!.id} and state not in ('APPROVED','CANCELLED')
         `;
         if (unresolved!.count > 0) return { blocked: true, unresolved: unresolved!.count };
         const [updated] = await transaction`

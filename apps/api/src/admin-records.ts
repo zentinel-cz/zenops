@@ -3,11 +3,13 @@ import {
   adminMachineUsageUpdateSchema,
   adminVehicleTripUpdateSchema,
   adminWorkEntryUpdateSchema,
+  cancelWorkDaySchema,
 } from "@zenops/contracts";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { requirePermission, type AuthorizationHook } from "./authorization.js";
 import type { Database } from "./db.js";
+import { changeEmptyWorkDay } from "./workday-cancellation.js";
 
 const entryParams = z.object({ entryId: z.string().uuid() });
 export function registerAdminRecordRoutes(
@@ -23,15 +25,29 @@ export function registerAdminRecordRoutes(
       if (!query.success)
         return reply.code(400).send({ error: "Neplatné datum." });
       const workDays = await db`
-      select wd.id,wd.work_date,wd.shift_type,wd.state,e.id as employee_id,e.display_name,
+      select wd.id,wd.work_date,wd.shift_type,wd.state,e.id as employee_id,e.display_name,wd.cancellation_reason,
+        (wd.state='DRAFT' and wd.submitted_at is null and mp.state='OPEN' and workday_is_empty(wd.id)) as can_cancel,
         coalesce((select json_agg(json_build_object('id',we.id,'projectId',p.id,'projectCode',p.code,'projectName',p.name,'workTypeCode',wt.code,'workTypeName',wt.name,'workActivityCode',wa.code,'startAt',we.start_at,'endAt',we.end_at,'description',we.description,'state',we.state,'machineUsage',(select json_build_object('id',mu.id,'machineId',mu.machine_id,'machineCode',m.code,'startMth',mu.entered_start_mth,'endMth',mu.end_mth,'fuelConsumed',mu.fuel_consumed,'fuelRefuelled',mu.fuel_refuelled,'attachmentIds',coalesce((select json_agg(au.attachment_id) from attachment_usages au where au.machine_usage_id=mu.id),'[]')) from machine_usages mu join machines m on m.id=mu.machine_id where mu.work_entry_id=we.id)) order by we.start_at) from work_entries we join projects p on p.id=we.project_id join work_types wt on wt.id=we.work_type_id left join work_activities wa on wa.id=we.work_activity_id where we.work_day_id=wd.id),'[]') as entries,
         coalesce((select json_agg(json_build_object('id',b.id,'startAt',b.start_at,'endAt',b.end_at) order by b.start_at) from break_entries b where b.work_day_id=wd.id),'[]') as breaks,
         coalesce((select json_agg(json_build_object('id',vt.id,'vehicleId',vt.vehicle_id,'vehicleCode',v.code,'startAt',vt.start_at,'endAt',vt.end_at,'startOdometerKm',vt.start_odometer_km,'endOdometerKm',vt.end_odometer_km,'fuelConsumed',vt.fuel_consumed,'fuelRefuelled',vt.fuel_refuelled,'note',vt.note,'passengerEmployeeIds',coalesce((select json_agg(vtp.employee_id) from vehicle_trip_participants vtp where vtp.vehicle_trip_id=vt.id and vtp.role='PASSENGER'),'[]')) order by vt.start_at) from vehicle_trips vt join vehicles v on v.id=vt.vehicle_id where vt.driver_work_day_id=wd.id),'[]') as vehicle_trips
-      from work_days wd join employees e on e.id=wd.employee_id where wd.work_date=${query.data.date} order by e.display_name
+      from work_days wd join employees e on e.id=wd.employee_id join monthly_periods mp on mp.id=wd.monthly_period_id
+      where wd.work_date=${query.data.date} order by e.display_name
     `;
       return { workDays };
     },
   );
+
+  app.post("/api/admin/workdays/:workDayId/cancel", {
+    preHandler: [requireTrustedOrigin, requirePermission("approval.admin.manage")],
+  }, async (request, reply) => {
+    if (!request.sessionUser!.roles.includes("ADMIN")) return reply.code(403).send({ error: "Tuto opravu provádí pouze Admin." });
+    const params = z.object({ workDayId: z.string().uuid() }).safeParse(request.params);
+    const body = cancelWorkDaySchema.safeParse(request.body);
+    if (!params.success || !body.success) return reply.code(400).send({ error: "Uveďte důvod zrušení (3 až 500 znaků)." });
+    const workDay = await changeEmptyWorkDay(db, params.data.workDayId, request.sessionUser!, { action: "CANCEL", ...body.data });
+    if (!workDay) return reply.code(404).send({ error: "Pracovní den nebyl nalezen." });
+    return { workDay };
+  });
 
   app.patch(
     "/api/admin/work-entries/:entryId",

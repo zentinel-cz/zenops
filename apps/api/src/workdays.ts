@@ -1,5 +1,6 @@
 import { lockEditableWorkDay } from "./workday-lock.js";
-import { createBreakEntrySchema, createWorkDaySchema, createWorkEntrySchema } from "@zenops/contracts";
+import { cancelWorkDaySchema, restoreWorkDaySchema, createBreakEntrySchema, createWorkDaySchema, createWorkEntrySchema } from "@zenops/contracts";
+import { changeEmptyWorkDay } from "./workday-cancellation.js";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { requirePermission, requireWorkerOnly, type AuthorizationHook } from "./authorization.js";
@@ -8,8 +9,12 @@ import type { Database } from "./db.js";
 const idParams = z.object({ workDayId: z.string().uuid() });
 
 async function getOwnedWorkDay(db: Database, workDayId: string, employeeId: string) {
-  const rows = await db<Array<{ id: string; workDate: string; shiftType: string; state: string; periodState: string }>>`
-    select wd.id, wd.work_date::text as work_date, wd.shift_type, wd.state, mp.state as period_state from work_days wd
+  const rows = await db<Array<{ id: string; workDate: string; shiftType: string; state: string; periodState: string;
+    canCancel: boolean; cancelledAt: Date | null; cancellationReason: string | null }>>`
+    select wd.id, wd.work_date::text as work_date, wd.shift_type, wd.state, mp.state as period_state,
+      wd.cancelled_at,wd.cancellation_reason,
+      (wd.state='DRAFT' and wd.submitted_at is null and mp.state='OPEN' and workday_is_empty(wd.id)) as can_cancel
+    from work_days wd
     join monthly_periods mp on mp.id = wd.monthly_period_id
     where wd.id = ${workDayId} and wd.employee_id = ${employeeId} limit 1
   `;
@@ -98,6 +103,28 @@ export function registerWorkDayRoutes(app: FastifyInstance, db: Database, requir
       }
       throw error;
     }
+  });
+
+  app.post("/api/workdays/:workDayId/cancel", {
+    preHandler: [requireTrustedOrigin, own, requirePermission("workday.own.manage")],
+  }, async (request, reply) => {
+    const params = idParams.safeParse(request.params);
+    const body = cancelWorkDaySchema.safeParse(request.body);
+    if (!params.success || !body.success) return reply.code(400).send({ error: "Uveďte důvod zrušení (3 až 500 znaků)." });
+    const workDay = await changeEmptyWorkDay(db, params.data.workDayId, request.sessionUser!, { action: "CANCEL", ...body.data });
+    if (!workDay) return reply.code(404).send({ error: "Pracovní den nebyl nalezen." });
+    return { workDay };
+  });
+
+  app.post("/api/workdays/:workDayId/restore", {
+    preHandler: [requireTrustedOrigin, own, requirePermission("workday.own.manage")],
+  }, async (request, reply) => {
+    const params = idParams.safeParse(request.params);
+    const body = restoreWorkDaySchema.safeParse(request.body);
+    if (!params.success || !body.success) return reply.code(400).send({ error: "Vyberte směnu a uveďte důvod obnovení (3 až 500 znaků)." });
+    const workDay = await changeEmptyWorkDay(db, params.data.workDayId, request.sessionUser!, { action: "RESTORE", ...body.data });
+    if (!workDay) return reply.code(404).send({ error: "Pracovní den nebyl nalezen." });
+    return { workDay };
   });
 
   app.post("/api/workdays/:workDayId/entries", { preHandler: [requireTrustedOrigin, own] }, async (request, reply) => {

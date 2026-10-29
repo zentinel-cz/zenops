@@ -2,6 +2,15 @@
 
 Last updated: 2026-10-13
 
+## Empty-day cancellation — prepared 2026-10-29
+
+ADR-012 and migration 0020 add audited cancellation of empty, never-submitted
+drafts by the owning Worker or Admin, and explicit same-day restoration by
+the Worker. Cancelled days retain their history and do not block monthly
+closure. Worker/Admin forms, separate cancelled counts and the user guide
+are updated. Verification and release gates are documented in
+`operations/empty-workday-release.md`; not deployed from this workspace.
+
 ## Business time and employee overlaps — prepared 2026-10-29
 
 ADR-011 and migration 0019 add employee-level work/break overlap protection
