@@ -2070,6 +2070,127 @@ integration("authentication integration", () => {
     expect(response.json().employees.every((item:object)=>!('email' in item) && !('passwordHash' in item))).toBe(true);
   });
 
+  it.each(['machine','attachment'] as const)("keeps %s tracking independent on create, edit and concurrent saves", async (kind) => {
+    const machines = kind === 'machine';
+    const path = `/api/assets/${machines ? 'machines' : 'attachments'}`;
+    const typeTable = machines ? 'machine_types' : 'attachment_types';
+    const flag = machines ? 'tracksMth' : 'uniquelyTracked';
+    const typeId = machines ? 'machineTypeId' : 'attachmentTypeId';
+    const typeName = `Independent ${kind}`;
+    const headers = await headersFor('admin');
+    const payload = (suffix: string, tracked: boolean, name=typeName) =>
+      ({code:`INDEPENDENT-${kind.toUpperCase()}-${suffix}`,name:`Test ${suffix}`,typeName:name,[flag]:tracked});
+    const create = (suffix: string, tracked: boolean, name=typeName) =>
+      app.inject({method:'POST',url:path,headers,payload:payload(suffix,tracked,name)});
+    const first = await create('A',true);
+    const second = await create('B',true);
+    const third = await create('C',false);
+    for (const response of [first,second,third]) expect(response.statusCode,response.body).toBe(201);
+    const a = first.json()[kind], b = second.json()[kind], c = third.json()[kind];
+    expect(a[flag]).toBe(true); expect(c[flag]).toBe(false);
+    expect(a[typeId]).toBe(b[typeId]); expect(a[typeId]).not.toBe(c[typeId]);
+    const changed = await app.inject({method:'PATCH',url:`${path}/${a.id}`,headers:await headersFor('leader'),
+      payload:{...payload('A',false),isActive:true,reason:'Nastavení jednoho kusu'}});
+    expect(changed.statusCode,changed.body).toBe(200);
+    expect(changed.json()[kind][typeId]).toBe(c[typeId]);
+    const rows = (await app.inject({url:'/api/assets?includeInactive=true',headers})).json()[machines ? 'machines' : 'attachments'];
+    expect(rows.find((item:{id:string})=>item.id===a.id)[flag]).toBe(false);
+    expect(rows.find((item:{id:string})=>item.id===b.id)[flag]).toBe(true);
+    const [audit] = await db`select before_data,after_data,reason from audit_logs
+      where entity_id=${a.id} and action=${machines ? 'MACHINE_UPDATED' : 'ATTACHMENT_UPDATED'}`;
+    expect(audit!.beforeData[flag]).toBe(true); expect(audit!.afterData[flag]).toBe(false);
+    expect(audit!.afterData.typeName).toBe(typeName); expect(audit!.reason).toBe('Nastavení jednoho kusu');
+    const [creationAudit] = await db`select after_data from audit_logs where entity_id=${c.id}
+      and action=${machines ? 'MACHINE_CREATED' : 'ATTACHMENT_CREATED'}`;
+    expect(creationAudit!.afterData[flag]).toBe(false);
+    const restored = await app.inject({method:'PATCH',url:`${path}/${a.id}`,headers,
+      payload:{...payload('A',true),isActive:true,reason:'Obnovení nastavení'}});
+    expect(restored.statusCode,restored.body).toBe(200);
+    expect(restored.json()[kind][typeId]).toBe(a[typeId]);
+    expect(await db`select id from ${db(typeTable)} where name=${typeName}`).toHaveLength(2);
+    const concurrent = await Promise.all([create('D',true,typeName+' concurrent'),create('E',false,typeName+' concurrent'),create('F',true,typeName+' concurrent')]);
+    for (const response of concurrent) expect(response.statusCode,response.body).toBe(201);
+    expect(concurrent[0]!.json()[kind][typeId]).toBe(concurrent[2]!.json()[kind][typeId]);
+    expect(await db`select id from ${db(typeTable)} where name=${typeName+' concurrent'}`).toHaveLength(2);
+    // A failed item insert must roll back the newly requested variant and audit.
+    const failed = await create('A',false,typeName+' rollback');
+    expect(failed.statusCode,failed.body).toBe(409);
+    expect(await db`select id from ${db(typeTable)} where name=${typeName+' rollback'}`).toHaveLength(0);
+    for (const username of ['worker','accountant.test']) {
+      expect((await app.inject({method:'PATCH',url:`${path}/${b.id}`,headers:await headersFor(username),
+        payload:{...payload('B',false),isActive:true,reason:'Zakázaná změna'}})).statusCode).toBe(403);
+    }
+    const noOrigin = await app.inject({method:'PATCH',url:`${path}/${b.id}`,headers:{cookie:headers.cookie},
+      payload:{...payload('B',false),isActive:true,reason:'Bez původu'}});
+    expect(noOrigin.statusCode).toBe(403);
+    const missingReason = await app.inject({method:'PATCH',url:`${path}/${b.id}`,headers,
+      payload:{...payload('B',false),isActive:true}});
+    expect(missingReason.statusCode).toBe(400);
+    const column = machines ? 'tracks_mth' : 'uniquely_tracked';
+    await expect(db`update ${db(typeTable)} set ${db(column)}=false where id=${a[typeId]}`).rejects.toMatchObject({code:'ZA001'});
+    await expect(db`update ${db(typeTable)} set name='Unintended shared rename' where id=${a[typeId]}`).rejects.toMatchObject({code:'ZA001'});
+    await expect(db`insert into ${db(typeTable)}(name,${db(column)}) values(${typeName},true)`).rejects.toMatchObject({code:'23505'});
+  });
+
+  it("uses each machine's selected MTH rule for new usage and preserves approved history", async () => {
+    const context = await multipleMachineContext('tracking','2050-01-10');
+    for (const index of [0,1]) expect((await context.addMachine(index)).statusCode).toBe(201);
+    expect((await app.inject({method:'POST',url:`/api/workdays/${context.dayId}/submit`,headers:context.headers})).statusCode).toBe(200);
+    const leaderHeaders = await headersFor('leader');
+    expect((await app.inject({method:'POST',url:`/api/approvals/${context.entryId}/decision`,headers:leaderHeaders,payload:{action:'APPROVED'}})).statusCode).toBe(200);
+    const usagesBefore = await db`select * from machine_usages where work_entry_id=${context.entryId} order by id`;
+    const attachmentsBefore = await db`select * from attachment_usages where work_entry_id=${context.entryId} order by id`;
+    const approvalsBefore = await db`select * from approvals where work_entry_id=${context.entryId} order by id`;
+    const changed = await app.inject({method:'PATCH',url:`/api/assets/machines/${context.machines[0]!.id}`,headers:leaderHeaders,
+      payload:{code:context.machines[0]!.code,name:'První stroj',typeName:'Multi tracking',tracksMth:false,isActive:true,reason:'Stroj bez sledování MTH'}});
+    expect(changed.statusCode,changed.body).toBe(200);
+    const attachment = await app.inject({method:'PATCH',url:`/api/assets/attachments/${context.attachments[0]!.id}`,headers:leaderHeaders,
+      payload:{code:context.attachments[0]!.code,name:'První příslušenství',typeName:'Multi tracking',uniquelyTracked:false,isActive:true,reason:'Samostatná evidence příslušenství'}});
+    expect(attachment.statusCode,attachment.body).toBe(200);
+    expect(await db`select * from machine_usages where work_entry_id=${context.entryId} order by id`).toEqual(usagesBefore);
+    expect(await db`select * from attachment_usages where work_entry_id=${context.entryId} order by id`).toEqual(attachmentsBefore);
+    expect(await db`select * from approvals where work_entry_id=${context.entryId} order by id`).toEqual(approvalsBefore);
+    const nextDay = await context.createDay('2050-01-11');
+    const nextEntry = await context.addWork(nextDay,'2050-01-11T08:00:00+01:00','2050-01-11T10:00:00+01:00');
+    expect(nextEntry.statusCode,nextEntry.body).toBe(201);
+    const attach = (index: number) => app.inject({method:'POST',url:`/api/workdays/${nextDay}/entries/${nextEntry.json().entry.id}/machine`,
+      headers:context.headers,payload:{machineId:context.machines[index]!.id}});
+    const untracked = await attach(0);
+    expect(untracked.statusCode,untracked.body).toBe(201);
+    expect(untracked.json().usage).toMatchObject({enteredStartMth:null,endMth:null});
+    const tracked = await attach(1);
+    expect(tracked.statusCode,tracked.body).toBe(422);
+    const report = (await app.inject({url:'/api/reports/daily?date=2050-01-10',headers:leaderHeaders})).json().report;
+    expect(report.entries[0].machineUsages).toContainEqual(expect.objectContaining({machineId:context.machines[0]!.id,startMth:'100.00',endMth:'102.00'}));
+  });
+
+  it("migrates type variants without rewriting existing catalogue rows", async () => {
+    const migrationDirectory = resolve(process.cwd(),'migrations');
+    await expect(db.begin(async (transaction) => {
+      await transaction`create schema legacy_asset_check`;
+      await transaction`set local search_path to legacy_asset_check,public`;
+      for (const file of (await readdir(migrationDirectory)).filter(name=>name.endsWith('.sql') && name<'0023').sort()) {
+        await transaction.unsafe(await readFile(resolve(migrationDirectory,file),'utf8'));
+      }
+      const [machineType] = await transaction`insert into machine_types(name,tracks_mth) values('Legacy',false) returning id`;
+      const [attachmentType] = await transaction`insert into attachment_types(name,uniquely_tracked) values('Legacy',false) returning id`;
+      await transaction`insert into machines(machine_type_id,code,name) values(${machineType!.id},'LEGACY-A','Legacy A'),(${machineType!.id},'LEGACY-B','Legacy B')`;
+      await transaction`insert into attachments(attachment_type_id,code,name) values(${attachmentType!.id},'LEGACY-A','Legacy A'),(${attachmentType!.id},'LEGACY-B','Legacy B')`;
+      const snapshot = async () => ({
+        machines: await transaction`select * from machines order by id`,
+        attachments: await transaction`select * from attachments order by id`,
+        machineTypes: await transaction`select * from machine_types order by id`,
+        attachmentTypes: await transaction`select * from attachment_types order by id`,
+      });
+      const before = await snapshot();
+      await transaction.unsafe(await readFile(resolve(migrationDirectory,'0023_independent_asset_tracking.sql'),'utf8'));
+      expect(await snapshot()).toEqual(before);
+      await transaction`insert into machine_types(name,tracks_mth) values('Legacy',true)`;
+      await transaction`insert into attachment_types(name,uniquely_tracked) values('Legacy',true)`;
+      throw new Error('Asset migration fixture rolled back');
+    })).rejects.toThrow('Asset migration fixture rolled back');
+  });
+
   it("changes the authenticated password, audits it and revokes every session", async () => {
     const login = await app.inject({
       method: "POST",

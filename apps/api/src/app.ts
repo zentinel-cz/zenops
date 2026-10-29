@@ -56,6 +56,10 @@ export function buildApp(config: AppConfig, db: Database): FastifyInstance {
     429: "Příliš mnoho pokusů. Chvíli počkejte a zkuste to znovu.",
   };
   app.setErrorHandler<FastifyError>((error, request, reply) => {
+    if (error.code === "ZA001") {
+      void reply.code(409).send({ error: "Sdílený typ nelze přepsat. Změňte nastavení konkrétní položky techniky." });
+      return;
+    }
     if (error.code === "ZF001") {
       void reply.code(409).send({ error: "Historie paliva se nemaže. Vymažte hodnoty prostřednictvím auditované opravy." });
       return;

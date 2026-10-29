@@ -268,6 +268,16 @@ Vedoucí nebo Admin vytvoří položky v sekci **Stroje a příslušenství**. U
 určí, zda se sleduje MTH; u příslušenství, zda jde o unikátně sledovaný fyzický
 kus.
 
+Sledování se nastavuje samostatně pro každou položku, a to i u položek
+se stejným názvem typu. Seznam ukazuje **Sleduje MTH** / **Bez sledování MTH**
+nebo **Unikátně sledované** / **Bez unikátního sledování**; podle tohoto textu
+lze také hledat. Nová položka vždy použije zvolenou hodnotu.
+
+Změna sledování MTH ovlivní jeho vyžadování u nově zapisovaného použití
+konkrétního stroje. Dříve uložené MTH zůstanou v historii a reportech.
+Volba sledování příslušenství sama o sobě nepovoluje současné použití
+jednoho evidovaného kusu na více místech.
+
 Každá položka seznamu má volbu **Upravit**. Lze změnit kód, název, typ,
 sledování, SPZ i aktivní stav. Historicky použitá položka se nemaže; deaktivace
 ji skryje z nových záznamů a minulá data zůstanou zachována. Oprava vyžaduje

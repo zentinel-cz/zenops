@@ -37,10 +37,11 @@ export function registerAssetRoutes(app: FastifyInstance, db: Database, requireT
     if (!id.success || !parsed.success) return reply.code(400).send({ error: "Neplatné údaje stroje." });
     try {
       const updated = await db.begin(async (transaction) => {
-        const before = await transaction`select m.id, m.code, m.name, m.is_active, mt.name as type_name, mt.tracks_mth from machines m join machine_types mt on mt.id=m.machine_type_id where m.id=${id.data} for update of m`;
+        const before = await transaction`select m.id, m.machine_type_id, m.code, m.name, m.is_active, mt.name as type_name, mt.tracks_mth from machines m join machine_types mt on mt.id=m.machine_type_id where m.id=${id.data} for update of m`;
         if (!before[0]) return null;
-        const [type] = await transaction<Array<{ id: string }>>`insert into machine_types (name, tracks_mth) values (${parsed.data.typeName}, ${parsed.data.tracksMth}) on conflict (name) do update set tracks_mth=excluded.tracks_mth returning id`;
-        const [after] = await transaction`update machines set machine_type_id=${type!.id}, code=${parsed.data.code}, name=${parsed.data.name}, is_active=${parsed.data.isActive}, updated_at=now() where id=${id.data} returning id, code, name, is_active`;
+        const [type] = await transaction<Array<{ id: string }>>`insert into machine_types (name, tracks_mth) values (${parsed.data.typeName}, ${parsed.data.tracksMth}) on conflict (name, tracks_mth) do update set name=excluded.name returning id`;
+        const [after] = await transaction`update machines set machine_type_id=${type!.id}, code=${parsed.data.code}, name=${parsed.data.name}, is_active=${parsed.data.isActive}, updated_at=now() where id=${id.data}
+          returning id, machine_type_id, code, name, is_active, ${parsed.data.typeName}::text as type_name, ${parsed.data.tracksMth}::boolean as tracks_mth`;
         await transaction`insert into audit_logs (actor_user_id, action, entity_type, entity_id, before_data, after_data, reason) values (${request.sessionUser!.id}, 'MACHINE_UPDATED', 'MACHINE', ${id.data}, ${transaction.json(before[0]!)}, ${transaction.json(after!)}, ${parsed.data.reason})`;
         return after;
       });
@@ -55,10 +56,11 @@ export function registerAssetRoutes(app: FastifyInstance, db: Database, requireT
     if (!id.success || !parsed.success) return reply.code(400).send({ error: "Neplatné údaje příslušenství." });
     try {
       const updated = await db.begin(async (transaction) => {
-        const before = await transaction`select a.id, a.code, a.name, a.is_active, at.name as type_name, at.uniquely_tracked from attachments a join attachment_types at on at.id=a.attachment_type_id where a.id=${id.data} for update of a`;
+        const before = await transaction`select a.id, a.attachment_type_id, a.code, a.name, a.is_active, at.name as type_name, at.uniquely_tracked from attachments a join attachment_types at on at.id=a.attachment_type_id where a.id=${id.data} for update of a`;
         if (!before[0]) return null;
-        const [type] = await transaction<Array<{ id: string }>>`insert into attachment_types (name, uniquely_tracked) values (${parsed.data.typeName}, ${parsed.data.uniquelyTracked}) on conflict (name) do update set uniquely_tracked=excluded.uniquely_tracked returning id`;
-        const [after] = await transaction`update attachments set attachment_type_id=${type!.id}, code=${parsed.data.code}, name=${parsed.data.name}, is_active=${parsed.data.isActive}, updated_at=now() where id=${id.data} returning id, code, name, is_active`;
+        const [type] = await transaction<Array<{ id: string }>>`insert into attachment_types (name, uniquely_tracked) values (${parsed.data.typeName}, ${parsed.data.uniquelyTracked}) on conflict (name, uniquely_tracked) do update set name=excluded.name returning id`;
+        const [after] = await transaction`update attachments set attachment_type_id=${type!.id}, code=${parsed.data.code}, name=${parsed.data.name}, is_active=${parsed.data.isActive}, updated_at=now() where id=${id.data}
+          returning id, attachment_type_id, code, name, is_active, ${parsed.data.typeName}::text as type_name, ${parsed.data.uniquelyTracked}::boolean as uniquely_tracked`;
         await transaction`insert into audit_logs (actor_user_id, action, entity_type, entity_id, before_data, after_data, reason) values (${request.sessionUser!.id}, 'ATTACHMENT_UPDATED', 'ATTACHMENT', ${id.data}, ${transaction.json(before[0]!)}, ${transaction.json(after!)}, ${parsed.data.reason})`;
         return after;
       });
@@ -91,11 +93,11 @@ export function registerAssetRoutes(app: FastifyInstance, db: Database, requireT
       const machine = await db.begin(async (transaction) => {
         const [type] = await transaction<Array<{ id: string }>>`
           insert into machine_types (name, tracks_mth) values (${parsed.data.typeName}, ${parsed.data.tracksMth})
-          on conflict (name) do update set name = excluded.name returning id
+          on conflict (name, tracks_mth) do update set name = excluded.name returning id
         `;
         const [created] = await transaction`
           insert into machines (machine_type_id, code, name) values (${type!.id}, ${parsed.data.code}, ${parsed.data.name})
-          returning id, code, name
+          returning id, machine_type_id, code, name, is_active, ${parsed.data.typeName}::text as type_name, ${parsed.data.tracksMth}::boolean as tracks_mth
         `;
         await transaction`insert into audit_logs (actor_user_id, action, entity_type, entity_id, after_data)
           values (${request.sessionUser!.id}, 'MACHINE_CREATED', 'MACHINE', ${created!.id}, ${transaction.json(created!)})`;
@@ -115,11 +117,11 @@ export function registerAssetRoutes(app: FastifyInstance, db: Database, requireT
       const attachment = await db.begin(async (transaction) => {
         const [type] = await transaction<Array<{ id: string }>>`
           insert into attachment_types (name, uniquely_tracked) values (${parsed.data.typeName}, ${parsed.data.uniquelyTracked})
-          on conflict (name) do update set name = excluded.name returning id
+          on conflict (name, uniquely_tracked) do update set name = excluded.name returning id
         `;
         const [created] = await transaction`
           insert into attachments (attachment_type_id, code, name) values (${type!.id}, ${parsed.data.code}, ${parsed.data.name})
-          returning id, code, name
+          returning id, attachment_type_id, code, name, is_active, ${parsed.data.typeName}::text as type_name, ${parsed.data.uniquelyTracked}::boolean as uniquely_tracked
         `;
         await transaction`insert into audit_logs (actor_user_id, action, entity_type, entity_id, after_data)
           values (${request.sessionUser!.id}, 'ATTACHMENT_CREATED', 'ATTACHMENT', ${created!.id}, ${transaction.json(created!)})`;

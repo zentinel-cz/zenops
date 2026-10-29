@@ -763,6 +763,7 @@ input,select,textarea { min-width:0; max-width:100%; }
 .record-correction-choices input { flex: 0 0 20px; width: 20px; height: 20px; accent-color: #b9f6c9; }
 .record-correction-choices span { min-width: 0; overflow-wrap: anywhere; }
 .record-correction-dialog button:focus-visible { outline: 2px solid #b9f6c9; outline-offset: 3px; }
+.asset-tracking-hint { grid-column: 1 / -1; margin: 0; color: #a4b7ab; font-size: 13px; line-height: 1.6; }
 @media (max-width: 480px) {
   .approval-card { padding: 16px; }
   .approval-actions button { flex: 1 1 100px; }

@@ -2,6 +2,16 @@
 
 Last updated: 2026-10-13
 
+## Independent catalogue tracking — prepared 2026-10-29
+
+ADR-015 and migration 0023 replace mutable shared type settings with immutable
+name/setting variants. Creation honors the requested tracking flag; edits
+reassign only the selected machine or attachment. Catalogue audit snapshots
+include the setting and type identity, and the UI displays/searches tracking
+status. Existing catalogue and operational rows are preserved.
+See operations/independent-asset-tracking-release.md; no deployment performed
+from this workspace for this feature.
+
 ## Operational correction forms and OTHER work — prepared 2026-10-29
 
 Admin machine and trip corrections use prefilled accessible dialogs with
