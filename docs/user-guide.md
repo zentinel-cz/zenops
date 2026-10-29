@@ -287,7 +287,12 @@ Report rozlišuje:
 Souhrn ukazuje počet pracovníků a úseků, schválený a předběžný čas. Detail
 obsahuje Zakázku, pracovníka, druh práce, přestávky, stroje, MTH, příslušenství,
 palivo, vozidla, kilometry a společné palivo zakázky. Seznam úseků lze vyhledat podle zakázky, pracovníka, druhu práce, stroje nebo
-stavu. Tlačítkem **Stáhnout PDF** se stáhne profesionální report ve stejném oprávněném rozsahu.
+stavu. Tlačítkem **Stáhnout PDF** se stáhne report za celé vybrané datum ve stejném oprávněném rozsahu; textové hledání export neomezuje.
+Během tvorby souboru tlačítko zobrazuje **Připravuji PDF…** a nelze spustit další
+stažení ani změnit datum. Při chybě se zobrazí zpráva a stažení lze opakovat.
+Pokud přihlášení vypršelo, přihlaste se znovu. Čas vytvoření PDF je uveden
+v časovém pásmu Europe/Prague. Přestávky dne jsou informativní: opakují se
+u úseků téhož dne a nesčítají se ani znovu neodečítají od času práce.
 
 ## Měsíční report — Vedoucí a Admin
 
@@ -301,7 +306,9 @@ Sekce **Souhrny a uzávěrka** nabízí pro vybraný měsíc:
 
 Vedoucí vidí pouze Zakázky, které vede. Admin vidí globální souhrn. V každém
 souhrnném seznamu lze vyhledávat podle názvu, kódu nebo zobrazených údajů. Report je
-provozní podklad pro odměny a mzdy, ale ZenOps mzdy sám nepočítá.
+provozní podklad pro odměny a mzdy, ale ZenOps mzdy sám nepočítá. Celkové hodiny
+zahrnují i předběžné úseky; schválený čas je u pracovníků uveden zvlášť.
+Měsíční přehled zatím nemá export do PDF ani XLSX.
 
 ### Uzávěrka měsíce — Admin
 

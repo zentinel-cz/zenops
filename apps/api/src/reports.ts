@@ -1,3 +1,6 @@
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { shiftLabel, fuelCategoryLabel } from "@zenops/contracts/labels";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { chromium } from "playwright-core";
@@ -77,11 +80,38 @@ async function buildDailyReport(db: Database, request: FastifyRequest, date: str
 const esc = (value: unknown) => String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]!);
 const hours = (minutes: number) => `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
 
-function reportHtml(report: Awaited<ReturnType<typeof buildDailyReport>>): string {
-  const rows = report.entries.map((item) => `<tr><td>${esc(item.projectCode)}<small>${esc(item.projectName)}</small></td><td>${esc(item.employeeName)}<small>${esc(shiftLabel(item.shiftType))}</small></td><td>${esc(item.workTypeName)}${item.workActivityName ? `<small>${esc(item.workActivityName)}</small>` : ""}</td><td>${hours(item.workedMinutes)}<small>Přestávky dne: ${item.breakMinutes} min</small></td><td>${item.machineCode ? `${esc(item.machineCode)}<small>MTH ${esc(item.enteredStartMth)}–${esc(item.endMth)} · palivo ${esc(item.machineFuelConsumed ?? "–")}/${esc(item.machineFuelRefuelled ?? "–")}</small>` : "–"}</td><td><span class="state ${item.entryState === "APPROVED" ? "approved" : "provisional"}">${esc(item.entryState === "APPROVED" ? "SCHVÁLENO" : "PŘEDBĚŽNÉ")}</span></td></tr>`).join("");
+export function reportHtml(report: Awaited<ReturnType<typeof buildDailyReport>>): string {
+  const rows = report.entries.map((item) => `<tr><td>${esc(item.projectCode)}<small>${esc(item.projectName)}</small></td><td>${esc(item.employeeName)}<small>${esc(shiftLabel(item.shiftType))}</small></td><td>${esc(item.workTypeName)}${item.workActivityName ? `<small>${esc(item.workActivityName)}</small>` : ""}</td><td>${hours(item.workedMinutes)}<small>Přestávky dne: ${item.breakMinutes} min</small></td><td>${item.machineCode ? `${esc(item.machineCode)}<small>${esc(item.machineName)} · MTH ${esc(item.enteredStartMth)}–${esc(item.endMth)} · palivo ${esc(item.machineFuelConsumed ?? "–")}/${esc(item.machineFuelRefuelled ?? "–")}</small>${item.attachments.length ? `<small>Příslušenství: ${esc(item.attachments.join(", "))}</small>` : ""}` : "–"}</td><td><span class="state ${item.entryState === "APPROVED" ? "approved" : "provisional"}">${esc(item.entryState === "APPROVED" ? "SCHVÁLENO" : "PŘEDBĚŽNÉ")}</span></td></tr>`).join("");
   const tripRows = report.trips.map((item: any) => `<tr><td>${esc(item.vehicleCode)} · ${esc(item.registrationNumber)}</td><td>${esc(item.driverName)}</td><td>${esc(item.startOdometerKm)}–${esc(item.endOdometerKm)} km</td><td>${esc(item.fuelConsumed ?? "–")} / ${esc(item.fuelRefuelled ?? "–")}</td><td>${esc(item.passengers.join(", ") || "–")}</td></tr>`).join("");
-  const fuelRows = report.fuelRecords.map((item: any) => `<tr><td>${esc(item.projectCode)} · ${esc(item.projectName)}</td><td>${esc(fuelCategoryLabel(item.category))}</td><td>${esc(item.fuelConsumed ?? "–")}</td><td>${esc(item.fuelRefuelled ?? "–")}</td><td>${esc(item.recordedByName)}</td></tr>`).join("");
-  return `<!doctype html><html lang="cs"><head><meta charset="utf-8"><style>@page{size:A4 landscape;margin:14mm}*{box-sizing:border-box}body{font:12px Arial;color:#17231c}header{display:flex;justify-content:space-between;border-bottom:3px solid #177847;padding-bottom:12px}h1{margin:0;font-size:25px}h2{margin:22px 0 8px;font-size:15px}.meta{color:#657269}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0}.summary div{padding:10px;border:1px solid #d7e0da;border-radius:7px}.summary strong{display:block;font-size:18px;color:#176b41}table{width:100%;border-collapse:collapse}th,td{padding:7px;border-bottom:1px solid #dfe5e1;text-align:left;vertical-align:top}th{background:#eef4ef;font-size:10px;text-transform:uppercase}small{display:block;color:#69776e;margin-top:3px}.state{padding:4px 6px;border-radius:10px;font-size:9px;font-weight:bold}.approved{color:#145c36;background:#d9f0e1}.provisional{color:#765315;background:#fff0c9}.empty{color:#758178}</style></head><body><header><div><b>ZENTINEL · ZENOPS</b><h1>Denní provozní report</h1></div><div class="meta">Datum: ${esc(report.date)}<br>Vygenerováno: ${esc(new Date(report.generatedAt).toLocaleString("cs-CZ"))}</div></header><section class="summary"><div><strong>${report.summary.workers}</strong>pracovníků</div><div><strong>${report.summary.entries}</strong>pracovních úseků</div><div><strong>${hours(report.summary.approvedMinutes)}</strong>schváleno</div><div><strong>${hours(report.summary.provisionalMinutes)}</strong>předběžně</div></section><h2>Práce a technika</h2>${rows ? `<table><thead><tr><th>Zakázka</th><th>Pracovník</th><th>Práce</th><th>Čas</th><th>Stroj / palivo</th><th>Stav</th></tr></thead><tbody>${rows}</tbody></table>` : '<p class="empty">Pro tento den nejsou dostupná data.</p>'}<h2>Vozidla</h2>${tripRows ? `<table><thead><tr><th>Vozidlo</th><th>Řidič</th><th>Kilometry</th><th>Spotřeba / tankování</th><th>Cestující</th></tr></thead><tbody>${tripRows}</tbody></table>` : '<p class="empty">Bez jízd.</p>'}<h2>Sdílené palivo zakázek</h2>${fuelRows ? `<table><thead><tr><th>Zakázka</th><th>Kategorie</th><th>Spotřeba</th><th>Tankování</th><th>Zapsal</th></tr></thead><tbody>${fuelRows}</tbody></table>` : '<p class="empty">Bez sdílených záznamů.</p>'}</body></html>`;
+  const fuelRows = report.fuelRecords.map((item: any) => `<tr><td>${esc(item.projectCode)} · ${esc(item.projectName)}</td><td>${esc(fuelCategoryLabel(item.category))}</td><td>${esc(item.fuelConsumed ?? "–")}</td><td>${esc(item.fuelRefuelled ?? "–")}</td><td>${esc(item.recordedByName)}${item.note ? `<small>${esc(item.note)}</small>` : ""}</td></tr>`).join("");
+  return `<!doctype html><html lang="cs"><head><meta charset="utf-8"><style>@page{size:A4 landscape;margin:14mm}*{box-sizing:border-box}body{font:12px Arial;color:#17231c}header{display:flex;justify-content:space-between;border-bottom:3px solid #177847;padding-bottom:12px}h1{margin:0;font-size:25px}h2{margin:22px 0 8px;font-size:15px}.meta{color:#657269}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0}.summary div{padding:10px;border:1px solid #d7e0da;border-radius:7px}.summary strong{display:block;font-size:18px;color:#176b41}table{width:100%;border-collapse:collapse;table-layout:fixed}thead{display:table-header-group}tr{break-inside:avoid}td{overflow-wrap:anywhere}h2{break-after:avoid}th,td{padding:7px;border-bottom:1px solid #dfe5e1;text-align:left;vertical-align:top}th{background:#eef4ef;font-size:10px;text-transform:uppercase}small{display:block;color:#69776e;margin-top:3px}.state{padding:4px 6px;border-radius:10px;font-size:9px;font-weight:bold}.approved{color:#145c36;background:#d9f0e1}.provisional{color:#765315;background:#fff0c9}.empty{color:#758178}</style></head><body><header><div><b>ZENTINEL · ZENOPS</b><h1>Denní provozní report</h1></div><div class="meta">Datum: ${esc(report.date)}<br>Vygenerováno: ${esc(new Date(report.generatedAt).toLocaleString("cs-CZ", { timeZone: "Europe/Prague" }))}</div></header><section class="summary"><div><strong>${report.summary.workers}</strong>pracovníků</div><div><strong>${report.summary.entries}</strong>pracovních úseků</div><div><strong>${hours(report.summary.approvedMinutes)}</strong>schváleno</div><div><strong>${hours(report.summary.provisionalMinutes)}</strong>předběžně</div></section><h2>Práce a technika</h2>${rows ? `<table><thead><tr><th>Zakázka</th><th>Pracovník</th><th>Práce</th><th>Čas</th><th>Stroj / palivo</th><th>Stav</th></tr></thead><tbody>${rows}</tbody></table>` : '<p class="empty">Pro tento den nejsou dostupná data.</p>'}<h2>Vozidla</h2>${tripRows ? `<table><thead><tr><th>Vozidlo</th><th>Řidič</th><th>Kilometry</th><th>Spotřeba / tankování</th><th>Cestující</th></tr></thead><tbody>${tripRows}</tbody></table>` : '<p class="empty">Bez jízd.</p>'}<h2>Sdílené palivo zakázek</h2>${fuelRows ? `<table><thead><tr><th>Zakázka</th><th>Kategorie</th><th>Spotřeba</th><th>Tankování</th><th>Zapsal</th></tr></thead><tbody>${fuelRows}</tbody></table>` : '<p class="empty">Bez sdílených záznamů.</p>'}</body></html>`;
+}
+
+// The runtime filesystem is read-only. Chromium/Crashpad need a writable HOME,
+// even when Playwright already creates a temporary browser profile.
+export async function renderReportPdf(html: string): Promise<Buffer> {
+  const home = await mkdtemp(join(tmpdir(), "zenops-pdf-"));
+  try {
+    const browser = await chromium.launch({
+      executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ?? "/usr/bin/chromium-browser",
+      headless: true,
+      timeout: 30_000,
+      env: { ...process.env, HOME: home, XDG_CONFIG_HOME: join(home, "config"), XDG_CACHE_HOME: join(home, "cache") },
+      args: ["--no-sandbox", "--disable-dev-shm-usage"],
+    });
+    try {
+      const page = await browser.newPage();
+      // Reports contain only inline styles and escaped text; never load external resources.
+      await page.route("**/*", (route) => route.abort());
+      await page.setContent(html, { waitUntil: "load", timeout: 30_000 });
+      return await page.pdf({ format: "A4", landscape: true, printBackground: true,
+        margin: { top: "14mm", right: "14mm", bottom: "14mm", left: "14mm" } });
+    } finally {
+      await browser.close();
+    }
+  } finally {
+    await rm(home, { recursive: true, force: true });
+  }
 }
 
 export function registerReportRoutes(app: FastifyInstance, db: Database): void {
@@ -94,14 +124,12 @@ export function registerReportRoutes(app: FastifyInstance, db: Database): void {
     const query = querySchema.safeParse(request.query);
     if (!query.success) return reply.code(400).send({ error: "Neplatné datum reportu." });
     const report = await buildDailyReport(db, request, query.data.date);
-    const browser = await chromium.launch({ executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH ?? "/usr/bin/chromium-browser", headless: true, args: ["--no-sandbox", "--disable-dev-shm-usage"] });
     try {
-      const page = await browser.newPage();
-      await page.setContent(reportHtml(report), { waitUntil: "load" });
-      const pdf = await page.pdf({ format: "A4", landscape: true, printBackground: true, margin: { top: "14mm", right: "14mm", bottom: "14mm", left: "14mm" } });
-      return reply.header("content-type", "application/pdf").header("content-disposition", `attachment; filename="zenops-denni-report-${query.data.date}.pdf"`).send(pdf);
-    } finally {
-      await browser.close();
+      const pdf = await renderReportPdf(reportHtml(report));
+      return reply.header("cache-control", "no-store").header("content-type", "application/pdf").header("content-disposition", `attachment; filename="zenops-denni-report-${query.data.date}.pdf"`).send(pdf);
+    } catch (error) {
+      request.log.error({ err: error }, "Daily PDF generation failed");
+      return reply.code(503).send({ error: "PDF se nepodařilo vytvořit. Zkuste stažení za chvíli znovu." });
     }
   });
   app.get("/api/reports/monthly", { preHandler: requireReportAccess }, async (request, reply) => {
@@ -112,7 +140,7 @@ export function registerReportRoutes(app: FastifyInstance, db: Database): void {
     const employeeHours = await db`
       select e.id, e.display_name, wd.shift_type,
         round(sum(extract(epoch from (we.end_at - we.start_at))) / 60)::int as worked_minutes,
-        round(sum(extract(epoch from (we.end_at - we.start_at))) filter (where we.state = 'APPROVED') / 60)::int as approved_minutes
+        coalesce(round(sum(extract(epoch from (we.end_at - we.start_at))) filter (where we.state = 'APPROVED') / 60)::int, 0) as approved_minutes
       from work_entries we join work_days wd on wd.id = we.work_day_id join employees e on e.id = wd.employee_id
       join projects p on p.id = we.project_id
       where wd.work_date >= ${monthStart}::date and wd.work_date < (${monthStart}::date + interval '1 month')

@@ -1105,6 +1105,22 @@ integration("authentication integration", () => {
       headers: { cookie: workerCookie! },
     });
     expect(denied.statusCode).toBe(403);
+    const [accountant] = await db`select id from users where username = 'accountant.test'`;
+    const accountantSession = await createSession(db, accountant!.id, 1, {});
+    for (const url of ["/api/reports/daily?date=2026-09-25", "/api/reports/daily.pdf?date=2026-09-25", "/api/reports/monthly?month=2026-09"]) {
+      expect((await app.inject({url})).statusCode).toBe(401);
+      for (const cookie of [workerCookie!, `zenops_session=${accountantSession.token}`]) {
+        expect((await app.inject({url, headers: {cookie}})).statusCode).toBe(403);
+      }
+    }
+    for (const url of ["/api/reports/daily?date=invalid", "/api/reports/daily.pdf?date=2026-02-30", "/api/reports/monthly?month=2026-13"]) {
+      expect((await app.inject({url, headers: {cookie: leaderCookie!}})).statusCode).toBe(400);
+    }
+    const empty = await app.inject({url: "/api/reports/daily?date=2000-01-01", headers: {cookie: leaderCookie!}});
+    expect(empty.json().report.summary).toEqual({entries: 0, workers: 0, approvedMinutes: 0, provisionalMinutes: 0});
+    const scopedMonth = await app.inject({url: "/api/reports/monthly?month=2026-09", headers: {cookie: leaderCookie!}});
+    expect(scopedMonth.json().report.scope).toBe("LEADER");
+    expect(scopedMonth.json().report.orderHours.map((row: {code: string}) => row.code)).toEqual(["Z-001"]);
   });
 
   it("reports monthly totals and enforces audited Admin closure and reopen", async () => {
