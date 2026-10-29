@@ -1,8 +1,9 @@
-import { projectDaySchema, projectFuelSchema } from "@zenops/contracts";
+import { projectFuelSchema, saveProjectDaySchema } from "@zenops/contracts";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { requirePermission, type AuthorizationHook } from "./authorization.js";
 import type { Database } from "./db.js";
+import { saveProjectDay } from "./project-day-save.js";
 
 const paramsSchema = z.object({ projectId: z.string().uuid() });
 const querySchema = z.object({ date: z.iso.date() });
@@ -12,24 +13,26 @@ export function registerProjectDayRoutes(app: FastifyInstance, db: Database, req
     const params = paramsSchema.safeParse(request.params);
     const query = querySchema.safeParse(request.query);
     if (!params.success || !query.success) return reply.code(400).send({ error: "Neplatná zakázka nebo datum." });
-    const [accessible] = await db`select id from projects where id=${params.data.projectId}
-      and (${request.sessionUser!.roles.includes("ADMIN")} or current_leader_employee_id=${request.sessionUser!.employeeId})`;
-    if (!accessible) return reply.code(404).send({ error: "Zakázka nebyla nalezena." });
-    const rows = await db`
-      select pd.id, pd.project_id, pd.work_date, pd.weather, pd.temperature_c, pd.note,
-        pd.updated_at, e.display_name as updated_by_name
-      from project_days pd
-      left join users u on u.id = pd.updated_by_user_id
-      left join employees e on e.id = u.employee_id
-      where pd.project_id = ${params.data.projectId} and pd.work_date = ${query.data.date}
+    // One SQL statement reads weather and fuel from the same committed snapshot.
+    const [result] = await db`
+      select (select json_build_object('id',pd.id,'projectId',pd.project_id,'workDate',pd.work_date,
+        'weather',pd.weather,'temperatureC',pd.temperature_c::text,'note',pd.note,
+        'updatedAt',pd.updated_at,'updatedByName',e.display_name)
+        from project_days pd left join users u on u.id=pd.updated_by_user_id
+        left join employees e on e.id=u.employee_id
+        where pd.project_id=p.id and pd.work_date=${query.data.date}) as project_day,
+        coalesce((select json_agg(json_build_object('id',f.id,'category',f.category,
+          'fuelConsumed',f.fuel_consumed::text,'fuelRefuelled',f.fuel_refuelled::text,
+          'note',f.note,'recordedByEmployeeId',f.recorded_by_employee_id,'recordedByName',e.display_name,
+          'updatedAt',f.updated_at,'clearedAt',f.cleared_at,'clearedByUserId',f.cleared_by_user_id) order by f.category)
+          from project_fuel_records f join project_days pd on pd.id=f.project_day_id
+          join employees e on e.id=f.recorded_by_employee_id
+          where pd.project_id=p.id and pd.work_date=${query.data.date}),'[]'::json) as fuel_records
+      from projects p where p.id=${params.data.projectId}
+        and (${request.sessionUser!.roles.includes("ADMIN")} or p.current_leader_employee_id=${request.sessionUser!.employeeId})
     `;
-    const fuelRecords = rows[0] ? await db`
-      select pfr.id, pfr.category, pfr.fuel_consumed, pfr.fuel_refuelled, pfr.note,
-        pfr.recorded_by_employee_id, e.display_name as recorded_by_name, pfr.updated_at
-      from project_fuel_records pfr join employees e on e.id = pfr.recorded_by_employee_id
-      where pfr.project_day_id = ${rows[0].id} order by pfr.category
-    ` : [];
-    return { projectDay: rows[0] ?? null, fuelRecords };
+    if (!result) return reply.code(404).send({ error: "Zakázka nebyla nalezena." });
+    return result;
   });
 
   app.put("/api/projects/:projectId/day", {
@@ -37,45 +40,13 @@ export function registerProjectDayRoutes(app: FastifyInstance, db: Database, req
   }, async (request, reply) => {
     const params = paramsSchema.safeParse(request.params);
     const query = querySchema.safeParse(request.query);
-    const body = projectDaySchema.safeParse(request.body);
+    const body = saveProjectDaySchema.safeParse(request.body);
     if (!params.success || !query.success || !body.success) return reply.code(400).send({ error: "Neplatné denní údaje zakázky." });
-    const [closedPeriod] = await db<Array<{ closed: boolean }>>`
-      select exists(select 1 from monthly_periods where month_start = date_trunc('month', ${query.data.date}::date)::date and state = 'CLOSED') as closed
-    `;
-    if (closedPeriod!.closed) return reply.code(409).send({ error: "Uzavřený měsíc nelze běžně měnit." });
-    const project = await db<Array<{ leaderEmployeeId: string }>>`
-      select current_leader_employee_id as leader_employee_id from projects where id = ${params.data.projectId}
-    `;
-    if (!project[0]) return reply.code(404).send({ error: "Zakázka nebyla nalezena." });
-    const isAdmin = request.sessionUser!.roles.includes("ADMIN");
-    if (!isAdmin && project[0].leaderEmployeeId !== request.sessionUser!.employeeId) {
-      return reply.code(403).send({ error: "Denní údaje může měnit pouze aktuální Vedoucí zakázky nebo Admin." });
+    if (body.data.fuel && !request.sessionUser!.permissions.includes("fuel.manage")) {
+      return reply.code(403).send({ error: "K této operaci nemáte oprávnění." });
     }
-    const projectDay = await db.begin(async (transaction) => {
-      const [authorized] = await transaction`select id from projects where id=${params.data.projectId}
-        and (${isAdmin} or current_leader_employee_id=${request.sessionUser!.employeeId}) for update`;
-      if (!authorized) throw Object.assign(new Error("K této operaci nemáte oprávnění."), { statusCode: 403 });
-      const before = await transaction`
-        select id, project_id, work_date, weather, temperature_c, note from project_days
-        where project_id = ${params.data.projectId} and work_date = ${query.data.date}
-      `;
-      const [saved] = await transaction`
-        insert into project_days (project_id, work_date, weather, temperature_c, note, updated_by_user_id)
-        values (${params.data.projectId}, ${query.data.date}, ${body.data.weather ?? null},
-          ${body.data.temperatureC ?? null}, ${body.data.note ?? null}, ${request.sessionUser!.id})
-        on conflict (project_id, work_date) do update set
-          weather = excluded.weather, temperature_c = excluded.temperature_c, note = excluded.note,
-          updated_by_user_id = excluded.updated_by_user_id, updated_at = now()
-        returning id, project_id, work_date, weather, temperature_c, note, updated_at
-      `;
-      await transaction`
-        insert into audit_logs (actor_user_id, action, entity_type, entity_id, before_data, after_data)
-        values (${request.sessionUser!.id}, 'PROJECT_DAY_SAVED', 'PROJECT_DAY', ${saved!.id},
-          ${before[0] ? transaction.json(before[0]) : null}, ${transaction.json(saved!)})
-      `;
-      return saved!;
-    });
-    return { projectDay };
+    const { fuel, ...day } = body.data;
+    return saveProjectDay(db, request.sessionUser!, params.data.projectId, query.data.date, { day, ...(fuel ? { fuel } : {}) });
   });
 
   app.put("/api/projects/:projectId/day/fuel", {
@@ -85,49 +56,7 @@ export function registerProjectDayRoutes(app: FastifyInstance, db: Database, req
     const query = querySchema.safeParse(request.query);
     const body = projectFuelSchema.safeParse(request.body);
     if (!params.success || !query.success || !body.success) return reply.code(400).send({ error: "Neplatný záznam paliva." });
-    const [closedPeriod] = await db<Array<{ closed: boolean }>>`
-      select exists(select 1 from monthly_periods where month_start = date_trunc('month', ${query.data.date}::date)::date and state = 'CLOSED') as closed
-    `;
-    if (closedPeriod!.closed) return reply.code(409).send({ error: "Uzavřený měsíc nelze běžně měnit." });
-    const projects = await db<Array<{ leaderEmployeeId: string; status: string }>>`
-      select current_leader_employee_id as leader_employee_id, status from projects where id = ${params.data.projectId}
-    `;
-    if (!projects[0]) return reply.code(404).send({ error: "Zakázka nebyla nalezena." });
-    const isAdmin = request.sessionUser!.roles.includes("ADMIN");
-    if (!isAdmin && projects[0].leaderEmployeeId !== request.sessionUser!.employeeId) {
-      return reply.code(403).send({ error: "Palivo může spravovat pouze aktuální Vedoucí zakázky nebo Admin." });
-    }
-    if (projects[0].status !== "OPEN") return reply.code(409).send({ error: "K uzavřené zakázce nelze přidávat provozní údaje." });
-    const fuelRecord = await db.begin(async (transaction) => {
-      const [authorized] = await transaction`select id from projects where id=${params.data.projectId}
-        and (${isAdmin} or current_leader_employee_id=${request.sessionUser!.employeeId}) for update`;
-      if (!authorized) throw Object.assign(new Error("K této operaci nemáte oprávnění."), { statusCode: 403 });
-      const [openProject] = await transaction`select id from projects where id=${params.data.projectId} and status='OPEN'`;
-      if (!openProject) throw Object.assign(new Error("K uzavřené zakázce nelze přidávat provozní údaje."), { statusCode: 409 });
-      const [projectDay] = await transaction<Array<{ id: string }>>`
-        insert into project_days (project_id, work_date) values (${params.data.projectId}, ${query.data.date})
-        on conflict (project_id, work_date) do update set project_id = excluded.project_id returning id
-      `;
-      const before = await transaction`
-        select id, category, fuel_consumed, fuel_refuelled, recorded_by_employee_id, note
-        from project_fuel_records where project_day_id = ${projectDay!.id} and category = ${body.data.category}
-      `;
-      const [saved] = await transaction`
-        insert into project_fuel_records (project_day_id, category, fuel_consumed, fuel_refuelled, recorded_by_employee_id, note)
-        values (${projectDay!.id}, ${body.data.category}, ${body.data.fuelConsumed ?? null},
-          ${body.data.fuelRefuelled ?? null}, ${request.sessionUser!.employeeId}, ${body.data.note ?? null})
-        on conflict (project_day_id, category) do update set fuel_consumed = excluded.fuel_consumed,
-          fuel_refuelled = excluded.fuel_refuelled, recorded_by_employee_id = excluded.recorded_by_employee_id,
-          note = excluded.note, updated_at = now()
-        returning id, category, fuel_consumed, fuel_refuelled, recorded_by_employee_id, note, updated_at
-      `;
-      await transaction`
-        insert into audit_logs (actor_user_id, action, entity_type, entity_id, before_data, after_data)
-        values (${request.sessionUser!.id}, 'PROJECT_FUEL_SAVED', 'PROJECT_FUEL_RECORD', ${saved!.id},
-          ${before[0] ? transaction.json(before[0]) : null}, ${transaction.json(saved!)})
-      `;
-      return saved!;
-    });
+    const { fuelRecord } = await saveProjectDay(db, request.sessionUser!, params.data.projectId, query.data.date, { fuel: body.data });
     return { fuelRecord };
   });
 }

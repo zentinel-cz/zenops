@@ -291,12 +291,17 @@ export const projectFuelSchema = z
     note: z.string().trim().max(1000).nullable().optional(),
   })
   .refine(
-    (value) => value.fuelConsumed != null || value.fuelRefuelled != null,
+    (value) => value.fuelConsumed != null || value.fuelRefuelled != null
+      || (value.fuelConsumed === null && value.fuelRefuelled === null),
     {
-      message: "Vyplňte spotřebu nebo tankování.",
+      message: "Vyplňte spotřebu nebo tankování, nebo obě hodnoty výslovně vymažte.",
       path: ["fuelConsumed"],
     },
   );
+
+export const saveProjectDaySchema = projectDaySchema.extend({ fuel: projectFuelSchema.optional() });
+export type ProjectDayInput = z.infer<typeof projectDaySchema>;
+export type ProjectFuelInput = z.infer<typeof projectFuelSchema>;
 
 export const createMachineSchema = z.object({
   code: z

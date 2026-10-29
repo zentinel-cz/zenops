@@ -39,6 +39,8 @@ export function buildApp(config: AppConfig, db: Database): FastifyInstance {
   // Fastify and plugins otherwise return English status/error text to the UI.
   const publicMessages = new Set([
     "Tento stroj již je k pracovnímu úseku připojen.",
+    "K uzavřené zakázce nelze měnit denní údaje ani palivo.",
+    "Samotnou poznámku k palivu nelze uložit bez spotřeby nebo tankování.",
     "Nedůvěryhodný původ požadavku.", "Stroj vyžaduje počáteční i konečný MTH.",
     "Řidič nemůže být cestující.", "Neplatný cestující.", "Měsíc je uzavřen.", "Vedoucí zakázky musí být aktivní uživatel s rolí Vedoucí.", "Pracovní den nelze upravit v aktuálním stavu.",
   ]);
@@ -54,6 +56,10 @@ export function buildApp(config: AppConfig, db: Database): FastifyInstance {
     429: "Příliš mnoho pokusů. Chvíli počkejte a zkuste to znovu.",
   };
   app.setErrorHandler<FastifyError>((error, request, reply) => {
+    if (error.code === "ZF001") {
+      void reply.code(409).send({ error: "Historie paliva se nemaže. Vymažte hodnoty prostřednictvím auditované opravy." });
+      return;
+    }
     if (error.code === "ZC001" || error.code === "ZC002") {
       void reply.code(error.code === "ZC002" ? 403 : 409).send({ error: error.code === "ZC002"
         ? "Ke změně stavu tohoto dne nemáte oprávnění nebo chybí důvod."

@@ -25,3 +25,9 @@ Leader/Admin may reassign the recorder.
 
 Prevent duplicate active brushcutter fuel records for the same
 project/day/category.
+
+ADR-010 defines current Leader/Admin access; Worker does not manage this
+shared record. ADR-014 defines atomic daily metadata/fuel saves and audited
+clearing: both numeric values explicitly null clear an existing row, while
+zero remains a valid value. Cleared rows keep their identity and audit but
+are excluded from operational fuel reports. Reentry reactivates the same row.

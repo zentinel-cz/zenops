@@ -61,7 +61,7 @@ async function buildDailyReport(db: Database, request: FastifyRequest, date: str
       pfr.fuel_refuelled, pfr.note, e.display_name as recorded_by_name
     from project_fuel_records pfr join project_days pd on pd.id = pfr.project_day_id
     join projects p on p.id = pd.project_id join employees e on e.id = pfr.recorded_by_employee_id
-    where pd.work_date = ${date} and (${isGlobal} or p.current_leader_employee_id = ${request.sessionUser!.employeeId})
+    where pfr.cleared_at is null and pd.work_date = ${date} and (${isGlobal} or p.current_leader_employee_id = ${request.sessionUser!.employeeId})
     order by p.code, pfr.category
   `;
   const approvedMinutes = entries.filter((item) => item.entryState === "APPROVED").reduce((sum, item) => sum + item.workedMinutes, 0);
@@ -178,7 +178,7 @@ export function registerReportRoutes(app: FastifyInstance, db: Database): void {
       select p.id as project_id, p.code as project_code, sum(pfr.fuel_consumed) as fuel_consumed,
         sum(pfr.fuel_refuelled) as fuel_refuelled
       from project_fuel_records pfr join project_days pd on pd.id = pfr.project_day_id join projects p on p.id = pd.project_id
-      where pd.work_date >= ${monthStart}::date and pd.work_date < (${monthStart}::date + interval '1 month')
+      where pfr.cleared_at is null and pd.work_date >= ${monthStart}::date and pd.work_date < (${monthStart}::date + interval '1 month')
         and (${isGlobal} or p.current_leader_employee_id = ${request.sessionUser!.employeeId})
       group by p.id order by p.code
     `;

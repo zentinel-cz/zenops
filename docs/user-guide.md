@@ -218,6 +218,15 @@ jeden aktuální záznam; při opravě se původní a nový stav uchovají v aud
 Systém eviduje také zaměstnance, který údaj naposledy zapsal, ale ten není
 vlastníkem společného palivového záznamu.
 
+Tlačítko **Uložit údaje dne** uloží denní údaje a palivo společně. Při chybě
+se neuloží ani jedna část. Prázdné palivové pole znamená neuvedenou hodnotu;
+**0** je výslovně uvedená nulová hodnota. Chcete-li vykázané palivo zrušit,
+vymažte spotřebu i tankování a uložte formulář. Záznam zůstane zachován
+s původními hodnotami v auditu, ale nebude v palivových reportech.
+Novým vyplněním čísel jej znovu aktivujete. Samotnou poznámku bez čísel
+nelze založit jako nový palivový záznam. Uzavřená zakázka a uzavřený měsíc
+jsou pouze pro čtení.
+
 ## Zaměstnanci a účty — Admin
 
 1. V sekci **Zaměstnanci** zvolte **Nový zaměstnanec**.
@@ -392,9 +401,8 @@ Názvy a poznámky zadané uživateli se zobrazují tak, jak byly uloženy.
   příslušenství. Pokud by vznikl souběh techniky, celá oprava se odmítne.
 - Uzavřený měsíc chrání i databáze. Pro opravu jej musí administrátor nejprve
   znovu otevřít s uvedením důvodu.
-- Při změně zakázky v denním provozu vyčkejte na načtení údajů. Uložit lze
-  až načtenou zakázku. Pokud se uloží údaje dne, ale selže uložení paliva,
-  aplikace tuto skutečnost výslovně oznámí.
+- Při změně zakázky nebo data v denním provozu vyčkejte na načtení údajů.
+  Denní údaje a palivo se uloží společně, nebo se při chybě neuloží nic.
 - Po změně data nebo měsíce reportu se předchozí údaje skryjí. Při selhání
   načítání aplikace nezobrazuje starý report jako aktuální.
 - Během ukládání je opakovaný zápis zablokován. Při přerušení spojení

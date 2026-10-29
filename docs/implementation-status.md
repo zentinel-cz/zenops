@@ -2,6 +2,14 @@
 
 Last updated: 2026-10-13
 
+## Atomic daily metadata and shared fuel — prepared 2026-10-29
+
+ADR-014 and migration 0022 add transactional metadata/fuel saves and audited
+fuel clearing/reactivation. The UI sends one request and distinguishes blank
+values from zero. Daily/PDF and monthly reports exclude cleared fuel records.
+See operations/atomic-project-day-fuel-release.md. Production deployment is
+a separate step.
+
 ## Multiple machines per entry — prepared 2026-10-29
 
 ADR-013 and migration 0021 allow multiple distinct machines per WorkEntry.
