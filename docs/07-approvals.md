@@ -13,6 +13,13 @@ Minimum: - `DRAFT` - `SUBMITTED` - `APPROVED` - `RETURNED`
 
 Returned records require a reason.
 
+The pending queue shows employee, project, work type/activity, business date,
+interval and elapsed duration. Expandable details include the description
+and every attached machine, with its own start/end MTH, fuel and attachments.
+Missing values are distinguished from zero; entries without machines are
+explicitly labelled. Machine fuel is separate from shared ProjectDay fuel.
+Search includes description, activity, machines and attachments.
+
 ## Multiple projects
 
 If an employee works on multiple projects in one WorkDay, each project's

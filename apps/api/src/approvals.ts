@@ -1,4 +1,4 @@
-import { approvalDecisionSchema } from "@zenops/contracts";
+import { approvalDecisionSchema, type MachineUsageSummary } from "@zenops/contracts";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import {
@@ -46,23 +46,23 @@ export function registerApprovalRoutes(
           .code(403)
           .send({ error: "K této operaci nemáte oprávnění." });
       }
-      const entries = await db<PendingEntry[]>`
+      const entries = await db<Array<PendingEntry & {
+        description: string | null; workActivityName: string | null; machineUsages: MachineUsageSummary[];
+      }>>`
       select we.id, wd.id as work_day_id, owner.id as employee_id, owner.display_name as employee_name,
         wd.work_date, we.start_at, we.end_at, p.id as project_id, p.code as project_code, p.name as project_name,
-        wt.name as work_type_name, p.current_leader_employee_id as project_leader_employee_id
+        wt.name as work_type_name, wa.name as work_activity_name, we.description,
+        work_entry_machine_usages(we.id) as machine_usages,
+        p.current_leader_employee_id as project_leader_employee_id
       from work_entries we join work_days wd on wd.id = we.work_day_id
       join employees owner on owner.id = wd.employee_id
       join projects p on p.id = we.project_id join work_types wt on wt.id = we.work_type_id
-      where we.state = 'SUBMITTED' order by wd.work_date, p.code, we.start_at
+      left join work_activities wa on wa.id = we.work_activity_id
+      where we.state = 'SUBMITTED' and p.current_leader_employee_id = ${request.sessionUser!.employeeId}
+      order by wd.work_date, p.code, we.start_at, we.id
     `;
       return {
-        entries: entries.filter((entry) =>
-          canAct(
-            request.sessionUser!.roles,
-            request.sessionUser!.employeeId,
-            entry,
-          ),
-        ),
+        entries,
       };
     },
   );

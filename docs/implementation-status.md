@@ -2,6 +2,14 @@
 
 Last updated: 2026-10-13
 
+## Approval detail cards — prepared 2026-10-29
+
+The current Leader's pending queue includes work description/activity and
+all machine usages with MTH, fuel and per-machine attachments. Responsive
+cards provide expandable details, expanded search and an inline return
+form. Approval authority, state transitions and audit behavior are unchanged.
+See operations/approval-details-release.md. Not deployed from this workspace.
+
 ## Atomic daily metadata and shared fuel — prepared 2026-10-29
 
 ADR-014 and migration 0022 add transactional metadata/fuel saves and audited

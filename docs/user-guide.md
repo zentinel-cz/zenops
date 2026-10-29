@@ -55,7 +55,8 @@ vždy jednu sekci:
 
 - **Schvalování**: kontrola a schválení nebo vrácení práce čekající na jeho
   rozhodnutí. Vidí pouze práci na zakázkách, které aktuálně vede. Seznam lze
-  vyhledat podle pracovníka, zakázky nebo druhu práce.
+  vyhledat podle pracovníka, zakázky, druhu a popisu práce, konkrétní aktivity,
+  stroje nebo příslušenství.
 - **Zakázky**: přehled otevřených zakázek a jejich založení. Seznam lze
   vyhledat podle kódu, názvu nebo místa.
 - **Denní provoz**: počasí, teplota, poznámka a společné palivo zakázky.
@@ -194,10 +195,19 @@ znovuotevření Adminem. Obnovení provádí pouze pracovník, kterému den pat�
 
 ## Schvalování práce — Vedoucí
 
-1. V části **Práce ke schválení** otevřete čekající pracovní úsek.
-2. Zkontrolujte pracovníka, zakázku, druh práce a vykázaný čas.
-3. Správný úsek potvrďte tlačítkem **Schválit**.
-4. Chybný úsek vraťte a povinně napište konkrétní důvod.
+1. V části **Schvalování** najděte kartu čekajícího pracovního úseku.
+2. Zkontrolujte pracovníka, zakázku, druh práce, konkrétní aktivitu, datum,
+   čas a délku úseku. U práce přes půlnoc je u začátku i konce uvedené datum;
+   časy se zobrazují v českém provozním pásmu.
+3. Rozbalte **Podrobnosti práce**. Uvidíte celý popis a všechny vykázané
+   stroje, každý se samostatným počátečním a konečným MTH, spotřebou,
+   tankováním a příslušenstvím. Neuvedené hodnoty jsou označené **Neuvedeno**,
+   nulové hodnoty zůstávají viditelné. U úseku bez stroje se zobrazí **Bez
+   vykázaného stroje**. Palivo v tomto detailu patří jednotlivým strojům;
+   společné palivo křovinořezů je v **Denním provozu**.
+4. Správný úsek potvrďte tlačítkem **Schválit**.
+5. U chybného úseku zvolte **Vrátit**, přímo na jeho kartě napište konkrétní
+   důvod a zvolte **Potvrdit vrácení**. Volba **Zrušit** formulář zavře.
 
 Vedoucí vidí práci pracovníků pouze na zakázkách, které vede. Každý úsek
 se posuzuje samostatně:

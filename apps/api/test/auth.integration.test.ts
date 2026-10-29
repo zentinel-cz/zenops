@@ -1994,6 +1994,62 @@ integration("authentication integration", () => {
     expect(await db`select id from project_days where project_id=${context.projectId}`).toHaveLength(0);
   });
 
+  it("returns complete approval details only to the current project Leader and keeps decisions unchanged", async () => {
+    const context = await multipleMachineContext('approval','2047-01-10');
+    const headers = await headersFor('leader');
+    for (const index of [0,1]) {
+      const added = await context.addMachine(index);
+      expect(added.statusCode,added.body).toBe(201);
+    }
+    const [activity] = await db`select wa.id,wa.work_type_id from work_activities wa
+      join work_types wt on wt.id=wa.work_type_id where wt.code='TREE_CUTTING' and wa.code='SAWYER'`;
+    const description = 'Kácení u cesty\nKontrola <script> & bezpečnost';
+    await db`update work_entries set work_type_id=${activity!.workTypeId},work_activity_id=${activity!.id},
+      description=${description} where id=${context.entryId}`;
+    await db`update machine_usages set fuel_consumed=0,fuel_refuelled=null
+      where work_entry_id=${context.entryId} and machine_id=${context.machines[0]!.id}`;
+    const plain = await app.inject({method:'POST',url:`/api/workdays/${context.dayId}/entries`,headers:context.headers,
+      payload:{projectId:context.projectId,workTypeCode:'BRUSHCUTTER',
+        startAt:'2047-01-10T10:00:00+01:00',endAt:'2047-01-10T11:00:00+01:00'}});
+    expect(plain.statusCode,plain.body).toBe(201);
+    const queue = () => app.inject({url:'/api/approvals/pending',headers});
+    expect((await queue()).json().entries.some((entry:{id:string})=>entry.id===context.entryId)).toBe(false);
+    const submitted = await app.inject({method:'POST',url:`/api/workdays/${context.dayId}/submit`,headers:context.headers});
+    expect(submitted.statusCode,submitted.body).toBe(200);
+    const pending = await queue();
+    expect(pending.statusCode,pending.body).toBe(200);
+    const entry = pending.json().entries.find((item:{id:string})=>item.id===context.entryId);
+    expect(entry).toMatchObject({description,workTypeName:'Kácení',workActivityName:'Pilař'});
+    expect(entry.machineUsages).toEqual([
+      expect.objectContaining({machineId:context.machines[0]!.id,startMth:'100.00',endMth:'102.00',
+        fuelConsumed:'0.00',fuelRefuelled:null,attachments:[context.attachments[0]!.code]}),
+      expect.objectContaining({machineId:context.machines[1]!.id,startMth:'200.00',endMth:'203.00',
+        fuelConsumed:'3.00',fuelRefuelled:'4.00',attachments:[context.attachments[1]!.code]}),
+    ]);
+    expect(pending.json().entries.find((item:{id:string})=>item.id===plain.json().entry.id))
+      .toMatchObject({description:null,workActivityName:null,machineUsages:[]});
+    for (const username of ['worker','admin','accountant.test']) {
+      expect((await app.inject({url:'/api/approvals/pending',headers:await headersFor(username)})).statusCode).toBe(403);
+    }
+    const other = await intervalContext('approval-other-leader');
+    await db`update user_roles set role_id=(select id from roles where code='LEADER') where user_id=${other.userId}`;
+    const foreignQueue = await app.inject({url:'/api/approvals/pending',headers:other.headers});
+    expect(foreignQueue.statusCode,foreignQueue.body).toBe(200);
+    expect(foreignQueue.json().entries).toEqual([]);
+    expect((await app.inject({method:'POST',url:`/api/approvals/${context.entryId}/decision`,
+      headers:other.headers,payload:{action:'APPROVED'}})).statusCode).toBe(403);
+    const approved = await app.inject({method:'POST',url:`/api/approvals/${context.entryId}/decision`,headers,payload:{action:'APPROVED'}});
+    expect(approved.statusCode,approved.body).toBe(200);
+    expect(approved.json().decision.workDayState).toBe('PARTIALLY_APPROVED');
+    const returned = await app.inject({method:'POST',url:`/api/approvals/${plain.json().entry.id}/decision`,
+      headers,payload:{action:'RETURNED',reason:'Doplňte popis práce'}});
+    expect(returned.statusCode,returned.body).toBe(200);
+    expect(returned.json().decision.workDayState).toBe('RETURNED');
+    expect((await queue()).json().entries.some((item:{id:string})=>[context.entryId,plain.json().entry.id].includes(item.id))).toBe(false);
+    const [saved] = await db`select reason from approvals where work_entry_id=${plain.json().entry.id}`;
+    expect(saved!.reason).toBe('Doplňte popis práce');
+  });
+
   it("changes the authenticated password, audits it and revokes every session", async () => {
     const login = await app.inject({
       method: "POST",
