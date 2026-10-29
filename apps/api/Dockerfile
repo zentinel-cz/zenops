@@ -7,6 +7,7 @@ COPY apps/api/package.json apps/api/tsconfig*.json ./apps/api/
 RUN pnpm install --frozen-lockfile
 COPY packages/contracts ./packages/contracts
 COPY apps/api ./apps/api
+COPY ops/check-workday-times.sql ./ops/check-workday-times.sql
 RUN pnpm --filter @zenops/contracts build && pnpm --filter @zenops/api build
 
 FROM node:22-alpine AS runtime
