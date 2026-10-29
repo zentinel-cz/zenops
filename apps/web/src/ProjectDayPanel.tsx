@@ -1,8 +1,9 @@
+import { businessDate } from "@zenops/contracts/time";
 import type { ProjectSummary, SessionUser } from "@zenops/contracts";
 import { type FormEvent, useEffect, useState } from "react";
 
 export function ProjectDayPanel({ user, projects }: { user: SessionUser; projects: ProjectSummary[] }) {
-  const [today, setDate] = useState(new Date().toLocaleDateString("en-CA"));
+  const [today, setDate] = useState(businessDate());
   const manageable = projects.filter((project) => (user.roles.includes("ADMIN") || project.leaderEmployeeId === user.employeeId));
   const [projectId, setProjectId] = useState("");
   const closedProject = manageable.find((project) => project.id === projectId)?.status === "CLOSED";

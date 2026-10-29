@@ -92,3 +92,12 @@ the source for the original worker profile fields and role separation.
 - **BR-056** Only Admin replaces the current Project Leader with a reason and assignment history. Access follows current assignment and current role; historical approvals retain their authors (ADR-010).
 - **BR-057** Current Leader may correct approved work entries on own projects in open months with a reason and audit. Project transfer, breaks, trips and machine-meter corrections remain Admin-only.
 - **BR-058** Shared ProjectDay notes and fuel are visible only to Admin and the current Leader, including historical dates and closed projects.
+
+- **BR-059** Employee work and break intervals cannot overlap across WorkDays,
+  including concurrent writes. Adjacent intervals are allowed (ADR-011).
+- **BR-060** Operational times use Europe/Prague for input and display. Missing
+  DST times are rejected and repeated times require an explicit occurrence.
+- **BR-061** WorkDay date identifies the shift's starting business date. Work,
+  breaks and driver trips fit within that date and the following calendar day;
+  submission and subsequent corrections preserve the starting-date invariant.
+  The starting month owns the whole WorkDay (ADR-011).

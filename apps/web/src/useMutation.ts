@@ -8,7 +8,7 @@ export function useMutation(onError: (message: string) => void) {
     if (running.current) return;
     running.current = true; setBusy(true);
     try { await action(); }
-    catch { onError("Spojení se serverem selhalo. Před opakováním ověřte, zda se změna uložila."); }
+    catch (error) { onError(error instanceof RangeError ? error.message : "Spojení se serverem selhalo. Před opakováním ověřte, zda se změna uložila."); }
     finally { running.current = false; setBusy(false); }
   }
   return { busy, runMutation };

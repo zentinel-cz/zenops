@@ -1,3 +1,5 @@
+import { businessDate, businessTimeZone } from "@zenops/contracts/time";
+import { BusinessDateTimeField, readBusinessDateTime } from "./BusinessDateTimeField";
 import { useMutation } from "./useMutation";
 import { workActivities, workStateLabel, shiftLabel } from "@zenops/contracts/labels";
 import type { ProjectSummary } from "@zenops/contracts";
@@ -67,10 +69,11 @@ export function AdminRecordsPanel({
   projects: ProjectSummary[];
   leaderMode?: boolean;
 }) {
-  const today = new Date().toLocaleDateString("en-CA");
+  const today = businessDate();
   const [date, setDate] = useState(today);
   const [days, setDays] = useState<Day[]>([]);
   const [target, setTarget] = useState<Entry | null>(null);
+  const [breakTarget, setBreakTarget] = useState<Break | null>(null);
   const [message, setMessage] = useState("");
   const { busy, runMutation } = useMutation(setMessage);
   const [query, setQuery] = useState("");
@@ -85,7 +88,7 @@ export function AdminRecordsPanel({
       .then((b) => { if (version === requestVersion.current) setDays(b.workDays); });
   };
   useEffect(() => {
-    setTarget(null); setMessage("");
+    setTarget(null); setBreakTarget(null); setMessage("");
     void load().catch(() => setMessage("Záznamy se nepodařilo načíst."));
     return () => { requestVersion.current++; };
   }, [date, leaderMode]);
@@ -103,8 +106,8 @@ e.preventDefault(); return runMutation(async () => {
         projectId: d.get("projectId"),
         workTypeCode: d.get("workTypeCode"),
         workActivityCode: d.get("workActivityCode") || null,
-        startAt: new Date(String(d.get("startAt"))).toISOString(),
-        endAt: new Date(String(d.get("endAt"))).toISOString(),
+        startAt: readBusinessDateTime(d, "startAt"),
+        endAt: readBusinessDateTime(d, "endAt"),
         description: d.get("description") || null,
         reason: d.get("reason"),
       }),
@@ -139,13 +142,17 @@ return runMutation(async () => {
 
 });
 }
-  function editBreak(item: Break) {
-    const start = window.prompt("Začátek přestávky:", local(item.startAt));
-    const end = window.prompt("Konec přestávky:", local(item.endAt));
-    if (!start || !end) return;
-    void patch(`/api/admin/breaks/${item.id}`, {
-      startAt: new Date(start).toISOString(),
-      endAt: new Date(end).toISOString(),
+  async function editBreak(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    await runMutation(async () => {
+      if (!breakTarget) return;
+      const response = await fetch(`/api/admin/breaks/${breakTarget.id}`, {
+        method: "PATCH", credentials: "include", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ startAt: readBusinessDateTime(data, "startAt"), endAt: readBusinessDateTime(data, "endAt"), reason: data.get("reason") }),
+      });
+      if (!response.ok) { setMessage(((await response.json()) as { error: string }).error); return; }
+      setBreakTarget(null); setMessage("Přestávka byla auditovaně opravena."); await load();
     });
   }
   function editMachine(item: MachineUsage) {
@@ -210,11 +217,13 @@ return runMutation(async () => {
                 <span>
                   <b>
                     {new Date(entry.startAt).toLocaleTimeString("cs-CZ", {
+                      timeZone: businessTimeZone,
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
                     –
                     {new Date(entry.endAt).toLocaleTimeString("cs-CZ", {
+                      timeZone: businessTimeZone,
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
@@ -229,7 +238,7 @@ return runMutation(async () => {
                 <div className="row-actions">
                   <button disabled={busy}
                     className="table-action"
-                    onClick={() => setTarget(entry)}
+                    onClick={() => { setBreakTarget(null); setTarget(entry); }}
                   >
                     Upravit práci
                   </button>
@@ -249,11 +258,13 @@ return runMutation(async () => {
                 <span>
                   <b>
                     {new Date(item.startAt).toLocaleTimeString("cs-CZ", {
+                      timeZone: businessTimeZone,
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
                     –
                     {new Date(item.endAt).toLocaleTimeString("cs-CZ", {
+                      timeZone: businessTimeZone,
                       hour: "2-digit",
                       minute: "2-digit",
                     })}
@@ -262,7 +273,7 @@ return runMutation(async () => {
                 </span>
                 <button disabled={busy}
                   className="table-action"
-                  onClick={() => editBreak(item)}
+                  onClick={() => { setTarget(null); setBreakTarget(item); }}
                 >
                   Upravit přestávku
                 </button>
@@ -285,6 +296,14 @@ return runMutation(async () => {
         ))
       )}
       {days.length > 0 && !days.some((day) => matchesSearch(query, day.displayName, day.workDate, shiftLabel(day.shiftType), workStateLabel(day.state), day.entries.map((entry) => `${entry.projectCode} ${entry.projectName} ${entry.workTypeName} ${entry.machineUsage?.machineCode ?? ""} ${entry.description ?? ""}`).join(" "))) && <p className="muted">Žádný den neodpovídá hledání.</p>}
+      {breakTarget && <form key={breakTarget.id} className="admin-entry-form" onSubmit={editBreak}>
+        <strong>Opravit přestávku</strong>
+        <BusinessDateTimeField name="startAt" label="Začátek přestávky" defaultValue={breakTarget.startAt} />
+        <BusinessDateTimeField name="endAt" label="Konec přestávky" defaultValue={breakTarget.endAt} />
+        <label>Důvod opravy<input name="reason" required minLength={3} maxLength={1000} /></label>
+        <button disabled={busy}>Uložit auditovanou opravu</button>
+        <button type="button" disabled={busy} onClick={() => setBreakTarget(null)}>Zrušit</button>
+      </form>}
       {target && (
         <form key={target.id} className="admin-entry-form" onSubmit={edit}>
           <div>
@@ -329,24 +348,8 @@ return runMutation(async () => {
               ))}
             </select>
           </label>
-          <label>
-            Od
-            <input
-              name="startAt"
-              type="datetime-local"
-              defaultValue={local(target.startAt)}
-              required
-            />
-          </label>
-          <label>
-            Do
-            <input
-              name="endAt"
-              type="datetime-local"
-              defaultValue={local(target.endAt)}
-              required
-            />
-          </label>
+          <BusinessDateTimeField name="startAt" label="Od" defaultValue={target.startAt} />
+          <BusinessDateTimeField name="endAt" label="Do" defaultValue={target.endAt} />
           <label>
             Popis
             <input name="description" defaultValue={target.description ?? ""} />
@@ -360,9 +363,4 @@ return runMutation(async () => {
       )}
     </section>
   );
-}
-function local(value: string) {
-  const d = new Date(value);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }

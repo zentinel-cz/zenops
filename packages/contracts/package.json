@@ -9,6 +9,10 @@
       "types": "./src/index.ts",
       "import": "./dist/index.js"
     },
+    "./time": {
+      "types": "./src/time.ts",
+      "import": "./dist/time.js"
+    },
     "./labels": {
       "types": "./src/labels.ts",
       "import": "./dist/labels.js"

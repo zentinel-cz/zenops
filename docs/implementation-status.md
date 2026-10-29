@@ -2,6 +2,15 @@
 
 Last updated: 2026-10-13
 
+## Business time and employee overlaps — prepared 2026-10-29
+
+ADR-011 and migration 0019 add employee-level work/break overlap protection
+across days, Prague datetime input/display with explicit DST disambiguation,
+and shift business-date validation. Source history is not rewritten; conflicting
+historical data blocks migration. Deployment checks and local verification are
+documented in `operations/business-time-release.md`. Not deployed from this
+workspace; Docker/Compose runtime verification remains a release gate.
+
 ## Preview deployment
 
 - approved preview is deployed at `https://zenops.zentinel.cz`

@@ -1,3 +1,4 @@
+import { businessDate } from "@zenops/contracts/time";
 import { useMutation } from "./useMutation";
 import { roleLabel } from "@zenops/contracts/labels";
 import { type FormEvent, useEffect, useRef, useState } from "react";
@@ -228,5 +229,5 @@ function ReturnDateForm({ entry, onSubmit, onCancel }: { entry: ReturnEntry; onS
 
 function nullable(value: FormDataEntryValue | null) { const result = String(value ?? "").trim(); return result || null; }
 async function errorFrom(response: Response, fallback: string) { const body = await response.json().catch(() => ({ error: fallback })) as { error?: string }; return body.error ?? fallback; }
-function today() { return new Date().toLocaleDateString("en-CA"); }
+function today() { return businessDate(); }
 function formatDate(value: string) { return new Date(`${value.slice(0, 10)}T00:00:00`).toLocaleDateString("cs-CZ"); }

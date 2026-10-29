@@ -1,3 +1,4 @@
+import { businessDate } from "@zenops/contracts/time";
 import { shiftLabel, projectStatusLabel } from "@zenops/contracts/labels";
 import type { SessionUser } from "@zenops/contracts";
 import { useEffect, useRef, useState } from "react";
@@ -15,7 +16,7 @@ type Period = { state: "OPEN" | "CLOSED"; totalWorkDays: number; unresolvedWorkD
 const hours = (minutes: number) => `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
 
 export function MonthlyPanel({ user }: { user: SessionUser }) {
-  const [month, setMonth] = useState(new Date().toLocaleDateString("en-CA").slice(0, 7));
+  const [month, setMonth] = useState(businessDate().slice(0, 7));
   const [report, setReport] = useState<MonthlyReport | null>(null);
   const [period, setPeriod] = useState<Period | null>(null);
   const [reason, setReason] = useState("");

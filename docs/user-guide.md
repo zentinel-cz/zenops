@@ -390,6 +390,29 @@ pro čtení. Admin vidí všechny zakázky, Vedoucí pouze aktuálně přiřazen
 Pracovník nemá přístup ke společným poznámkám ani souhrnům paliva; vlastní
 historii práce a nabídku otevřených zakázek má nadále dostupnou.
 
+### Časy směn a práce přes půlnoc
+
+Časy zadáváte a prohlížíte vždy v pásmu **Europe/Prague**, i když má telefon
+nebo počítač nastavené jiné pásmo. Datum pracovního dne je datum začátku
+směny. Práci, přestávky a jízdy můžete zapsat i na následující kalendářní den;
+konec může být nejpozději o půlnoci po tomto následujícím dni. Směna nemá
+automaticky předepsanou délku 12 hodin.
+
+Úseky lze v rozpracovaném či vráceném dni zadat v libovolném pořadí. Před
+odesláním musí první práce, přestávka nebo jízda začínat ve vybraném datu.
+Například směna 31. října 22:00–1. listopadu 06:00 patří k 31. říjnu a celá
+se započítá do říjnového pracovního dne a jeho měsíční uzávěrky.
+
+Práce a přestávky se nesmějí překrývat ani s úsekem jiného pracovního dne
+téhož pracovníka. Konec jednoho úseku a začátek dalšího mohou být shodné.
+Ochrana platí i při současném ukládání ze dvou zařízení a při opravách.
+
+Při přechodu na letní čas aplikace odmítne hodinu, která neexistuje. Při
+návratu na zimní čas se u opakované hodiny zobrazí povinný výběr **První
+výskyt (letní čas UTC+02:00)** nebo **Druhý výskyt (zimní čas UTC+01:00)**.
+Stejný výběr mají opravy práce; Admin opravuje přestávku v samostatném
+formuláři se začátkem, koncem a povinným důvodem.
+
 ### Délka hesla
 
 Při založení účtu, přihlášení ani změně hesla není vyžadováno 12 znaků.

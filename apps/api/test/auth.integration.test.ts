@@ -39,6 +39,26 @@ integration("authentication integration", () => {
   let submittedEntryIds: string[] = [];
   let sharedVehicleTripId = "";
 
+  async function intervalContext(code: string) {
+    const [employee] = await db`insert into employees(employee_number,display_name) values(${`TIME-${code.toUpperCase()}`},${`Time ${code}`}) returning id`;
+    const [user] = await db`insert into users(employee_id,username,email,password_hash)
+      values(${employee!.id},${`time-${code}`},${`time-${code}@zenops.test`},'test-only-unused-hash') returning id`;
+    await db`insert into user_roles(user_id,role_id) select ${user!.id},id from roles where code='WORKER'`;
+    const [project] = await db`insert into projects(code,name,location,current_leader_employee_id,start_date,created_by_user_id)
+      values(${`TIME-${code.toUpperCase()}`},'Time checks','Test',${leaderEmployeeId},'2027-01-01',${user!.id}) returning id`;
+    const cookie = `zenops_session=${(await createSession(db,user!.id,1,{})).token}`;
+    const headers = { origin, cookie };
+    const createDay = async (workDate: string) => {
+      const response = await app.inject({method:'POST',url:'/api/workdays',headers,payload:{workDate,shiftType:'NIGHT'}});
+      expect(response.statusCode,response.body).toBe(201);
+      return response.json().workDay.id as string;
+    };
+    const addWork = (dayId: string, startAt: string, endAt: string) => app.inject({method:'POST',url:`/api/workdays/${dayId}/entries`,headers,
+      payload:{projectId:project!.id,workTypeCode:'OTHER',description:'Time regression',startAt,endAt}});
+    const addBreak = (dayId: string, startAt: string, endAt: string) => app.inject({method:'POST',url:`/api/workdays/${dayId}/breaks`,headers,payload:{startAt,endAt}});
+    return { employeeId: employee!.id, projectId: project!.id, headers, createDay, addWork, addBreak };
+  }
+
   beforeAll(async () => {
     const migrationDirectory = resolve(process.cwd(), "migrations");
     for (const file of (await readdir(migrationDirectory))
@@ -1454,6 +1474,137 @@ integration("authentication integration", () => {
     expect((await app.inject({url:`/api/projects/${projectId}/day?date=2026-09-25`,headers:{cookie:demotedCookie}})).statusCode).toBe(403);
     const restored = await app.inject({method:"PATCH",url:`/api/projects/${projectId}`,headers:{origin,cookie:adminCookie},payload:{...body,leaderEmployeeId,reason:"Obnovení vedoucího po testu"}});
     expect(restored.statusCode,restored.body).toBe(200);
+  });
+
+  it("protects employee work and breaks across days and keeps corrections and deletes synchronized", async () => {
+    const context = await intervalContext('overlap');
+    const night = await context.createDay('2027-01-30');
+    const morning = await context.createDay('2027-01-31');
+    const entry = await context.addWork(night,'2027-01-30T22:00:00+01:00','2027-01-31T06:00:00+01:00');
+    expect(entry.statusCode,entry.body).toBe(201);
+    expect((await context.addWork(morning,'2027-01-31T05:00:00+01:00','2027-01-31T07:00:00+01:00')).statusCode).toBe(409);
+    expect((await context.addBreak(morning,'2027-01-31T05:30:00+01:00','2027-01-31T06:30:00+01:00')).statusCode).toBe(409);
+    const pause = await context.addBreak(night,'2027-01-31T06:00:00+01:00','2027-01-31T06:30:00+01:00');
+    expect(pause.statusCode,pause.body).toBe(201);
+    expect((await context.addBreak(morning,'2027-01-31T06:15:00+01:00','2027-01-31T06:45:00+01:00')).statusCode).toBe(409);
+    const adjacent = await context.addWork(morning,'2027-01-31T06:30:00+01:00','2027-01-31T07:00:00+01:00');
+    expect(adjacent.statusCode,adjacent.body).toBe(201);
+    const failedCorrection = await app.inject({method:'PATCH',url:`/api/workdays/${morning}/entries/${adjacent.json().entry.id}`,headers:context.headers,
+      payload:{projectId:context.projectId,workTypeCode:'OTHER',description:'Correction',startAt:'2027-01-31T05:45:00+01:00',endAt:'2027-01-31T07:00:00+01:00'}});
+    expect(failedCorrection.statusCode,failedCorrection.body).toBe(409);
+    const [preserved] = await db`select start_at from employee_time_intervals where work_entry_id=${adjacent.json().entry.id}`;
+    expect(preserved!.startAt.toISOString()).toBe('2027-01-31T05:30:00.000Z');
+    const corrected = await app.inject({method:'PATCH',url:`/api/workdays/${morning}/entries/${adjacent.json().entry.id}`,headers:context.headers,
+      payload:{projectId:context.projectId,workTypeCode:'OTHER',description:'Correction',startAt:'2027-01-31T06:45:00+01:00',endAt:'2027-01-31T07:00:00+01:00'}});
+    expect(corrected.statusCode,corrected.body).toBe(200);
+    const [projection] = await db`select start_at from employee_time_intervals where work_entry_id=${adjacent.json().entry.id}`;
+    expect(projection!.startAt.toISOString()).toBe('2027-01-31T05:45:00.000Z');
+    expect((await context.addBreak(morning,'2027-01-31T06:30:00+01:00','2027-01-31T06:45:00+01:00')).statusCode).toBe(201);
+    const removed = await app.inject({method:'DELETE',url:`/api/workdays/${night}/entries/${entry.json().entry.id}`,headers:context.headers});
+    expect(removed.statusCode).toBe(204);
+    expect(await db`select id from employee_time_intervals where work_entry_id=${entry.json().entry.id}`).toHaveLength(0);
+    expect((await context.addWork(morning,'2027-01-31T05:00:00+01:00','2027-01-31T06:00:00+01:00')).statusCode).toBe(201);
+    const other = await intervalContext('other');
+    expect((await other.addWork(await other.createDay('2027-01-31'),'2027-01-31T05:00:00+01:00','2027-01-31T06:00:00+01:00')).statusCode).toBe(201);
+  });
+
+  it("enforces Prague business dates, permits out-of-order drafts and assigns a cross-year shift to its start month", async () => {
+    const context = await intervalContext('dates');
+    const day = await context.createDay('2027-12-31');
+    expect((await context.addWork(day,'2027-12-30T23:00:00+01:00','2027-12-31T01:00:00+01:00')).statusCode).toBe(422);
+    expect((await context.addBreak(day,'2028-01-01T23:30:00+01:00','2028-01-02T00:01:00+01:00')).statusCode).toBe(422);
+    const invalidTrip = await app.inject({method:'POST',url:`/api/workdays/${day}/vehicle-trips`,headers:context.headers,
+      payload:{vehicleId,startAt:'2027-12-30T22:00:00+01:00',endAt:'2027-12-30T23:00:00+01:00',startOdometerKm:100,endOdometerKm:110}});
+    expect(invalidTrip.statusCode,invalidTrip.body).toBe(422);
+    const afterMidnight = await context.addWork(day,'2028-01-01T00:00:00+01:00','2028-01-01T06:00:00+01:00');
+    expect(afterMidnight.statusCode,afterMidnight.body).toBe(201);
+    const rejected = await app.inject({method:'POST',url:`/api/workdays/${day}/submit`,headers:context.headers});
+    expect(rejected.statusCode,rejected.body).toBe(422);
+    const [draft] = await db`select state from work_days where id=${day}`;
+    expect(draft!.state).toBe('DRAFT');
+    expect((await context.addWork(day,'2027-12-31T22:00:00+01:00','2028-01-01T00:00:00+01:00')).statusCode).toBe(201);
+    const submitted = await app.inject({method:'POST',url:`/api/workdays/${day}/submit`,headers:context.headers});
+    expect(submitted.statusCode,submitted.body).toBe(200);
+    const [period] = await db`select wd.work_date::text,mp.month_start::text from work_days wd join monthly_periods mp on mp.id=wd.monthly_period_id where wd.id=${day}`;
+    expect(period).toEqual({workDate:'2027-12-31',monthStart:'2027-12-01'});
+    await expect(db`update work_entries set start_at='2028-01-01T06:00:00+01:00',end_at='2028-01-01T07:00:00+01:00'
+      where work_day_id=${day} and start_at='2027-12-31T22:00:00+01:00'`).rejects.toMatchObject({code:'ZT002'});
+    await expect(db`update work_days set work_date='2028-01-01' where id=${day}`).rejects.toMatchObject({code:'ZT001'});
+  });
+
+  it("rejects simultaneous cross-day work/break collisions at the database constraint", async () => {
+    const context = await intervalContext('concurrent');
+    const first = await context.createDay('2027-02-10');
+    const second = await context.createDay('2027-02-11');
+    const results = await Promise.all([
+      context.addWork(first,'2027-02-11T01:00:00+01:00','2027-02-11T03:00:00+01:00'),
+      context.addBreak(second,'2027-02-11T02:00:00+01:00','2027-02-11T04:00:00+01:00'),
+    ]);
+    expect(results.map((result) => result.statusCode).sort()).toEqual([201,409]);
+    expect(await db`select id from employee_time_intervals where employee_id=${context.employeeId}`).toHaveLength(1);
+    await expect(db`insert into break_entries(work_day_id,start_at,end_at)
+      values(${second},'2027-02-11T02:15:00+01:00','2027-02-11T02:30:00+01:00')`).rejects.toMatchObject({code:'23P01'});
+  });
+
+  it.each([
+    ['overlap','Historical employee intervals overlap'],
+    ['date','Historical intervals are outside their business dates'],
+    ['start','Historical shifts do not start on their business date'],
+    ['valid','Valid fixture rolled back'],
+  ])("checks historical %s data before migration without rewriting source records", async (scenario, message) => {
+    const migrationDirectory = resolve(process.cwd(), 'migrations');
+    await expect(db.begin(async (transaction) => {
+      await transaction`create schema legacy_time_check`;
+      await transaction`set local search_path to legacy_time_check,public`;
+      for (const file of (await readdir(migrationDirectory)).filter((name) => name.endsWith('.sql') && name<'0019').sort()) {
+        await transaction.unsafe(await readFile(resolve(migrationDirectory,file),'utf8'));
+      }
+      const [employee] = await transaction`insert into employees(employee_number,display_name) values('LEGACY','Legacy') returning id`;
+      const [user] = await transaction`insert into users(employee_id,username,email,password_hash) values(${employee!.id},'legacy','legacy@test.invalid','unused') returning id`;
+      await transaction`insert into user_roles(user_id,role_id) select ${user!.id},id from roles where code='LEADER'`;
+      const [project] = await transaction`insert into projects(code,name,location,current_leader_employee_id,start_date,created_by_user_id)
+        values('LEGACY','Legacy','Test',${employee!.id},'2027-01-01',${user!.id}) returning id`;
+      const [period] = await transaction`insert into monthly_periods(month_start) values('2027-01-01') returning id`;
+      const days = await transaction`insert into work_days(employee_id,monthly_period_id,work_date,shift_type)
+        values(${employee!.id},${period!.id},'2027-01-01','NIGHT'),(${employee!.id},${period!.id},'2027-01-02','MORNING') returning id`;
+      const [projectDay] = await transaction`insert into project_days(project_id,work_date) values(${project!.id},'2027-01-01') returning id`;
+      const [workType] = await transaction`select id from work_types where code='OTHER'`;
+      await transaction`insert into work_entries(work_day_id,project_id,project_day_id,work_type_id,start_at,end_at,description)
+        values(${days[0]!.id},${project!.id},${projectDay!.id},${workType!.id},
+          ${scenario==='date' ? '2027-01-03T01:00:00+01:00' : scenario==='valid' ? '2027-01-01T22:00:00+01:00' : '2027-01-02T01:00:00+01:00'},
+          ${scenario==='date' ? '2027-01-03T03:00:00+01:00' : '2027-01-02T03:00:00+01:00'},'Legacy')`;
+      if (scenario==='overlap') await transaction`insert into break_entries(work_day_id,start_at,end_at) values(${days[1]!.id},'2027-01-02T02:00:00+01:00','2027-01-02T04:00:00+01:00')`;
+      if (scenario==='start') await transaction`update work_days set state='SUBMITTED' where id=${days[0]!.id}`;
+      if (scenario==='valid') await transaction`insert into break_entries(work_day_id,start_at,end_at) values(${days[1]!.id},'2027-01-02T03:00:00+01:00','2027-01-02T04:00:00+01:00')`;
+      const diagnostics = await transaction.unsafe(await readFile(resolve(process.cwd(),'../../ops/check-workday-times.sql'),'utf8'));
+      expect(diagnostics.map((result) => result.length)).toEqual([
+        scenario==='overlap' ? 1 : 0, scenario==='date' ? 1 : 0, scenario==='start' ? 1 : 0,
+      ]);
+      const before = await transaction`select row_to_json(we) as data from work_entries we order by id`;
+      await transaction.unsafe(await readFile(resolve(migrationDirectory,'0019_employee_intervals_and_business_dates.sql'),'utf8'));
+      if (scenario==='valid') {
+        expect(await transaction`select row_to_json(we) as data from work_entries we order by id`).toEqual(before);
+        expect(await transaction`select id from employee_time_intervals`).toHaveLength(2);
+        throw new Error('Valid fixture rolled back');
+      }
+    })).rejects.toThrow(message!);
+    expect(await db`select schema_name from information_schema.schemata where schema_name='legacy_time_check'`).toHaveLength(0);
+    expect(await db`select id from employee_time_intervals limit 1`).toHaveLength(1);
+  });
+
+  it("uses elapsed time through both Prague DST changes without imposing twelve-hour shifts", async () => {
+    const context = await intervalContext('dst');
+    for (const [date,startAt,endAt] of [
+      ['2027-03-28','2027-03-28T01:30:00+01:00','2027-03-28T03:30:00+02:00'],
+      ['2027-10-31','2027-10-31T02:30:00+02:00','2027-10-31T02:30:00+01:00'],
+    ]) {
+      const day = await context.createDay(date!);
+      const result = await context.addWork(day,startAt!,endAt!);
+      expect(result.statusCode,result.body).toBe(201);
+      const [duration] = await db`select extract(epoch from(end_at-start_at))::int as seconds from employee_time_intervals where work_day_id=${day}`;
+      expect(duration!.seconds).toBe(3600);
+      expect((await app.inject({method:'POST',url:`/api/workdays/${day}/submit`,headers:context.headers})).statusCode).toBe(200);
+    }
   });
 
   it("changes the authenticated password, audits it and revokes every session", async () => {

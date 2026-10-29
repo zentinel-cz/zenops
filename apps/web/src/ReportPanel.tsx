@@ -1,3 +1,4 @@
+import { businessDate } from "@zenops/contracts/time";
 import { fuelCategoryLabel } from "@zenops/contracts/labels";
 import { useEffect, useState } from "react";
 import { ListSearch, matchesSearch } from "./ListSearch";
@@ -10,7 +11,7 @@ type Report = { date: string; summary: { entries: number; workers: number; appro
 const hours = (minutes: number) => `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
 
 export function ReportPanel() {
-  const [date, setDate] = useState(new Date().toLocaleDateString("en-CA"));
+  const [date, setDate] = useState(businessDate());
   const [report, setReport] = useState<Report | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);

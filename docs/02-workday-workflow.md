@@ -10,6 +10,12 @@
 The shift type does not force exact working times. Actual time comes
 from WorkEntry intervals.
 
+ADR-011 defines the business date as the shift's start date in Europe/Prague.
+Work, breaks and driver trips can continue on the following calendar day.
+Draft intervals may be entered out of order; submission requires the first
+recorded interval to start on the selected date. Cross-month shifts belong
+to the starting month's period. No fixed 12-hour duration is imposed.
+
 ## Add work
 
 For every work interval: 1. Select an OPEN project. 2. Enter `from` and
@@ -23,7 +29,8 @@ shift.
 ## Breaks
 
 Breaks are explicit intervals. WorkEntry and BreakEntry intervals for
-the same employee must not overlap.
+the same employee must not overlap, even across different WorkDays. Adjacent
+intervals are allowed. Database protection covers concurrent writes.
 
 ## Submission
 
