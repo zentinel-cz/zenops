@@ -26,6 +26,10 @@ machine/attachment/vehicle data where applicable. 7. Save.
 Worker can add multiple WorkEntries across multiple projects in one
 shift.
 
+The work-type picker includes OTHER for work outside the named categories.
+Its description is mandatory and cannot consist only of whitespace. The
+same server-side requirement applies to creating and correcting entries.
+
 ## Breaks
 
 Breaks are explicit intervals. WorkEntry and BreakEntry intervals for

@@ -2,6 +2,15 @@
 
 Last updated: 2026-10-13
 
+## Operational correction forms and OTHER work — prepared 2026-10-29
+
+Admin machine and trip corrections use prefilled accessible dialogs with
+fuel, per-machine attachments, passengers, notes and mandatory correction
+reasons. Historical inactive options remain available. Worker can select OTHER
+and must provide a nonblank description. Existing server validation, period
+locks and before/after audits remain in force. No new migration required.
+See operations/operational-corrections-release.md; not deployed from this workspace.
+
 ## Approval detail cards — prepared 2026-10-29
 
 The current Leader's pending queue includes work description/activity and

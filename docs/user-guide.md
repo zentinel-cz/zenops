@@ -156,7 +156,9 @@ důvod. Vedoucího může později změnit pouze Admin s uvedením důvodu.
 1. Na úvodní obrazovce klepněte na **Kde dnes pracuji?**. Tato nabídka se zavře a otevře se výběr směny.
 2. Klepněte na **Ranní směna** nebo **Noční směna**. Volba se ihned uloží a zobrazí se další krok.
 3. Vyberte druh práce: Strojní sečení, Kácení, Reprofilace nebo Ruční sečení. Nabídka po výběru zmizí.
-4. Ve formuláři vyberte otevřenou Zakázku a zadejte skutečný začátek a konec práce. U Kácení vyberte také činnost.
+4. Ve formuláři vyberte otevřenou Zakázku a zadejte skutečný začátek a konec práce.
+   U Kácení vyberte také činnost. Pro práci mimo nabídku zvolte **Ostatní**
+   a povinně vyplňte **Popis práce**; prázdný popis ani samotné mezery nelze uložit.
 5. Potvrďte **Uložit pracovní úsek**. Další práci přidáte stejným postupem; záznamy uvidíte v seznamu dne.
 6. Přestávku přidávejte přes **Přidat přestávku**. Tlačítkem **Přidat stroj**
    u příslušného pracovního úseku otevřete formulář, který ukáže vybranou
@@ -289,6 +291,19 @@ Záznamy vybraného dne lze vyhledat podle pracovníka, směny, stavu, zakázky 
 druhu práce.
 Ve stejném přehledu může opravit přestávku, MTH a palivo stroje, přiřazené
 příslušenství i kilometry, palivo, cestující a poznámku jízdy vozidlem.
+
+U konkrétního stroje zvolte **MTH/palivo**. V jednom formuláři upravíte
+počáteční a konečný MTH, spotřebu, tankování a zaškrtnuté příslušenství.
+Oprava se týká pouze tohoto stroje, ostatní stroje úseku se nemění.
+Volba **Upravit jízdu** otevře předvyplněné časy, kilometry, palivo,
+cestující a poznámku. Řidič se mezi cestujícími nenabízí. Neaktivní osoby
+a příslušenství jsou označené, aby šlo opravit také historické záznamy.
+
+V obou formulářích uveďte **Důvod opravy** a zvolte **Uložit auditovanou
+opravu**. Vymazané palivové pole se uloží jako neuvedená hodnota; **0**
+znamená výslovně nulovou hodnotu. Zrušením formuláře se nic nemění.
+Při chybě zůstanou zadané hodnoty zachované. Tyto opravy provádí pouze Admin;
+uzavřený měsíc je nutné nejprve znovu otevřít.
 
 Seznam dnešních pracovních úseků, přestávek a jízd lze vyhledat podle zakázky,
 druhu práce, stroje nebo vozidla.

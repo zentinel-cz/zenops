@@ -2050,6 +2050,26 @@ integration("authentication integration", () => {
     expect(saved!.reason).toBe('Doplňte popis práce');
   });
 
+  it("limits correction options to Admin and includes historical profiles and attachments", async () => {
+    const [employee] = await db`insert into employees(employee_number,display_name,is_active,deactivated_at,deactivated_by_user_id)
+      select 'HIST-CORRECTION','Historický cestující bez účtu',false,now(),id from users where username='admin' returning id`;
+    const [type] = await db`insert into attachment_types(name) values('Historical correction') returning id`;
+    const [attachment] = await db`insert into attachments(attachment_type_id,code,name,is_active)
+      values(${type!.id},'HIST-CORRECTION','Historické příslušenství',false) returning id`;
+    const url = '/api/admin/record-options';
+    expect((await app.inject({url})).statusCode).toBe(401);
+    for (const username of ['worker','leader','accountant.test']) {
+      expect((await app.inject({url,headers:await headersFor(username)})).statusCode).toBe(403);
+    }
+    const response = await app.inject({url,headers:await headersFor('admin')});
+    expect(response.statusCode,response.body).toBe(200);
+    expect(response.json().employees).toContainEqual(expect.objectContaining({
+      id:employee!.id,employeeNumber:'HIST-CORRECTION',displayName:'Historický cestující bez účtu',isActive:false}));
+    expect(response.json().attachments).toContainEqual(expect.objectContaining({
+      id:attachment!.id,code:'HIST-CORRECTION',isActive:false}));
+    expect(response.json().employees.every((item:object)=>!('email' in item) && !('passwordHash' in item))).toBe(true);
+  });
+
   it("changes the authenticated password, audits it and revokes every session", async () => {
     const login = await app.inject({
       method: "POST",

@@ -21,6 +21,7 @@ type Employee = { id: string; displayName: string };
 const workTypes = [
   ["MACHINE_MOWING", "Strojní sečení"], ["TREE_CUTTING", "Kácení"],
   ["REPROFILING", "Reprofilace"], ["BRUSHCUTTER", "Ruční sečení"],
+  ["OTHER", "Ostatní"],
 ] as const;
 const treeActivities = workActivities;
 

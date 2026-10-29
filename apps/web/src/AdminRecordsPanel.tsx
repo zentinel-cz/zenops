@@ -3,8 +3,10 @@ import { BusinessDateTimeField, readBusinessDateTime } from "./BusinessDateTimeF
 import { useMutation } from "./useMutation";
 import { workActivities, workStateLabel, shiftLabel } from "@zenops/contracts/labels";
 import type { MachineUsageSummary, ProjectSummary } from "@zenops/contracts";
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import { type FormEvent, lazy, Suspense, useEffect, useRef, useState } from "react";
 import { ListSearch, matchesSearch } from "./ListSearch";
+import type { CorrectionTrip, OperationalCorrectionTarget } from "./OperationalCorrectionForm";
+const OperationalCorrectionForm = lazy(() => import("./OperationalCorrectionForm").then((module) => ({ default: module.OperationalCorrectionForm })));
 type MachineUsage = MachineUsageSummary;
 
 type Entry = {
@@ -22,19 +24,7 @@ type Entry = {
   machineUsages: MachineUsage[];
 };
 type Break = { id: string; startAt: string; endAt: string };
-type Trip = {
-  id: string;
-  vehicleId: string;
-  vehicleCode: string;
-  startAt: string;
-  endAt: string;
-  startOdometerKm: string;
-  endOdometerKm: string;
-  fuelConsumed: string | null;
-  fuelRefuelled: string | null;
-  note: string | null;
-  passengerEmployeeIds: string[];
-};
+type Trip = CorrectionTrip;
 type Day = {
   id: string;
   workDate: string;
@@ -69,6 +59,7 @@ export function AdminRecordsPanel({
   const [target, setTarget] = useState<Entry | null>(null);
   const [breakTarget, setBreakTarget] = useState<Break | null>(null);
   const [cancellingDay, setCancellingDay] = useState<Day | null>(null);
+  const [operationalTarget, setOperationalTarget] = useState<OperationalCorrectionTarget | null>(null);
   const [message, setMessage] = useState("");
   const { busy, runMutation } = useMutation(setMessage);
   const [query, setQuery] = useState("");
@@ -83,7 +74,7 @@ export function AdminRecordsPanel({
       .then((b) => { if (version === requestVersion.current) setDays(b.workDays); });
   };
   useEffect(() => {
-    setTarget(null); setBreakTarget(null); setCancellingDay(null); setMessage("");
+    setTarget(null); setBreakTarget(null); setCancellingDay(null); setOperationalTarget(null); setMessage("");
     void load().catch(() => setMessage("Záznamy se nepodařilo načíst."));
     return () => { requestVersion.current++; };
   }, [date, leaderMode]);
@@ -117,26 +108,6 @@ e.preventDefault(); return runMutation(async () => {
 
 });
 }
-  async function patch(url: string, body: object) {
-return runMutation(async () => {
-
-    const reason = window.prompt("Důvod administrativní opravy:");
-    if (!reason) return;
-    const r = await fetch(url, {
-      method: "PATCH",
-      credentials: "include",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ ...body, reason }),
-    });
-    if (!r.ok) {
-      setMessage(((await r.json()) as { error: string }).error);
-      return;
-    }
-    setMessage("Provozní údaj byl auditovaně opraven.");
-    await load();
-
-});
-}
   async function cancelDay(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -163,34 +134,9 @@ return runMutation(async () => {
       setBreakTarget(null); setMessage("Přestávka byla auditovaně opravena."); await load();
     });
   }
-  function editMachine(item: MachineUsage) {
-    const start = window.prompt("Počáteční MTH:", item.startMth ?? "");
-    const end = window.prompt("Konečný MTH:", item.endMth ?? "");
-    if (start === null || end === null) return;
-    void patch(`/api/admin/machine-usages/${item.id}`, {
-      machineId: item.machineId,
-      startMth: start ? Number(start) : null,
-      endMth: end ? Number(end) : null,
-      fuelConsumed: item.fuelConsumed ? Number(item.fuelConsumed) : null,
-      fuelRefuelled: item.fuelRefuelled ? Number(item.fuelRefuelled) : null,
-      attachmentIds: item.attachmentIds,
-    });
-  }
-  function editTrip(item: Trip) {
-    const startKm = window.prompt("Počáteční km:", item.startOdometerKm);
-    const endKm = window.prompt("Konečné km:", item.endOdometerKm);
-    if (startKm === null || endKm === null) return;
-    void patch(`/api/admin/vehicle-trips/${item.id}`, {
-      vehicleId: item.vehicleId,
-      startAt: item.startAt,
-      endAt: item.endAt,
-      startOdometerKm: Number(startKm),
-      endOdometerKm: Number(endKm),
-      fuelConsumed: item.fuelConsumed ? Number(item.fuelConsumed) : null,
-      fuelRefuelled: item.fuelRefuelled ? Number(item.fuelRefuelled) : null,
-      passengerEmployeeIds: item.passengerEmployeeIds,
-      note: item.note,
-    });
+  function openOperational(target: OperationalCorrectionTarget) {
+    setTarget(null); setBreakTarget(null); setCancellingDay(null); setMessage("");
+    setOperationalTarget(target);
   }
   return (
     <section className="management-panel">
@@ -255,7 +201,7 @@ return runMutation(async () => {
                     <button disabled={busy}
                       className="table-action"
                       key={usage.id}
-                      onClick={() => editMachine(usage)}
+                      onClick={() => openOperational({ kind: "machine", usage, employeeName: day.displayName, workDate: day.workDate })}
                     >
                       {usage.machineCode} · MTH/palivo
                     </button>
@@ -297,7 +243,7 @@ return runMutation(async () => {
                     {item.startOdometerKm}–{item.endOdometerKm} km
                   </small>
                 </span>
-                <button disabled={busy} className="table-action" onClick={() => editTrip(item)}>
+                <button disabled={busy} className="table-action" onClick={() => openOperational({ kind: "trip", trip: item, driverEmployeeId: day.employeeId, employeeName: day.displayName, workDate: day.workDate })}>
                   Upravit jízdu
                 </button>
               </div>
@@ -306,6 +252,13 @@ return runMutation(async () => {
         ))
       )}
       {days.length > 0 && !days.some((day) => matchesSearch(query, day.displayName, day.workDate, shiftLabel(day.shiftType), workStateLabel(day.state), day.entries.map((entry) => `${entry.projectCode} ${entry.projectName} ${entry.workTypeName} ${entry.machineUsages.map((usage) => usage.machineCode).join(" ")} ${entry.description ?? ""}`).join(" "))) && <p className="muted">Žádný den neodpovídá hledání.</p>}
+      {!leaderMode && operationalTarget && <Suspense fallback={<p role="status">Načítám formulář opravy…</p>}><OperationalCorrectionForm
+        key={operationalTarget.kind === "machine" ? operationalTarget.usage.id : operationalTarget.trip.id}
+        target={operationalTarget} onClose={() => setOperationalTarget(null)}
+        onSaved={() => {
+          setOperationalTarget(null); setMessage("Provozní údaj byl auditovaně opraven.");
+          void load().catch(() => setMessage("Oprava byla uložena, ale seznam se nepodařilo obnovit. Obnovte stránku."));
+        }} /></Suspense>}
       {cancellingDay && <form key={cancellingDay.id} className="admin-entry-form" onSubmit={cancelDay}>
         <strong>Zrušit prázdný den: {cancellingDay.displayName}</strong>
         <p>Datum: {cancellingDay.workDate.slice(0, 10)}. Den i důvod zůstanou v historii. Práce, přestávky ani vlastní jízdy nesmějí být zapsané.</p>

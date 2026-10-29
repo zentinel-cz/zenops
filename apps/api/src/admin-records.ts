@@ -17,6 +17,13 @@ export function registerAdminRecordRoutes(
   db: Database,
   requireTrustedOrigin: AuthorizationHook,
 ): void {
+  app.get("/api/admin/record-options", { preHandler: requirePermission("approval.admin.manage") }, async () => {
+    // Historical corrections must also retain deactivated assets and profiles.
+    const attachments = await db`select id,code,name,is_active from attachments order by code,id`;
+    const employees = await db`select id,employee_number,display_name,is_active from employees order by display_name,employee_number,id`;
+    return { attachments, employees };
+  });
+
   app.get(
     "/api/admin/workdays",
     { preHandler: requirePermission("approval.admin.manage") },
