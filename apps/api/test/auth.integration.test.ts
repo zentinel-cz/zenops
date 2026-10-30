@@ -2191,6 +2191,112 @@ integration("authentication integration", () => {
     })).rejects.toThrow('Asset migration fixture rolled back');
   });
 
+  it("records one driver and two self-joining passengers without duplicating vehicle fuel", async () => {
+    const driver = await intervalContext('shared-driver');
+    const passengers = await Promise.all(['shared-passenger-a','shared-passenger-b'].map(code=>intervalContext(code)));
+    const date = '2052-01-10';
+    const day = await driver.createDay(date);
+    expect((await driver.addWork(day,date+'T08:00:00+01:00',date+'T10:00:00+01:00')).statusCode).toBe(201);
+    const passengerDays = await Promise.all(passengers.map(person=>person.createDay(date)));
+    const [vehicle] = await db`insert into vehicles(code,name,registration_number) values('SHARED-FUEL','Shared fuel','SHARED52') returning id`;
+    const payload = {vehicleId:vehicle!.id,startAt:date+'T07:00:00+01:00',endAt:date+'T08:00:00+01:00',
+      startOdometerKm:100,endOdometerKm:140,fuelConsumed:6,fuelRefuelled:12};
+    const created = await app.inject({method:'POST',url:`/api/workdays/${day}/vehicle-trips`,headers:driver.headers,payload});
+    expect(created.statusCode,created.body).toBe(201);
+    const tripId = created.json().trip.id;
+    const available = await app.inject({url:`/api/workdays/${passengerDays[0]}/vehicle-trips/available`,headers:passengers[0]!.headers});
+    expect(available.statusCode,available.body).toBe(200);
+    expect(available.json().trips).toContainEqual(expect.objectContaining({id:tripId,vehicleCode:'SHARED-FUEL'}));
+    expect(available.json().trips.find((trip:{id:string})=>trip.id===tripId)).not.toHaveProperty('fuelConsumed');
+    const joinUrl = (index: number) => `/api/workdays/${passengerDays[index]}/vehicle-trips/${tripId}/passenger`;
+    const joined = await Promise.all(passengers.map((person,index)=>app.inject({method:'POST',url:joinUrl(index),headers:person.headers,payload:{}})));
+    for (const response of joined) expect(response.statusCode,response.body).toBe(200);
+    expect((await app.inject({method:'POST',url:joinUrl(0),headers:passengers[0]!.headers,payload:{}})).statusCode).toBe(200);
+    const [counts] = await db`select count(*) filter(where role='DRIVER')::int as drivers,count(*) filter(where role='PASSENGER')::int as passengers
+      from vehicle_trip_participants where vehicle_trip_id=${tripId}`;
+    expect(counts).toEqual({drivers:1,passengers:2});
+    expect(await db`select id from vehicle_trips where vehicle_id=${vehicle!.id}`).toHaveLength(1);
+    expect(await db`select id from audit_logs where action='VEHICLE_TRIP_PASSENGER_JOINED' and entity_id=${tripId}`).toHaveLength(2);
+    for (const [index,person] of passengers.entries()) {
+      const detail = await app.inject({url:`/api/workdays/current?date=${date}`,headers:person.headers});
+      expect(detail.json().workDay.vehicleTrips[0]).toMatchObject({id:tripId,participantRole:'PASSENGER',driverEmployeeId:driver.employeeId,fuelConsumed:'6.00'});
+      expect((await app.inject({method:'POST',url:joinUrl(index),headers:person.headers,payload:{fuelConsumed:99}})).statusCode).toBe(400);
+      expect((await app.inject({method:'PATCH',url:`/api/admin/vehicle-trips/${tripId}`,headers:person.headers,
+        payload:{...payload,reason:'Passenger attempt'}})).statusCode).toBe(403);
+      expect((await app.inject({method:'POST',url:`/api/workdays/${passengerDays[index]}/vehicle-trips`,headers:person.headers,payload})).statusCode).toBe(409);
+      expect((await app.inject({method:'POST',url:`/api/workdays/${day}/vehicle-trips`,headers:person.headers,payload})).statusCode).toBe(404);
+    }
+    const admin = await headersFor('admin');
+    const monthly = (await app.inject({url:'/api/reports/monthly?month=2052-01',headers:admin})).json().report;
+    expect(monthly.vehicles.find((item:{id:string})=>item.id===vehicle!.id))
+      .toMatchObject({kilometres:'40.0',fuelConsumed:'6.00',fuelRefuelled:'12.00'});
+    const own = (await app.inject({url:`/api/workdays/current?date=${date}`,headers:driver.headers})).json().workDay;
+    expect(own.vehicleTrips[0].participantRole).toBe('DRIVER');
+    // Neither loss of the driver nor replacing it with a passenger is valid.
+    await expect(db`delete from vehicle_trip_participants where vehicle_trip_id=${tripId} and role='DRIVER'`).rejects.toMatchObject({code:'ZV001'});
+    await expect(db`update vehicle_trip_participants set role='PASSENGER' where vehicle_trip_id=${tripId} and role='DRIVER'`).rejects.toMatchObject({code:'ZV001'});
+    await expect(db.begin(async transaction=>{
+      await transaction`delete from vehicle_trip_participants where vehicle_trip_id=${tripId}`;
+      await transaction`insert into vehicle_trip_participants(vehicle_trip_id,employee_id,role) values(${tripId},${passengers[0]!.employeeId},'DRIVER')`;
+    })).rejects.toMatchObject({code:'ZV001'});
+    const outsider = await intervalContext('shared-outsider');
+    const otherDate = await outsider.createDay('2052-01-11');
+    expect((await app.inject({method:'POST',url:`/api/workdays/${otherDate}/vehicle-trips/${tripId}/passenger`,
+      headers:outsider.headers,payload:{}})).statusCode).toBe(409);
+    const outsiderDay = await outsider.createDay(date);
+    const outsiderUrl = `/api/workdays/${outsiderDay}/vehicle-trips/${tripId}/passenger`;
+    for (const username of ['admin','leader','accountant.test']) {
+      expect((await app.inject({method:'POST',url:outsiderUrl,headers:await headersFor(username),payload:{}})).statusCode).toBe(403);
+    }
+    expect((await app.inject({method:'POST',url:outsiderUrl,headers:{cookie:outsider.headers.cookie},payload:{}})).statusCode).toBe(403);
+    expect((await app.inject({method:'POST',url:`/api/workdays/${day}/submit`,headers:driver.headers})).statusCode).toBe(200);
+    expect((await app.inject({method:'POST',url:outsiderUrl,headers:outsider.headers,payload:{}})).statusCode).toBe(409);
+    const unavailable = await app.inject({url:`/api/workdays/${outsiderDay}/vehicle-trips/available`,headers:outsider.headers});
+    expect(unavailable.json().trips.some((trip:{id:string})=>trip.id===tripId)).toBe(false);
+    const [fuel] = await db`select fuel_consumed,fuel_refuelled from vehicle_trips where id=${tripId}`;
+    expect(fuel).toEqual({fuelConsumed:'6.00',fuelRefuelled:'12.00'});
+  });
+
+  it("keeps machine fuel on the operator's own work entry", async () => {
+    const operator = await multipleMachineContext('operator-fuel','2052-02-10');
+    const other = await intervalContext('other-operator');
+    const denied = await app.inject({method:'POST',url:`/api/workdays/${operator.dayId}/entries/${operator.entryId}/machine`,headers:other.headers,
+      payload:{machineId:operator.machines[0]!.id,startMth:100,endMth:102,fuelConsumed:99}});
+    expect(denied.statusCode,denied.body).toBe(409);
+    const saved = await operator.addMachine(0);
+    expect(saved.statusCode,saved.body).toBe(201);
+    expect(saved.json().usage.fuelConsumed).toBe('2.00');
+    expect(await db`select id from machine_usages where work_entry_id=${operator.entryId}`).toHaveLength(1);
+  });
+
+  it("preflights historical driver membership before adding integrity guards", async () => {
+    const directory = resolve(process.cwd(),'migrations');
+    await expect(db.begin(async transaction=>{
+      await transaction`create schema legacy_driver_check`;
+      await transaction`set local search_path to legacy_driver_check,public`;
+      for (const file of (await readdir(directory)).filter(name=>name.endsWith('.sql') && name<'0024').sort()) {
+        await transaction.unsafe(await readFile(resolve(directory,file),'utf8'));
+      }
+      const [employee] = await transaction`insert into employees(employee_number,display_name) values('LEGACY-DRIVER','Legacy driver') returning id`;
+      const [period] = await transaction`insert into monthly_periods(month_start) values('2053-01-01') returning id`;
+      const [day] = await transaction`insert into work_days(employee_id,monthly_period_id,work_date,shift_type)
+        values(${employee!.id},${period!.id},'2053-01-10','MORNING') returning id`;
+      const [vehicle] = await transaction`insert into vehicles(code,name,registration_number) values('LEGACY','Legacy','LEGACY53') returning id`;
+      const [trip] = await transaction`insert into vehicle_trips(vehicle_id,driver_employee_id,driver_work_day_id,start_at,end_at,start_odometer_km,end_odometer_km)
+        values(${vehicle!.id},${employee!.id},${day!.id},'2053-01-10T07:00:00+01:00','2053-01-10T08:00:00+01:00',100,110) returning *`;
+      const migration = await readFile(resolve(directory,'0024_shared_trip_driver_integrity.sql'),'utf8');
+      await transaction.savepoint(async savepoint=>{
+        await expect(savepoint.unsafe(migration)).rejects.toThrow('Historical trip driver membership is inconsistent');
+        throw new Error('rollback failed preflight');
+      }).catch(error=>{ expect(error.message).toBe('rollback failed preflight'); });
+      expect((await transaction`select * from vehicle_trips where id=${trip!.id}`)[0]).toEqual(trip);
+      await transaction`insert into vehicle_trip_participants(vehicle_trip_id,employee_id,role) values(${trip!.id},${employee!.id},'DRIVER')`;
+      await transaction.unsafe(migration);
+      expect((await transaction`select * from vehicle_trips where id=${trip!.id}`)[0]).toEqual(trip);
+      throw new Error('Driver migration fixture rolled back');
+    })).rejects.toThrow('Driver migration fixture rolled back');
+  });
+
   it("changes the authenticated password, audits it and revokes every session", async () => {
     const login = await app.inject({
       method: "POST",

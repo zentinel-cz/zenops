@@ -42,6 +42,9 @@ async function getWorkDayDetail(db: Database, workDayId: string, employeeId: str
   `;
   const vehicleTrips = await db`
     select vt.id, vt.start_at, vt.end_at, vt.start_odometer_km, vt.end_odometer_km,
+      vt.driver_employee_id,
+      (select display_name from employees where id=vt.driver_employee_id) as driver_name,
+      case when vt.driver_employee_id=${employeeId} then 'DRIVER' else 'PASSENGER' end as participant_role,
       vt.fuel_consumed, vt.fuel_refuelled, vt.note, v.id as vehicle_id, v.code as vehicle_code,
       v.name as vehicle_name, v.registration_number,
       coalesce(json_agg(json_build_object('id', e.id, 'displayName', e.display_name) order by e.display_name)

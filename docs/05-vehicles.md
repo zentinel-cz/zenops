@@ -18,3 +18,9 @@ allow a passenger to reference the same vehicle/trip without duplicating
 operational values.
 
 Vehicle catalogue management: Admin and Leader.
+
+ADR-016 defines the explicit driver checkbox and self-joining passenger
+workflow. Passengers join the existing trip without submitting mileage/fuel.
+Both WorkDays must be editable on the same business date in an open month;
+otherwise membership corrections are Admin-only and audited.
+Migration 0024 enforces one consistent driver membership per trip.

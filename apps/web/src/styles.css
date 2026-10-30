@@ -764,6 +764,11 @@ input,select,textarea { min-width:0; max-width:100%; }
 .record-correction-choices span { min-width: 0; overflow-wrap: anywhere; }
 .record-correction-dialog button:focus-visible { outline: 2px solid #b9f6c9; outline-offset: 3px; }
 .asset-tracking-hint { grid-column: 1 / -1; margin: 0; color: #a4b7ab; font-size: 13px; line-height: 1.6; }
+.vehicle-role-panel { grid-column: 1 / -1; width: 100%; min-width: 0; padding: 20px; border: 1px solid #304139; border-radius: 12px; background: #101c16; }
+.vehicle-role-panel > h4 { margin: 0 0 16px; }
+.vehicle-role-panel > form { width: 100%; }
+.vehicle-role-panel .vehicle-driver-choice { display: flex; align-items: center; gap: 12px; min-height: 48px; margin: 0 0 14px; color: #e1eae4; }
+.vehicle-driver-choice input { flex: 0 0 22px; width: 22px; height: 22px; accent-color: #b9f6c9; }
 @media (max-width: 480px) {
   .approval-card { padding: 16px; }
   .approval-actions button { flex: 1 1 100px; }

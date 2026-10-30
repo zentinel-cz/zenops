@@ -2,6 +2,15 @@
 
 Last updated: 2026-10-13
 
+## Operator and shared-trip driver fuel — prepared 2026-10-30
+
+ADR-016 and migration 0024 enforce one consistent driver per shared trip.
+Worker explicitly selects the driver role to create a vehicle trip; passengers
+join its existing record without mileage/fuel fields. Own history shows the
+driver and participant role. Tractor fuel remains on the operator's own
+MachineUsage. No allocation of trips to projects is introduced.
+See operations/operator-driver-fuel-release.md.
+
 ## Independent catalogue tracking — prepared 2026-10-29
 
 ADR-015 and migration 0023 replace mutable shared type settings with immutable

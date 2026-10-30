@@ -5,8 +5,65 @@ import { requirePermission, requireWorkerOnly, type AuthorizationHook } from "./
 import type { Database } from "./db.js";
 
 const paramsSchema = z.object({ workDayId: z.string().uuid() });
+const passengerParams = paramsSchema.extend({ tripId: z.string().uuid() });
 
 export function registerVehicleRoutes(app: FastifyInstance, db: Database, requireTrustedOrigin: AuthorizationHook): void {
+  app.get("/api/workdays/:workDayId/vehicle-trips/available", {
+    preHandler: [requireWorkerOnly, requirePermission("workday.own.manage")],
+  }, async (request, reply) => {
+    const params = paramsSchema.safeParse(request.params);
+    if (!params.success) return reply.code(400).send({ error: "Neplatný pracovní den." });
+    const [day] = await db`select wd.work_date::text from work_days wd
+      join monthly_periods mp on mp.id=wd.monthly_period_id where wd.id=${params.data.workDayId}
+      and wd.employee_id=${request.sessionUser!.employeeId} and wd.state in ('DRAFT','RETURNED') and mp.state='OPEN'`;
+    if (!day) return reply.code(409).send({ error: "Pracovní den nelze upravit v aktuálním stavu." });
+    const trips = await db`select vt.id,vt.start_at,vt.end_at,v.code as vehicle_code,v.registration_number,
+      e.display_name as driver_name from vehicle_trips vt join vehicles v on v.id=vt.vehicle_id
+      join employees e on e.id=vt.driver_employee_id join work_days wd on wd.id=vt.driver_work_day_id
+      join monthly_periods mp on mp.id=wd.monthly_period_id
+      where wd.work_date=${day.workDate} and wd.state in ('DRAFT','RETURNED') and mp.state='OPEN'
+        and vt.driver_employee_id<>${request.sessionUser!.employeeId}
+        and not exists(select 1 from vehicle_trip_participants p where p.vehicle_trip_id=vt.id
+          and p.employee_id=${request.sessionUser!.employeeId})
+      order by vt.start_at,v.code,vt.id`;
+    return { trips };
+  });
+
+  app.post("/api/workdays/:workDayId/vehicle-trips/:tripId/passenger", {
+    preHandler: [requireTrustedOrigin, requireWorkerOnly, requirePermission("workday.own.manage")],
+  }, async (request, reply) => {
+    const params = passengerParams.safeParse(request.params);
+    if (!params.success || !z.object({}).strict().safeParse(request.body ?? {}).success) {
+      return reply.code(400).send({ error: "Cestující připojuje pouze sebe k existující jízdě, bez kilometrů a paliva." });
+    }
+    const result = await db.begin(async (transaction) => {
+      const [trip] = await transaction`select driver_work_day_id from vehicle_trips where id=${params.data.tripId}`;
+      if (!trip) return null;
+      // Stable order handles two drivers joining one another without a lock cycle.
+      const days = await transaction`select wd.id,wd.employee_id,wd.work_date::text,wd.state,mp.state as period_state
+        from work_days wd join monthly_periods mp on mp.id=wd.monthly_period_id
+        where wd.id in (${params.data.workDayId},${trip.driverWorkDayId}) order by wd.id for update of wd`;
+      const own = days.find(day=>day.id===params.data.workDayId);
+      const driver = days.find(day=>day.id===trip.driverWorkDayId);
+      if (!own || !driver || own.employeeId!==request.sessionUser!.employeeId || own.workDate!==driver.workDate
+        || ![own,driver].every(day=>['DRAFT','RETURNED'].includes(day.state) && day.periodState==='OPEN')
+        || driver.employeeId===request.sessionUser!.employeeId) return null;
+      const [lockedTrip] = await transaction`select id from vehicle_trips where id=${params.data.tripId} for update`;
+      if (!lockedTrip) return null;
+      const [membership] = await transaction`insert into vehicle_trip_participants(vehicle_trip_id,employee_id,role)
+        values(${params.data.tripId},${request.sessionUser!.employeeId},'PASSENGER')
+        on conflict(vehicle_trip_id,employee_id) do nothing returning vehicle_trip_id,employee_id,role`;
+      if (membership) {
+        await transaction`insert into audit_logs(actor_user_id,action,entity_type,entity_id,after_data)
+          values(${request.sessionUser!.id},'VEHICLE_TRIP_PASSENGER_JOINED','VEHICLE_TRIP',${params.data.tripId},
+            ${transaction.json({...membership,workDayId:own.id,driverEmployeeId:driver.employeeId})})`;
+      }
+      return { tripId: params.data.tripId, role: "PASSENGER" };
+    });
+    if (!result) return reply.code(409).send({ error: "K jízdě se nelze připojit. Oba dny musí být upravitelné, ve stejném datu a otevřeném měsíci. Odeslanou jízdu opraví Admin." });
+    return { participant: result };
+  });
+
   app.post("/api/workdays/:workDayId/vehicle-trips", {
     preHandler: [requireTrustedOrigin, requireWorkerOnly, requirePermission("workday.own.manage")],
   }, async (request, reply) => {
@@ -53,7 +110,8 @@ export function registerVehicleRoutes(app: FastifyInstance, db: Database, requir
           `;
         }
         await transaction`insert into audit_logs (actor_user_id, action, entity_type, entity_id, after_data)
-          values (${request.sessionUser!.id}, 'VEHICLE_TRIP_CREATED', 'VEHICLE_TRIP', ${created!.id}, ${transaction.json(created!)})`;
+          values (${request.sessionUser!.id}, 'VEHICLE_TRIP_CREATED', 'VEHICLE_TRIP', ${created!.id},
+            ${transaction.json({...created!,driverEmployeeId:request.sessionUser!.employeeId,passengerEmployeeIds:parsed.data.passengerEmployeeIds})})`;
         return created!;
       });
       if (!trip) return reply.code(404).send({ error: "Pracovní den nebo vozidlo nebylo nalezeno." });

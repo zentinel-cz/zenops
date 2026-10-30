@@ -12,6 +12,11 @@ every machine category.
 
 Machines may track operating hours.
 
+Under ADR-016 the operator who adds a machine (including a tractor) to an
+own WorkEntry records its fuel. Another Worker cannot add usage or fuel to
+that operator's entry. Administrative fuel corrections remain audited and
+Admin-only. Consumption and refuelling remain distinct per-machine values.
+
 ADR-015 makes tracking independent for each catalogue item. Types are
 immutable name/setting variants; editing one item assigns it to the requested
 variant rather than redefining a shared row. The same displayed type name may

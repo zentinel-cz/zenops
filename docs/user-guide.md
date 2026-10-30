@@ -169,7 +169,9 @@ důvod. Vedoucího může později změnit pouze Admin s uvedením důvodu.
    Ke stejnému pracovnímu úseku můžete připojit další stroj opět přes
    **Přidat stroj**. Každý má vlastní MTH, spotřebu, tankování a příslušenství.
    Již připojený stroj se v nabídce pro tento úsek znovu nenabízí.
-7. Jízdu přes **Zapsat jízdu vozidlem** zaznamenává řidič. Vyplní vozidlo, časy a stavy tachometru; cestující označí jednotlivě. Řidič sám sebe jako cestujícího vybírat nemůže.
+7. Přes **Zapsat jízdu vozidlem** zvolte svou roli. Řidič zaškrtne
+   **Jsem řidič této jízdy** a vyplní údaje. Cestující volbu nezaškrtává
+   a připojí se k jízdě, kterou už řidič založil.
 8. Před odesláním zkontrolujte seznam úseků a časů. Tlačítko **Zkontrolovat a odeslat pracovní den** zobrazí potvrzení. Po odeslání už běžné úpravy nejsou možné.
 
 Práce a přestávky se nesmějí časově překrývat. Uzavřenou zakázku nelze použít
@@ -349,10 +351,27 @@ Každé aktivní vozidlo má jedinečný kód, název a SPZ.
 
 Jízdu zapisuje do svého rozpracovaného pracovního dne pouze řidič:
 
-1. vybere vozidlo a zadá čas od–do;
+1. zvolí **Zapsat jízdu vozidlem**, zaškrtne **Jsem řidič této jízdy**,
+   vybere vozidlo a zadá čas od–do;
 2. zapíše počáteční a konečný stav kilometrů;
 3. případně uvede spotřebu, tankování a poznámku;
-4. vybere ostatní zaměstnance, kteří jeli jako cestující.
+4. může vybrat ostatní zaměstnance, kteří jeli jako cestující, a uloží jízdu.
+
+Cestující otevře **Zapsat jízdu vozidlem** a nechá volbu **Jsem řidič této
+jízdy** nezaškrtnutou. Vybere existující jízdu podle vozidla, řidiče a času
+a zvolí **Připojit se jako cestující**. Kilometry ani palivo nezadává.
+Pokud řidič teprve jízdu zakládá, použije **Obnovit seznam jízd**.
+Řidič i cestující musí mít den ve stejném datu, v otevřeném měsíci a dosud
+upravitelný. Po odeslání dne řeší doplnění či opravu posádky Admin s důvodem.
+
+V seznamu dne je u jízdy uvedeno **Řidič** nebo **Cestující** a jméno řidiče.
+Jedno auto se třemi lidmi má stále jednu jízdu a jednu evidenci paliva;
+do kilometrů a spotřeby vozidla se započítá pouze jednou.
+
+U traktoru a ostatních pracovních strojů zapisuje spotřebu a tankování
+obsluha, která konkrétní stroj přidala ke svému pracovnímu úseku.
+Každý stroj má vlastní hodnoty; cestující v osobním autě tuto evidenci
+nezdvojují. Admin může provést auditovanou opravu s důvodem.
 
 Kilometry a palivo se ukládají právě jednou u společné jízdy řidiče. Cestující
 se k ní pouze přiřadí a stejné provozní údaje neopisují do svého pracovního
