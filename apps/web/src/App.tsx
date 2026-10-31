@@ -482,7 +482,7 @@ return runMutation(async () => {
       <main className="admin-shell accountant-shell">
         <aside className="admin-sidebar">
           <div className="sidebar-brand"><BrandMark /><div><strong>ZENOPS</strong><small>PERSONÁLNÍ EVIDENCE</small></div></div>
-          <nav aria-label="Hlavní navigace"><button disabled={busy} className="active" type="button" aria-current="page"><NavIcon name="people" /><span>Uživatelé a vybavení</span></button></nav>
+          <nav aria-label="Hlavní navigace"><button disabled={busy} className="active" type="button" aria-current="page" aria-label="Uživatelé a vybavení" title="Uživatelé a vybavení"><NavIcon name="people" /><span>Uživatelé a vybavení</span></button></nav>
           <div className="sidebar-status"><span /><div><strong>Systém je dostupný</strong><small>Personální evidence</small></div></div>
         </aside>
         <div className="admin-workspace">

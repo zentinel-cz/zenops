@@ -12,6 +12,11 @@ pracovních záznamech, schvalování, administraci i evidenci vybavení.
 Na telefonu se formuláře skládají do sloupce a hlavní nabídka administrace
 i Vedoucího obsahuje ikony s názvy; další položky zobrazíte vodorovným
 posunutím nabídky. Širší tabulkové reporty lze posouvat uvnitř jejich plochy.
+Ve zúženém bočním panelu Účetní má ikona **Uživatelé a vybavení** také
+textovou nápovědu a název pro čtečky obrazovky.
+Při načítání seznamu uživatelů, katalogu a opravných záznamů se zobrazuje
+průběh načítání. Prázdný či nedostupný záznam se hlásí až po dokončení
+požadavku. Pokud načtení účetní evidence selže, zvolte **Zkusit načíst znovu**.
 Stavy záznamů jsou vždy označené textem: schválené zeleně, čekající žlutě,
 vrácené oranžově. Chybová hlášení jsou červená. Oprávnění a pracovní postupy
 zůstávají stejné. Do dodání finálního loga slouží jako značka monogram Z.
@@ -118,6 +123,10 @@ dokončit databázovou migraci.
    změna vyžaduje důvod.
 3. Katalog rozšiřte zadáním názvu nové věci. Položku lze upravit nebo vyřadit;
    její starší výdejky zůstanou zachované.
+   Po volbě **Vyřadit** nebo **Aktivovat** se přímo v aplikaci otevře formulář
+   **Změnit stav katalogové položky**. Vyplňte **Důvod změny stavu** a zvolte
+   **Potvrdit vyřazení** nebo **Potvrdit aktivaci**. Volbou **Zrušit změnu stavu**
+   formulář zavřete bez zápisu; při neúspěšném uložení důvod zůstane vyplněný.
 4. Ve formuláři **Zaznamenat výdej uživateli** vyberte druh, množství, případnou
    velikost, datum a místo výdeje. Vydání se objeví v historii uživatele;
    uvidíte v ní co, kdy, kde a v jakém množství převzal.

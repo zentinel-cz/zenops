@@ -62,6 +62,7 @@ export function AdminRecordsPanel({
   const [date, setDate] = useState(initialTarget?.workDate.slice(0,10) ?? today);
   const [focusedDayId,setFocusedDayId] = useState(initialTarget?.id ?? "");
   const [days, setDays] = useState<Day[]>([]);
+  const [loadState, setLoadState] = useState<"loading" | "loaded" | "error">("loading");
   const [target, setTarget] = useState<Entry | null>(null);
   const [breakTarget, setBreakTarget] = useState<Break | null>(null);
   const [cancellingDay, setCancellingDay] = useState<Day | null>(null);
@@ -72,16 +73,20 @@ export function AdminRecordsPanel({
   const requestVersion = useRef(0);
   const load = () => {
     const version = ++requestVersion.current;
+    setLoadState("loading");
     setDays([]);
     return fetch(`/api/${leaderMode ? "leader" : "admin"}/workdays?date=${date}${!leaderMode && focusedDayId ? `&workDayId=${focusedDayId}` : ""}`, { credentials: "include" })
       .then(async (r) =>
         r.ok ? (r.json() as Promise<{ workDays: Day[] }>) : Promise.reject(),
       )
-      .then((b) => { if (version === requestVersion.current) setDays(b.workDays); });
+      .then((b) => { if (version === requestVersion.current) { setDays(b.workDays); setLoadState("loaded"); } })
+      .catch(() => {
+        if (version === requestVersion.current) { setLoadState("error"); setMessage("Záznamy se nepodařilo načíst."); }
+      });
   };
   useEffect(() => {
     setTarget(null); setBreakTarget(null); setCancellingDay(null); setOperationalTarget(null); setMessage("");
-    void load().catch(() => setMessage("Záznamy se nepodařilo načíst."));
+    void load();
     return () => { requestVersion.current++; };
   }, [date, leaderMode, focusedDayId]);
   useEffect(()=>{
@@ -171,7 +176,7 @@ e.preventDefault(); return runMutation(async () => {
       </div>
       {message && <p className="form-message">{message}</p>}
       {days.length > 0 && <ListSearch value={query} onChange={setQuery} label="Hledat pracovníka nebo záznam práce" />}
-      {days.length === 0 ? (
+      {loadState === "loading" ? <p className="muted" role="status">Načítám záznamy…</p> : loadState === "error" ? null : days.length === 0 ? (
         <p className="muted">{focusedDayId ? "Vybraný záznam již není dostupný. Obnovte měsíční přehled." : "Pro zvolené datum nejsou záznamy."}</p>
       ) : (
         days.filter((day) => matchesSearch(query, day.displayName, day.workDate, shiftLabel(day.shiftType), workStateLabel(day.state), day.entries.map((entry) => `${entry.projectCode} ${entry.projectName} ${entry.workTypeName} ${entry.machineUsages.map((usage) => usage.machineCode).join(" ")} ${entry.description ?? ""}`).join(" "))).map((day) => (

@@ -14,6 +14,7 @@ type ProfileDetail = { profile: ManagedProfile; issues: Issue[] };
 export function AccountantPanel() {
   const [profiles, setProfiles] = useState<ManagedProfile[]>([]);
   const [itemTypes, setItemTypes] = useState<ItemType[]>([]);
+  const [listsState, setListsState] = useState<"loading" | "loaded" | "error">("loading");
   const [selectedId, setSelectedId] = useState("");
   const [detail, setDetail] = useState<ProfileDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -24,11 +25,13 @@ export function AccountantPanel() {
   const [editIssue, setEditIssue] = useState<Issue | null>(null);
   const [returnIssueId, setReturnIssueId] = useState<string | null>(null);
   const [editReturnId, setEditReturnId] = useState<string | null>(null);
+  const [catalogStateTarget, setCatalogStateTarget] = useState<ItemType | null>(null);
   const [userQuery, setUserQuery] = useState("");
   const [catalogQuery, setCatalogQuery] = useState("");
   const [issueQuery, setIssueQuery] = useState("");
 
   async function loadLists() {
+    try {
     const [profileResponse, typeResponse] = await Promise.all([
       fetch("/api/employee-profiles", { credentials: "include" }),
       fetch("/api/issued-item-types?includeInactive=true", { credentials: "include" }),
@@ -41,6 +44,11 @@ export function AccountantPanel() {
     setProfiles(profileBody.profiles);
     setItemTypes(typeBody.itemTypes);
     setSelectedId((current) => current && profileBody.profiles.some((profile) => profile.id === current) ? current : "");
+    setListsState("loaded");
+    } catch (cause) {
+      setListsState("error");
+      throw cause;
+    }
   }
 
   async function loadDetail(id: string) {
@@ -97,14 +105,18 @@ event.preventDefault(); return runMutation(async () => {
 });
 }
 
-  async function setItemTypeActive(item: ItemType) {
+  async function setItemTypeActive(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const reason = String(new FormData(event.currentTarget).get("reason") ?? "").trim();
 return runMutation(async () => {
 
-    const reason = window.prompt(item.isActive ? "Proč chcete tento druh věci vyřadit z nabídky?" : "Proč chcete tento druh věci znovu aktivovat?");
-    if (!reason || reason.trim().length < 3) return;
+    const item = catalogStateTarget;
+    if (!item) return;
+    setError(""); setMessage("");
+    if (reason.length < 3) { setError("Uveďte důvod změny stavu alespoň o 3 znacích."); return; }
     const response = await fetch(`/api/issued-item-types/${item.id}`, { method: "PATCH", credentials: "include", headers: { "content-type": "application/json" }, body: JSON.stringify({ name: item.name, active: !item.isActive, reason }) });
     if (!response.ok) { setError(await errorFrom(response, "Stav katalogové položky se nepodařilo změnit.")); return; }
-    setMessage("Stav katalogové položky byl změněn."); await loadLists();
+    setCatalogStateTarget(null); setMessage("Stav katalogové položky byl změněn."); await loadLists();
 
 });
 }
@@ -157,16 +169,22 @@ event.preventDefault(); return runMutation(async () => {
     <form className="catalog-create-form" onSubmit={(event) => void createItemType(event)}><label>Nový druh věci<input name="name" minLength={2} maxLength={120} placeholder="Například montérky" required /></label><button disabled={busy}>Přidat do katalogu</button></form>
     {itemTypes.length === 0 && <p className="muted">Katalog je prázdný. Přidejte nejprve věc, například montérky nebo obuv.</p>}
     {itemTypes.length > 0 && <ListSearch value={catalogQuery} onChange={setCatalogQuery} label="Hledat druh věci v katalogu" />}
+    {catalogStateTarget && <form key={catalogStateTarget.id} className="inline-record-form" aria-label="Změnit stav katalogové položky" onSubmit={(event) => void setItemTypeActive(event)}>
+      <h4>{catalogStateTarget.isActive ? "Vyřadit" : "Znovu aktivovat"}: {catalogStateTarget.name}</h4>
+      <label>Důvod změny stavu<input name="reason" required minLength={3} maxLength={500} autoFocus disabled={busy} /></label>
+      <button disabled={busy}>{catalogStateTarget.isActive ? "Potvrdit vyřazení" : "Potvrdit aktivaci"}</button>
+      <button type="button" className="ghost" disabled={busy} onClick={() => setCatalogStateTarget(null)}>Zrušit změnu stavu</button>
+    </form>}
     <div className="issued-catalog-list">{itemTypes.filter((item) => matchesSearch(catalogQuery, item.name, item.isActive ? "aktivní" : "vyřazený")).map((item) => <div className={!item.isActive ? "inactive" : ""} key={item.id}>
       <form onSubmit={(event) => void editItemType(event, item)}><input aria-label={`Název: ${item.name}`} name="name" defaultValue={item.name} minLength={2} maxLength={120} required /><label>Důvod změny<input name="reason" minLength={3} maxLength={500} placeholder="Důvod pro audit" required /></label><button disabled={busy}>Uložit</button></form>
-      <button disabled={busy} type="button" className="table-action" onClick={() => void setItemTypeActive(item)}>{item.isActive ? "Vyřadit" : "Aktivovat"}</button>
+      <button disabled={busy} type="button" className="table-action" onClick={() => { setCatalogStateTarget(item); setError(""); setMessage(""); }}>{item.isActive ? "Vyřadit" : "Aktivovat"}</button>
     </div>)}{itemTypes.length > 0 && !itemTypes.some((item) => matchesSearch(catalogQuery, item.name, item.isActive ? "aktivní" : "vyřazený")) && <p className="muted">Žádný druh věci neodpovídá hledání.</p>}</div>
   </section>;
 
   return <section className="accountant-workspace">
     <div className="section-heading"><div><p className="eyebrow">PERSONÁLNÍ EVIDENCE</p><h2>Uživatelé a svěřené věci</h2></div></div>
     {error && <p className="error" role="alert">{error}</p>}{message && <p className="form-message" role="status">{message}</p>}
-    {selectedId ? <div className="accountant-detail-view">
+    {listsState === "loading" ? <p className="muted" role="status">Načítám uživatele a katalog…</p> : listsState === "error" ? <button type="button" onClick={() => { setError(""); setListsState("loading"); void loadLists().catch((cause) => setError(cause instanceof Error && !(cause instanceof TypeError) ? cause.message : "Data se nepodařilo načíst.")); }}>Zkusit načíst znovu</button> : selectedId ? <div className="accountant-detail-view">
       <button disabled={busy} type="button" className="accountant-back" onClick={() => { setSelectedId(""); setDetail(null); setEditIssue(null); setReturnIssueId(null); setEditReturnId(null); setMessage(""); setError(""); }}>← Zpět na seznam uživatelů</button>
       {detailLoading && <section className="accountant-card"><p className="muted">Načítám kartu uživatele…</p></section>}
       {detail?.profile.id === selectedId && <div className="accountant-main">
