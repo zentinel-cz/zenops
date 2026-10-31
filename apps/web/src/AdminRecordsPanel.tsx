@@ -6,6 +6,7 @@ import type { MachineUsageSummary, ProjectSummary } from "@zenops/contracts";
 import { type FormEvent, lazy, Suspense, useEffect, useRef, useState } from "react";
 import { ListSearch, matchesSearch } from "./ListSearch";
 import type { CorrectionTrip, OperationalCorrectionTarget } from "./OperationalCorrectionForm";
+import type { WorkDayRecordTarget } from "./PeriodBlockers";
 const OperationalCorrectionForm = lazy(() => import("./OperationalCorrectionForm").then((module) => ({ default: module.OperationalCorrectionForm })));
 type MachineUsage = MachineUsageSummary;
 
@@ -49,12 +50,17 @@ const activities = workActivities;
 export function AdminRecordsPanel({
   projects,
   leaderMode = false,
+  initialTarget,
+  onBackToMonth,
 }: {
   projects: ProjectSummary[];
   leaderMode?: boolean;
+  initialTarget?: WorkDayRecordTarget | null;
+  onBackToMonth?: () => void;
 }) {
   const today = businessDate();
-  const [date, setDate] = useState(today);
+  const [date, setDate] = useState(initialTarget?.workDate.slice(0,10) ?? today);
+  const [focusedDayId,setFocusedDayId] = useState(initialTarget?.id ?? "");
   const [days, setDays] = useState<Day[]>([]);
   const [target, setTarget] = useState<Entry | null>(null);
   const [breakTarget, setBreakTarget] = useState<Break | null>(null);
@@ -67,7 +73,7 @@ export function AdminRecordsPanel({
   const load = () => {
     const version = ++requestVersion.current;
     setDays([]);
-    return fetch(`/api/${leaderMode ? "leader" : "admin"}/workdays?date=${date}`, { credentials: "include" })
+    return fetch(`/api/${leaderMode ? "leader" : "admin"}/workdays?date=${date}${!leaderMode && focusedDayId ? `&workDayId=${focusedDayId}` : ""}`, { credentials: "include" })
       .then(async (r) =>
         r.ok ? (r.json() as Promise<{ workDays: Day[] }>) : Promise.reject(),
       )
@@ -77,7 +83,11 @@ export function AdminRecordsPanel({
     setTarget(null); setBreakTarget(null); setCancellingDay(null); setOperationalTarget(null); setMessage("");
     void load().catch(() => setMessage("Záznamy se nepodařilo načíst."));
     return () => { requestVersion.current++; };
-  }, [date, leaderMode]);
+  }, [date, leaderMode, focusedDayId]);
+  useEffect(()=>{
+    setDate(initialTarget?.workDate.slice(0,10) ?? businessDate());
+    setFocusedDayId(initialTarget?.id ?? "");
+  },[initialTarget]);
   async function edit(e: FormEvent<HTMLFormElement>) {
 e.preventDefault(); return runMutation(async () => {
 
@@ -140,6 +150,11 @@ e.preventDefault(); return runMutation(async () => {
   }
   return (
     <section className="management-panel">
+      {initialTarget && onBackToMonth && <button type="button" className="ghost record-back-month" disabled={busy} onClick={onBackToMonth}>← Zpět na měsíční uzávěrku</button>}
+      {focusedDayId && initialTarget && <div className="record-focus-context">
+        <strong>Vybraný záznam: {initialTarget.employeeName}</strong>
+        <button type="button" className="table-action" disabled={busy} onClick={()=>setFocusedDayId("")}>Zobrazit všechny záznamy dne</button>
+      </div>}
       <div className="section-heading">
         <div>
           <p className="eyebrow">{leaderMode ? "OPRAVY SCHVÁLENÉ PRÁCE" : "ADMINISTRATIVNÍ KOREKCE"}</p>
@@ -151,13 +166,13 @@ e.preventDefault(); return runMutation(async () => {
           type="date"
           disabled={busy}
           value={date}
-          onChange={(e) => setDate(e.target.value)}
+          onChange={(e) => {setDate(e.target.value);setFocusedDayId("");}}
         />
       </div>
       {message && <p className="form-message">{message}</p>}
       {days.length > 0 && <ListSearch value={query} onChange={setQuery} label="Hledat pracovníka nebo záznam práce" />}
       {days.length === 0 ? (
-        <p className="muted">Pro zvolené datum nejsou záznamy.</p>
+        <p className="muted">{focusedDayId ? "Vybraný záznam již není dostupný. Obnovte měsíční přehled." : "Pro zvolené datum nejsou záznamy."}</p>
       ) : (
         days.filter((day) => matchesSearch(query, day.displayName, day.workDate, shiftLabel(day.shiftType), workStateLabel(day.state), day.entries.map((entry) => `${entry.projectCode} ${entry.projectName} ${entry.workTypeName} ${entry.machineUsages.map((usage) => usage.machineCode).join(" ")} ${entry.description ?? ""}`).join(" "))).map((day) => (
           <div className="admin-day" key={day.id}>

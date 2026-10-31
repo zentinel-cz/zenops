@@ -3,29 +3,15 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { requirePermission, type AuthorizationHook } from "./authorization.js";
 import type { Database } from "./db.js";
+import { getPeriodOverview } from "./period-overview.js";
 
 const paramsSchema = z.object({ month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/) });
-
-async function ensurePeriod(db: Database, month: string) {
-  const [period] = await db`
-    select id, month_start, state, closed_at, reopened_at, reopen_reason
-    from monthly_periods where month_start = ${`${month}-01`}
-  `;
-  return period ?? { id: null, monthStart: `${month}-01`, state: "OPEN", closedAt: null, reopenedAt: null, reopenReason: null };
-}
 
 export function registerPeriodRoutes(app: FastifyInstance, db: Database, requireTrustedOrigin: AuthorizationHook): void {
   app.get("/api/periods/:month", { preHandler: requirePermission("period.manage") }, async (request, reply) => {
     const params = paramsSchema.safeParse(request.params);
     if (!params.success) return reply.code(400).send({ error: "Neplatný měsíc." });
-    const period = await ensurePeriod(db, params.data.month);
-    const [status] = await db<Array<{ total: number; unresolved: number; cancelled: number }>>`
-      select count(*) filter (where state <> 'CANCELLED')::int as total,
-        count(*) filter (where state not in ('APPROVED','CANCELLED'))::int as unresolved,
-        count(*) filter (where state='CANCELLED')::int as cancelled
-      from work_days where (${period.id}::uuid is not null and monthly_period_id = ${period.id})
-    `;
-    return { period: { ...period, totalWorkDays: status!.total, unresolvedWorkDays: status!.unresolved, cancelledWorkDays: status!.cancelled } };
+    return { period: await getPeriodOverview(db, params.data.month) };
   });
 
   app.post("/api/periods/:month/action", {

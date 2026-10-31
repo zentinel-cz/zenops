@@ -1,3 +1,4 @@
+import { PeriodBlockers, type BlockedWorkDay, type WorkDayRecordTarget } from "./PeriodBlockers";
 import { businessDate } from "@zenops/contracts/time";
 import { shiftLabel, projectStatusLabel } from "@zenops/contracts/labels";
 import type { SessionUser } from "@zenops/contracts";
@@ -12,11 +13,14 @@ type MonthlyReport = {
   vehicles: Array<{ id: string; code: string; registrationNumber: string; kilometres: string | null; fuelConsumed: string | null; fuelRefuelled: string | null }>;
   sharedFuel: Array<{ projectId: string; projectCode: string; fuelConsumed: string | null; fuelRefuelled: string | null }>;
 };
-type Period = { state: "OPEN" | "CLOSED"; totalWorkDays: number; unresolvedWorkDays: number; cancelledWorkDays: number; closedAt: string | null; reopenReason: string | null };
+type Period = { monthStart: string; blockers: BlockedWorkDay[]; state: "OPEN" | "CLOSED"; totalWorkDays: number; unresolvedWorkDays: number; cancelledWorkDays: number; closedAt: string | null; reopenReason: string | null };
 const hours = (minutes: number) => `${Math.floor(minutes / 60)} h ${minutes % 60} min`;
 
-export function MonthlyPanel({ user }: { user: SessionUser }) {
-  const [month, setMonth] = useState(businessDate().slice(0, 7));
+export function MonthlyPanel({ user, initialMonth, onMonthChange, onOpenWorkDay }: {
+  user: SessionUser; initialMonth?: string; onMonthChange?: (month:string)=>void;
+  onOpenWorkDay?: ((target:WorkDayRecordTarget)=>void) | undefined;
+}) {
+  const [month, setMonth] = useState(initialMonth ?? businessDate().slice(0, 7));
   const [report, setReport] = useState<MonthlyReport | null>(null);
   const [period, setPeriod] = useState<Period | null>(null);
   const [reason, setReason] = useState("");
@@ -52,7 +56,7 @@ export function MonthlyPanel({ user }: { user: SessionUser }) {
   }, [month, canManagePeriod]);
 
   async function changePeriod() {
-    if (!period || saving || loading) return;
+    if (!period || period.monthStart.slice(0,7)!==month || saving || loading) return;
     setSaving(true); setMessage("");
     const action = period.state === "OPEN" ? "CLOSE" : "REOPEN";
     try {
@@ -61,13 +65,13 @@ export function MonthlyPanel({ user }: { user: SessionUser }) {
         body: JSON.stringify(action === "CLOSE" ? { action } : { action, reason }),
       });
       const body = await response.json().catch(() => ({})) as { error?: string };
-      if (!response.ok) { setMessage(body.error ?? "Změna období se nezdařila."); return; }
+      if (!response.ok) { setMessage(body.error ?? "Změna období se nezdařila."); if (response.status===409) await load(); return; }
       setReason(""); setMessage(action === "CLOSE" ? "Měsíc byl uzavřen." : "Měsíc byl znovu otevřen."); await load();
     } catch { setMessage("Nepodařilo se spojit se serverem. Zkontrolujte připojení."); }
     finally { setSaving(false); }
   }
 
-  return <section className="management-panel monthly-panel"><div className="section-heading"><div><p className="eyebrow">MĚSÍČNÍ PROVOZ</p><h3>Souhrny a uzávěrka</h3></div><input className="month-input" aria-label="Měsíc reportu" type="month" disabled={saving} value={month} onChange={(event) => setMonth(event.target.value)} /></div>{message && <p className={message.includes("ne") ? "error" : "form-message"}>{message}</p>}{loading && <p role="status">Načítám přehled a stav měsíce…</p>}{canManagePeriod && period && <div className="period-card"><div><span className={`state-badge ${period.state.toLowerCase()}`}>{period.state === "OPEN" ? "OTEVŘENÝ" : "UZAVŘENÝ"}</span><strong>{period.totalWorkDays} pracovních dnů</strong><small>{period.unresolvedWorkDays ? `${period.unresolvedWorkDays} čeká na vyřešení` : "Všechny záznamy jsou vyřešené"}</small>{period.cancelledWorkDays > 0 && <small>Zrušené prázdné dny: {period.cancelledWorkDays} · neblokují uzávěrku</small>}</div>{period.state === "CLOSED" && <label>Důvod znovuotevření<input value={reason} onChange={(event) => setReason(event.target.value)} minLength={3} maxLength={1000} required /></label>}<button disabled={saving || loading || (period.state === "OPEN" ? period.unresolvedWorkDays > 0 : reason.trim().length < 3)} onClick={() => void changePeriod()}>{period.state === "OPEN" ? "Uzavřít měsíc" : "Znovu otevřít měsíc"}</button></div>}{report && <div className="monthly-grids"><SummaryList title="Hodiny podle pracovníků" rows={report.employeeHours.map((row) => ({ key: `${row.id}-${row.shiftType}`, title: row.displayName, detail: `${shiftLabel(row.shiftType)} · schváleno ${hours(row.approvedMinutes ?? 0)}`, value: hours(row.workedMinutes) }))} /><SummaryList title="Hodiny podle zakázek" rows={report.orderHours.map((row) => ({ key: row.id, title: `${row.code} · ${row.name}`, detail: `${row.workers} pracovníků · ${projectStatusLabel(row.status)}`, value: hours(row.workedMinutes) }))} /><SummaryList title="Stroje" rows={report.machines.map((row) => ({ key: row.id, title: `${row.code} · ${row.name}`, detail: `Palivo ${row.fuelConsumed ?? "–"} / ${row.fuelRefuelled ?? "–"}`, value: `${row.mth ?? "0"} MTH` }))} /><SummaryList title="Vozidla" rows={report.vehicles.map((row) => ({ key: row.id, title: `${row.code} · ${row.registrationNumber}`, detail: `Palivo ${row.fuelConsumed ?? "–"} / ${row.fuelRefuelled ?? "–"}`, value: `${row.kilometres ?? "0"} km` }))} /><SummaryList title="Sdílené palivo zakázek" rows={report.sharedFuel.map((row) => ({ key: row.projectId, title: row.projectCode, detail: "Spotřeba / tankování", value: `${row.fuelConsumed ?? "–"} / ${row.fuelRefuelled ?? "–"}` }))} /></div>}</section>;
+  return <section className="management-panel monthly-panel"><div className="section-heading"><div><p className="eyebrow">MĚSÍČNÍ PROVOZ</p><h3>Souhrny a uzávěrka</h3></div><input className="month-input" aria-label="Měsíc reportu" type="month" disabled={saving} value={month} onChange={(event) => { setMonth(event.target.value); onMonthChange?.(event.target.value); }} /></div>{message && <p className={message.includes("ne") ? "error" : "form-message"}>{message}</p>}{loading && <p role="status">Načítám přehled a stav měsíce…</p>}{canManagePeriod && period && period.monthStart.slice(0,7)===month && <div className="period-card"><div><span className={`state-badge ${period.state.toLowerCase()}`}>{period.state === "OPEN" ? "OTEVŘENÝ" : "UZAVŘENÝ"}</span><strong>{period.totalWorkDays} pracovních dnů</strong><small>{period.unresolvedWorkDays ? `${period.unresolvedWorkDays} čeká na vyřešení` : "Všechny záznamy jsou vyřešené"}</small>{period.cancelledWorkDays > 0 && <small>Zrušené prázdné dny: {period.cancelledWorkDays} · neblokují uzávěrku</small>}</div>{period.state === "CLOSED" && <label>Důvod znovuotevření<input value={reason} onChange={(event) => setReason(event.target.value)} minLength={3} maxLength={1000} required /></label>}<button disabled={saving || loading || (period.state === "OPEN" ? period.unresolvedWorkDays > 0 : reason.trim().length < 3)} onClick={() => void changePeriod()}>{period.state === "OPEN" ? "Uzavřít měsíc" : "Znovu otevřít měsíc"}</button><button type="button" className="ghost" disabled={saving || loading} onClick={()=>{setMessage("");void load();}}>Obnovit stav měsíce</button></div>}{canManagePeriod && period && period.monthStart.slice(0,7)===month && <PeriodBlockers key={month} days={period.blockers} onOpenWorkDay={onOpenWorkDay} />}{report && report.month===month && <div className="monthly-grids"><SummaryList title="Hodiny podle pracovníků" rows={report.employeeHours.map((row) => ({ key: `${row.id}-${row.shiftType}`, title: row.displayName, detail: `${shiftLabel(row.shiftType)} · schváleno ${hours(row.approvedMinutes ?? 0)}`, value: hours(row.workedMinutes) }))} /><SummaryList title="Hodiny podle zakázek" rows={report.orderHours.map((row) => ({ key: row.id, title: `${row.code} · ${row.name}`, detail: `${row.workers} pracovníků · ${projectStatusLabel(row.status)}`, value: hours(row.workedMinutes) }))} /><SummaryList title="Stroje" rows={report.machines.map((row) => ({ key: row.id, title: `${row.code} · ${row.name}`, detail: `Palivo ${row.fuelConsumed ?? "–"} / ${row.fuelRefuelled ?? "–"}`, value: `${row.mth ?? "0"} MTH` }))} /><SummaryList title="Vozidla" rows={report.vehicles.map((row) => ({ key: row.id, title: `${row.code} · ${row.registrationNumber}`, detail: `Palivo ${row.fuelConsumed ?? "–"} / ${row.fuelRefuelled ?? "–"}`, value: `${row.kilometres ?? "0"} km` }))} /><SummaryList title="Sdílené palivo zakázek" rows={report.sharedFuel.map((row) => ({ key: row.projectId, title: row.projectCode, detail: "Spotřeba / tankování", value: `${row.fuelConsumed ?? "–"} / ${row.fuelRefuelled ?? "–"}` }))} /></div>}</section>;
 }
 
 function SummaryList({ title, rows }: { title: string; rows: Array<{ key: string; title: string; detail: string; value: string }> }) {

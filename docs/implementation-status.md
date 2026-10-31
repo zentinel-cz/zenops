@@ -2,6 +2,15 @@
 
 Last updated: 2026-10-13
 
+## Monthly closure blockers — prepared 2026-10-31
+
+Admin period overview returns exact unresolved WorkDays, pending entries,
+current Leaders and return reasons in the same snapshot as the counts.
+The UI provides search, guidance, refresh and navigation to one exact
+WorkDay, with return to the chosen month. Existing closure/cancellation
+rules and server-side closure revalidation remain in force.
+No schema migration is needed. See operations/closure-blockers-release.md.
+
 ## Worker MTH corrections — prepared 2026-10-31
 
 ADR-017 permits audited start/end MTH corrections on own draft/returned

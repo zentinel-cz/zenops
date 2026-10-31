@@ -9,6 +9,8 @@ import { AssetPanel } from "./AssetPanel";
 import { ApprovalPanel } from "./ApprovalPanel";
 import { ReportPanel } from "./ReportPanel";
 import { MonthlyPanel } from "./MonthlyPanel";
+import { businessDate } from "@zenops/contracts/time";
+import type { WorkDayRecordTarget } from "./PeriodBlockers";
 import { AccountPanel } from "./AccountPanel";
 import { AdminRecordsPanel } from "./AdminRecordsPanel";
 import { AccountantPanel } from "./AccountantPanel";
@@ -120,6 +122,8 @@ function Dashboard({
   const [showDailyRecord, setShowDailyRecord] = useState(false);
   const [showWorkerProfile, setShowWorkerProfile] = useState(false);
   const [activeSection, setActiveSection] = useState("overview");
+  const [recordTarget,setRecordTarget] = useState<WorkDayRecordTarget | null>(null);
+  const [monthlySelection,setMonthlySelection] = useState(businessDate().slice(0,7));
   const canCreateProject = user.permissions.includes("project.create");
   const canManageProjects = user.permissions.includes("project.close");
   const canManageEmployees = user.permissions.includes("employee.manage");
@@ -525,7 +529,7 @@ return runMutation(async () => {
                 title={item.label}
                 type="button"
                 aria-current={activeSection === item.id ? "page" : undefined}
-                onClick={() => setActiveSection(item.id)}
+                onClick={() => {setRecordTarget(null);setActiveSection(item.id);}}
               >
                 <NavIcon name={item.icon} /><span>{item.label}</span>
               </button>
@@ -559,7 +563,7 @@ return runMutation(async () => {
                 <div className="leader-actions-heading"><p className="eyebrow">RYCHLÝ PŘÍSTUP</p><h2 id="leader-actions-title">Co potřebujete udělat?</h2></div>
                 <div className="leader-action-grid">
                   {navItems.filter((item) => item.id !== "overview").map((item) => (
-                    <button disabled={busy} className={`leader-action-card ${item.id === "approvals" ? "primary" : ""}`} type="button" key={item.id} onClick={() => setActiveSection(item.id)}>
+                    <button disabled={busy} className={`leader-action-card ${item.id === "approvals" ? "primary" : ""}`} type="button" key={item.id} onClick={() => {setRecordTarget(null);setActiveSection(item.id);}}>
                       <span className="leader-action-icon"><NavIcon name={item.icon} /></span>
                       <span className="leader-action-copy"><strong>{item.label === "Schvalování" ? "Zkontrolovat práci" : item.label}</strong><small>{actionHints[item.id]}</small></span>
                       <span className="leader-action-cta">Otevřít <b aria-hidden="true">→</b></span>
@@ -619,7 +623,7 @@ return runMutation(async () => {
                 title={item.label}
                 type="button"
                 aria-current={activeSection === item.id ? "page" : undefined}
-                onClick={() => setActiveSection(item.id)}
+                onClick={() => {setRecordTarget(null);setActiveSection(item.id);}}
               >
                 <NavIcon name={item.icon} />
                 <span>{item.label}</span>
@@ -708,12 +712,14 @@ return runMutation(async () => {
             )}
             {activeSection === "monthly-report" && canReport && (
               <section className="admin-section-view" id="monthly-report">
-                <MonthlyPanel user={user} />
+                <MonthlyPanel user={user} initialMonth={monthlySelection} onMonthChange={setMonthlySelection}
+                  onOpenWorkDay={target=>{setRecordTarget(target);setActiveSection("records");window.scrollTo(0,0);}} />
               </section>
             )}
             {activeSection === "records" && (
               <section className="admin-section-view" id="records">
-                <AdminRecordsPanel projects={projects} />
+                <AdminRecordsPanel key={recordTarget?.id ?? "all"} projects={projects} initialTarget={recordTarget}
+                  onBackToMonth={()=>{setRecordTarget(null);setActiveSection("monthly-report");window.scrollTo(0,0);}} />
               </section>
             )}
             {activeSection === "assets" && canManageAssets && (

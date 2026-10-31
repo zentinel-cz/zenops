@@ -28,7 +28,7 @@ export function registerAdminRecordRoutes(
     "/api/admin/workdays",
     { preHandler: requirePermission("approval.admin.manage") },
     async (request, reply) => {
-      const query = z.object({ date: z.iso.date() }).safeParse(request.query);
+      const query = z.object({ date: z.iso.date(), workDayId: z.string().uuid().optional() }).safeParse(request.query);
       if (!query.success)
         return reply.code(400).send({ error: "Neplatné datum." });
       const workDays = await db`
@@ -38,7 +38,8 @@ export function registerAdminRecordRoutes(
         coalesce((select json_agg(json_build_object('id',b.id,'startAt',b.start_at,'endAt',b.end_at) order by b.start_at) from break_entries b where b.work_day_id=wd.id),'[]') as breaks,
         coalesce((select json_agg(json_build_object('id',vt.id,'vehicleId',vt.vehicle_id,'vehicleCode',v.code,'startAt',vt.start_at,'endAt',vt.end_at,'startOdometerKm',vt.start_odometer_km,'endOdometerKm',vt.end_odometer_km,'fuelConsumed',vt.fuel_consumed,'fuelRefuelled',vt.fuel_refuelled,'note',vt.note,'passengerEmployeeIds',coalesce((select json_agg(vtp.employee_id) from vehicle_trip_participants vtp where vtp.vehicle_trip_id=vt.id and vtp.role='PASSENGER'),'[]')) order by vt.start_at) from vehicle_trips vt join vehicles v on v.id=vt.vehicle_id where vt.driver_work_day_id=wd.id),'[]') as vehicle_trips
       from work_days wd join employees e on e.id=wd.employee_id join monthly_periods mp on mp.id=wd.monthly_period_id
-      where wd.work_date=${query.data.date} order by e.display_name
+      where wd.work_date=${query.data.date} and (${query.data.workDayId ?? null}::uuid is null or wd.id=${query.data.workDayId ?? null})
+      order by e.display_name,wd.id
     `;
       return { workDays };
     },

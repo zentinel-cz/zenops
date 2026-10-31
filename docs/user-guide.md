@@ -438,6 +438,27 @@ aktivní pracovní dny plně schválené. Výslovně zrušené prázdné dny se 
 samostatným počtem a uzávěrku neblokují. Rozpracovaný, odeslaný, částečně schválený nebo
 vrácený den uzávěrku zablokuje.
 
+V části **Co brání uzávěrce** vidíte konkrétní pracovníky, data směn a jejich
+stav. U každého dne je uvedeno, kdo má pokračovat. Přes **Nevyřešené úseky**
+rozbalíte zakázky, časy, stavy, aktuální vedoucí a důvody vrácení.
+Schválené úseky ve stejném dni se mezi překážkami neopakují.
+Seznam lze prohledat podle pracovníka, data, zakázky, vedoucího nebo důvodu.
+
+Volba **Otevřít záznam** otevře v opravách přesně vybraný den pracovníka.
+**Zobrazit všechny záznamy dne** rozšíří výběr na celé datum.
+Přes **Zpět na měsíční uzávěrku** se vrátíte do původně vybraného měsíce
+a načte se aktuální stav překážek.
+
+U prázdného, dosud neodeslaného dne přehled doporučí posoudit jeho zrušení.
+Samotné zrušení se provádí až v otevřeném záznamu s uvedením důvodu.
+Den obsahující přestávky nebo vlastní jízdy není prázdný a nelze jej takto
+zrušit. Chybějící den se automaticky nepovažuje za překážku.
+
+**Obnovit stav měsíce** načte nové údaje po změnách provedených pracovníky
+nebo vedoucími. I když přehled ukazuje vše vyřešené, server při uzavření
+měsíce znovu ověří skutečný stav. Pokud mezitím vznikne překážka, uzavření
+odmítne a aplikace seznam obnoví. Přehled sám žádnou práci neschvaluje.
+
 Uzavřený měsíc nepovolí běžné provozní změny. Pokud je nutná oprava, Admin
 musí uvést důvod znovuotevření. Uzavření i znovuotevření se auditují.
 

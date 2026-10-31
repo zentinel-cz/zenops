@@ -770,6 +770,27 @@ input,select,textarea { min-width:0; max-width:100%; }
 .vehicle-role-panel .vehicle-driver-choice { display: flex; align-items: center; gap: 12px; min-height: 48px; margin: 0 0 14px; color: #e1eae4; }
 .vehicle-driver-choice input { flex: 0 0 22px; width: 22px; height: 22px; accent-color: #b9f6c9; }
 .worker-mth-action { width: auto; min-height: 44px; margin-top: 8px; text-align: left; }
+.period-blockers { margin: 24px 0; padding: 20px; border: 1px solid #415139; border-radius: 10px; background: #101a13; }
+.period-blockers .section-heading { flex-wrap: wrap; gap: 8px; }
+.period-blockers h4 { margin: 0; font-size: 17px; color: #e1eae4; }
+.period-blockers .muted { margin: 16px 0 0; }
+.period-blocker-count { color: #a4b7ab; font-size: 12px; }
+.period-blocker { min-width: 0; padding: 18px 0; border-top: 1px solid #304139; overflow-wrap: anywhere; }
+.period-blocker header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.period-blocker h5 { margin: 0; font-size: 15px; color: #edf5ef; }
+.period-blocker header p { margin: 6px 0 0; color: #a4b7ab; font-size: 12px; }
+.period-next-step { font-size: 13px; line-height: 1.65; color: #d6e6dc; }
+.period-blocker details { margin: 12px 0; }
+.period-blocker summary { min-height: 44px; padding: 12px 0; color: #b9f6c9; font-size: 13px; cursor: pointer; }
+.period-blocker summary:focus-visible { outline: 2px solid #b9f6c9; outline-offset: 3px; }
+.period-blocker ul { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.period-blocker li { display: grid; gap: 6px; padding: 14px; border: 1px solid #2c3b32; border-radius: 7px; background: #132119; font-size: 13px; }
+.period-blocker li span,.period-blocker-empty { color: #a4b7ab; font-size: 13px; line-height: 1.6; }
+.period-blocker li p { margin: 4px 0 0; white-space: pre-wrap; }
+.period-blocker > button { width: auto; min-height: 44px; margin: 6px 0 0; }
+.record-back-month { width: auto; min-height: 44px; margin: 0 0 18px; }
+.record-focus-context { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; padding: 14px; border: 1px solid #304139; border-radius: 8px; }
+@media (max-width: 480px) { .period-blockers { padding: 16px; }.period-blocker > button { width: 100%; } }
 @media (max-width: 480px) {
   .approval-card { padding: 16px; }
   .approval-actions button { flex: 1 1 100px; }

@@ -2405,6 +2405,112 @@ integration("authentication integration", () => {
     expect(audits).toHaveLength(edit!.statusCode===200 ? 1 : 0);
   });
 
+  it("explains every monthly closure blocker with current owners, pending entries and exact record targeting", async () => {
+    const worker = await intervalContext('closure-worker');
+    const mixed = await intervalContext('closure-mixed');
+    const otherLeader = await intervalContext('closure-other-leader');
+    await db`update user_roles set role_id=(select id from roles where code='LEADER') where user_id=${otherLeader.userId}`;
+    const [project] = await db`insert into projects(code,name,location,current_leader_employee_id,start_date,created_by_user_id)
+      values('CLOSURE-OTHER','Zakázka jiného vedoucího','Test',${otherLeader.employeeId},'2057-01-01',${otherLeader.userId}) returning id`;
+    const admin = await headersFor('admin');
+    const leader = await headersFor('leader');
+    const add = async (context: typeof worker,day: string,date: string,start: number,projectId=context.projectId) => {
+      const response = await app.inject({method:'POST',url:`/api/workdays/${day}/entries`,headers:context.headers,
+        payload:{projectId,workTypeCode:'OTHER',description:'Uzávěrka',startAt:`${date}T${String(start).padStart(2,'0')}:00:00+01:00`,
+          endAt:`${date}T${String(start+1).padStart(2,'0')}:00:00+01:00`}});
+      expect(response.statusCode,response.body).toBe(201); return response.json().entry.id as string;
+    };
+    const submit = async (context: typeof worker,day: string) => {
+      const response = await app.inject({method:'POST',url:`/api/workdays/${day}/submit`,headers:context.headers});
+      expect(response.statusCode,response.body).toBe(200);
+    };
+    const decide = async (id: string,action: string,headers=leader) => {
+      const response = await app.inject({method:'POST',url:`/api/approvals/${id}/decision`,headers,
+        payload:{action,...(action==='RETURNED'?{reason:'Doplňte popis u druhé zakázky'}:{})}});
+      expect(response.statusCode,response.body).toBe(200);
+    };
+    const draft = await worker.createDay('2057-01-10'); await add(worker,draft,'2057-01-10',8);
+    const empty = await worker.createDay('2057-01-11');
+    const cancelled = await worker.createDay('2057-01-12');
+    expect((await app.inject({method:'POST',url:`/api/workdays/${cancelled}/cancel`,headers:worker.headers,payload:{reason:'Omylem založený den'}})).statusCode).toBe(200);
+    const approved = await worker.createDay('2057-01-13');
+    const approvedEntry = await add(worker,approved,'2057-01-13',8); await submit(worker,approved); await decide(approvedEntry,'APPROVED');
+    const returned = await mixed.createDay('2057-01-10');
+    const approvedSibling = await add(mixed,returned,'2057-01-10',8);
+    const returnedEntry = await add(mixed,returned,'2057-01-10',9,project!.id);
+    const waitingEntry = await add(mixed,returned,'2057-01-10',10);
+    await submit(mixed,returned); await decide(approvedSibling,'APPROVED'); await decide(returnedEntry,'RETURNED',otherLeader.headers);
+    const submitted = await mixed.createDay('2057-01-11'); await add(mixed,submitted,'2057-01-11',8,project!.id); await submit(mixed,submitted);
+    const partial = await mixed.createDay('2057-01-12');
+    const partialApproved = await add(mixed,partial,'2057-01-12',8); await add(mixed,partial,'2057-01-12',9);
+    await submit(mixed,partial); await decide(partialApproved,'APPROVED');
+    const breakOnly = await worker.createDay('2057-01-14');
+    expect((await worker.addBreak(breakOnly,'2057-01-14T08:00:00+01:00','2057-01-14T08:30:00+01:00')).statusCode).toBe(201);
+    const tripOnly = await worker.createDay('2057-01-15');
+    const [vehicle] = await db`insert into vehicles(code,name,registration_number) values('CLOSURE-CAR','Closure','CLOSE57') returning id`;
+    expect((await app.inject({method:'POST',url:`/api/workdays/${tripOnly}/vehicle-trips`,headers:worker.headers,
+      payload:{vehicleId:vehicle!.id,startAt:'2057-01-15T07:00:00+01:00',endAt:'2057-01-15T08:00:00+01:00',startOdometerKm:0,endOdometerKm:10}})).statusCode).toBe(201);
+    const url = '/api/periods/2057-01';
+    const response = await app.inject({url,headers:admin});
+    expect(response.statusCode,response.body).toBe(200);
+    const overview = response.json().period;
+    expect(overview).toMatchObject({totalWorkDays:8,unresolvedWorkDays:7,cancelledWorkDays:1});
+    expect(overview.blockers).toHaveLength(overview.unresolvedWorkDays);
+    expect(overview.blockers.map((day:{id:string})=>day.id)).not.toContain(approved);
+    expect(overview.blockers.map((day:{id:string})=>day.id)).not.toContain(cancelled);
+    expect(overview.blockers.find((day:{id:string})=>day.id===empty)).toMatchObject({canCancel:true,workEntryCount:0,entries:[]});
+    for (const id of [breakOnly,tripOnly]) expect(overview.blockers.find((day:{id:string})=>day.id===id)).toMatchObject({canCancel:false,workEntryCount:0});
+    const returnedDay = overview.blockers.find((day:{id:string})=>day.id===returned);
+    expect(returnedDay).toMatchObject({state:'RETURNED',workerCanAct:true,workEntryCount:3});
+    expect(returnedDay.entries).toHaveLength(2);
+    expect(returnedDay.entries).toContainEqual(expect.objectContaining({id:returnedEntry,leaderEmployeeId:otherLeader.employeeId,leaderCanApprove:true,
+      returnReason:'Doplňte popis u druhé zakázky'}));
+    expect(returnedDay.entries).toContainEqual(expect.objectContaining({id:waitingEntry,state:'SUBMITTED',leaderEmployeeId,returnReason:null}));
+    expect(overview.blockers.find((day:{id:string})=>day.id===partial)).toMatchObject({state:'PARTIALLY_APPROVED'});
+    const recordUrl = `/api/admin/workdays?date=2057-01-10&workDayId=${returned}`;
+    const focused = await app.inject({url:recordUrl,headers:admin});
+    expect(focused.json().workDays).toHaveLength(1); expect(focused.json().workDays[0]).toMatchObject({id:returned,employeeId:mixed.employeeId});
+    expect((await app.inject({url:recordUrl.replace('2057-01-10','2057-01-11'),headers:admin})).json().workDays).toEqual([]);
+    expect((await app.inject({url:'/api/admin/workdays?date=2057-01-10&workDayId=bad',headers:admin})).statusCode).toBe(400);
+    for (const username of ['worker','leader','accountant.test']) {
+      const headers = await headersFor(username);
+      expect((await app.inject({url,headers})).statusCode).toBe(403);
+      expect((await app.inject({url:recordUrl,headers})).statusCode).toBe(403);
+    }
+    expect((await app.inject({url})).statusCode).toBe(401);
+    await db`update user_roles set role_id=(select id from roles where code='WORKER') where user_id=${otherLeader.userId}`;
+    const [adminUser] = await db`select id from users where username='admin'`;
+    await db`update employees set is_active=false,deactivated_at=now(),deactivated_by_user_id=${adminUser!.id} where id=${worker.employeeId}`;
+    const refreshed = (await app.inject({url,headers:admin})).json().period;
+    expect(refreshed.blockers.find((day:{id:string})=>day.id===draft).workerCanAct).toBe(false);
+    expect(refreshed.blockers.find((day:{id:string})=>day.id===submitted).entries[0].leaderCanApprove).toBe(false);
+  });
+
+  it("refreshes closure blockers after new records and cancels only eligible empty drafts", async () => {
+    const context = await intervalContext('closure-refresh');
+    const headers = await headersFor('admin');
+    const url = '/api/periods/2057-02';
+    const empty = await app.inject({url,headers});
+    expect(empty.json().period).toMatchObject({id:null,totalWorkDays:0,unresolvedWorkDays:0,cancelledWorkDays:0,blockers:[]});
+    expect(await db`select id from monthly_periods where month_start='2057-02-01'`).toHaveLength(0);
+    const day = await context.createDay('2057-02-10');
+    const blocked = await app.inject({method:'POST',url:url+'/action',headers,payload:{action:'CLOSE'}});
+    expect(blocked.statusCode,blocked.body).toBe(409);
+    expect(blocked.json().unresolvedWorkDays).toBe(1);
+    const [snapshot,cancel] = await Promise.all([
+      app.inject({url,headers}),
+      app.inject({method:'POST',url:`/api/admin/workdays/${day}/cancel`,headers,payload:{reason:'Prázdný den z přehledu překážek'}}),
+    ]);
+    expect(cancel!.statusCode,cancel!.body).toBe(200);
+    const period = snapshot!.json().period;
+    expect(period.unresolvedWorkDays).toBe(period.blockers.length);
+    const after = (await app.inject({url,headers})).json().period;
+    expect(after).toMatchObject({unresolvedWorkDays:0,cancelledWorkDays:1,blockers:[]});
+    const closed = await app.inject({method:'POST',url:url+'/action',headers,payload:{action:'CLOSE'}});
+    expect(closed.statusCode,closed.body).toBe(200);
+    expect((await app.inject({url,headers})).json().period).toMatchObject({state:'CLOSED',blockers:[]});
+  });
+
   it("changes the authenticated password, audits it and revokes every session", async () => {
     const login = await app.inject({
       method: "POST",
