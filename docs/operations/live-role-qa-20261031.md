@@ -85,3 +85,9 @@ automatic approval review failed with a technical Bad Request error. No
 bypass was attempted. `QA-CAR-20261031` remains active pending user guidance;
 its historical test trip remains intact. None of the supplied user accounts
 was disabled or had its password changed.
+
+After the user explicitly requested a retry, the QA vehicle deactivation
+succeeded through the normal Admin UI. The application confirmed the audited
+change; reopening the same vehicle showed `Aktivní` unchecked. No application
+fix was necessary for this retry. `QA-CAR-20261031` is now inactive and its
+historical trip remains preserved. The test browser session was signed out.
