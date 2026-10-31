@@ -20,12 +20,12 @@ h1, h2, h3, h4, h5 { color: var(--text); }
 .dashboard, .admin-shell { background: var(--page-gradient); }
 .dashboard { padding-top: 28px; }
 .topbar, .admin-topbar { border-color: var(--line); }
-.admin-topbar { background: #08111ff2; }
+.admin-topbar { background: #090e21f2; }
 .admin-sidebar { background: var(--surface-inset); border-color: var(--line); }
 .sidebar-brand { border-color: var(--line); }
 .brand-mark, .sidebar-brand .brand-mark, .signin-mark { display: block; object-fit: contain; background: transparent; border-radius: 9px; box-shadow: none; flex-shrink: 0; }
-.signin-brand { flex-direction: column; gap: 8px; margin-bottom: 22px; }
-.signin-brand .signin-mark { width: 126px; height: auto; border-radius: 0; }
+.signin-brand { flex-direction: column; gap: 12px; margin-bottom: 30px; }
+.signin-brand .signin-mark { width: min(290px, 100%); height: auto; border-radius: 0; }
 .signin-brand .signin-maker { font-size: 12px; }
 .admin-topbar h1 { display: flex; align-items: center; gap: 10px; }
 .admin-topbar h1 > .brand-mark { display: none; }
@@ -40,7 +40,7 @@ h1, h2, h3, h4, h5 { color: var(--text); }
 .sidebar-status > span { background: var(--success); box-shadow: 0 0 0 4px #34d39914; }
 .admin-sidebar nav button { min-height: 46px; border-radius: 10px; color: var(--muted); }
 .admin-sidebar nav button:hover { color: var(--text); background: var(--surface-raised); border-color: var(--line); }
-.admin-sidebar nav button.active { color: var(--brand-soft); background: var(--brand-tint); border-color: var(--line-strong); }
+.admin-sidebar nav button.active { color: var(--text); background: linear-gradient(110deg, var(--brand-tint), var(--violet-tint)); border-color: var(--line-strong); }
 .admin-sidebar nav button.active::before { background: var(--brand); border-radius: 4px; }
 .admin-shell :is(.management-panel, .project-form-panel), .management-panel, .project-form-panel, .module-grid article, .admin-shell .module-grid article {
   border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: 0 8px 30px #0002;
@@ -54,18 +54,18 @@ h1, h2, h3, h4, h5 { color: var(--text); }
 .state-badge, .state-badge.draft { color: var(--brand-soft); background: var(--brand-tint); }
 .state-badge.approved, .report-state.approved { color: var(--success); background: var(--success-tint); }
 .state-badge.submitted, .state-badge.partially_approved, .report-state.provisional { color: var(--warning); background: var(--warning-tint); }
-.state-badge.returned, .state-badge.closed { color: var(--orange-soft); background: var(--orange-tint); }
+.state-badge.returned, .state-badge.closed { color: var(--warning); background: var(--warning-tint); }
 .state-badge.cancelled { color: var(--text-secondary); background: var(--surface-raised); }
 .error, .dashboard-error { color: var(--danger); }
 .error { background: var(--danger-tint); }
 .form-message { color: var(--success); }
-.return-reason { color: var(--orange-soft); }
+.return-reason { color: var(--warning); }
 .overview-metrics { border-color: var(--line); border-radius: 14px; background: var(--surface); }
 .overview-metrics article { border-color: var(--line); }
 .overview-metrics strong { font-variant-numeric: tabular-nums; }
 .overview-metrics span { color: var(--brand-soft); }
 .content-section-label > span { color: var(--brand-soft); background: var(--brand-tint); border-color: var(--line); border-radius: 9px; }
-.daily-record-card { color: var(--text); border-color: var(--line-strong); background: linear-gradient(120deg, #123650, var(--surface)); box-shadow: var(--shadow); }
+.daily-record-card { color: var(--text); border-color: var(--line-strong); background: linear-gradient(120deg, var(--brand-tint), var(--surface) 65%, var(--violet-tint)); box-shadow: var(--shadow); }
 .daily-record-card:hover { background: linear-gradient(120deg, #174766, var(--surface-raised)); border-color: var(--brand); }
 .worker-home-icon, .shift-picker button > span, .worker-step-number { color: var(--brand-ink); background: var(--brand-soft); }
 .worker-home-cta { color: var(--brand-ink); background: var(--brand-gradient); border: 0; }
@@ -86,10 +86,10 @@ h1, h2, h3, h4, h5 { color: var(--text); }
 .record-correction-dialog::backdrop { background: #020611c4; backdrop-filter: blur(4px); }
 .approval-card, .period-blockers { border-color: var(--line); background: var(--surface-inset); border-radius: 14px; }
 .approval-machine, .period-blocker li { background: var(--surface-raised); border-color: var(--line); }
-.signin-page { background: radial-gradient(ellipse at 5% 10%, rgba(var(--brand-rgb), .14), transparent 48%), radial-gradient(ellipse at 100% 90%, #ff6a3d14, transparent 45%), var(--canvas); }
+.signin-page { background: radial-gradient(ellipse at 15% 10%, rgba(var(--brand-rgb), .1), transparent 48%), radial-gradient(ellipse at 100% 80%, rgba(var(--violet-rgb), .15), transparent 50%), var(--canvas); }
 .signin-card { border-color: var(--line-strong); background: var(--surface); box-shadow: var(--shadow); }
 .signin-card .signin-submit { color: var(--brand-ink); background: var(--brand-gradient); }
-.signin-card .signin-submit:hover { background: linear-gradient(135deg, var(--brand-soft), #c0f1ff 48%, var(--orange-soft)); }
+.signin-card .signin-submit:hover { background: linear-gradient(115deg, var(--brand-hover), #a8d9ff 48%, #d1bfff); }
 .signin-card input { background: var(--surface-inset); border-color: var(--line-strong); }
 .signin-card .signin-reveal { color: var(--text-secondary); border-color: var(--line-strong); background: var(--surface-raised); }
 .signin-card .signin-reveal:hover { background: var(--surface-hover); }
@@ -123,7 +123,7 @@ h1, h2, h3, h4, h5 { color: var(--text); }
 }
 @media (max-width: 760px) {
   html { scroll-padding-top: 80px; }
-  .admin-sidebar { background: #08111ff7; padding-top: max(10px, env(safe-area-inset-top)); }
+  .admin-sidebar { background: #090e21f7; padding-top: max(10px, env(safe-area-inset-top)); }
   .admin-sidebar nav { padding-bottom: 3px; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
   .admin-sidebar nav button { flex: 0 0 auto; width: auto; gap: 8px; padding: 10px 12px; }
   .admin-sidebar nav button span { display: inline; font-size: 12px; white-space: nowrap; }

@@ -1,6 +1,6 @@
 # ZenOps --- Business & Architecture Specification v1.0
 
-<img src="apps/web/public/brand/zenops-logo.webp" alt="ZenOps" width="160" />
+<img src="apps/web/public/brand/zenops-logo-transparent.webp" alt="ZenOps" width="260" />
 
 ZenOps is a mobile-first internal operations platform by
 **Zentinel.cz**.

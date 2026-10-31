@@ -6,8 +6,8 @@ se rozšiřovat současně s aplikací. Testovací náhled běží na adrese
 
 ## Přihlášení a odhlášení
 
-ZenOps používá jednotný vzhled v barvách Zentinelu: tmavě modré plochy,
-azurové ovládací prvky a oranžové akcenty. Stejný styl najdete v přihlášení,
+ZenOps používá jednotný vzhled v barvách svého loga: tmavě modré plochy,
+azurové ovládací prvky a modrofialové akcenty. Stejný styl najdete v přihlášení,
 pracovních záznamech, schvalování, administraci i evidenci vybavení.
 Na telefonu se formuláře skládají do sloupce a hlavní nabídka administrace
 i Vedoucího obsahuje ikony s názvy; další položky zobrazíte vodorovným
@@ -18,8 +18,9 @@ Při načítání seznamu uživatelů, katalogu a opravných záznamů se zobraz
 průběh načítání. Prázdný či nedostupný záznam se hlásí až po dokončení
 požadavku. Pokud načtení účetní evidence selže, zvolte **Zkusit načíst znovu**.
 Stavy záznamů jsou vždy označené textem: schválené zeleně, čekající žlutě,
-vrácené oranžově. Chybová hlášení jsou červená. Oprávnění a pracovní postupy
-zůstávají stejné. Přihlášení používá oficiální logo ZenOps; jeho symbol
+vrácené jantarově. Chybová hlášení jsou červená. Oprávnění a pracovní postupy
+zůstávají stejné. Přihlášení používá průhledné vodorovné logo ZenOps bez tmavé
+dlaždice na pozadí; jeho symbol
 najdete v hlavičkách všech rolí, ikoně záložky prohlížeče, zástupci na ploše
 telefonu a denních PDF reportech. Logo se přizpůsobuje dostupné ploše bez
 deformace.
