@@ -64,3 +64,24 @@ No migration is required. Deliver through GitHub automation, verify running
 asset hashes and then repeat the new catalog form against production. Test
 records remain auditable; use existing deactivation/closure controls for
 catalog assets and the QA project rather than deleting their history.
+
+## Post-deployment verification
+
+Release `a31e131` was deployed by the server automation. Running web asset
+hashes match the locally verified production build; API health/readiness
+passed. The new catalog form successfully deactivated the QA equipment
+under the actual Accountant account. Worker profile history shows both
+returns and zero outstanding units. Database read-back confirms the QA
+project is CLOSED, test WorkDay APPROVED and January 2099 CLOSED. The QA
+machine is inactive; its before/after change and MTH correction are audited.
+
+The first machine deactivation attempt from the old browser page showed a
+generic save error; no corresponding PATCH reached the API. Reloading the
+deployed app and repeating that operation succeeded. This transient failure
+does not establish a backend machine-edit defect.
+
+The attempted QA vehicle cleanup was not executed because the computer-use
+automatic approval review failed with a technical Bad Request error. No
+bypass was attempted. `QA-CAR-20261031` remains active pending user guidance;
+its historical test trip remains intact. None of the supplied user accounts
+was disabled or had its password changed.
