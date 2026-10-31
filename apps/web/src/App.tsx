@@ -9,6 +9,7 @@ import { AssetPanel } from "./AssetPanel";
 import { ApprovalPanel } from "./ApprovalPanel";
 import { ReportPanel } from "./ReportPanel";
 import { MonthlyPanel } from "./MonthlyPanel";
+import { BrandMark } from "./BrandMark";
 import { businessDate } from "@zenops/contracts/time";
 import type { WorkDayRecordTarget } from "./PeriodBlockers";
 import { AccountPanel } from "./AccountPanel";
@@ -480,7 +481,7 @@ return runMutation(async () => {
     return (
       <main className="admin-shell accountant-shell">
         <aside className="admin-sidebar">
-          <div className="sidebar-brand"><span className="brand-mark">Z</span><div><strong>ZENOPS</strong><small>PERSONÁLNÍ EVIDENCE</small></div></div>
+          <div className="sidebar-brand"><BrandMark /><div><strong>ZENOPS</strong><small>PERSONÁLNÍ EVIDENCE</small></div></div>
           <nav aria-label="Hlavní navigace"><button disabled={busy} className="active" type="button" aria-current="page"><NavIcon name="people" /><span>Uživatelé a vybavení</span></button></nav>
           <div className="sidebar-status"><span /><div><strong>Systém je dostupný</strong><small>Personální evidence</small></div></div>
         </aside>
@@ -518,7 +519,7 @@ return runMutation(async () => {
       <main className="admin-shell leader-shell">
         <aside className="admin-sidebar">
           <div className="sidebar-brand">
-            <span className="brand-mark">Z</span>
+            <BrandMark />
             <div><strong>ZENOPS</strong><small>PROVOZ ZAKÁZEK</small></div>
           </div>
           <nav aria-label="Hlavní navigace Vedoucího">
@@ -609,7 +610,7 @@ return runMutation(async () => {
       <main className="admin-shell">
         <aside className="admin-sidebar">
           <div className="sidebar-brand">
-            <span className="brand-mark">Z</span>
+            <BrandMark />
             <div>
               <strong>ZENOPS</strong>
               <small>ŘÍZENÍ PROVOZU</small>
@@ -748,9 +749,9 @@ return runMutation(async () => {
   return (
     <main className={isWorkerOnly ? "dashboard worker-dashboard" : "dashboard"}>
       <header className="topbar">
-        <div>
-          <span className="eyebrow">ZENTINEL</span>
-          <h1>ZenOps</h1>
+        <div className="worker-brand">
+          <BrandMark />
+          <div><span className="eyebrow">ZENTINEL</span><h1>ZenOps</h1></div>
         </div>
         <div className="account">
           <div className="user-chip">
@@ -876,7 +877,7 @@ export function App() {
     <main className="signin-page">
       <div className="signin-content">
         <header className="signin-brand" aria-label="ZenOps od Zentinel.cz">
-          <span className="signin-mark" aria-hidden="true">Z</span>
+          <BrandMark className="signin-mark" />
           <div><span className="signin-name">ZenOps</span><span className="signin-maker">od Zentinel.cz</span></div>
         </header>
         <section className="signin-card" aria-labelledby="signin-title">

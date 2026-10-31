@@ -1,0 +1,144 @@
+/* Shared visual language; role-specific layouts remain in styles.css. */
+html { scroll-padding-top: 110px; }
+body { color: var(--text); background: var(--canvas); line-height: 1.5; }
+:root { color: var(--text); background: var(--canvas); }
+::selection { color: var(--brand-ink); background: var(--brand-soft); }
+a { color: var(--brand-soft); text-underline-offset: 3px; }
+button, input, select, textarea, a { -webkit-tap-highlight-color: transparent; }
+button, .download-button { touch-action: manipulation; }
+button { min-height: 44px; color: var(--brand-ink); background: var(--brand-soft); transition: background .18s, border-color .18s, box-shadow .18s; }
+button:hover { background: var(--brand-hover); }
+button:disabled { cursor: not-allowed; }
+input, select, textarea { min-height: 48px; color: var(--text); background: var(--surface-inset); border-color: var(--line-strong); accent-color: var(--brand); }
+input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
+input:focus, select:focus, textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rgba(var(--brand-rgb), .13); }
+:is(button, a, input, select, textarea, summary):focus-visible { outline: 2px solid var(--brand-soft); outline-offset: 4px; }
+input[type=checkbox], input[type=radio] { min-height: 0; accent-color: var(--brand); }
+label { color: var(--text-secondary); }
+h1, h2, h3, h4, h5 { color: var(--text); }
+.eyebrow { color: var(--brand-soft); }
+.dashboard, .admin-shell { background: var(--page-gradient); }
+.dashboard { padding-top: 28px; }
+.topbar, .admin-topbar { border-color: var(--line); }
+.admin-topbar { background: #08111ff2; }
+.admin-sidebar { background: var(--surface-inset); border-color: var(--line); }
+.sidebar-brand { border-color: var(--line); }
+.brand-mark, .sidebar-brand .brand-mark, .signin-mark { color: var(--brand-ink); background: var(--brand-gradient); border-radius: 12px; box-shadow: 0 4px 22px rgba(var(--brand-rgb), .14); }
+.sidebar-brand strong { letter-spacing: .12em; }
+.worker-brand { display: flex; align-items: center; gap: 12px; }
+.worker-brand .brand-mark { flex: 0 0 42px; width: 42px; height: 42px; font-weight: 800; }
+.worker-brand .eyebrow { font-size: 9px; }
+.sidebar-brand small::after { content: " · ZENTINEL"; }
+.sidebar-status > span { background: var(--success); box-shadow: 0 0 0 4px #34d39914; }
+.admin-sidebar nav button { min-height: 46px; border-radius: 10px; color: var(--muted); }
+.admin-sidebar nav button:hover { color: var(--text); background: var(--surface-raised); border-color: var(--line); }
+.admin-sidebar nav button.active { color: var(--brand-soft); background: var(--brand-tint); border-color: var(--line-strong); }
+.admin-sidebar nav button.active::before { background: var(--brand); border-radius: 4px; }
+.admin-shell :is(.management-panel, .project-form-panel), .management-panel, .project-form-panel, .module-grid article, .admin-shell .module-grid article {
+  border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); box-shadow: 0 8px 30px #0002;
+}
+.admin-shell :is(input, select, textarea, button, .download-button) { border-radius: 10px; }
+.admin-shell :is(.employee-form, .asset-form, .machine-usage-form, .workday-forms form, .fuel-fields, .asset-lists > div, .report-summary > div, .period-card, .monthly-list, .admin-day) { border-radius: 12px; background: var(--surface-inset); }
+.ghost, .secondary, .project-state, .table-action, .close-button, .admin-topbar .ghost { color: var(--text-secondary); border: 1px solid var(--line); background: var(--surface-raised); }
+.ghost:hover, .secondary:hover, .project-state:hover, .table-action:hover, .close-button:hover, .admin-topbar .ghost:hover { color: var(--text); border-color: var(--line-strong); background: var(--surface-hover); }
+.download-button, .approve, .approval-actions .approve { color: var(--brand-ink); background: var(--brand-soft); }
+.download-button:hover, .approve:hover, .approval-actions .approve:hover { background: var(--brand-hover); }
+.state-badge, .state-badge.draft { color: var(--brand-soft); background: var(--brand-tint); }
+.state-badge.approved, .report-state.approved { color: var(--success); background: var(--success-tint); }
+.state-badge.submitted, .state-badge.partially_approved, .report-state.provisional { color: var(--warning); background: var(--warning-tint); }
+.state-badge.returned, .state-badge.closed { color: var(--orange-soft); background: var(--orange-tint); }
+.state-badge.cancelled { color: var(--text-secondary); background: var(--surface-raised); }
+.error, .dashboard-error { color: var(--danger); }
+.error { background: var(--danger-tint); }
+.form-message { color: var(--success); }
+.return-reason { color: var(--orange-soft); }
+.overview-metrics { border-color: var(--line); border-radius: 14px; background: var(--surface); }
+.overview-metrics article { border-color: var(--line); }
+.overview-metrics strong { font-variant-numeric: tabular-nums; }
+.overview-metrics span { color: var(--brand-soft); }
+.content-section-label > span { color: var(--brand-soft); background: var(--brand-tint); border-color: var(--line); border-radius: 9px; }
+.daily-record-card { color: var(--text); border-color: var(--line-strong); background: linear-gradient(120deg, #123650, var(--surface)); box-shadow: var(--shadow); }
+.daily-record-card:hover { background: linear-gradient(120deg, #174766, var(--surface-raised)); border-color: var(--brand); }
+.worker-home-icon, .shift-picker button > span, .worker-step-number { color: var(--brand-ink); background: var(--brand-soft); }
+.worker-home-cta { color: var(--brand-ink); background: var(--brand-gradient); border: 0; }
+.daily-record-card > .worker-home-cta { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 800; }
+.daily-record-card > .worker-home-icon { font-size: 28px; font-weight: 500; }
+.daily-record-card > .worker-home-copy { font-size: inherit; font-weight: inherit; }
+.worker-home-copy small:first-child { color: var(--brand-soft); }
+.worker-home-copy small:last-child { color: var(--text-secondary); }
+.worker-step { background: var(--surface-inset); border-color: var(--line); }
+.shift-picker button, .work-type-picker button { color: var(--text); background: var(--surface-raised); border-color: var(--line-strong); }
+.shift-picker button:hover, .work-type-picker button:hover { background: var(--brand-tint); border-color: var(--brand); }
+.worker-profile-link { color: var(--brand-soft); }
+.timeline .break { color: var(--warning); background: var(--warning-tint); }
+.timeline .vehicle-trip { background: var(--brand-tint); }
+.account-panel, .state-dialog, .decision-dialog, .admin-entry-form, .record-correction-dialog { border-color: var(--line-strong); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
+.accountant-user-state.inactive { color: var(--warning); background: var(--warning-tint); border-color: var(--line-strong); }
+.admin-entry-form { z-index: 40; }
+.record-correction-dialog::backdrop { background: #020611c4; backdrop-filter: blur(4px); }
+.approval-card, .period-blockers { border-color: var(--line); background: var(--surface-inset); border-radius: 14px; }
+.approval-machine, .period-blocker li { background: var(--surface-raised); border-color: var(--line); }
+.signin-page { background: radial-gradient(ellipse at 5% 10%, rgba(var(--brand-rgb), .14), transparent 48%), radial-gradient(ellipse at 100% 90%, #ff6a3d14, transparent 45%), var(--canvas); }
+.signin-card { border-color: var(--line-strong); background: var(--surface); box-shadow: var(--shadow); }
+.signin-card .signin-submit { color: var(--brand-ink); background: var(--brand-gradient); }
+.signin-card .signin-submit:hover { background: linear-gradient(135deg, var(--brand-soft), #c0f1ff 48%, var(--orange-soft)); }
+.signin-card input { background: var(--surface-inset); border-color: var(--line-strong); }
+.signin-card .signin-reveal { color: var(--text-secondary); border-color: var(--line-strong); background: var(--surface-raised); }
+.signin-card .signin-reveal:hover { background: var(--surface-hover); }
+.signin-card button:focus-visible, .worker-step button:focus-visible, .worker-back:focus-visible, .daily-record-card:focus-visible { outline-color: var(--brand-soft); }
+
+/* Fluid layouts include tablet, split-window and large desktop widths. */
+.section-heading, .form-title, .asset-list-title, .worker-records-heading, .record-correction-heading { min-width: 0; flex-wrap: wrap; }
+.section-heading > div, .admin-topbar > div, .admin-day, .employee-row > div, .monthly-list span { min-width: 0; overflow-wrap: anywhere; }
+.section-heading input { max-width: 100%; }
+.button-group, .row-actions { flex-wrap: wrap; }
+.employee-form, .project-day-form, .asset-form, .vehicle-trip-form, .machine-usage-form { min-width: 0; }
+.employee-form > *, .project-day-form > *, .asset-form > *, .vehicle-trip-form > *, .machine-usage-form > *, .fuel-fields > * { min-width: 0; }
+.report-table { border: 1px solid var(--line); border-radius: 12px; padding: 0 12px; }
+.report-controls { flex-wrap: wrap; }
+.asset-lists li { grid-template-columns: minmax(0, .8fr) minmax(0, 1fr) auto; }
+.asset-lists li > strong, .asset-lists li > span { min-width: 0; overflow-wrap: anywhere; }
+.monthly-grids { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.period-card { grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; }
+.period-card label { grid-column: 1 / -1; }
+.period-card button { max-width: 100%; }
+@media (min-width: 1600px) {
+  .admin-content { width: min(100%, 1700px); }
+  .admin-sidebar { width: 264px; }
+  .admin-workspace { margin-left: 264px; }
+}
+@media (min-width: 761px) and (max-width: 1200px) {
+  .employee-form, .asset-form, .machine-usage-form, .project-day-form, .vehicle-trip-form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .asset-lists { grid-template-columns: minmax(0, 1fr); }
+  .period-card { grid-template-columns: minmax(0, 1fr); }
+  .period-card button { width: 100%; }
+}
+@media (max-width: 760px) {
+  html { scroll-padding-top: 80px; }
+  .admin-sidebar { background: #08111ff7; padding-top: max(10px, env(safe-area-inset-top)); }
+  .admin-sidebar nav { padding-bottom: 3px; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+  .admin-sidebar nav button { flex: 0 0 auto; width: auto; gap: 8px; padding: 10px 12px; }
+  .admin-sidebar nav button span { display: inline; font-size: 12px; white-space: nowrap; }
+  .admin-topbar { gap: 12px; flex-wrap: wrap; }
+  .admin-topbar .account { flex-direction: row; align-items: center; flex-wrap: wrap; }
+  .admin-content { padding-bottom: max(32px, env(safe-area-inset-bottom)); }
+  .monthly-grids, .period-card { grid-template-columns: minmax(0, 1fr); }
+  .period-card button { width: 100%; }
+  .employee-row { grid-template-columns: minmax(0, 1fr); }
+  .employee-row .role-list { grid-column: auto; grid-row: auto; }
+  .employee-row .row-actions { justify-content: flex-start; }
+  .asset-lists li { grid-template-columns: minmax(0, 1fr); }
+  .asset-lists li .row-actions, .asset-lists li > button { grid-column: 1; justify-self: start; }
+  .record-correction-dialog, .admin-entry-form { max-height: calc(100dvh - 24px); }
+  .admin-shell :is(input, select, textarea), input, select, textarea { font-size: 16px; }
+  .report-controls { width: 100%; }
+}
+@media (max-width: 380px) {
+  .dashboard > .topbar { flex-wrap: wrap; }
+  .dashboard > .topbar .account { width: 100%; flex-wrap: wrap; justify-content: flex-end; }
+  .dashboard > .topbar .user-chip { margin-right: auto; }
+  .admin-content { padding-left: 12px; padding-right: 12px; }
+  .admin-shell .management-panel { padding: 14px; }
+  .section-heading { gap: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }

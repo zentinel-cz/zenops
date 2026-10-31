@@ -1,6 +1,16 @@
 # Implementation Status
 
-Last updated: 2026-10-13
+Last updated: 2026-10-31
+
+## Zentinel visual identity — 2026-10-31
+
+All roles and sign-in share the navy/cyan/orange palette from zentinel.cz.
+Shared semantic tokens cover controls, surfaces, badges, forms and dialogs.
+Fluid layouts support mobile, tablet and desktop with labelled mobile
+navigation, visible keyboard focus and wrapping for long asset identifiers.
+The final logo is pending from the user; one shared BrandMark component
+provides the temporary monogram. No database migration is needed.
+See architecture/visual-identity.md.
 
 ## Monthly closure blockers — prepared 2026-10-31
 

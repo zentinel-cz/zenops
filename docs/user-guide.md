@@ -6,6 +6,16 @@ se rozšiřovat současně s aplikací. Testovací náhled běží na adrese
 
 ## Přihlášení a odhlášení
 
+ZenOps používá jednotný vzhled v barvách Zentinelu: tmavě modré plochy,
+azurové ovládací prvky a oranžové akcenty. Stejný styl najdete v přihlášení,
+pracovních záznamech, schvalování, administraci i evidenci vybavení.
+Na telefonu se formuláře skládají do sloupce a hlavní nabídka administrace
+i Vedoucího obsahuje ikony s názvy; další položky zobrazíte vodorovným
+posunutím nabídky. Širší tabulkové reporty lze posouvat uvnitř jejich plochy.
+Stavy záznamů jsou vždy označené textem: schválené zeleně, čekající žlutě,
+vrácené oranžově. Chybová hlášení jsou červená. Oprávnění a pracovní postupy
+zůstávají stejné. Do dodání finálního loga slouží jako značka monogram Z.
+
 1. Otevřete přihlašovací stránku ZenOps.
 2. Zadejte své uživatelské jméno nebo firemní e-mail a heslo.
 3. Tlačítkem **Zobrazit** vedle hesla můžete zkontrolovat jeho zápis; tlačítkem
@@ -130,7 +140,7 @@ Administrátorské rozhraní používá stálý boční panel, který rozděluje
 samostatných provozních sekcí: Přehled, Zakázky, Denní provoz, Denní report,
 Měsíční přehled, Opravy záznamů, Technika a Zaměstnanci. Volba zobrazí pouze
 vybranou agendu; ostatní sekce zůstanou skryté a stránka mezi nimi neroluje.
-Na menším displeji se panel změní na vodorovnou lištu ikon se stejným
+Na menším displeji se panel změní na vodorovnou lištu ikon s názvy se stejným
 přepínáním. Schvalování práce je dostupné pouze Vedoucímu v jeho dashboardu.
 
 Horní přehled ukazuje celkový počet Zakázek a odděleně otevřené a uzavřené
