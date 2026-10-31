@@ -19,7 +19,10 @@ průběh načítání. Prázdný či nedostupný záznam se hlásí až po dokon
 požadavku. Pokud načtení účetní evidence selže, zvolte **Zkusit načíst znovu**.
 Stavy záznamů jsou vždy označené textem: schválené zeleně, čekající žlutě,
 vrácené oranžově. Chybová hlášení jsou červená. Oprávnění a pracovní postupy
-zůstávají stejné. Do dodání finálního loga slouží jako značka monogram Z.
+zůstávají stejné. Přihlášení používá oficiální logo ZenOps; jeho symbol
+najdete v hlavičkách všech rolí, ikoně záložky prohlížeče, zástupci na ploše
+telefonu a denních PDF reportech. Logo se přizpůsobuje dostupné ploše bez
+deformace.
 
 1. Otevřete přihlašovací stránku ZenOps.
 2. Zadejte své uživatelské jméno nebo firemní e-mail a heslo.

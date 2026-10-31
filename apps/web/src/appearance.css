@@ -23,7 +23,15 @@ h1, h2, h3, h4, h5 { color: var(--text); }
 .admin-topbar { background: #08111ff2; }
 .admin-sidebar { background: var(--surface-inset); border-color: var(--line); }
 .sidebar-brand { border-color: var(--line); }
-.brand-mark, .sidebar-brand .brand-mark, .signin-mark { color: var(--brand-ink); background: var(--brand-gradient); border-radius: 12px; box-shadow: 0 4px 22px rgba(var(--brand-rgb), .14); }
+.brand-mark, .sidebar-brand .brand-mark, .signin-mark { display: block; object-fit: contain; background: transparent; border-radius: 9px; box-shadow: none; flex-shrink: 0; }
+.signin-brand { flex-direction: column; gap: 8px; margin-bottom: 22px; }
+.signin-brand .signin-mark { width: 126px; height: auto; border-radius: 0; }
+.signin-brand .signin-maker { font-size: 12px; }
+.admin-topbar h1 { display: flex; align-items: center; gap: 10px; }
+.admin-topbar h1 > .brand-mark { display: none; }
+@media (max-width: 760px) {
+  .admin-topbar h1 > .brand-mark { display: block; width: 32px; height: 32px; }
+}
 .sidebar-brand strong { letter-spacing: .12em; }
 .worker-brand { display: flex; align-items: center; gap: 12px; }
 .worker-brand .brand-mark { flex: 0 0 42px; width: 42px; height: 42px; font-weight: 800; }

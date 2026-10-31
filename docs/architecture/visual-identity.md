@@ -24,11 +24,19 @@ it. Main navigation on phones shows labels as well as icons and scrolls
 horizontally without widening the page. Keyboard focus remains visible;
 reduced-motion preferences and device safe areas are respected.
 
-The user is preparing the final logo. `BrandMark.tsx` is the single shared
-placeholder used at sign-in and in all role headers. Replace that component
-with the supplied local asset once available, preserving its accessible
-surrounding product name and aspect ratio. Do not fetch the logo from a
-third-party URL at runtime. The current Z monogram is temporary.
+The final logo was supplied as ZenOps.png on 2026-10-31 (1254×1254 RGB).
+Only unused outer background was cropped: full logo including wordmark
+uses bounds (240,140)–(1015,1120); the square symbol uses
+(250,145)–(1004,899). The supplied artwork, colors and proportions are
+preserved. Local derived assets live in apps/web/public/brand.
+
+`BrandMark.tsx` uses the full logo at sign-in and the square symbol in every
+role header. Surrounding text supplies the accessible product name; repeated
+decorative images have empty alt text. Favicons, Apple touch icon and web
+manifest use appropriately sized square symbols. The daily PDF embeds a
+96px PNG through report-brand.ts, so rendering needs no network request.
+README uses the full logo. Do not fetch artwork from third-party URLs at
+runtime. Future logo replacements must update these derived assets together.
 
 This is a presentation change. Role permissions, operational rules and
 stored data are unaffected; no database migration is required.

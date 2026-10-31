@@ -486,7 +486,7 @@ return runMutation(async () => {
           <div className="sidebar-status"><span /><div><strong>Systém je dostupný</strong><small>Personální evidence</small></div></div>
         </aside>
         <div className="admin-workspace">
-          <header className="admin-topbar"><div><span className="topbar-context">PERSONÁLNÍ EVIDENCE</span><h1>Uživatelé a svěřené věci</h1></div><div className="account"><div className="user-chip"><span>{user.displayName}</span><small>Účetní</small></div><AccountPanel onPasswordChanged={onLogout} /><button disabled={busy} className="ghost" onClick={onLogout}>Odhlásit</button></div></header>
+          <header className="admin-topbar"><div><span className="topbar-context">PERSONÁLNÍ EVIDENCE</span><h1><BrandMark />Uživatelé a svěřené věci</h1></div><div className="account"><div className="user-chip"><span>{user.displayName}</span><small>Účetní</small></div><AccountPanel onPasswordChanged={onLogout} /><button disabled={busy} className="ghost" onClick={onLogout}>Odhlásit</button></div></header>
           <div className="admin-content"><AccountantPanel /></div>
         </div>
       </main>
@@ -540,7 +540,7 @@ return runMutation(async () => {
         </aside>
         <div className="admin-workspace">
           <header className="admin-topbar">
-            <div><span className="topbar-context">VEDOUCÍ / {currentSection.label.toUpperCase()}</span><h1>{currentSection.label}</h1></div>
+            <div><span className="topbar-context">VEDOUCÍ / {currentSection.label.toUpperCase()}</span><h1><BrandMark />{currentSection.label}</h1></div>
             <div className="account">
               <div className="user-chip"><span>{user.displayName}</span><small>Vedoucí</small></div>
               <AccountPanel onPasswordChanged={onLogout} />
@@ -645,7 +645,7 @@ return runMutation(async () => {
               <span className="topbar-context">
                 ADMINISTRACE / {currentSection.label.toUpperCase()}
               </span>
-              <h1>{currentSection.label}</h1>
+              <h1><BrandMark />{currentSection.label}</h1>
             </div>
             <div className="account">
               <div className="user-chip">
@@ -877,8 +877,8 @@ export function App() {
     <main className="signin-page">
       <div className="signin-content">
         <header className="signin-brand" aria-label="ZenOps od Zentinel.cz">
-          <BrandMark className="signin-mark" />
-          <div><span className="signin-name">ZenOps</span><span className="signin-maker">od Zentinel.cz</span></div>
+          <BrandMark className="signin-mark" full />
+          <div><span className="signin-maker">od Zentinel.cz</span></div>
         </header>
         <section className="signin-card" aria-labelledby="signin-title">
           <header className="signin-heading">
