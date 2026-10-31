@@ -37,6 +37,12 @@ modifying Caddy: - inspect current configuration, - back it up, - add
 only the ZenOps site, - validate configuration, - reload safely. Do not
 deploy incomplete work to production without explicit approval.
 
+The server has automation that checks GitHub every two minutes and pulls
+the latest pushed changes (confirmed by the user on 2026-10-31). Before any
+manual deployment, inspect the server checkout, running API/web versions and
+migration state; the automation may already have processed the push. Verify
+actual runtime state before reporting whether a change is deployed.
+
 ## Product identity
 
 The application is a Zentinel.cz product. UI should be clean, modern,
