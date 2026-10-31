@@ -42,6 +42,11 @@ and entered values and audit the change.
 
 Hard validation: - end MTH cannot be lower than start MTH.
 
+ADR-017 permits a Worker to correct start/end MTH on own draft/returned work
+in an editable day and open month, with a mandatory reason and atomic
+before/after audit. Submitted/approved work remains locked. Existing fuel,
+attachments, intervals and suggested readings are retained.
+
 ## Concurrent usage
 
 A physical machine cannot be used by two workers during overlapping

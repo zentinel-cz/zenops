@@ -72,3 +72,9 @@ Permissions must be backend-enforced and extensible rather than
 hard-coded only in UI.
 
 Project-day metadata and shared fuel are readable only by Admin and the current Leader, including closed projects. Workers retain own work history and open-project selection; Accountant has no operational project access. Leader approved-entry corrections require an open month and a reason; breaks, trips and machine-meter corrections remain Admin-only.
+
+ADR-017 narrows the machine-meter restriction: a Worker may correct only
+start/end MTH on own draft/returned entries in editable days and open months,
+with a reason and before/after audit. This grants no fuel, attachment,
+submitted/approved-work or other-worker correction access. Leader's meter
+correction scope remains unchanged.

@@ -339,10 +339,25 @@ strojů a příslušenství. Při kolizi se celá oprava odmítne.
 
 Admin vidí v opravách u každého stroje samostatné tlačítko s jeho kódem a
 označením **MTH/palivo**, aby opravil správný záznam. Vedoucí v přehledu oprav
-vidí stroje u schválených úseků svých zakázek; opravy motohodin zůstávají
-Adminovi. Denní report i PDF ukazují všechny stroje včetně jejich příslušenství.
+vidí stroje u schválených úseků svých zakázek; MTH schválené práce opravuje
+Admin. Pracovník může opravit MTH vlastní rozpracované či vrácené práce
+postupem níže. Denní report i PDF ukazují všechny stroje včetně jejich příslušenství.
 Pracovní úsek a jeho hodiny se započítají pouze jednou; měsíční souhrny techniky
 započítají MTH a palivo každého stroje zvlášť.
+
+### Oprava MTH — Pracovník
+
+U vlastního rozpracovaného nebo vráceného úseku zvolte u konkrétního stroje
+**Opravit MTH**. Formulář ukáže původní hodnoty. Zadejte správný počáteční
+a konečný MTH, vyplňte **Důvod opravy** a zvolte **Uložit opravu MTH**.
+Konec nesmí být nižší než začátek. Při chybě zůstávají hodnoty ve formuláři;
+**Zrušit** jej zavře bez uložení.
+
+Původní a nové hodnoty, autor i důvod zůstanou v auditu. Palivo a příslušenství
+se touto opravou nemění. Opravit lze i dříve zapsané MTH již neaktivního
+stroje. Po opravě vráceného úseku znovu odešlete pracovní den vedoucímu.
+Odeslané a schválené úseky pracovník neupravuje; uzavřený měsíc musí nejprve
+znovu otevřít Admin. MTH schválené práce nadále opravuje Admin.
 
 ## Vozidla a společné jízdy
 
@@ -488,7 +503,9 @@ Admin otevře **Zakázky → Upravit zakázku**, vybere nového Vedoucího a uve
 Vedoucí najde **Opravy práce** v hlavní navigaci. Vybere datum a schválený
 úsek své zakázky. Může změnit čas, druh práce, aktivitu a popis, vždy s důvodem.
 Zakázku úseku nepřevádí; tuto opravu provádí Admin. Uzavřený měsíc změny odmítne.
-Přestávky, sdílené jízdy a opravy motohodin zůstávají v administraci.
+Přestávky, sdílené jízdy a MTH schválené práce zůstávají v administraci.
+MTH vlastní rozpracované či vrácené práce opravuje také Pracovník podle
+postupu **Oprava MTH — Pracovník**.
 
 V **Denním provozu** lze vybrat datum a zobrazit i uzavřenou zakázku pouze
 pro čtení. Admin vidí všechny zakázky, Vedoucí pouze aktuálně přiřazené.

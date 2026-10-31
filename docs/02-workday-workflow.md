@@ -52,6 +52,11 @@ approved.
 Leader may return an entry with mandatory reason. Worker corrects and
 resubmits while the relevant month is open.
 
+Under ADR-017 the Worker can also correct the start/end MTH of an attached
+machine on own draft/returned entries with a reason and before/after audit.
+Saving readings leaves the entry state and previous approval history intact;
+returned work is explicitly resubmitted afterwards.
+
 ## Historical entry
 
 Worker may create/fix a past WorkDay while its MonthlyPeriod remains

@@ -2297,6 +2297,114 @@ integration("authentication integration", () => {
     })).rejects.toThrow('Driver migration fixture rolled back');
   });
 
+  it("audits Worker MTH corrections on own draft/returned work and preserves every other field", async () => {
+    const context = await multipleMachineContext('worker-mth','2055-01-10');
+    const first = await context.addMachine(0);
+    const second = await context.addMachine(1);
+    expect(first.statusCode,first.body).toBe(201); expect(second.statusCode,second.body).toBe(201);
+    const usageId = first.json().usage.id as string;
+    const url = `/api/workdays/${context.dayId}/entries/${context.entryId}/machine/${usageId}/mth`;
+    const [before] = await db`select * from machine_usages where id=${usageId}`;
+    const secondBefore = await db`select * from machine_usages where id=${second.json().usage.id}`;
+    const attachmentsBefore = await db`select * from attachment_usages where work_entry_id=${context.entryId} order by id`;
+    const draft = await app.inject({method:'PATCH',url,headers:context.headers,payload:{startMth:99.5,endMth:102,reason:'Kontrola původního zápisu'}});
+    expect(draft.statusCode,draft.body).toBe(200);
+    expect(draft.json().usage).toMatchObject({id:usageId,enteredStartMth:'99.50',endMth:'102.00'});
+    const sibling = await context.addWork(context.dayId,'2055-01-10T10:00:00+01:00','2055-01-10T11:00:00+01:00');
+    expect(sibling.statusCode,sibling.body).toBe(201);
+    const siblingUsage = await app.inject({method:'POST',url:`/api/workdays/${context.dayId}/entries/${sibling.json().entry.id}/machine`,
+      headers:context.headers,payload:{machineId:context.machines[0]!.id,startMth:102,endMth:103}});
+    expect(siblingUsage.statusCode,siblingUsage.body).toBe(201);
+    const leader = await headersFor('leader');
+    expect((await app.inject({method:'POST',url:`/api/workdays/${context.dayId}/submit`,headers:context.headers})).statusCode).toBe(200);
+    expect((await app.inject({method:'POST',url:`/api/approvals/${sibling.json().entry.id}/decision`,headers:leader,payload:{action:'APPROVED'}})).statusCode).toBe(200);
+    expect((await app.inject({method:'POST',url:`/api/approvals/${context.entryId}/decision`,headers:leader,
+      payload:{action:'RETURNED',reason:'Zkontrolujte MTH prvního stroje'}})).statusCode).toBe(200);
+    const approvalsBefore = await db`select * from approvals where work_entry_id in (${context.entryId},${sibling.json().entry.id}) order by id`;
+    // Historical readings can be corrected after deactivation of the machine.
+    await db`update machines set is_active=false where id=${context.machines[0]!.id}`;
+    const returned = await app.inject({method:'PATCH',url,headers:context.headers,payload:{startMth:100.5,endMth:101.5,reason:'Oprava po vrácení vedoucím'}});
+    expect(returned.statusCode,returned.body).toBe(200);
+    const [after] = await db`select * from machine_usages where id=${usageId}`;
+    expect(after).toEqual({...before,enteredStartMth:'100.50',endMth:'101.50'});
+    expect(await db`select * from machine_usages where id=${second.json().usage.id}`).toEqual(secondBefore);
+    expect(await db`select * from attachment_usages where work_entry_id=${context.entryId} order by id`).toEqual(attachmentsBefore);
+    expect(await db`select * from approvals where work_entry_id in (${context.entryId},${sibling.json().entry.id}) order by id`).toEqual(approvalsBefore);
+    const audits = await db`select before_data,after_data,actor_user_id,reason from audit_logs
+      where entity_id=${usageId} and action='MACHINE_MTH_WORKER_CORRECTED' order by created_at`;
+    expect(audits).toHaveLength(2);
+    expect(audits[1]).toMatchObject({actorUserId:context.userId,reason:'Oprava po vrácení vedoucím',
+      beforeData:{enteredStartMth:'99.50'},afterData:{enteredStartMth:'100.50',endMth:'101.50'}});
+    const approvedUrl = `/api/workdays/${context.dayId}/entries/${sibling.json().entry.id}/machine/${siblingUsage.json().usage.id}/mth`;
+    expect((await app.inject({method:'PATCH',url:approvedUrl,headers:context.headers,payload:{startMth:102,endMth:104,reason:'Zakázaná oprava'}})).statusCode).toBe(409);
+    const mismatched = url.replace(usageId,siblingUsage.json().usage.id);
+    expect((await app.inject({method:'PATCH',url:mismatched,headers:context.headers,payload:{startMth:100,endMth:102,reason:'Cizí použití'}})).statusCode).toBe(409);
+    const own = (await app.inject({url:'/api/workdays/current?date=2055-01-10',headers:context.headers})).json().workDay;
+    expect(own.entries.find((entry:{id:string})=>entry.id===context.entryId).state).toBe('RETURNED');
+    expect(own.entries.find((entry:{id:string})=>entry.id===context.entryId).machineUsages[0]).toMatchObject({startMth:'100.50',endMth:'101.50'});
+    expect((await app.inject({method:'POST',url:`/api/workdays/${context.dayId}/submit`,headers:context.headers})).statusCode).toBe(200);
+    expect((await app.inject({method:'PATCH',url,headers:context.headers,payload:{startMth:100,endMth:102,reason:'Po odeslání'}})).statusCode).toBe(409);
+    expect((await app.inject({method:'POST',url:`/api/approvals/${context.entryId}/decision`,headers:leader,payload:{action:'APPROVED'}})).statusCode).toBe(200);
+    const report = (await app.inject({url:'/api/reports/daily?date=2055-01-10',headers:leader})).json().report;
+    expect(report.entries.find((entry:{id:string})=>entry.id===context.entryId).machineUsages[0])
+      .toMatchObject({id:usageId,startMth:'100.50',endMth:'101.50'});
+  });
+
+  it("rejects unrelated roles, bad MTH fields and closed periods, and rolls back a failed audit", async () => {
+    const context = await multipleMachineContext('mth-guards','2055-02-10');
+    const added = await context.addMachine(0);
+    expect(added.statusCode,added.body).toBe(201);
+    const usageId = added.json().usage.id as string;
+    const url = `/api/workdays/${context.dayId}/entries/${context.entryId}/machine/${usageId}/mth`;
+    const payload = {startMth:100,endMth:104,reason:'Kontrola hodnot'};
+    for (const username of ['admin','leader','accountant.test']) {
+      expect((await app.inject({method:'PATCH',url,headers:await headersFor(username),payload})).statusCode).toBe(403);
+    }
+    const other = await intervalContext('mth-foreign');
+    expect((await app.inject({method:'PATCH',url,headers:other.headers,payload})).statusCode).toBe(409);
+    expect((await app.inject({method:'PATCH',url,headers:{origin},payload})).statusCode).toBe(401);
+    expect((await app.inject({method:'PATCH',url,headers:{cookie:context.headers.cookie},payload})).statusCode).toBe(403);
+    for (const invalid of [
+      {...payload,startMth:-1},{...payload,endMth:99},{...payload,startMth:null},{...payload,reason:'  '},
+      {startMth:100,reason:'Chybí konec'},{...payload,startMth:10000001},
+      {...payload,fuelConsumed:99},{...payload,machineId:context.machines[1]!.id},{...payload,attachmentIds:[]},
+    ]) expect((await app.inject({method:'PATCH',url,headers:context.headers,payload:invalid})).statusCode).toBe(400);
+    const [before] = await db`select * from machine_usages where id=${usageId}`;
+    await db.unsafe(`create function test_mth_audit_failure() returns trigger language plpgsql as $$
+      begin if new.action='MACHINE_MTH_WORKER_CORRECTED' then raise exception 'Injected MTH audit failure'; end if; return new; end; $$`);
+    await db.unsafe('create trigger test_mth_audit_failure before insert on audit_logs for each row execute function test_mth_audit_failure()');
+    try {
+      expect((await app.inject({method:'PATCH',url,headers:context.headers,payload})).statusCode).toBe(500);
+    } finally {
+      await db.unsafe('drop trigger test_mth_audit_failure on audit_logs');
+      await db.unsafe('drop function test_mth_audit_failure()');
+    }
+    expect((await db`select * from machine_usages where id=${usageId}`)[0]).toEqual(before);
+    expect(await db`select id from audit_logs where entity_id=${usageId} and action='MACHINE_MTH_WORKER_CORRECTED'`).toHaveLength(0);
+    const [admin] = await db`select id from users where username='admin'`;
+    await db`update monthly_periods set state='CLOSED',closed_at=now(),closed_by_user_id=${admin!.id} where month_start='2055-02-01'`;
+    expect((await app.inject({method:'PATCH',url,headers:context.headers,payload})).statusCode).toBe(409);
+    expect((await db`select * from machine_usages where id=${usageId}`)[0]).toEqual(before);
+  });
+
+  it("serializes Worker MTH corrections with day submission", async () => {
+    const context = await multipleMachineContext('mth-race','2055-03-10');
+    const added = await context.addMachine(0);
+    expect(added.statusCode).toBe(201);
+    const usageId = added.json().usage.id as string;
+    const [edit,submit] = await Promise.all([
+      app.inject({method:'PATCH',url:`/api/workdays/${context.dayId}/entries/${context.entryId}/machine/${usageId}/mth`,
+        headers:context.headers,payload:{startMth:100,endMth:103,reason:'Souběžná oprava'}}),
+      app.inject({method:'POST',url:`/api/workdays/${context.dayId}/submit`,headers:context.headers}),
+    ]);
+    expect(submit!.statusCode,submit!.body).toBe(200);
+    expect([200,409]).toContain(edit!.statusCode);
+    const [stored] = await db`select end_mth from machine_usages where id=${usageId}`;
+    expect(stored!.endMth).toBe(edit!.statusCode===200 ? '103.00' : '102.00');
+    const audits = await db`select id from audit_logs where entity_id=${usageId} and action='MACHINE_MTH_WORKER_CORRECTED'`;
+    expect(audits).toHaveLength(edit!.statusCode===200 ? 1 : 0);
+  });
+
   it("changes the authenticated password, audits it and revokes every session", async () => {
     const login = await app.inject({
       method: "POST",

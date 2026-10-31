@@ -769,6 +769,7 @@ input,select,textarea { min-width:0; max-width:100%; }
 .vehicle-role-panel > form { width: 100%; }
 .vehicle-role-panel .vehicle-driver-choice { display: flex; align-items: center; gap: 12px; min-height: 48px; margin: 0 0 14px; color: #e1eae4; }
 .vehicle-driver-choice input { flex: 0 0 22px; width: 22px; height: 22px; accent-color: #b9f6c9; }
+.worker-mth-action { width: auto; min-height: 44px; margin-top: 8px; text-align: left; }
 @media (max-width: 480px) {
   .approval-card { padding: 16px; }
   .approval-actions button { flex: 1 1 100px; }

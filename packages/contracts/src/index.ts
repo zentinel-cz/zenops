@@ -342,6 +342,14 @@ export const machineUsageSchema = z
     }
   });
 
+export const workerMachineMthUpdateSchema = z.object({
+  startMth: z.number().min(0).max(10000000),
+  endMth: z.number().min(0).max(10000000),
+  reason: z.string().trim().min(3).max(1000),
+}).strict().refine((value) => value.endMth >= value.startMth, {
+  message: "Konečný MTH nesmí být nižší než počáteční.", path: ["endMth"],
+});
+
 export const createAttachmentSchema = z.object({
   code: z
     .string()

@@ -1,11 +1,36 @@
 import { lockEditableWorkDay } from "./workday-lock.js";
-import { createAttachmentSchema, createMachineSchema, createVehicleSchema, machineUsageSchema, updateAttachmentSchema, updateMachineSchema, updateVehicleSchema } from "@zenops/contracts";
+import { createAttachmentSchema, createMachineSchema, createVehicleSchema, machineUsageSchema, updateAttachmentSchema, updateMachineSchema, updateVehicleSchema, workerMachineMthUpdateSchema } from "@zenops/contracts";
 import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { requirePermission, requireWorkerOnly, type AuthorizationHook } from "./authorization.js";
 import type { Database } from "./db.js";
 
 export function registerAssetRoutes(app: FastifyInstance, db: Database, requireTrustedOrigin: AuthorizationHook): void {
+  app.patch("/api/workdays/:workDayId/entries/:entryId/machine/:usageId/mth", {
+    preHandler: [requireTrustedOrigin, requireWorkerOnly, requirePermission("workday.own.manage")],
+  }, async (request, reply) => {
+    const params = z.object({workDayId:z.string().uuid(),entryId:z.string().uuid(),usageId:z.string().uuid()}).safeParse(request.params);
+    const body = workerMachineMthUpdateSchema.safeParse(request.body);
+    if (!params.success || !body.success) return reply.code(400).send({error:"Vyplňte platný počáteční a konečný MTH a důvod opravy. Konec nesmí být nižší než začátek."});
+    const usage = await db.begin(async transaction => {
+      await lockEditableWorkDay(transaction,params.data.workDayId,request.sessionUser!.employeeId);
+      const [entry] = await transaction`select id from work_entries where id=${params.data.entryId}
+        and work_day_id=${params.data.workDayId} and state in ('DRAFT','RETURNED') for update`;
+      if (!entry) return null;
+      const [before] = await transaction`select * from machine_usages where id=${params.data.usageId}
+        and work_entry_id=${params.data.entryId} for update`;
+      if (!before) return null;
+      const [after] = await transaction`update machine_usages set entered_start_mth=${body.data.startMth},
+        end_mth=${body.data.endMth} where id=${before.id} returning *`;
+      await transaction`insert into audit_logs(actor_user_id,action,entity_type,entity_id,before_data,after_data,reason)
+        values(${request.sessionUser!.id},'MACHINE_MTH_WORKER_CORRECTED','MACHINE_USAGE',${before.id},
+          ${transaction.json(before)},${transaction.json(after!)},${body.data.reason})`;
+      return after;
+    });
+    if (!usage) return reply.code(409).send({error:"MTH lze opravit pouze u stroje na vlastním rozpracovaném nebo vráceném pracovním úseku."});
+    return { usage };
+  });
+
   app.get("/api/assets", { preHandler: requirePermission("project.read_open") }, async (request) => {
     const includeInactive = (request.query as { includeInactive?: string }).includeInactive === "true"
       && request.sessionUser!.permissions.includes("asset.manage");

@@ -2,6 +2,14 @@
 
 Last updated: 2026-10-13
 
+## Worker MTH corrections — prepared 2026-10-31
+
+ADR-017 permits audited start/end MTH corrections on own draft/returned
+machine usages in editable days and open months. A per-machine Worker
+form accepts only readings and a reason. Day/entry/usage locks serialize
+corrections with submission; approved siblings remain protected. No schema
+migration is required. See operations/worker-mth-release.md.
+
 ## Operator and shared-trip driver fuel — prepared 2026-10-30
 
 ADR-016 and migration 0024 enforce one consistent driver per shared trip.

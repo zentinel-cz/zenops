@@ -29,3 +29,6 @@ MTH/fuel to the monthly machine totals.
 Migration 0021 replaces the single-entry uniqueness constraint with a unique
 entry/machine pair and provides one shared machine-summary query. Existing
 usage IDs, source rows, approvals and audit history are not rewritten.
+
+ADR-017 subsequently permits the owning Worker to correct each usage's
+MTH on draft/returned work in an open month with reason and audit.

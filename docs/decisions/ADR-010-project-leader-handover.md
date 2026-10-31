@@ -23,3 +23,7 @@ Accountant remains limited to profiles and issued items.
 This supersedes the immutable-leader portions of ADR-002, docs/03-projects.md,
 and the prior implementation decision implemented in migration 0012. That
 migration stays unchanged; the new protection is introduced forward-only.
+
+ADR-017 later permits Workers to correct only MTH on own editable
+draft/returned work, with reason and audit. The remaining Admin-only
+correction boundaries above continue to apply.
