@@ -7,6 +7,7 @@ COPY apps/web/package.json apps/web/tsconfig.json apps/web/vite.config.ts apps/w
 RUN pnpm install --frozen-lockfile
 COPY packages/contracts ./packages/contracts
 COPY apps/web/src ./apps/web/src
+COPY apps/web/public ./apps/web/public
 RUN pnpm --filter @zenops/contracts build && pnpm --filter @zenops/web build
 
 FROM nginx:1.29-alpine

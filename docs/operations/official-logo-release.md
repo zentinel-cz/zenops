@@ -17,3 +17,9 @@ page with one embedded image; its Poppler-rendered output was inspected.
 The web public assets are bundled locally. Permissions and domain behavior
 are unchanged; no migration is required. Deploy API and web through the
 existing GitHub automation and verify runtime assets before reporting success.
+
+Production verification caught that the web Dockerfile previously copied
+only src, omitting the new public directory. The build now explicitly copies
+apps/web/public, so logo files, favicons and manifest reach the nginx image.
+Verify image content types and hashes: the SPA fallback can return HTML with
+HTTP 200 for a missing asset, which alone is not proof of a loaded logo.
