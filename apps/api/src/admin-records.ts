@@ -81,6 +81,7 @@ export function registerAdminRecordRoutes(
               id: string;
               workDayId: string;
               workDate: string;
+              workActivityId: string | null;
               state: string;
             }>
           >`select we.*,wd.work_date from work_entries we join work_days wd on wd.id=we.work_day_id join monthly_periods mp on mp.id=wd.monthly_period_id where we.id=${params.data.entryId} and mp.state='OPEN' for update of we`;
@@ -91,7 +92,7 @@ export function registerAdminRecordRoutes(
               workTypeId: string;
               workActivityId: string | null;
             }>
-          >`select p.id as project_id,wt.id as work_type_id,wa.id as work_activity_id from projects p join work_types wt on wt.code=${parsed.data.workTypeCode} and wt.is_active left join work_activities wa on wa.work_type_id=wt.id and wa.code=${parsed.data.workActivityCode ?? null} and wa.is_active where p.id=${parsed.data.projectId} and (not wt.requires_activity or wa.id is not null)`;
+          >`select p.id as project_id,wt.id as work_type_id,wa.id as work_activity_id from projects p join work_types wt on wt.code=${parsed.data.workTypeCode} and wt.is_active left join work_activities wa on wa.work_type_id=wt.id and wa.code=${parsed.data.workActivityCode ?? null} and (wa.is_active or wa.id=${before[0].workActivityId}) where p.id=${parsed.data.projectId} and (not wt.requires_activity or wa.id is not null)`;
           if (!context[0]) return null;
           const [projectDay] = await transaction<
             Array<{ id: string }>

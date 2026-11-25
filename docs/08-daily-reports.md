@@ -41,3 +41,10 @@ payroll.
 
 Closed projects retain historical totals and remain available for
 reporting.
+
+## Per-employee daily totals (ADR-018)
+
+Daily UI and PDF show each employee's total, approved and provisional minutes,
+grouped by employee identity. Work intervals and descriptions are visible,
+along with per-machine Poznámka/Porucha. Work duration is counted once, with
+no addition of trips or second subtraction of breaks. Existing RBAC applies.

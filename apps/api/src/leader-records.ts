@@ -44,7 +44,7 @@ export function registerLeaderRecordRoutes(app: FastifyInstance, db: Database, o
           and we.project_id=${project.id} and we.state='APPROVED' and mp.state='OPEN' for update of we`;
         if (!before) return null;
         const [kind] = await t`select wt.id,wa.id as activity_id from work_types wt
-          left join work_activities wa on wa.work_type_id=wt.id and wa.code=${parsed.data.workActivityCode ?? null} and wa.is_active
+          left join work_activities wa on wa.work_type_id=wt.id and wa.code=${parsed.data.workActivityCode ?? null} and (wa.is_active or wa.id=${before.workActivityId})
           where wt.code=${parsed.data.workTypeCode} and wt.is_active and (not wt.requires_activity or wa.id is not null)`;
         if (!kind) return null;
         const [after] = await t`update work_entries set work_type_id=${kind.id},work_activity_id=${kind.activityId},

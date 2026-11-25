@@ -1,6 +1,14 @@
 # Implementation Status
 
-Last updated: 2026-10-31
+Last updated: 2026-11-25
+
+## Worker shifts, machine notes and exports — 2026-11-25
+
+Prepared and verified: Worker attachment placement, per-usage notes/faults,
+cutting activity update, direct Automobil choice, own/daily/PDF hours,
+Admin-managed shift presets with AFTERNOON and removal of new-break UI.
+Requires migrations 0025 and 0026. See ADR-018, ADR-019 and
+operations/worker-shifts-and-machine-notes-release.md for validation/rollout.
 
 ## Zentinel visual identity — 2026-10-31
 

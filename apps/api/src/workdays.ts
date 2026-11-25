@@ -239,7 +239,7 @@ export function registerWorkDayRoutes(app: FastifyInstance, db: Database, requir
         if (!before) return null;
         const [context] = await t`select p.id as project_id, wt.id as work_type_id, wa.id as work_activity_id
           from projects p join work_types wt on wt.code=${parsed.data.workTypeCode} and wt.is_active
-          left join work_activities wa on wa.work_type_id=wt.id and wa.code=${parsed.data.workActivityCode ?? null} and wa.is_active
+          left join work_activities wa on wa.work_type_id=wt.id and wa.code=${parsed.data.workActivityCode ?? null} and (wa.is_active or wa.id=${before.workActivityId})
           where p.id=${parsed.data.projectId} and (p.status='OPEN' or p.id=${before.projectId})
           and (not wt.requires_activity or wa.id is not null)`;
         if (!context) return null;

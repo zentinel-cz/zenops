@@ -208,11 +208,18 @@ export function registerAssetRoutes(app: FastifyInstance, db: Database, requireT
         }
         const [created] = await transaction`
           insert into machine_usages (work_entry_id, machine_id, start_at, end_at, suggested_start_mth,
-            entered_start_mth, end_mth, fuel_consumed, fuel_refuelled)
+            entered_start_mth, end_mth, fuel_consumed, fuel_refuelled, note)
           values (${params.data.entryId}, ${parsed.data.machineId}, ${context[0].startAt}, ${context[0].endAt},
             ${context[0].suggestedMth}, ${parsed.data.startMth ?? null}, ${parsed.data.endMth ?? null},
-            ${parsed.data.fuelConsumed ?? null}, ${parsed.data.fuelRefuelled ?? null}) returning *
+            ${parsed.data.fuelConsumed ?? null}, ${parsed.data.fuelRefuelled ?? null}, ${parsed.data.note || null}) returning *
         `;
+        if (parsed.data.attachmentIds.length) {
+          const [valid] = await transaction`select count(*)::int as count from attachments
+            where is_active and id in ${transaction(parsed.data.attachmentIds)}`;
+          if (valid!.count !== parsed.data.attachmentIds.length) {
+            throw Object.assign(new Error("Vybrané příslušenství již není dostupné nebo je vybráno vícekrát."), {statusCode:422});
+          }
+        }
         for (const attachmentId of parsed.data.attachmentIds) {
           await transaction`
             insert into attachment_usages (machine_usage_id, work_entry_id, attachment_id, start_at, end_at)
@@ -225,6 +232,9 @@ export function registerAssetRoutes(app: FastifyInstance, db: Database, requireT
             values (${request.sessionUser!.id}, 'MACHINE_START_MTH_OVERRIDDEN', 'MACHINE_USAGE', ${created!.id},
               ${transaction.json({ suggestedStartMth: context[0].suggestedMth })}, ${transaction.json({ enteredStartMth: parsed.data.startMth })})`;
         }
+        await transaction`insert into audit_logs(actor_user_id,action,entity_type,entity_id,after_data)
+          values(${request.sessionUser!.id},'MACHINE_USAGE_CREATED','MACHINE_USAGE',${created!.id},
+            ${transaction.json({...created!,attachmentIds:parsed.data.attachmentIds})})`;
         return created!;
       });
       if (!usage) return reply.code(404).send({ error: "Pracovní úsek nebo stroj nebyl nalezen." });

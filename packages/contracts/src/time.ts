@@ -40,3 +40,11 @@ export function resolveBusinessDateTime(value: string, occurrence?: string): str
   }
   return candidates[occurrence === "later" ? candidates.length - 1 : 0]!;
 }
+
+/** Local wall-clock defaults: DST ambiguity is still resolved explicitly by the input. */
+export function shiftDateTimeDefaults(date: string, preset?: {startTime: string | null; endTime: string | null}, now: string | Date = new Date()) {
+  const current = `${date}T${businessDateTimeInput(now).slice(11)}`;
+  if (!preset?.startTime || !preset.endTime) return {start: current, end: current};
+  const nextDate = new Date(Date.parse(`${date}T12:00:00Z`) + 86_400_000).toISOString().slice(0,10);
+  return {start: `${date}T${preset.startTime}`, end: `${preset.endTime < preset.startTime ? nextDate : date}T${preset.endTime}`};
+}

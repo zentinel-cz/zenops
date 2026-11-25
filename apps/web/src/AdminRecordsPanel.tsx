@@ -1,7 +1,7 @@
 import { businessDate, businessTimeZone } from "@zenops/contracts/time";
 import { BusinessDateTimeField, readBusinessDateTime } from "./BusinessDateTimeField";
 import { useMutation } from "./useMutation";
-import { workActivities, workStateLabel, shiftLabel } from "@zenops/contracts/labels";
+import { workActivities, historicalWorkActivities, workStateLabel, shiftLabel } from "@zenops/contracts/labels";
 import type { MachineUsageSummary, ProjectSummary } from "@zenops/contracts";
 import { type FormEvent, lazy, Suspense, useEffect, useRef, useState } from "react";
 import { ListSearch, matchesSearch } from "./ListSearch";
@@ -333,7 +333,7 @@ e.preventDefault(); return runMutation(async () => {
               defaultValue={target.workActivityCode ?? ""}
             >
               <option value="">Bez aktivity</option>
-              {activities.map(([code, name]) => (
+              {[...activities, ...historicalWorkActivities.filter(([code]) => code === target.workActivityCode)].map(([code, name]) => (
                 <option key={code} value={code}>{name}</option>
               ))}
             </select>

@@ -25,6 +25,7 @@ function MachineCard({ usage }: { usage: MachineUsageSummary }) {
       <div><dt>Spotřeba</dt><dd>{numberLabel(usage.fuelConsumed, " l")}</dd></div>
       <div><dt>Tankování</dt><dd>{numberLabel(usage.fuelRefuelled, " l")}</dd></div>
     </dl>
+    {usage.note && <p><strong>Poznámka/Porucha:</strong> {usage.note}</p>}
     <p className="approval-attachments"><strong>Příslušenství:</strong> {usage.attachments.length ? usage.attachments.join(", ") : "Bez příslušenství"}</p>
   </section>;
 }

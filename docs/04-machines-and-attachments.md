@@ -65,3 +65,10 @@ deferred.
 
 The non-unique attachment occupancy question remains deferred. Current
 physical-resource conflict protection is retained under ADR-013 and ADR-015.
+
+## Usage note (ADR-018)
+
+Worker machine-use creation accepts an optional Poznámka/Porucha (2000 characters).
+It is stored per usage and audited with selected attachments. Scoped history,
+approval and daily/PDF reporting display it as text. Meter corrections preserve
+it. It does not change machine availability or create a maintenance workflow.

@@ -1,10 +1,10 @@
 import { WorkerMthCorrectionForm } from "./WorkerMthCorrectionForm";
 import { VehicleTripForm } from "./VehicleTripForm";
 import { MachineUsageDetails, machineUsageSearchText } from "./MachineUsageDetails";
-import { businessDate, businessTime } from "@zenops/contracts/time";
+import { businessDate, businessTime, businessDateTimeInput, shiftDateTimeDefaults } from "@zenops/contracts/time";
 import { BusinessDateTimeField, readBusinessDateTime } from "./BusinessDateTimeField";
-import { workActivities, workStateLabel } from "@zenops/contracts/labels";
-import type { MachineUsageSummary, ProjectSummary } from "@zenops/contracts";
+import { workActivities, historicalWorkActivities, workStateLabel, shiftLabel } from "@zenops/contracts/labels";
+import type { MachineUsageSummary, ProjectSummary, ShiftPreset } from "@zenops/contracts";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { ListSearch, matchesSearch } from "./ListSearch";
 
@@ -27,7 +27,7 @@ const workTypes = [
 ] as const;
 const treeActivities = workActivities;
 
-type ExtraForm = "break" | "vehicle" | null;
+type ExtraForm = "vehicle" | null;
 
 export function WorkDayPanel({ projects, assetVersion, employeeId, onClose }: { projects: ProjectSummary[]; assetVersion: number; employeeId: string; onClose: () => void }) {
   const [today, setDate] = useState(businessDate());
@@ -48,6 +48,17 @@ export function WorkDayPanel({ projects, assetVersion, employeeId, onClose }: { 
   const [selectedMachineId, setSelectedMachineId] = useState("");
   const [timelineQuery, setTimelineQuery] = useState("");
   const [showCancelForm, setShowCancelForm] = useState(false);
+  const [presets, setPresets] = useState<ShiftPreset[] | null>(null);
+  const [presetError, setPresetError] = useState("");
+  async function loadPresets() {
+    setPresetError("");
+    try {
+      const response = await fetch("/api/settings/shift-presets", {credentials:"include"});
+      if (!response.ok) throw new Error();
+      setPresets((await response.json()).settings.presets);
+    } catch { setPresetError("Předvolby směn se nepodařilo načíst."); }
+  }
+  useEffect(() => { void loadPresets(); }, []);
 
   const load = async () => {
     const version = ++requestVersion.current;
@@ -73,7 +84,7 @@ export function WorkDayPanel({ projects, assetVersion, employeeId, onClose }: { 
       .catch(() => setError("Seznam strojů a vozidel se nepodařilo načíst."));
   }, [assetVersion]);
 
-  async function createDay(shiftType: "MORNING" | "NIGHT") {
+  async function createDay(shiftType: "MORNING" | "AFTERNOON" | "NIGHT") {
     await mutate("/api/workdays", "POST", { workDate: today, shiftType });
   }
   async function changeDayState(event: FormEvent<HTMLFormElement>) {
@@ -95,19 +106,12 @@ export function WorkDayPanel({ projects, assetVersion, employeeId, onClose }: { 
     }));
     if (ok) { form.reset(); setWorkType(null); setEditingEntry(null); }
   }
-  async function addBreak(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); if (!workDay) return; const form = event.currentTarget; const data = new FormData(form);
-    const ok = await mutate(`/api/workdays/${workDay.id}/breaks`, "POST", () => ({
-      startAt: readBusinessDateTime(data, "startAt"), endAt: readBusinessDateTime(data, "endAt"),
-    }));
-    if (ok) { form.reset(); setExtraForm(null); }
-  }
   async function addMachine(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (!workDay || !machineEntryId) return; const form = event.currentTarget; const data = new FormData(form);
     const numberOrNull = (name: string) => data.get(name) ? Number(data.get(name)) : null;
     const ok = await mutate(`/api/workdays/${workDay.id}/entries/${machineEntryId}/machine`, "POST", {
       machineId: data.get("machineId"), startMth: numberOrNull("startMth"), endMth: numberOrNull("endMth"),
-      fuelConsumed: numberOrNull("fuelConsumed"), fuelRefuelled: numberOrNull("fuelRefuelled"), attachmentIds: data.getAll("attachmentIds"),
+      fuelConsumed: numberOrNull("fuelConsumed"), fuelRefuelled: numberOrNull("fuelRefuelled"), attachmentIds: data.getAll("attachmentIds"), note: data.get("note") || null,
     });
     if (ok) { setMachineEntryId(null); setSelectedMachineId(""); }
   }
@@ -142,6 +146,12 @@ export function WorkDayPanel({ projects, assetVersion, employeeId, onClose }: { 
     } catch (error) { setError(error instanceof RangeError ? error.message : "Nepodařilo se spojit se serverem. Zkontrolujte připojení a zkuste to znovu."); return false; }
     finally { setSaving(false); }
   }
+  const defaultTimes = shiftDateTimeDefaults(today, presets?.find(preset => preset.shiftType === workDay?.shiftType));
+  const defaultStart = workDay?.entries.length
+    ? businessDateTimeInput(workDay.entries.reduce((last,entry) => Date.parse(entry.endAt)>Date.parse(last.endAt) ? entry : last).endAt)
+    : defaultTimes.start;
+  const workedMinutes = workDay?.entries.reduce((sum, entry) => sum + (Date.parse(entry.endAt) - Date.parse(entry.startAt)) / 60000, 0) ?? 0;
+  const approvedMinutes = workDay?.entries.filter(entry => entry.state === "APPROVED").reduce((sum, entry) => sum + (Date.parse(entry.endAt) - Date.parse(entry.startAt)) / 60000, 0) ?? 0;
   const editable = workDay && !loading && workDay.periodState !== "CLOSED" && ["DRAFT", "RETURNED"].includes(workDay.state);
   const openProjects = projects.filter((project) => project.status === "OPEN");
   const machineEntry = workDay?.entries.find((entry) => entry.id === machineEntryId);
@@ -152,7 +162,7 @@ export function WorkDayPanel({ projects, assetVersion, employeeId, onClose }: { 
   }
   const timelineItems = workDay ? [
     ...workDay.entries.map((entry) => ({ id: entry.id, startAt: entry.startAt, endAt: entry.endAt, kind: "work", label: `${entry.projectCode} · ${entry.workTypeName}${entry.workActivityName ? ` · ${entry.workActivityName}` : ""}`, detail: machineUsageSearchText(entry.machineUsages), entryId: entry.id, breakId: null as string | null })),
-    ...workDay.breaks.map((entry) => ({ id: entry.id, startAt: entry.startAt, endAt: entry.endAt, kind: "break", label: "Přestávka", detail: "", entryId: null as string | null, breakId: entry.id })),
+    ...workDay.breaks.map((entry) => ({ id: entry.id, startAt: entry.startAt, endAt: entry.endAt, kind: "break", label: "Historická přestávka", detail: "", entryId: null as string | null, breakId: entry.id })),
     ...workDay.vehicleTrips.map((trip) => ({ id: trip.id, startAt: trip.startAt, endAt: trip.endAt, kind: "vehicle", label: `Jízda · ${trip.vehicleCode} · ${trip.registrationNumber} · ${trip.participantRole === "DRIVER" ? "Řidič" : "Cestující"}`, detail: `Řidič: ${trip.driverName} · ${trip.startOdometerKm}–${trip.endOdometerKm} km${trip.passengers.length ? ` · Cestující: ${trip.passengers.map((person) => person.displayName).join(", ")}` : ""}`, entryId: null as string | null, breakId: null as string | null })),
   ].sort((left, right) => new Date(left.startAt).getTime() - new Date(right.startAt).getTime()) : [];
 
@@ -162,7 +172,9 @@ export function WorkDayPanel({ projects, assetVersion, employeeId, onClose }: { 
       {error && <p className="error" role="alert">{error}</p>}
       <label>Datum pracovního dne<input type="date" value={today} disabled={saving} onChange={(event) => { if (event.target.value) setDate(event.target.value); }} /></label>
       {loading && <p role="status">Načítám pracovní den…</p>}
-      {!workDay && !loading && !error && <div className="worker-step"><StepNumber value={1} /><div><h4>Jakou máte dnes směnu?</h4><p>Vyberte jednu možnost. Potom přidáte druh práce.</p></div><div className="shift-picker"><button type="button" disabled={saving} onClick={() => void createDay("MORNING")}><span aria-hidden="true">☀</span><strong>{saving ? "Zakládám záznam…" : "Ranní směna"}</strong><small>Začít ranní směnu</small></button><button type="button" disabled={saving} onClick={() => void createDay("NIGHT")}><span aria-hidden="true">☾</span><strong>{saving ? "Zakládám záznam…" : "Noční směna"}</strong><small>Začít noční směnu</small></button></div></div>}
+      {presetError && <div role="alert"><p className="error">{presetError}</p><button type="button" className="ghost" onClick={()=>void loadPresets()}>Načíst předvolby znovu</button></div>}
+      {!presets && !presetError && <p role="status">Načítám předvolby směn…</p>}
+      {!workDay && !loading && !error && presets && <div className="worker-step"><StepNumber value={1} /><div><h4>Jakou máte dnes směnu?</h4><p>Vyberte směnu. Předvolené časy můžete při zápisu práce upravit.</p></div><div className="shift-picker">{presets.map(preset => <button type="button" key={preset.shiftType} disabled={saving} onClick={()=>void createDay(preset.shiftType)}><strong>{saving ? "Zakládám záznam…" : shiftLabel(preset.shiftType)}</strong><small>{preset.startTime && preset.endTime ? `${preset.startTime}–${preset.endTime}${preset.endTime < preset.startTime ? " (+1 den)" : ""}` : "Časy podle skutečnosti"}</small></button>)}</div></div>}
       {workDay && <>
         {workDay.state === "CANCELLED" && <div className="worker-empty-state" role="status">
           <strong>Pracovní den byl zrušen.</strong><p>Neblokuje měsíční uzávěrku. Důvod: {workDay.cancellationReason}</p>
@@ -171,7 +183,7 @@ export function WorkDayPanel({ projects, assetVersion, employeeId, onClose }: { 
         {workDay.state === "CANCELLED" && workDay.periodState === "OPEN" && !loading && <div className="workday-forms">
           <form key="restore" onSubmit={changeDayState}><h4>Obnovit pracovní den</h4>
             <p>Obnovíte stejný den i jeho historii. Potom můžete zapsat práci.</p>
-            <label>Směna<select name="shiftType" defaultValue={workDay.shiftType} disabled={saving}><option value="MORNING">Ranní směna</option><option value="NIGHT">Noční směna</option></select></label>
+            <label>Směna<select name="shiftType" defaultValue={workDay.shiftType} disabled={saving}><option value="MORNING">Ranní směna</option><option value="AFTERNOON">Odpolední směna</option><option value="NIGHT">Noční směna</option></select></label>
             <label>Důvod obnovení<input name="reason" required minLength={3} maxLength={500} disabled={saving} /></label>
             <button disabled={saving}>{saving ? "Obnovuji…" : "Obnovit pracovní den"}</button>
           </form>
@@ -183,6 +195,7 @@ export function WorkDayPanel({ projects, assetVersion, employeeId, onClose }: { 
           <button disabled={saving}>{saving ? "Ruším…" : "Potvrdit zrušení"}</button>
           <button type="button" className="ghost" disabled={saving} onClick={() => setShowCancelForm(false)}>Ponechat den</button>
         </form></div>}
+        <div className="worker-hours-summary" role="status"><strong>Práce: {formatMinutes(workedMinutes)}</strong><span>Schváleno: {formatMinutes(approvedMinutes)}</span><small>Součet pracovních úseků. Jízdy se nepřičítají, přestávky se znovu neodečítají.</small></div>
         <div className="worker-records-heading"><h4>Záznamy vybraného dne</h4><span>{workDay.entries.length} {workDay.entries.length === 1 ? "pracovní úsek" : "pracovních úseků"}</span></div>
         {workDay.entries.length + workDay.breaks.length + workDay.vehicleTrips.length === 0
           ? <p className="worker-empty-state">{workDay.state === "CANCELLED" ? "Zrušený den neobsahuje vlastní provozní záznamy." : "Zatím tu nic není. Níže přidejte první pracovní úsek."}</p>
@@ -205,24 +218,25 @@ export function WorkDayPanel({ projects, assetVersion, employeeId, onClose }: { 
             <strong>{machineEntry.projectCode} · {machineEntry.workTypeName}</strong>
             <small>{formatInterval(machineEntry.startAt, machineEntry.endAt)} · tento čas platí pro každý přidaný stroj</small>
           </div>}
-          <div className="machine-form-fields" key={selectedMachineId}>
+          <div className="machine-form-fields">
             <label>Stroj<select name="machineId" required value={selectedMachineId} onChange={(event) => setSelectedMachineId(event.target.value)}><option value="">Nejprve vyberte stroj</option>{availableMachines.map((machine) => <option key={machine.id} value={machine.id}>{machine.code} · {machine.name}</option>)}</select></label>
+            {selectedMachineId && <fieldset className="machine-attachments" key={`attachments-${selectedMachineId}`}><legend>Příslušenství ke stroji</legend><div>{attachments.map((attachment) => <label className="checkbox" key={attachment.id}><input type="checkbox" name="attachmentIds" value={attachment.id} /> <span>{attachment.code} · {attachment.name}</span></label>)}</div>{attachments.length === 0 && <small>Žádné aktivní příslušenství není v evidenci.</small>}</fieldset>}
+            <div className="machine-reading-fields" key={selectedMachineId}>
             {machines.find((machine) => machine.id === selectedMachineId)?.tracksMth && <>
               <label>Počáteční stav MTH<input name="startMth" type="number" min="0" step="0.01" required defaultValue={machines.find((machine) => machine.id === selectedMachineId)?.latestMth ?? ""} /><small>Předvyplněno posledním známým stavem. Pokud se liší, upravte ho.</small></label>
               <label>Konečný stav MTH<input name="endMth" type="number" min="0" step="0.01" required /><small>Hodnota nesmí být nižší než počáteční stav.</small></label>
             </>}
             <p className="form-hint">Palivo zapisujete za tento konkrétní stroj jako jeho obsluha.</p><label>Spotřebované palivo (l)<input name="fuelConsumed" type="number" min="0" step="0.01" inputMode="decimal" /></label>
             <label>Natankované palivo (l)<input name="fuelRefuelled" type="number" min="0" step="0.01" inputMode="decimal" /></label>
+            <label>Poznámka/Porucha<textarea name="note" maxLength={2000} rows={3} placeholder="Stav stroje nebo zjištěná porucha (nepovinné)" /></label>
+            </div>
           </div>
-          {attachments.length > 0 && <fieldset className="machine-attachments"><legend>Použité příslušenství</legend><div>{attachments.map((attachment) => <label className="checkbox" key={attachment.id}><input type="checkbox" name="attachmentIds" value={attachment.id} /> <span>{attachment.code} · {attachment.name}</span></label>)}</div></fieldset>}
           <div className="machine-form-actions"><button type="button" className="ghost" disabled={saving} onClick={() => { setMachineEntryId(null); setSelectedMachineId(""); }}>Zrušit</button><button type="submit" disabled={saving}>{saving ? "Ukládám…" : "Uložit stroj k úseku"}</button></div>
         </form>}
-        {editable && !showCancelForm && !workType && !extraForm && !machineEntryId && <div className="worker-step"><StepNumber value={workDay.entries.length + 2} /><div><h4>Co jste dělal(a)?</h4><p>Vyberte jednu možnost. Další obrazovka se otevře hned potom.</p></div><div className="work-type-picker"><div>{workTypes.map(([code, name]) => <button key={code} onClick={() => setWorkType(code)}><strong>{name}</strong><small>Pokračovat</small></button>)}</div></div></div>}
-        {editable && workType && <div className="workday-forms"><form key={editingEntry?.id ?? "new"} onSubmit={addEntry}><div className="worker-step-heading"><StepNumber value={workDay.entries.length + 2} /><div><p className="eyebrow">{editingEntry ? "OPRAVA PRACOVNÍHO ÚSEKU" : "NOVÝ PRACOVNÍ ÚSEK"}</p><h4>{workTypes.find(([code]) => code === workType)?.[1] ?? "Ostatní"}</h4></div></div><p className="form-hint">Zadejte zakázku a skutečný čas. Konec musí být později než začátek.</p><label>Na které zakázce jste pracoval(a)?<select name="projectId" required defaultValue={editingEntry?.projectId ?? ""}><option value="" disabled>Zvolte zakázku ze seznamu</option>{editingEntry && !openProjects.some((project) => project.id === editingEntry.projectId) && <option value={editingEntry.projectId}>{editingEntry.projectCode} · {editingEntry.projectName}</option>}{openProjects.map((project) => <option key={project.id} value={project.id}>{project.code} · {project.name}</option>)}</select></label>{workType === "TREE_CUTTING" && <label>Jakou činnost jste dělal(a)?<select name="workActivityCode" required defaultValue={editingEntry?.workActivityCode ?? ""}><option value="" disabled>Vyberte činnost</option>{treeActivities.map(([code, name]) => <option key={code} value={code}>{name}</option>)}</select></label>}<BusinessDateTimeField name="startAt" label="Začátek práce" defaultValue={editingEntry?.startAt} /><BusinessDateTimeField name="endAt" label="Konec práce" defaultValue={editingEntry?.endAt} /><label>Popis práce<input name="description" maxLength={2000} required={workType === "OTHER"} defaultValue={editingEntry?.description ?? ""} /></label><button disabled={saving || (!editingEntry && openProjects.length === 0)}>{saving ? "Ukládám…" : "Uložit pracovní úsek"}</button><button type="button" className="ghost" disabled={saving} onClick={() => { setWorkType(null); setEditingEntry(null); }}>Zrušit a vrátit se</button>{openProjects.length === 0 && <p className="form-hint">Momentálně není dostupná žádná otevřená zakázka. Obraťte se na vedoucího.</p>}</form></div>}
-        {editable && !showCancelForm && !workType && !extraForm && !machineEntryId && <div className="worker-extra-actions"><h4>Ještě něco k zapsání?</h4><p>Vyberte přestávku nebo jízdu, pokud se vás týká.</p><div><button className="secondary" disabled={saving} onClick={() => setExtraForm("break")}>Přidat přestávku</button>{vehicles.length > 0 && <button className="secondary" disabled={saving} onClick={() => setExtraForm("vehicle")}>Zapsat jízdu vozidlem</button>}</div></div>}
-        {editable && extraForm === "break" && <div className="workday-forms"><form onSubmit={addBreak}><h4>Přestávka</h4><p className="form-hint">Zadejte skutečný začátek a konec přestávky.</p><BusinessDateTimeField name="startAt" label="Začátek přestávky" /><BusinessDateTimeField name="endAt" label="Konec přestávky" /><button disabled={saving}>{saving ? "Ukládám…" : "Uložit přestávku"}</button><button type="button" className="ghost" disabled={saving} onClick={() => setExtraForm(null)}>Zrušit</button></form></div>}
+        {editable && !showCancelForm && !workType && !extraForm && !machineEntryId && presets && <div className="worker-step"><StepNumber value={workDay.entries.length + 2} /><div><h4>Co jste dělal(a)?</h4><p>Vyberte jednu možnost. Další obrazovka se otevře hned potom.</p></div><div className="work-type-picker"><div>{workTypes.map(([code, name]) => <button key={code} onClick={() => setWorkType(code)}><strong>{name}</strong><small>Pokračovat</small></button>)}<button type="button" className="secondary" disabled={saving} onClick={() => setExtraForm("vehicle")}><strong>Automobil</strong><small>Řidič nebo cestující</small></button></div></div></div>}
+        {editable && workType && <div className="workday-forms"><form key={editingEntry?.id ?? "new"} onSubmit={addEntry}><div className="worker-step-heading"><StepNumber value={workDay.entries.length + 2} /><div><p className="eyebrow">{editingEntry ? "OPRAVA PRACOVNÍHO ÚSEKU" : "NOVÝ PRACOVNÍ ÚSEK"}</p><h4>{workTypes.find(([code]) => code === workType)?.[1] ?? "Ostatní"}</h4></div></div><p className="form-hint">Zadejte zakázku a skutečný čas. Konec musí být později než začátek.</p><label>Na které zakázce jste pracoval(a)?<select name="projectId" required defaultValue={editingEntry?.projectId ?? ""}><option value="" disabled>Zvolte zakázku ze seznamu</option>{editingEntry && !openProjects.some((project) => project.id === editingEntry.projectId) && <option value={editingEntry.projectId}>{editingEntry.projectCode} · {editingEntry.projectName}</option>}{openProjects.map((project) => <option key={project.id} value={project.id}>{project.code} · {project.name}</option>)}</select></label>{workType === "TREE_CUTTING" && <label>Jakou činnost jste dělal(a)?<select name="workActivityCode" required defaultValue={editingEntry?.workActivityCode ?? ""}><option value="" disabled>Vyberte činnost</option>{[...treeActivities, ...historicalWorkActivities.filter(([code]) => code === editingEntry?.workActivityCode)].map(([code, name]) => <option key={code} value={code}>{name}</option>)}</select></label>}<BusinessDateTimeField name="startAt" label="Začátek práce" defaultValue={editingEntry?.startAt} defaultLocalValue={defaultStart} /><BusinessDateTimeField name="endAt" label="Konec práce" defaultValue={editingEntry?.endAt} defaultLocalValue={defaultTimes.end} /><label>Popis práce<input name="description" maxLength={2000} required={workType === "OTHER"} defaultValue={editingEntry?.description ?? ""} /></label><button disabled={saving || (!editingEntry && openProjects.length === 0)}>{saving ? "Ukládám…" : "Uložit pracovní úsek"}</button><button type="button" className="ghost" disabled={saving} onClick={() => { setWorkType(null); setEditingEntry(null); }}>Zrušit a vrátit se</button>{openProjects.length === 0 && <p className="form-hint">Momentálně není dostupná žádná otevřená zakázka. Obraťte se na vedoucího.</p>}</form></div>}
         {editable && extraForm === "vehicle" && <VehicleTripForm workDayId={workDay.id} vehicles={vehicles} employees={employees}
-          employeeId={employeeId} saving={saving} onDriverSubmit={addVehicleTrip} onPassengerSubmit={joinVehicleTrip}
+          employeeId={employeeId} workDate={today} saving={saving} onDriverSubmit={addVehicleTrip} onPassengerSubmit={joinVehicleTrip}
           onClose={() => setExtraForm(null)} />}
         {editable && workDay.entries.length > 0 && <div className="submit-day-wrap"><p>Před odesláním zkontrolujte zakázky a časy v dnešních záznamech.</p><button className="submit-day" disabled={saving} onClick={() => { if (window.confirm("Odeslat pracovní den vedoucímu ke schválení? Poté už nepůjde běžně upravovat.")) void mutate(`/api/workdays/${workDay.id}/submit`, "POST"); }}>{saving ? "Odesílám…" : "Zkontrolovat a odeslat pracovní den"}</button></div>}
       </>}
@@ -237,3 +251,5 @@ function formatInterval(startAt: string, endAt: string) {
   const endDate = businessDate(endAt);
   return `${time(startAt)}–${time(endAt)}${startDate !== endDate ? " (+1 den)" : ""}`;
 }
+
+function formatMinutes(minutes: number) { const rounded = Math.round(minutes); return `${Math.floor(rounded / 60)} h ${rounded % 60} min`; }

@@ -1,8 +1,8 @@
 import { businessDateTimeCandidates, businessDateTimeInput, resolveBusinessDateTime } from "@zenops/contracts/time";
 import { useState } from "react";
 
-export function BusinessDateTimeField({ name, label, defaultValue }: { name: string; label: string; defaultValue?: string | undefined }) {
-  const initial = defaultValue ? businessDateTimeInput(defaultValue) : "";
+export function BusinessDateTimeField({ name, label, defaultValue, defaultLocalValue }: { name: string; label: string; defaultValue?: string | undefined; defaultLocalValue?: string | undefined }) {
+  const initial = defaultValue ? businessDateTimeInput(defaultValue) : (defaultLocalValue ?? businessDateTimeInput());
   const [value, setValue] = useState(initial);
   const [occurrence, setOccurrence] = useState(() => {
     const candidates = businessDateTimeCandidates(initial);

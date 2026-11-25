@@ -3,6 +3,7 @@ import { roleLabel, projectStatusLabel } from "@zenops/contracts/labels";
 import { type FormEvent, type ReactNode, useEffect, useState } from "react";
 import type { ProjectSummary, SessionUser } from "@zenops/contracts";
 import { EmployeePanel } from "./EmployeePanel";
+import { SettingsPanel } from "./SettingsPanel";
 import { WorkDayPanel } from "./WorkDayPanel";
 import { ProjectDayPanel } from "./ProjectDayPanel";
 import { AssetPanel } from "./AssetPanel";
@@ -603,6 +604,7 @@ return runMutation(async () => {
         { id: "assets", label: "Technika", icon: "assets" },
         { id: "employees", label: "Zaměstnanci", icon: "people" },
         { id: "workers", label: "Vybavení uživatelů", icon: "assets" },
+        { id: "settings", label: "Nastavení", icon: "assets" },
       ];
     const currentSection =
       navItems.find((item) => item.id === activeSection) ?? navItems[0]!;
@@ -730,6 +732,7 @@ return runMutation(async () => {
                 />
               </section>
             )}
+            {activeSection === "settings" && <SettingsPanel />}
             {activeSection === "employees" && canManageEmployees && (
               <section className="admin-section-view" id="employees">
                 <EmployeePanel user={user} />

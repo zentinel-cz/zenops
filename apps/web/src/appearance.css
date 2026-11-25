@@ -150,3 +150,29 @@ h1, h2, h3, h4, h5 { color: var(--text); }
   .section-heading { gap: 12px; }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+.worker-hours-summary { display: flex; flex-wrap: wrap; gap: 8px 24px; padding: 16px; margin: 16px 0; border: 1px solid var(--line); border-radius: 12px; }
+.worker-hours-summary small { flex-basis: 100%; }
+.machine-form-fields > .machine-attachments { min-width: 0; margin: 0; }
+.machine-reading-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; grid-column: 1 / -1; }
+.machine-reading-fields > :is(p,label:last-child) { grid-column: 1 / -1; }
+@media (max-width: 600px) { .machine-reading-fields { grid-template-columns: minmax(0, 1fr); } }
+
+.machine-form-fields > label:first-child { grid-column: auto; }
+@media (max-width: 600px) { .machine-form-fields { grid-template-columns: minmax(0, 1fr); } }
+
+.machine-usage-form > .machine-form-fields { display: grid; align-items: start; }
+.machine-usage-form > .machine-target { display: grid; }
+.machine-usage-form > .machine-form-actions { display: grid; }
+.machine-form-fields > .machine-attachments { grid-column: auto; display: block; padding: 12px; border: 1px solid var(--line); }
+.machine-form-fields > .machine-attachments > div { grid-template-columns: minmax(0, 1fr); }
+.machine-reading-fields > label:first-child { grid-column: auto; }
+
+.shift-settings-form { display: grid; gap: 16px; }
+.shift-settings-form fieldset { min-width: 0; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; }
+.shift-settings-form legend { padding: 0 8px; font-weight: 700; }
+.shift-settings-form button { width: fit-content; }
+.shift-picker { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); }
+@media (max-width:600px) { .shift-settings-form fieldset, .shift-picker { grid-template-columns: minmax(0,1fr); } }
+
+.shift-settings-form { width: 100%; max-width: 760px; }

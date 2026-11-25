@@ -1,3 +1,4 @@
+import { registerSettingsRoutes } from "./settings.js";
 import { registerLeaderRecordRoutes } from "./leader-records.js";
 import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
@@ -180,6 +181,7 @@ export function buildApp(config: AppConfig, db: Database): FastifyInstance {
   registerLeaderRecordRoutes(app, db, requireTrustedOrigin);
   registerAdminRecordRoutes(app, db, requireTrustedOrigin);
   registerWorkerProfileRoutes(app, db, requireTrustedOrigin);
+  registerSettingsRoutes(app, db, requireTrustedOrigin);
   });
 
   return app;

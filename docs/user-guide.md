@@ -57,8 +57,8 @@ Každý účet má svůj profil zaměstnance, který při založení účtu vytv
 - denní záznam, profil i formuláře zobrazuje v přehledném sloupci vycentrovaném
   na stránce; na telefonu skládá související údaje pod sebe;
 - vidí všechny otevřené zakázky až uvnitř formuláře denního záznamu;
-- spravuje vlastní pracovní den, úseky práce, jízdy a přestávky;
-- zvolí ranní nebo noční směnu; noční směna může pokračovat přes půlnoc;
+- spravuje vlastní pracovní den, úseky práce a jízdy; staré přestávky zůstávají v historii;
+- zvolí ranní, odpolední nebo noční směnu; směna může pokračovat přes půlnoc;
 - ve svém profilu může pouze prohlížet kontaktní údaje, velikosti a historii
   pracovních oděvů a vybavení; v delší historii může záznamy vyhledat podle názvu, data, velikosti nebo místa výdeje.
 
@@ -177,13 +177,13 @@ důvod. Vedoucího může později změnit pouze Admin s uvedením důvodu.
 ## Můj pracovní den
 
 1. Na úvodní obrazovce klepněte na **Kde dnes pracuji?**. Tato nabídka se zavře a otevře se výběr směny.
-2. Klepněte na **Ranní směna** nebo **Noční směna**. Volba se ihned uloží a zobrazí se další krok.
+2. Klepněte na **Ranní směna**, **Odpolední směna** nebo **Noční směna**. Volba se ihned uloží a zobrazí se další krok.
 3. Vyberte druh práce: Strojní sečení, Kácení, Reprofilace nebo Ruční sečení. Nabídka po výběru zmizí.
 4. Ve formuláři vyberte otevřenou Zakázku a zadejte skutečný začátek a konec práce.
    U Kácení vyberte také činnost. Pro práci mimo nabídku zvolte **Ostatní**
    a povinně vyplňte **Popis práce**; prázdný popis ani samotné mezery nelze uložit.
 5. Potvrďte **Uložit pracovní úsek**. Další práci přidáte stejným postupem; záznamy uvidíte v seznamu dne.
-6. Přestávku přidávejte přes **Přidat přestávku**. Tlačítkem **Přidat stroj**
+6. Tlačítkem **Přidat stroj**
    u příslušného pracovního úseku otevřete formulář, který ukáže vybranou
    zakázku, druh práce a čas. Vyberte stroj; u strojů se sledováním MTH je
    počáteční stav předvyplněný posledním známým údajem a lze jej upravit.
@@ -192,7 +192,7 @@ důvod. Vedoucího může později změnit pouze Admin s uvedením důvodu.
    Ke stejnému pracovnímu úseku můžete připojit další stroj opět přes
    **Přidat stroj**. Každý má vlastní MTH, spotřebu, tankování a příslušenství.
    Již připojený stroj se v nabídce pro tento úsek znovu nenabízí.
-7. Přes **Zapsat jízdu vozidlem** zvolte svou roli. Řidič zaškrtne
+7. Přes **Automobil** v nabídce činností zvolte svou roli. Řidič zaškrtne
    **Jsem řidič této jízdy** a vyplní údaje. Cestující volbu nezaškrtává
    a připojí se k jízdě, kterou už řidič založil.
 8. Před odesláním zkontrolujte seznam úseků a časů. Tlačítko **Zkontrolovat a odeslat pracovní den** zobrazí potvrzení. Po odeslání už běžné úpravy nejsou možné.
@@ -395,7 +395,7 @@ Jízdu zapisuje do svého rozpracovaného pracovního dne pouze řidič:
 3. případně uvede spotřebu, tankování a poznámku;
 4. může vybrat ostatní zaměstnance, kteří jeli jako cestující, a uloží jízdu.
 
-Cestující otevře **Zapsat jízdu vozidlem** a nechá volbu **Jsem řidič této
+Cestující otevře **Automobil** a nechá volbu **Jsem řidič této
 jízdy** nezaškrtnutou. Vybere existující jízdu podle vozidla, řidiče a času
 a zvolí **Připojit se jako cestující**. Kilometry ani palivo nezadává.
 Pokud řidič teprve jízdu zakládá, použije **Obnovit seznam jízd**.
@@ -490,8 +490,8 @@ musí uvést důvod znovuotevření. Uzavření i znovuotevření se auditují.
 
 Nabídky činností, role, stavy práce, směny a stavy zakázek se zobrazují česky
 v jednotlivých rolích i v exportovaném PDF. V administrativní opravě práce
-vybíráte aktivitu kácení z možností **Pilař**, **Řidič traktoru**, **Manipulace**,
-**Úklid** a **Ostatní**. Stavy pracovního dne jsou **Rozpracováno**,
+vybíráte aktivitu kácení z možností **Pilař**, **Strojník**, **Tyčová pila**,
+**Úklid**. Starší záznamy Manipulace/Ostatní zůstávají čitelné; při opravě lze ponechat původní činnost. Stavy pracovního dne jsou **Rozpracováno**,
 **Odesláno ke schválení**, **Částečně schváleno**, **Schváleno** a **Vráceno k opravě**.
 V měsíčním přehledu vidíte **Ranní směna** nebo **Noční směna** a zakázky jako
 **Otevřená** nebo **Uzavřená**. Vyhledávání podle těchto údajů přijímá české názvy.
@@ -560,7 +560,7 @@ historii práce a nabídku otevřených zakázek má nadále dostupnou.
 
 Časy zadáváte a prohlížíte vždy v pásmu **Europe/Prague**, i když má telefon
 nebo počítač nastavené jiné pásmo. Datum pracovního dne je datum začátku
-směny. Práci, přestávky a jízdy můžete zapsat i na následující kalendářní den;
+směny. Práci a jízdy můžete zapsat i na následující kalendářní den;
 konec může být nejpozději o půlnoci po tomto následujícím dni. Směna nemá
 automaticky předepsanou délku 12 hodin.
 
@@ -590,3 +590,51 @@ uložená hesla zůstávají platná.
 
 Přihlášení se zobrazuje v jedné vycentrované kartě na počítači i telefonu.
 Tato úprava vzhledu nevyžaduje změnu databáze ani novou migraci.
+
+## Jednodušší zadávání techniky a kontrola hodin — 25. 11. 2026
+
+- V **Moje směna** je **Automobil** přímo mezi volbami činností. Otevře společnou
+  jízdu pro řidiče nebo cestujícího. Pokud není aktivní auto v evidenci, pracovník
+  uvidí vysvětlení; jako cestující se stále může připojit k dostupné jízdě.
+- Pracovník po volbě **Přidat stroj** vybere fyzický stroj. Vedle něj se objeví
+  **Příslušenství ke stroji** (na telefonu pod ním). Vybrané příslušenství se ukládá
+  společně se strojem. Tento zadávací formulář je pouze v roli Pracovník;
+  uložené použití vidí také oprávněný Vedoucí a Admin.
+- Ke každému přidávanému stroji lze vyplnit nepovinnou **Poznámku/Poruchu**,
+  nejvýše 2000 znaků. Patří ke konkrétnímu použití stroje a zůstává v historii,
+  schvalování, denním reportu i PDF. Zápis poznámky sám nemění dostupnost stroje
+  a nezakládá servisní objednávku. Oprava MTH poznámku zachovává.
+- V kácení jsou pro nové záznamy **Pilař, Strojník, Tyčová pila, Úklid**.
+  Manipulace a Ostatní se nově nenabízejí. Historické použití lze dál zobrazit a
+  při opravě ponechat; obecný druh práce Ostatní mimo kácení zůstává dostupný.
+- Nové časové formuláře se předvyplní aktuálním datem a hodinou v Europe/Prague;
+  v Moje směna a jízdě použijí datum zvoleného pracovního dne. Časy upravte podle
+  skutečnosti, konec musí být pozdější než začátek. Opravy používají uložené časy.
+- V **Moje směna** vidíte součet práce a schválené hodiny. Počet strojů hodiny
+  nenásobí, jízdy se k práci nepřičítají a historické přestávky se znovu neodečítají.
+- Denní report i PDF obsahují **Hodiny pracovníků**: celkem, schváleno a předběžné.
+  U práce se zobrazuje také čas od–do, popis a poznámky/poruchy jednotlivých strojů.
+  Měsíční přehled nadále nabízí hodiny pracovníků podle směn; export PDF/XLSX
+  měsíčního přehledu zatím není implementován.
+
+### Nastavení předvolených směn — Admin
+
+Admin otevře **Nastavení → Nastavení směn** a pro ranní, odpolední a noční směnu
+zadá čas začátku a konce v Europe/Prague. Vyplní důvod a zvolí **Uložit předvolby
+směn**. Vyplňte oba časy, nebo oba vymažte. Shodný začátek a konec není platný.
+Konec dřívější než začátek znamená následující den. **Obnovit nastavení** načte
+aktuální verzi; při souběžné změně jiným Adminem se stará verze odmítne.
+
+Po instalaci nejsou firemní hodiny vyplněné. Dokud je Admin nenastaví, formulář
+použije aktuální hodinu na zvoleném dni. Po nastavení pracovník u výběru směny
+vidí navržený interval a při první práci dostane předvolené časy; může je změnit.
+Další úsek začíná návrhem posledního konce práce. Změna předvoleb nepřepisuje
+žádné uložené záznamy ani automaticky nezapočítá celou směnu do hodin.
+Noční směna zůstává dostupná a přibyla samostatná **Odpolední směna**.
+
+### Přestávky v nové evidenci
+
+V Moje směna se nové přestávky již nezadávají. Dříve uložené přestávky zůstávají
+v historii a ve správě starých záznamů; nic se zpětně nemaže. Reporty je označují
+jako historické a řádek s nulovou délkou přestávky se nezobrazuje.
+Hodiny jsou součet zapsané práce. Žádná paušální přestávka se automaticky neodečítá.

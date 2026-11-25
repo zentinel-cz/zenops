@@ -7,8 +7,8 @@ mutually exclusive operating modes.
 
 -   manage own draft/returned WorkDays and WorkEntries
 -   select any OPEN project
--   record own work, breaks, machine use and allowed operational data
--   choose morning/night shift
+-   record own work, machine use and allowed operational data
+-   choose morning/afternoon/night shift; read configured shift presets
 -   submit records
 -   view own history
 -   cancel an own empty, never-submitted draft and explicitly restore it in
@@ -37,6 +37,7 @@ Projects assigned to that Leader.
     added by later features
 - cannot create, submit or restore a WorkDay for a Worker; can cancel an empty,
   never-submitted draft through the audited administrative workflow (ADR-012)
+- configure shift presets with a reason and audit (ADR-019)
 -   global operational administration
 -   employee/user administration
 -   replace a project Leader with an audited reason (ADR-010)

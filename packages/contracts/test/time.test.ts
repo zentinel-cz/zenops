@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { businessDate, businessDateTimeCandidates, businessDateTimeInput, businessTime, resolveBusinessDateTime } from "../src/time.js";
+import { shiftDateTimeDefaults, businessDate, businessDateTimeCandidates, businessDateTimeInput, businessTime, resolveBusinessDateTime } from "../src/time.js";
 
 describe("Prague business time", () => {
   it("converts winter and summer input to unambiguous instants", () => {
@@ -36,5 +36,23 @@ describe("Prague business time", () => {
         if (previous === undefined) delete process.env.TZ; else process.env.TZ = previous;
       }
     }
+  });
+});
+
+describe("shift preset defaults", () => {
+  it("uses the selected date and Prague clock before Admin configures hours", () => {
+    expect(shiftDateTimeDefaults('2026-02-10',undefined,'2026-11-25T08:30:00Z'))
+      .toEqual({start:'2026-02-10T09:30',end:'2026-02-10T09:30'});
+  });
+  it("supports afternoon shifts and next-calendar-day night endings across months", () => {
+    expect(shiftDateTimeDefaults('2026-10-31',{startTime:'14:00',endTime:'22:00'}))
+      .toEqual({start:'2026-10-31T14:00',end:'2026-10-31T22:00'});
+    expect(shiftDateTimeDefaults('2026-12-31',{startTime:'22:00',endTime:'06:00'}))
+      .toEqual({start:'2026-12-31T22:00',end:'2027-01-01T06:00'});
+  });
+  it("retains DST ambiguity for explicit resolution rather than silently choosing an instant", () => {
+    const defaults=shiftDateTimeDefaults('2026-10-25',{startTime:'02:30',endTime:'10:30'});
+    expect(businessDateTimeCandidates(defaults.start)).toHaveLength(2);
+    expect(()=>resolveBusinessDateTime(defaults.start)).toThrow('dvakrát');
   });
 });

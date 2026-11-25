@@ -32,6 +32,7 @@ export type MachineUsageSummary = {
   fuelRefuelled: string | null;
   attachments: string[];
   attachmentIds: string[];
+  note?: string | null;
 };
 
 export const changePasswordSchema = z
@@ -232,7 +233,7 @@ export const correctEmployeeItemReturnSchema = z.object({
   reason: z.string().trim().min(3).max(500),
 });
 
-export const shiftTypeSchema = z.enum(["MORNING", "NIGHT"]);
+export const shiftTypeSchema = z.enum(["MORNING", "AFTERNOON", "NIGHT"]);
 export const workStateSchema = z.enum([
   "DRAFT",
   "SUBMITTED",
@@ -327,6 +328,7 @@ export const machineUsageSchema = z
     fuelConsumed: z.number().min(0).max(100000).nullable().optional(),
     fuelRefuelled: z.number().min(0).max(100000).nullable().optional(),
     attachmentIds: z.array(z.string().uuid()).max(20).default([]),
+    note: z.string().trim().max(2000).nullable().optional(),
   })
   .superRefine((value, context) => {
     if (
@@ -442,3 +444,16 @@ export const monthlyPeriodActionSchema = z.discriminatedUnion("action", [
     reason: z.string().trim().min(3).max(1000),
   }),
 ]);
+
+const presetTimeSchema = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/).nullable();
+export const shiftPresetSchema = z.object({
+  shiftType: shiftTypeSchema, startTime: presetTimeSchema, endTime: presetTimeSchema,
+}).refine(value => (value.startTime === null && value.endTime === null)
+  || (value.startTime !== null && value.endTime !== null && value.startTime !== value.endTime),
+  {message:"Vyplňte oba různé časy, nebo oba vymažte."});
+export type ShiftPreset = z.infer<typeof shiftPresetSchema>;
+export const updateShiftPresetsSchema = z.object({
+  expectedVersion: z.number().int().min(0),
+  reason: z.string().trim().min(3).max(500),
+  presets: z.array(shiftPresetSchema).length(3),
+}).refine(value => new Set(value.presets.map(item => item.shiftType)).size === 3);

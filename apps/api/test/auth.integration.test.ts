@@ -1801,7 +1801,8 @@ integration("authentication integration", () => {
       expect(html).toContain(context.machines[1]!.code);
       expect(html).toContain(context.attachments[0]!.code);
       expect(html).toContain(context.attachments[1]!.code);
-      expect(html.match(/Time multi-report/g)).toHaveLength(1);
+      expect(html.split("<h2>Práce a technika</h2>")[1]!.match(/Time multi-report/g)).toHaveLength(1);
+      expect(report.employeeHours).toContainEqual(expect.objectContaining({employeeId:context.employeeId,workedMinutes:120}));
       const monthly = (await app.inject({url:'/api/reports/monthly?month=2040-01',headers})).json().report;
       expect(monthly.employeeHours.find((row:{id:string}) => row.id===context.employeeId).workedMinutes).toBe(120);
       expect(monthly.orderHours.find((row:{id:string}) => row.id===context.projectId).workedMinutes).toBe(120);
@@ -2509,6 +2510,95 @@ integration("authentication integration", () => {
     const closed = await app.inject({method:'POST',url:url+'/action',headers,payload:{action:'CLOSE'}});
     expect(closed.statusCode,closed.body).toBe(200);
     expect((await app.inject({url,headers})).json().period).toMatchObject({state:'CLOSED',blockers:[]});
+  });
+
+  it("preserves per-machine fault notes and attachments in scoped reports without multiplying employee hours", async () => {
+    const context = await multipleMachineContext('notes','2060-01-10');
+    const note = 'Porucha <čerpadla> & kontrola před směnou';
+    const added = await app.inject({method:'POST',url:`/api/workdays/${context.dayId}/entries/${context.entryId}/machine`,headers:context.headers,
+      payload:{machineId:context.machines[0]!.id,startMth:100,endMth:102,note,attachmentIds:[context.attachments[0]!.id]}});
+    expect(added.statusCode,added.body).toBe(201);
+    expect(added.json().usage.note).toBe(note);
+    expect((await context.addMachine(1)).statusCode).toBe(201);
+    const [audit] = await db`select after_data from audit_logs where entity_id=${added.json().usage.id} and action='MACHINE_USAGE_CREATED'`;
+    expect(audit!.afterData).toMatchObject({note,attachmentIds:[context.attachments[0]!.id]});
+    for (const username of ['admin','leader']) {
+      const headers = await headersFor(username);
+      const response = await app.inject({url:'/api/reports/daily?date=2060-01-10',headers});
+      expect(response.statusCode,response.body).toBe(200);
+      const report = response.json().report;
+      expect(report.employeeHours).toContainEqual({employeeId:context.employeeId,employeeName:'Time multi-notes',workedMinutes:120,approvedMinutes:0});
+      expect(report.entries[0].machineUsages[0].note).toBe(note);
+      const html = reportHtml(report);
+      expect(html).toContain('Porucha &lt;čerpadla&gt; &amp; kontrola před směnou');
+      expect(html).toContain('Hodiny pracovníků');
+      expect(html).toContain('08:00–10:00');
+      expect(html).toContain('Time regression');
+      expect(html).not.toContain('Porucha <čerpadla>');
+      const monthly = (await app.inject({url:'/api/reports/monthly?month=2060-01',headers})).json().report;
+      expect(monthly.employeeHours.find((item:{id:string})=>item.id===context.employeeId).workedMinutes).toBe(120);
+    }
+    const [entry] = await db`select * from work_entries where id=${context.entryId}`;
+    expect((await app.inject({method:'PATCH',url:`/api/workdays/${context.dayId}/entries/${context.entryId}/machine/${added.json().usage.id}/mth`,headers:context.headers,
+      payload:{startMth:100,endMth:101,reason:'Kontrola odečtu'}})).statusCode).toBe(200);
+    const [retained] = await db`select note from machine_usages where id=${added.json().usage.id}`;
+    expect(retained!.note).toBe(note);
+    expect(entry!.workDayId).toBe(context.dayId);
+    const unauthorized = await app.inject({url:'/api/reports/daily?date=2060-01-10',headers:context.headers});
+    expect(unauthorized.statusCode).toBe(403);
+  });
+
+  it("offers pole saw and machinist while preserving corrections of retired cutting activities", async () => {
+    const context = await intervalContext('activities');
+    const day = await context.createDay('2060-02-10');
+    const payload = {projectId:context.projectId,workTypeCode:'TREE_CUTTING',workActivityCode:'POLE_SAW',description:'Tyčová pila',
+      startAt:'2060-02-10T08:00:00+01:00',endAt:'2060-02-10T09:00:00+01:00'};
+    const entry = await app.inject({method:'POST',url:`/api/workdays/${day}/entries`,headers:context.headers,payload});
+    expect(entry.statusCode,entry.body).toBe(201);
+    for (const code of ['HANDLING','OTHER']) {
+      expect((await app.inject({method:'POST',url:`/api/workdays/${day}/entries`,headers:context.headers,
+        payload:{...payload,workActivityCode:code,startAt:'2060-02-10T10:00:00+01:00',endAt:'2060-02-10T11:00:00+01:00'}})).statusCode).toBe(422);
+    }
+    const [retired] = await db`select wa.id from work_activities wa join work_types wt on wt.id=wa.work_type_id where wt.code='TREE_CUTTING' and wa.code='HANDLING'`;
+    await db`update work_entries set work_activity_id=${retired!.id} where id=${entry.json().entry.id}`;
+    const edited = await app.inject({method:'PATCH',url:`/api/workdays/${day}/entries/${entry.json().entry.id}`,headers:context.headers,payload:{...payload,workActivityCode:'HANDLING',description:'Oprava historické činnosti'}});
+    expect(edited.statusCode,edited.body).toBe(200);
+    const [machinist] = await db`select name from work_activities where code='TRACTOR_DRIVER'`;
+    expect(machinist!.name).toBe('Strojník');
+  });
+
+  it("lets only Admin audit and version shift presets while Workers can use afternoon shifts", async () => {
+    const admin = await headersFor('admin');
+    const worker = await headersFor('worker');
+    const url='/api/settings/shift-presets';
+    const initial = await app.inject({url,headers:worker});
+    expect(initial.statusCode,initial.body).toBe(200);
+    const settings=initial.json().settings;
+    expect(settings.presets).toHaveLength(3);
+    expect(settings.presets.every((preset:{startTime:null;endTime:null})=>preset.startTime===null && preset.endTime===null)).toBe(true);
+    const presets=[{shiftType:'MORNING',startTime:'06:00',endTime:'14:00'},
+      {shiftType:'AFTERNOON',startTime:'14:00',endTime:'22:00'},{shiftType:'NIGHT',startTime:'22:00',endTime:'06:00'}];
+    const payload={presets,expectedVersion:settings.version,reason:'Test firemních směn'};
+    expect((await app.inject({url})).statusCode).toBe(401);
+    for(const username of ['worker','leader','accountant.test']) {
+      const headers=await headersFor(username);
+      expect((await app.inject({method:'PUT',url,headers,payload})).statusCode).toBe(403);
+    }
+    expect((await app.inject({method:'PUT',url,headers:{cookie:admin.cookie,origin:'https://evil.test'},payload})).statusCode).toBe(403);
+    expect((await app.inject({method:'PUT',url,headers:admin,payload:{...payload,presets:[...presets.slice(0,2),{shiftType:'NIGHT',startTime:'24:01',endTime:'06:00'}]}})).statusCode).toBe(400);
+    expect((await app.inject({method:'PUT',url,headers:admin,payload:{...payload,presets:[...presets.slice(0,2),{shiftType:'NIGHT',startTime:'22:00',endTime:null}]}})).statusCode).toBe(400);
+    const concurrent=await Promise.all([app.inject({method:'PUT',url,headers:admin,payload}),app.inject({method:'PUT',url,headers:admin,payload})]);
+    expect(concurrent.map(response=>response.statusCode).sort()).toEqual([200,409]);
+    const current=(await app.inject({url,headers:worker})).json().settings;
+    expect(current).toEqual({version:settings.version+1,presets});
+    const audits=await db`select before_data,after_data,reason from audit_logs where action='SHIFT_PRESETS_UPDATED'`;
+    expect(audits).toHaveLength(1);
+    expect(audits[0]!.afterData).toMatchObject(current);
+    expect(audits[0]!.reason).toBe(payload.reason);
+    const context=await intervalContext('afternoon');
+    const day=await app.inject({method:'POST',url:'/api/workdays',headers:context.headers,payload:{workDate:'2061-01-15',shiftType:'AFTERNOON'}});
+    expect(day.statusCode,day.body).toBe(201);
+    expect(day.json().workDay.shiftType).toBe('AFTERNOON');
   });
 
   it("changes the authenticated password, audits it and revokes every session", async () => {

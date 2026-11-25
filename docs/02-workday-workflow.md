@@ -5,7 +5,7 @@
 1.  Worker signs in.
 2.  Home dashboard shows today's work record.
 3.  Worker opens/creates WorkDay.
-4.  Worker selects shift: `MORNING` or `NIGHT`.
+4.  Worker selects shift: `MORNING`, `AFTERNOON` or `NIGHT`.
 
 The shift type does not force exact working times. Actual time comes
 from WorkEntry intervals.
@@ -32,7 +32,8 @@ same server-side requirement applies to creating and correcting entries.
 
 ## Breaks
 
-Breaks are explicit intervals. WorkEntry and BreakEntry intervals for
+The Worker UI no longer offers new breaks (ADR-019); existing breaks remain
+explicit historical intervals with existing correction compatibility. WorkEntry and BreakEntry intervals for
 the same employee must not overlap, even across different WorkDays. Adjacent
 intervals are allowed. Database protection covers concurrent writes.
 
@@ -73,3 +74,14 @@ action. Nothing is deleted or silently marked approved.
 CANCELLED days remain visible in history and do not block monthly closure.
 Only the owning Worker can explicitly restore the same day to DRAFT in an
 OPEN month, with a reason and selected shift. Both actions are audited.
+
+## Worker UI and activity catalogue (ADR-018)
+
+The own-day page shows total and approved work hours and a direct Automobil
+choice. Datetime inputs start with the selected business date and current Prague
+time and remain editable. Existing corrections retain stored values.
+TREE_CUTTING now offers Pilař, Strojník, Tyčová pila and Úklid; retired
+Manipulace/Ostatní entries can retain their original activity when corrected.
+
+Admin sets optional shift time pairs under ADR-019; they are editable input
+suggestions and do not imply actual attendance or update saved records.
