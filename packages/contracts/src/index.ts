@@ -31,6 +31,7 @@ export type MachineUsageSummary = {
   fuelConsumed: string | null;
   fuelRefuelled: string | null;
   attachments: string[];
+  attachmentDetails?: Array<{ id: string; code: string; name: string }>;
   attachmentIds: string[];
   note?: string | null;
 };

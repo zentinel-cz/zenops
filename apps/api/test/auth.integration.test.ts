@@ -2699,10 +2699,13 @@ integration("authentication integration", () => {
       expect(machine).toMatchObject({mth:'5.00',fuelConsumed:'5.00',fuelRefuelled:'7.00',measuredUsages:2});
       expect(machine.usages).toHaveLength(2);
       expect(machine.usages[1]).toMatchObject({note,attachments:[first.attachments[0]!.code]});
+      expect(machine.usages[1].attachmentDetails).toEqual([{id:first.attachments[0]!.id,code:first.attachments[0]!.code,name:'První příslušenství'}]);
+      expect(machine.usages[0].attachmentDetails).toEqual(machine.usages[1].attachmentDetails);
       expect(activity.project.entries.some((entry:{description:string})=>entry.description==='Nemá se ukázat v jiné zakázce')).toBe(false);
       const daily=(await app.inject({url:`/api/reports/daily?date=${date}`,headers})).json().report;
       expect(daily.machines.find((item:{machineId:string})=>item.machineId===machine.machineId)).toEqual(machine);
       const html=reportHtml(daily);expect(html).toContain('Soupiska strojů');expect(html).toContain('5.00');expect(html).toContain('Kontrola hydrauliky &lt;hadice&gt;');
+      expect(html).toContain(`První příslušenství (${first.attachments[0]!.code})`);
     }
     expect((await app.inject({url:`/api/projects/${first.projectId}/activity?date=2062-01-16`,headers:leader})).json().activity.summary.workers).toBe(0);
     expect((await app.inject({url:`/api/projects/${first.projectId}/activity?date=no`,headers:leader})).statusCode).toBe(400);

@@ -30,3 +30,10 @@ export const fuelCategoryLabel = (code: string) => code === "BRUSHCUTTER" ? "Kř
 
 /** Retired activities remain readable and correctable on existing entries. */
 export const historicalWorkActivities = [["HANDLING", "Manipulace"], ["OTHER", "Ostatní"]] as const;
+
+/** Keep codes visible to distinguish physical attachments with the same name. */
+export const machineAttachmentLabels = (usage: {
+  attachments: string[]; attachmentDetails?: Array<{ code: string; name: string }>;
+}) => usage.attachmentDetails?.length
+  ? usage.attachmentDetails.map(item => `${item.name} (${item.code})`).join(", ")
+  : usage.attachments.join(", ");

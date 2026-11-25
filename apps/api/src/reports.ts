@@ -3,7 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { businessTime, businessDate } from "@zenops/contracts/time";
-import { shiftLabel, fuelCategoryLabel } from "@zenops/contracts/labels";
+import { shiftLabel, fuelCategoryLabel, machineAttachmentLabels } from "@zenops/contracts/labels";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { chromium } from "playwright-core";
 import { z } from "zod";
@@ -89,7 +89,7 @@ const hours = (minutes: number) => `${Math.floor(minutes / 60)} h ${minutes % 60
 const interval = (start: string | Date, end: string | Date) => `${businessTime(start)}–${businessTime(end)}${businessDate(start) !== businessDate(end) ? " (+1 den)" : ""}`;
 
 function machineUsageHtml(usages: MachineUsageSummary[]): string {
-  return usages.length ? usages.map((usage) => `<div>${esc(usage.machineCode)}<small>${esc(usage.machineName)}${usage.startMth != null || usage.endMth != null ? ` · MTH ${esc(usage.startMth ?? "–")}–${esc(usage.endMth ?? "–")}` : ""} · palivo ${esc(usage.fuelConsumed ?? "–")}/${esc(usage.fuelRefuelled ?? "–")}</small>${usage.attachments.length ? `<small>Příslušenství: ${esc(usage.attachments.join(", "))}</small>` : ""}${usage.note ? `<small>Poznámka/Porucha: ${esc(usage.note)}</small>` : ""}</div>`).join("") : "–";
+  return usages.length ? usages.map((usage) => `<div>${esc(usage.machineCode)}<small>${esc(usage.machineName)}${usage.startMth != null || usage.endMth != null ? ` · MTH ${esc(usage.startMth ?? "–")}–${esc(usage.endMth ?? "–")}` : ""} · palivo ${esc(usage.fuelConsumed ?? "–")}/${esc(usage.fuelRefuelled ?? "–")}</small>${usage.attachments.length ? `<small>Příslušenství: ${esc(machineAttachmentLabels(usage))}</small>` : ""}${usage.note ? `<small>Poznámka/Porucha: ${esc(usage.note)}</small>` : ""}</div>`).join("") : "–";
 }
 
 export function reportHtml(report: Awaited<ReturnType<typeof buildDailyReport>>): string {

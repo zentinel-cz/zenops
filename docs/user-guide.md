@@ -709,6 +709,11 @@ dni svého začátku. PDF obsahuje celý oprávněný den, nezávisle na textov�
 
 ### Předvolby data a rozložení směny
 
+U stroje je příslušenství uvedeno názvem i evidenčním kódem, například
+**Mulčovač (1)**. Vedoucí tak vidí konkrétní příslušenství v přehledu zakázky,
+schvalování práce, denním reportu a PDF. Podle názvu i kódu lze také hledat.
+Stejné označení se zobrazuje u vlastní práce pracovníka a v soupisce strojů.
+
 Nové datum se předvolí na dnešek v Europe/Prague, včetně **Začátku** nové zakázky.
 V denním záznamu se časy vážou k vybranému pracovnímu dni a předvolbám směn.
 Při opravách se zachovává původní uložené datum; nepovinný konec probíhající

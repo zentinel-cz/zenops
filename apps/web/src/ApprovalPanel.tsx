@@ -1,4 +1,5 @@
 import type { MachineUsageSummary } from "@zenops/contracts";
+import { machineAttachmentLabels } from "@zenops/contracts/labels";
 import { businessDate, businessTime, businessTimeZone } from "@zenops/contracts/time";
 import { useEffect, useState } from "react";
 import { ListSearch, matchesSearch } from "./ListSearch";
@@ -26,7 +27,7 @@ function MachineCard({ usage }: { usage: MachineUsageSummary }) {
       <div><dt>Tankování</dt><dd>{numberLabel(usage.fuelRefuelled, " l")}</dd></div>
     </dl>
     {usage.note && <p><strong>Poznámka/Porucha:</strong> {usage.note}</p>}
-    <p className="approval-attachments"><strong>Příslušenství:</strong> {usage.attachments.length ? usage.attachments.join(", ") : "Bez příslušenství"}</p>
+    <p className="approval-attachments"><strong>Příslušenství:</strong> {usage.attachments.length ? machineAttachmentLabels(usage) : "Bez příslušenství"}</p>
   </section>;
 }
 
