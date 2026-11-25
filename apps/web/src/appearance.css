@@ -176,3 +176,60 @@ h1, h2, h3, h4, h5 { color: var(--text); }
 @media (max-width:600px) { .shift-settings-form fieldset, .shift-picker { grid-template-columns: minmax(0,1fr); } }
 
 .shift-settings-form { width: 100%; max-width: 760px; }
+
+/* Shift cards own their layout; labels never occupy the icon column. */
+.worker-step > .shift-picker { min-width: 0; width: 100%; align-items: stretch; }
+.shift-picker > button { min-width: 0; display: grid; grid-template-columns: 48px minmax(0,1fr); grid-template-rows: auto auto; gap: 4px 14px; padding: 20px; min-height: 112px; text-align: left; align-content: center; }
+.shift-picker > button > span { grid-column: 1; grid-row: 1 / 3; align-self: center; width: 44px; height: 44px; }
+.shift-picker > button > strong { grid-column: 2; grid-row: 1; min-width: 0; align-self: end; overflow-wrap: anywhere; line-height: 1.3; }
+.shift-picker > button > small { grid-column: 2; grid-row: 2; min-width: 0; align-self: start; line-height: 1.5; }
+.submit-day-wrap { display: grid; justify-items: center; gap: 16px; padding: 24px; text-align: center; }
+.submit-day-wrap > p { max-width: 560px; margin: 0; }
+.submit-day-wrap > .submit-day { float: none; display: flex; align-items: center; justify-content: center; width: min(100%,540px); max-width: 100%; min-height: 56px; margin: 0; padding: 16px 24px; border-radius: 12px; line-height: 1.4; white-space: normal; text-align: center; background: var(--brand-gradient); }
+.project-directory .projects-card > h3 { margin-top: 12px; font-size: 26px; }
+.project-directory .projects-card ul { display: grid; gap: 16px; margin-top: 22px; }
+.project-directory .projects-card li.project-directory-item { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 20px; padding: 24px; border: 1px solid var(--line-strong); border-left: 4px solid var(--brand); border-radius: 14px; background: linear-gradient(115deg,var(--surface-raised),var(--surface-inset)); box-shadow: 0 8px 20px #0002; }
+.project-directory .projects-card li.project-directory-item.closed { opacity: 1; border-left-color: var(--muted); }
+.project-directory-copy { min-width: 0; display: grid; gap: 8px; justify-items: start; overflow-wrap: anywhere; }
+.project-directory .projects-card .project-directory-code { color: var(--brand-soft); font-size: 12px; font-weight: 800; letter-spacing: .08em; }
+.project-directory-copy h4 { margin: 0; color: var(--text); font-size: 22px; line-height: 1.35; }
+.project-directory-copy p { margin: 0; font-size: 14px; }
+.project-directory .projects-card .project-open-button { width: auto; max-width: 100%; display: flex; align-items: center; justify-content: center; gap: 16px; padding: 14px 18px; margin: 0; color: var(--brand-ink); background: var(--brand-gradient); border-radius: 10px; white-space: normal; }
+.project-directory .projects-card .project-open-button span { color: inherit; font-size: 20px; }
+.project-directory .projects-card .row-actions { grid-column: 1 / -1; justify-content: flex-end; padding-top: 12px; border-top: 1px solid var(--line); }
+.project-worker-grid, .daily-machine-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; margin-top: 16px; }
+.project-worker-card, .daily-machine-card { min-width: 0; overflow-wrap: anywhere; padding: 20px; border: 1px solid var(--line-strong); border-radius: 14px; background: var(--surface-inset); }
+.project-worker-card > header, .daily-machine-card > header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.project-worker-card h5, .daily-machine-card h5 { margin: 0; font-size: 18px; }
+.daily-machine-card header strong { color: var(--brand-soft); font-size: 12px; }
+.project-worker-card header b, .daily-machine-card header b { color: var(--brand-soft); font-size: 20px; }
+.project-worker-entry { padding: 16px 0; border-bottom: 1px solid var(--line); }
+.project-worker-entry:last-child { border-bottom: 0; padding-bottom: 0; }
+.project-worker-entry p { margin: 8px 0; }
+.project-worker-entry small { display: block; color: var(--text-secondary); line-height: 1.7; }
+.project-entry-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.project-activity-meta { color: var(--text-secondary); }
+.project-empty { padding: 20px; border: 1px dashed var(--line-strong); border-radius: 12px; color: var(--muted); }
+.daily-machines { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--line-strong); }
+.daily-machines h4 { margin: 4px 0; font-size: 22px; }
+.daily-machine-card dl { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; margin: 16px 0; }
+.daily-machine-card dt { color: var(--muted); font-size: 12px; }
+.daily-machine-card dd { margin: 4px 0 0; font-size: 16px; font-weight: 700; }
+.daily-machine-card summary { cursor: pointer; padding: 12px 0; color: var(--brand-soft); font-size: 14px; }
+.daily-machine-usages > section { padding: 14px 0; border-top: 1px solid var(--line); }
+.daily-machine-usages p { margin: 6px 0; color: var(--text-secondary); }
+.daily-machine-usages small { display: block; line-height: 1.7; }
+@media (max-width: 1000px) { .project-worker-grid, .daily-machine-grid { grid-template-columns: minmax(0,1fr); } }
+@media (max-width: 760px) {
+  .worker-step > .shift-picker { grid-column: 1 / -1; grid-template-columns: minmax(0,1fr); }
+  .shift-picker > button { min-height: 94px; padding: 16px; }
+  .shift-picker > button > strong { font-size: 19px; }
+  .submit-day-wrap { padding: 20px 16px; }
+  .submit-day-wrap > .submit-day { padding: 14px 18px; }
+  .project-directory .projects-card li.project-directory-item { grid-template-columns: minmax(0,1fr); padding: 18px; gap: 16px; }
+  .project-directory .projects-card .project-open-button { width: 100%; }
+  .project-directory-copy h4 { font-size: 20px; }
+  .project-worker-card, .daily-machine-card { padding: 16px; }
+}
+
+.project-activity-panel > .worker-back { width: auto; margin-bottom: 20px; padding: 10px 14px; color: var(--text-secondary); border: 1px solid var(--line-strong); background: var(--surface-inset); border-radius: 10px; }

@@ -457,3 +457,22 @@ export const updateShiftPresetsSchema = z.object({
   reason: z.string().trim().min(3).max(500),
   presets: z.array(shiftPresetSchema).length(2),
 }).refine(value => new Set(value.presets.map(item => item.shiftType)).size === 2);
+
+export type ProjectActivityEntry = {
+  id: string; employeeId: string; employeeName: string; shiftType: string; entryState: string;
+  startAt: string; endAt: string; projectCode: string; projectName: string;
+  workTypeName: string; workActivityName: string | null; description: string | null;
+  workedMinutes: number; machineUsages: MachineUsageSummary[];
+};
+export type DailyMachineSummary = {
+  machineId: string; machineCode: string; machineName: string; mth: string | null;
+  measuredUsages: number; fuelConsumed: string | null; fuelRefuelled: string | null;
+  usages: Array<MachineUsageSummary & {entryId: string; employeeId: string; employeeName: string;
+    projectCode: string; projectName: string; entryState: string; startAt: string; endAt: string}>;
+};
+export type ProjectActivity = {
+  date: string;
+  project: {id:string;code:string;name:string;location:string;status:string;note:string|null;leaderName:string;entries:ProjectActivityEntry[]};
+  summary: {workers:number;entries:number;workedMinutes:number;approvedMinutes:number};
+  machines: DailyMachineSummary[];
+};

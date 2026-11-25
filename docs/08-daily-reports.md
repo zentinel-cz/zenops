@@ -48,3 +48,11 @@ Daily UI and PDF show each employee's total, approved and provisional minutes,
 grouped by employee identity. Work intervals and descriptions are visible,
 along with per-machine Poznámka/Porucha. Work duration is counted once, with
 no addition of trips or second subtraction of breaks. Existing RBAC applies.
+
+## Daily machine roster (ADR-021)
+
+The daily UI and PDF additionally group unique physical MachineUsages by
+machine with summed MTH differences, separate fuel totals and full usage
+information: operators, projects, intervals, states, attachments and notes.
+Null measurements remain unknown and the measured-usage count is visible.
+Project operational days use the same aggregation on project-scoped entries.

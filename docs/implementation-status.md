@@ -2,6 +2,14 @@
 
 Last updated: 2026-11-25
 
+## Project activity and daily machine roster — 2026-11-25
+
+Current-Leader/Admin project-day drilldown includes draft participants,
+work details, machines and attachments. Daily report/PDF and project activity
+share physical-machine MTH/fuel aggregation with full per-usage details.
+Worker shift cards and centered submission block fixed; new-project start
+date defaults to today. Read/UI-only, no migration. See ADR-021.
+
 ## Worker shifts, machine notes and exports — 2026-11-25
 
 Prepared and verified: Worker attachment placement, per-usage notes/faults,

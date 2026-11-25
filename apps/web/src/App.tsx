@@ -3,6 +3,7 @@ import { roleLabel, projectStatusLabel } from "@zenops/contracts/labels";
 import { type FormEvent, type ReactNode, useEffect, useState } from "react";
 import type { ProjectSummary, SessionUser } from "@zenops/contracts";
 import { EmployeePanel } from "./EmployeePanel";
+import { ProjectActivityPanel } from "./ProjectActivityPanel";
 import { SettingsPanel } from "./SettingsPanel";
 import { WorkDayPanel } from "./WorkDayPanel";
 import { ProjectDayPanel } from "./ProjectDayPanel";
@@ -124,6 +125,7 @@ function Dashboard({
   const [showDailyRecord, setShowDailyRecord] = useState(false);
   const [showWorkerProfile, setShowWorkerProfile] = useState(false);
   const [activeSection, setActiveSection] = useState("overview");
+  const [selectedProjectId,setSelectedProjectId] = useState<string|null>(null);
   const [recordTarget,setRecordTarget] = useState<WorkDayRecordTarget | null>(null);
   const [monthlySelection,setMonthlySelection] = useState(businessDate().slice(0,7));
   const canCreateProject = user.permissions.includes("project.create");
@@ -284,13 +286,13 @@ return runMutation(async () => {
           <ul>
         {projects.filter((project) => matchesSearch(projectQuery, project.code, project.name, project.location, projectStatusLabel(project.status))).map((project) => (
               <li
-                className={project.status === "CLOSED" ? "closed" : ""}
+                className={`project-directory-item ${project.status === "CLOSED" ? "closed" : ""}`}
                 key={project.id}
               >
-                <strong>{project.code}</strong>
-                <span>
-                  {project.name} · {project.location}{project.status === "CLOSED" ? " · Uzavřeno" : ""}
-                </span>
+                <div className="project-directory-copy"><span className="project-directory-code">{project.code}</span><h4>{project.name}</h4><p>{project.location}</p>
+                  <span className={`state-badge ${project.status.toLowerCase()}`}>{projectStatusLabel(project.status)}</span>
+                </div>
+                {canReport && <button type="button" className="project-open-button" onClick={()=>setSelectedProjectId(project.id)}>Otevřít přehled zakázky <span aria-hidden="true">→</span></button>}
                 {canManageProjects && (
                   <span className="row-actions">
                     <button disabled={busy}
@@ -368,7 +370,7 @@ return runMutation(async () => {
             </label>
             <label>
               Začátek
-              <input name="startDate" type="date" required />
+              <input name="startDate" type="date" required defaultValue={businessDate()} />
             </label>
             <label className="checkbox">
               <input name="besip" type="checkbox" /> BESIP
@@ -576,7 +578,7 @@ return runMutation(async () => {
             </>}
             {activeSection === "records" && <AdminRecordsPanel projects={leaderProjects} leaderMode />}
             {activeSection === "approvals" && canApprove && <section className="admin-section-view"><div className="content-section-label"><span>01</span><div><small>PRÁCE PRACOVNÍKŮ</small><strong>Schvalování</strong></div></div><ApprovalPanel /></section>}
-            {activeSection === "projects" && canCreateProject && <section className="admin-section-view"><div className="content-section-label"><span>02</span><div><small>ORGANIZACE PRÁCE</small><strong>Zakázky</strong></div></div>{projectOverview}{projectForms}</section>}
+            {activeSection === "projects" && canCreateProject && <section className="admin-section-view"><div className="content-section-label"><span>02</span><div><small>ORGANIZACE PRÁCE</small><strong>Zakázky</strong></div></div>{selectedProjectId ? <ProjectActivityPanel key={selectedProjectId} projectId={selectedProjectId} onClose={()=>setSelectedProjectId(null)} /> : <>{projectOverview}{projectForms}</>}</section>}
             {activeSection === "project-day" && user.permissions.includes("project_day.manage") && <section className="admin-section-view"><div className="content-section-label"><span>03</span><div><small>ÚDAJE KAŽDÉHO DNE</small><strong>Denní provoz</strong></div></div><ProjectDayPanel user={user} projects={projects} /></section>}
             {activeSection === "reports" && canReport && <section className="admin-section-view leader-report-stack"><div className="content-section-label"><span>04</span><div><small>VÝSLEDKY PROVOZU</small><strong>Reporty</strong></div></div><ReportPanel /><MonthlyPanel user={user} /></section>}
             {activeSection === "assets" && canManageAssets && <section className="admin-section-view"><div className="content-section-label"><span>05</span><div><small>PROVOZNÍ PROSTŘEDKY</small><strong>Technika</strong></div></div><AssetPanel onChanged={async () => setAssetVersion((value) => value + 1)} /></section>}
@@ -699,8 +701,7 @@ return runMutation(async () => {
                     <strong>Zakázky</strong>
                   </div>
                 </div>
-                {projectOverview}
-                {projectForms}
+                {selectedProjectId ? <ProjectActivityPanel key={selectedProjectId} projectId={selectedProjectId} onClose={()=>setSelectedProjectId(null)} /> : <>{projectOverview}{projectForms}</>}
               </section>
             )}
             {activeSection === "project-day" && (

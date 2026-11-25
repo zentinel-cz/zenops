@@ -639,3 +639,53 @@ V Moje směna se nové přestávky již nezadávají. Dříve uložené přestá
 v historii a ve správě starých záznamů; nic se zpětně nemaže. Reporty je označují
 jako historické a řádek s nulovou délkou přestávky se nezobrazuje.
 Hodiny jsou součet zapsané práce. Žádná paušální přestávka se automaticky neodečítá.
+
+## Přehled zakázky, techniky a dnešní datum — 25. 11. 2026
+
+### Seznam zakázek a detail pro Vedoucího
+
+V **Zakázkách** je každá zakázka na samostatné zvýrazněné kartě s kódem, názvem,
+místem a stavem. Přes **Otevřít přehled zakázky** otevřete její denní provoz.
+Vedoucí vidí pouze zakázky, které právě vede; Admin má přístup ke všem.
+Dostupná je také historie uzavřených zakázek.
+
+**Datum přehledu zakázky** je při otevření dnešní. Můžete vybrat starší den;
+**Obnovit přehled zakázky** načte změny provedené mezitím pracovníky.
+U každého pracovníka vidíte zapsané pracovní úseky na této zakázce, jejich
+skutečné časy, činnost, popis a stav. Přehled zahrnuje rozpracovanou,
+odeslanou, vrácenou i schválenou práci. Nejde o plán směn ani sledování polohy.
+Samotný prázdný pracovní den ještě neurčuje zakázku a v jejím seznamu není.
+
+Pod prací se zobrazují všechny přiřazené stroje a jejich **Příslušenství**,
+odečty MTH, spotřeba, tankování i **Poznámka/Porucha**. Příslušenství je
+seskupené u stroje, ke kterému ho pracovník připojil. Vyhledávání přijímá
+jméno pracovníka, činnost, popis, stroj i kód příslušenství.
+Přes **Zpět na zakázky** se vrátíte do seznamu.
+
+### Soupiska strojů v reportu a PDF
+
+**Denní report**, jeho PDF a přehled zakázky obsahují **Soupisku strojů**.
+Každý fyzický stroj je jednou se svým celkovým MTH, spotřebou, tankováním a
+počtem použití. Přes **Obsluha, příslušenství a podrobnosti** rozbalíte jednotlivé
+zápisy: kdo se strojem pracoval, na jaké zakázce, kdy, s jakým příslušenstvím,
+jakými odečty a poznámkou. PDF vypisuje tyto podrobnosti přímo.
+
+Celkové MTH jsou součet rozdílů mezi konečným a počátečním stavem jednotlivých
+použití. Například 100→102 a 102→105 dává dohromady **5 MTH**. Nejde o součet
+stavů tachometru ani o pracovní hodiny zaměstnance. Chybějící údaj je označený
+pomlčkou; počet použití s odečtem ukazuje úplnost MTH. Součty zahrnují schválené
+i předběžné údaje. Denní report pokrývá oprávněný rozsah Vedoucího/Admina;
+v detailu zakázky se počítá jen vybraná zakázka. Noční směna nadále patří ke
+dni svého začátku. PDF obsahuje celý oprávněný den, nezávisle na textovém hledání.
+
+### Předvolby data a rozložení směny
+
+Nové datum se předvolí na dnešek v Europe/Prague, včetně **Začátku** nové zakázky.
+V denním záznamu se časy vážou k vybranému pracovnímu dni a předvolbám směn.
+Při opravách se zachovává původní uložené datum; nepovinný konec probíhající
+zakázky zůstává prázdný. Všechny předvolby lze upravit podle skutečnosti.
+
+Výběr **Ranní směna / Noční směna** má oddělenou ikonu, název a čas. Na telefonu
+jsou volby pod sebou, na počítači vedle sebe. **Zkontrolovat a odeslat pracovní
+den** je vycentrované uvnitř samostatného bloku a na telefonu zalamuje text.
+Schvalování ani potvrzení odeslání se tím nemění.

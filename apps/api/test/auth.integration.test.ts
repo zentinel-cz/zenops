@@ -1801,7 +1801,7 @@ integration("authentication integration", () => {
       expect(html).toContain(context.machines[1]!.code);
       expect(html).toContain(context.attachments[0]!.code);
       expect(html).toContain(context.attachments[1]!.code);
-      expect(html.split("<h2>Práce a technika</h2>")[1]!.match(/Time multi-report/g)).toHaveLength(1);
+      expect(html.split("<h2>Práce a technika</h2>")[1]!.split("<h2>Soupiska strojů</h2>")[0]!.match(/Time multi-report/g)).toHaveLength(1);
       expect(report.employeeHours).toContainEqual(expect.objectContaining({employeeId:context.employeeId,workedMinutes:120}));
       const monthly = (await app.inject({url:'/api/reports/monthly?month=2040-01',headers})).json().report;
       expect(monthly.employeeHours.find((row:{id:string}) => row.id===context.employeeId).workedMinutes).toBe(120);
@@ -2601,6 +2601,58 @@ integration("authentication integration", () => {
     expect(settings.presets.map((preset:{shiftType:string})=>preset.shiftType)).toEqual(['MORNING','NIGHT']);
     const invalidSettings=await app.inject({method:'PUT',url,headers:admin,payload:{...payload,expectedVersion:current.version,presets:[...presets,{shiftType:'AFTERNOON',startTime:'14:00',endTime:'22:00'}]}});
     expect(invalidSettings.statusCode).toBe(400);
+  });
+
+  it("shows draft participants, scoped attachments and summed daily machine meters in project activity", async () => {
+    const date='2062-01-15';
+    const first=await multipleMachineContext('activity',date);
+    expect((await first.addMachine(0)).statusCode).toBe(201);
+    expect((await first.addMachine(1)).statusCode).toBe(201);
+    const second=await intervalContext('activity-second');
+    const secondDay=await second.createDay(date);
+    const work=await app.inject({method:'POST',url:`/api/workdays/${secondDay}/entries`,headers:second.headers,payload:{projectId:first.projectId,
+      workTypeCode:'OTHER',description:'Druhá obsluha',startAt:`${date}T10:00:00+01:00`,endAt:`${date}T12:00:00+01:00`}});
+    expect(work.statusCode,work.body).toBe(201);
+    const note='Kontrola hydrauliky <hadice>';
+    const usage=await app.inject({method:'POST',url:`/api/workdays/${secondDay}/entries/${work.json().entry.id}/machine`,headers:second.headers,
+      payload:{machineId:first.machines[0]!.id,startMth:102,endMth:105,fuelConsumed:3,fuelRefuelled:4,attachmentIds:[first.attachments[0]!.id],note}});
+    expect(usage.statusCode,usage.body).toBe(201);
+    expect((await app.inject({method:'POST',url:`/api/workdays/${secondDay}/submit`,headers:second.headers})).statusCode).toBe(200);
+    const extra=await app.inject({method:'POST',url:`/api/workdays/${first.dayId}/entries`,headers:first.headers,
+      payload:{projectId:second.projectId,workTypeCode:'OTHER',description:'Nemá se ukázat v jiné zakázce',startAt:`${date}T12:00:00+01:00`,endAt:`${date}T13:00:00+01:00`}});
+    expect(extra.statusCode,extra.body).toBe(201);
+    const leader=await headersFor('leader');const admin=await headersFor('admin');
+    const url=`/api/projects/${first.projectId}/activity?date=${date}`;
+    expect((await app.inject({url})).statusCode).toBe(401);
+    for(const headers of [first.headers,await headersFor('accountant.test')])expect((await app.inject({url,headers})).statusCode).toBe(403);
+    for(const headers of [leader,admin]) {
+      const response=await app.inject({url,headers});expect(response.statusCode,response.body).toBe(200);
+      const activity=response.json().activity;
+      expect(activity.summary).toEqual({workers:2,entries:2,workedMinutes:240,approvedMinutes:0});
+      expect(activity.project.entries.map((entry:{entryState:string})=>entry.entryState).sort()).toEqual(['DRAFT','SUBMITTED']);
+      expect(activity.project.entries.every((entry:{workDayState?:string;breaks?:unknown})=>entry.workDayState===undefined && entry.breaks===undefined)).toBe(true);
+      const machine=activity.machines.find((item:{machineId:string})=>item.machineId===first.machines[0]!.id);
+      expect(machine).toMatchObject({mth:'5.00',fuelConsumed:'5.00',fuelRefuelled:'7.00',measuredUsages:2});
+      expect(machine.usages).toHaveLength(2);
+      expect(machine.usages[1]).toMatchObject({note,attachments:[first.attachments[0]!.code]});
+      expect(activity.project.entries.some((entry:{description:string})=>entry.description==='Nemá se ukázat v jiné zakázce')).toBe(false);
+      const daily=(await app.inject({url:`/api/reports/daily?date=${date}`,headers})).json().report;
+      expect(daily.machines.find((item:{machineId:string})=>item.machineId===machine.machineId)).toEqual(machine);
+      const html=reportHtml(daily);expect(html).toContain('Soupiska strojů');expect(html).toContain('5.00');expect(html).toContain('Kontrola hydrauliky &lt;hadice&gt;');
+    }
+    expect((await app.inject({url:`/api/projects/${first.projectId}/activity?date=2062-01-16`,headers:leader})).json().activity.summary.workers).toBe(0);
+    expect((await app.inject({url:`/api/projects/${first.projectId}/activity?date=no`,headers:leader})).statusCode).toBe(400);
+    const newLeader=await intervalContext('activity-new-leader');
+    await db`update user_roles set role_id=(select id from roles where code='LEADER') where user_id=${newLeader.userId}`;
+    expect((await app.inject({url,headers:newLeader.headers})).statusCode).toBe(404);
+    const [project]=await db`select code,name,location,start_date from projects where id=${first.projectId}`;
+    const handover=await app.inject({method:'PATCH',url:`/api/projects/${first.projectId}`,headers:admin,payload:{code:project!.code,name:project!.name,location:project!.location,
+      startDate:'2062-01-01',leaderEmployeeId:newLeader.employeeId,besip:false,reason:'Předání přehledu zakázky'}});
+    expect(handover.statusCode,handover.body).toBe(200);
+    expect((await app.inject({url,headers:leader})).statusCode).toBe(404);
+    expect((await app.inject({url,headers:newLeader.headers})).json().activity.summary.workers).toBe(2);
+    expect((await app.inject({method:'PATCH',url:`/api/projects/${first.projectId}/state`,headers:admin,payload:{status:'CLOSED'}})).statusCode).toBe(200);
+    expect((await app.inject({url,headers:newLeader.headers})).json().activity.project.status).toBe('CLOSED');
   });
 
   it("changes the authenticated password, audits it and revokes every session", async () => {

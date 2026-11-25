@@ -43,3 +43,11 @@ midnight job; use idempotent creation/lazy fallback.
 ## Leader replacement (ADR-010)
 
 Only Admin can replace the Leader, with a reason and retained assignment history. The new active Leader inherits access to the whole project history and pending work. The former Leader loses scoped access immediately on subsequent requests. Closed projects can also be handed over.
+
+## Project operational day (ADR-021)
+
+Admin and the current Leader can open a project's day, including draft work,
+workers, all assigned machines and per-machine attachments/notes. Only actual
+WorkEntries establish membership; no project is inferred from an empty day.
+The default date is today and closed-project history remains accessible.
+Whole-WorkDay state and other-project records are not exposed.

@@ -1,3 +1,4 @@
+import { registerProjectActivityRoutes } from "./project-activity.js";
 import { registerSettingsRoutes } from "./settings.js";
 import { registerLeaderRecordRoutes } from "./leader-records.js";
 import cookie from "@fastify/cookie";
@@ -182,6 +183,7 @@ export function buildApp(config: AppConfig, db: Database): FastifyInstance {
   registerAdminRecordRoutes(app, db, requireTrustedOrigin);
   registerWorkerProfileRoutes(app, db, requireTrustedOrigin);
   registerSettingsRoutes(app, db, requireTrustedOrigin);
+  registerProjectActivityRoutes(app, db);
   });
 
   return app;
