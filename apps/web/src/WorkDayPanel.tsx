@@ -84,7 +84,7 @@ export function WorkDayPanel({ projects, assetVersion, employeeId, onClose }: { 
       .catch(() => setError("Seznam strojů a vozidel se nepodařilo načíst."));
   }, [assetVersion]);
 
-  async function createDay(shiftType: "MORNING" | "AFTERNOON" | "NIGHT") {
+  async function createDay(shiftType: "MORNING" | "NIGHT") {
     await mutate("/api/workdays", "POST", { workDate: today, shiftType });
   }
   async function changeDayState(event: FormEvent<HTMLFormElement>) {
@@ -183,7 +183,7 @@ export function WorkDayPanel({ projects, assetVersion, employeeId, onClose }: { 
         {workDay.state === "CANCELLED" && workDay.periodState === "OPEN" && !loading && <div className="workday-forms">
           <form key="restore" onSubmit={changeDayState}><h4>Obnovit pracovní den</h4>
             <p>Obnovíte stejný den i jeho historii. Potom můžete zapsat práci.</p>
-            <label>Směna<select name="shiftType" defaultValue={workDay.shiftType} disabled={saving}><option value="MORNING">Ranní směna</option><option value="AFTERNOON">Odpolední směna</option><option value="NIGHT">Noční směna</option></select></label>
+            <label>Směna<select name="shiftType" defaultValue={["MORNING","NIGHT"].includes(workDay.shiftType) ? workDay.shiftType : ""} required disabled={saving}><option value="" disabled>Vyberte směnu</option><option value="MORNING">Ranní směna</option><option value="NIGHT">Noční směna</option></select></label>
             <label>Důvod obnovení<input name="reason" required minLength={3} maxLength={500} disabled={saving} /></label>
             <button disabled={saving}>{saving ? "Obnovuji…" : "Obnovit pracovní den"}</button>
           </form>

@@ -2,7 +2,7 @@ import type { SessionUser } from "@zenops/contracts";
 import type { Database } from "./db.js";
 
 export async function changeEmptyWorkDay(db: Database, workDayId: string, actor: SessionUser,
-  input: { action: "CANCEL"; reason: string } | { action: "RESTORE"; reason: string; shiftType: "MORNING" | "AFTERNOON" | "NIGHT" }) {
+  input: { action: "CANCEL"; reason: string } | { action: "RESTORE"; reason: string; shiftType: "MORNING" | "NIGHT" }) {
   return db.begin(async (transaction) => {
     const [day] = await transaction`
       select * from work_days where id=${workDayId}

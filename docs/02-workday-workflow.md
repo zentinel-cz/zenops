@@ -5,7 +5,7 @@
 1.  Worker signs in.
 2.  Home dashboard shows today's work record.
 3.  Worker opens/creates WorkDay.
-4.  Worker selects shift: `MORNING`, `AFTERNOON` or `NIGHT`.
+4.  Worker selects shift: `MORNING` or `NIGHT`.
 
 The shift type does not force exact working times. Actual time comes
 from WorkEntry intervals.

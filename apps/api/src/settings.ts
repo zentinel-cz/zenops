@@ -10,8 +10,8 @@ export function registerSettingsRoutes(app: FastifyInstance, db: Database, origi
     // One statement keeps the version and values in the same committed snapshot.
     const [settings] = await db`select version, (select jsonb_agg(jsonb_build_object(
       'shiftType',shift_type,'startTime',left(start_time::text,5),'endTime',left(end_time::text,5))
-      order by case shift_type when 'MORNING' then 1 when 'AFTERNOON' then 2 else 3 end)
-      from shift_presets) as presets from operational_settings where id=1`;
+      order by case shift_type when 'MORNING' then 1 else 2 end)
+      from shift_presets where shift_type in ('MORNING','NIGHT')) as presets from operational_settings where id=1`;
     return reply.header("cache-control", "no-store").send({ settings });
   });
 

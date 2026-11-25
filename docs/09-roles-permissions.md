@@ -8,7 +8,7 @@ mutually exclusive operating modes.
 -   manage own draft/returned WorkDays and WorkEntries
 -   select any OPEN project
 -   record own work, machine use and allowed operational data
--   choose morning/afternoon/night shift; read configured shift presets
+-   choose morning/night shift; read configured shift presets
 -   submit records
 -   view own history
 -   cancel an own empty, never-submitted draft and explicitly restore it in

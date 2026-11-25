@@ -28,3 +28,6 @@ vehicle trips. Historical breaks are labelled as such in the timeline/reports.
 
 Migration 0026 extends the shift constraint and creates versioned settings,
 three empty preset pairs and the settings.manage permission for Admin.
+
+ADR-020 supersedes the three-shift selection: only MORNING and NIGHT are
+available for new input and configuration. Historical records are preserved.

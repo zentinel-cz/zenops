@@ -58,3 +58,13 @@ backup exists at /opt/zenops/backups/automatic/20261125T093047Z/database.dump.
 Push the completed changes to main and let the existing two-minute server
 automation process them. Verify migration rows, API/web artifact hashes,
 readiness and public assets before reporting deployment. No Caddy changes.
+
+## Follow-up: two shifts only (2026-11-25)
+
+User correction in ADR-020 removes AFTERNOON from new day/restoration input
+and Admin presets. Settings GET returns only MORNING/NIGHT, and updates must
+contain exactly those two types. Existing preset values and any historical
+AFTERNOON records remain stored and readable. No new migration; migration
+0026 remains unchanged. Worker selection/restore and Admin settings show only
+Ranní směna and Noční směna. API validation rejects old-client attempts to
+create/configure an afternoon shift.

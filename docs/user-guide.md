@@ -58,7 +58,7 @@ Každý účet má svůj profil zaměstnance, který při založení účtu vytv
   na stránce; na telefonu skládá související údaje pod sebe;
 - vidí všechny otevřené zakázky až uvnitř formuláře denního záznamu;
 - spravuje vlastní pracovní den, úseky práce a jízdy; staré přestávky zůstávají v historii;
-- zvolí ranní, odpolední nebo noční směnu; směna může pokračovat přes půlnoc;
+- zvolí ranní nebo noční směnu; směna může pokračovat přes půlnoc;
 - ve svém profilu může pouze prohlížet kontaktní údaje, velikosti a historii
   pracovních oděvů a vybavení; v delší historii může záznamy vyhledat podle názvu, data, velikosti nebo místa výdeje.
 
@@ -177,7 +177,7 @@ důvod. Vedoucího může později změnit pouze Admin s uvedením důvodu.
 ## Můj pracovní den
 
 1. Na úvodní obrazovce klepněte na **Kde dnes pracuji?**. Tato nabídka se zavře a otevře se výběr směny.
-2. Klepněte na **Ranní směna**, **Odpolední směna** nebo **Noční směna**. Volba se ihned uloží a zobrazí se další krok.
+2. Klepněte na **Ranní směna** nebo **Noční směna**. Volba se ihned uloží a zobrazí se další krok.
 3. Vyberte druh práce: Strojní sečení, Kácení, Reprofilace nebo Ruční sečení. Nabídka po výběru zmizí.
 4. Ve formuláři vyberte otevřenou Zakázku a zadejte skutečný začátek a konec práce.
    U Kácení vyberte také činnost. Pro práci mimo nabídku zvolte **Ostatní**
@@ -619,7 +619,7 @@ Tato úprava vzhledu nevyžaduje změnu databáze ani novou migraci.
 
 ### Nastavení předvolených směn — Admin
 
-Admin otevře **Nastavení → Nastavení směn** a pro ranní, odpolední a noční směnu
+Admin otevře **Nastavení → Nastavení směn** a pro ranní a noční směnu
 zadá čas začátku a konce v Europe/Prague. Vyplní důvod a zvolí **Uložit předvolby
 směn**. Vyplňte oba časy, nebo oba vymažte. Shodný začátek a konec není platný.
 Konec dřívější než začátek znamená následující den. **Obnovit nastavení** načte
@@ -630,7 +630,8 @@ použije aktuální hodinu na zvoleném dni. Po nastavení pracovník u výběru
 vidí navržený interval a při první práci dostane předvolené časy; může je změnit.
 Další úsek začíná návrhem posledního konce práce. Změna předvoleb nepřepisuje
 žádné uložené záznamy ani automaticky nezapočítá celou směnu do hodin.
-Noční směna zůstává dostupná a přibyla samostatná **Odpolední směna**.
+Dostupné jsou pouze **Ranní směna** a **Noční směna**. Odpolední se nenabízí ani
+v nastavení. Případná dříve uložená odpolední směna zůstává pouze v historii.
 
 ### Přestávky v nové evidenci
 

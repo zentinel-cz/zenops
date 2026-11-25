@@ -172,7 +172,7 @@ h1, h2, h3, h4, h5 { color: var(--text); }
 .shift-settings-form fieldset { min-width: 0; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; }
 .shift-settings-form legend { padding: 0 8px; font-weight: 700; }
 .shift-settings-form button { width: fit-content; }
-.shift-picker { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); }
+.shift-picker { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); }
 @media (max-width:600px) { .shift-settings-form fieldset, .shift-picker { grid-template-columns: minmax(0,1fr); } }
 
 .shift-settings-form { width: 100%; max-width: 760px; }

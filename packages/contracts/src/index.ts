@@ -233,7 +233,7 @@ export const correctEmployeeItemReturnSchema = z.object({
   reason: z.string().trim().min(3).max(500),
 });
 
-export const shiftTypeSchema = z.enum(["MORNING", "AFTERNOON", "NIGHT"]);
+export const shiftTypeSchema = z.enum(["MORNING", "NIGHT"]);
 export const workStateSchema = z.enum([
   "DRAFT",
   "SUBMITTED",
@@ -455,5 +455,5 @@ export type ShiftPreset = z.infer<typeof shiftPresetSchema>;
 export const updateShiftPresetsSchema = z.object({
   expectedVersion: z.number().int().min(0),
   reason: z.string().trim().min(3).max(500),
-  presets: z.array(shiftPresetSchema).length(3),
-}).refine(value => new Set(value.presets.map(item => item.shiftType)).size === 3);
+  presets: z.array(shiftPresetSchema).length(2),
+}).refine(value => new Set(value.presets.map(item => item.shiftType)).size === 2);

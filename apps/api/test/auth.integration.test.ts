@@ -2567,17 +2567,17 @@ integration("authentication integration", () => {
     expect(machinist!.name).toBe('Strojník');
   });
 
-  it("lets only Admin audit and version shift presets while Workers can use afternoon shifts", async () => {
+  it("lets only Admin configure morning and night presets and rejects new afternoon shifts", async () => {
     const admin = await headersFor('admin');
     const worker = await headersFor('worker');
     const url='/api/settings/shift-presets';
     const initial = await app.inject({url,headers:worker});
     expect(initial.statusCode,initial.body).toBe(200);
     const settings=initial.json().settings;
-    expect(settings.presets).toHaveLength(3);
+    expect(settings.presets).toHaveLength(2);
     expect(settings.presets.every((preset:{startTime:null;endTime:null})=>preset.startTime===null && preset.endTime===null)).toBe(true);
     const presets=[{shiftType:'MORNING',startTime:'06:00',endTime:'14:00'},
-      {shiftType:'AFTERNOON',startTime:'14:00',endTime:'22:00'},{shiftType:'NIGHT',startTime:'22:00',endTime:'06:00'}];
+      {shiftType:'NIGHT',startTime:'22:00',endTime:'06:00'}];
     const payload={presets,expectedVersion:settings.version,reason:'Test firemních směn'};
     expect((await app.inject({url})).statusCode).toBe(401);
     for(const username of ['worker','leader','accountant.test']) {
@@ -2585,8 +2585,8 @@ integration("authentication integration", () => {
       expect((await app.inject({method:'PUT',url,headers,payload})).statusCode).toBe(403);
     }
     expect((await app.inject({method:'PUT',url,headers:{cookie:admin.cookie,origin:'https://evil.test'},payload})).statusCode).toBe(403);
-    expect((await app.inject({method:'PUT',url,headers:admin,payload:{...payload,presets:[...presets.slice(0,2),{shiftType:'NIGHT',startTime:'24:01',endTime:'06:00'}]}})).statusCode).toBe(400);
-    expect((await app.inject({method:'PUT',url,headers:admin,payload:{...payload,presets:[...presets.slice(0,2),{shiftType:'NIGHT',startTime:'22:00',endTime:null}]}})).statusCode).toBe(400);
+    expect((await app.inject({method:'PUT',url,headers:admin,payload:{...payload,presets:[...presets.slice(0,1),{shiftType:'NIGHT',startTime:'24:01',endTime:'06:00'}]}})).statusCode).toBe(400);
+    expect((await app.inject({method:'PUT',url,headers:admin,payload:{...payload,presets:[...presets.slice(0,1),{shiftType:'NIGHT',startTime:'22:00',endTime:null}]}})).statusCode).toBe(400);
     const concurrent=await Promise.all([app.inject({method:'PUT',url,headers:admin,payload}),app.inject({method:'PUT',url,headers:admin,payload})]);
     expect(concurrent.map(response=>response.statusCode).sort()).toEqual([200,409]);
     const current=(await app.inject({url,headers:worker})).json().settings;
@@ -2597,8 +2597,10 @@ integration("authentication integration", () => {
     expect(audits[0]!.reason).toBe(payload.reason);
     const context=await intervalContext('afternoon');
     const day=await app.inject({method:'POST',url:'/api/workdays',headers:context.headers,payload:{workDate:'2061-01-15',shiftType:'AFTERNOON'}});
-    expect(day.statusCode,day.body).toBe(201);
-    expect(day.json().workDay.shiftType).toBe('AFTERNOON');
+    expect(day.statusCode,day.body).toBe(400);
+    expect(settings.presets.map((preset:{shiftType:string})=>preset.shiftType)).toEqual(['MORNING','NIGHT']);
+    const invalidSettings=await app.inject({method:'PUT',url,headers:admin,payload:{...payload,expectedVersion:current.version,presets:[...presets,{shiftType:'AFTERNOON',startTime:'14:00',endTime:'22:00'}]}});
+    expect(invalidSettings.statusCode).toBe(400);
   });
 
   it("changes the authenticated password, audits it and revokes every session", async () => {
