@@ -16,9 +16,19 @@ type FuelRow = {
 export async function saveProjectDay(db: Database, actor: SessionUser, projectId: string, date: string,
   input: { day?: ProjectDayInput; fuel?: ProjectFuelInput }) {
   return db.begin(async (transaction) => {
+    if (input.fuel) {
+      // Consistent lock order: delegation -> project -> operational period.
+      const [settings] = await transaction`select brushcutter_recorder_employee_id from operational_settings where id=1 for share`;
+      if (!actor.roles.includes("ADMIN")) {
+        const [worker] = await transaction`select u.id from users u join employees e on e.id=u.employee_id
+          join user_roles ur on ur.user_id=u.id join roles r on r.id=ur.role_id and r.code='WORKER'
+          where u.id=${actor.id} and u.employee_id=${settings!.brushcutterRecorderEmployeeId} and u.is_active and e.is_active`;
+        if (input.day || !worker) throw Object.assign(new Error("K této operaci nemáte oprávnění."), {statusCode:403});
+      }
+    }
     const [project] = await transaction`select id,status,current_leader_employee_id from projects where id=${projectId} for update`;
     if (!project) throw Object.assign(new Error("Zakázka nebyla nalezena."), { statusCode: 404 });
-    if (!actor.roles.includes("ADMIN") && (!actor.roles.includes("LEADER") || project.currentLeaderEmployeeId !== actor.employeeId)) {
+    if (!input.fuel && !actor.roles.includes("ADMIN") && (!actor.roles.includes("LEADER") || project.currentLeaderEmployeeId !== actor.employeeId)) {
       throw Object.assign(new Error("K této operaci nemáte oprávnění."), { statusCode: 403 });
     }
     if (project.status !== "OPEN") throw Object.assign(new Error("K uzavřené zakázce nelze měnit denní údaje ani palivo."), { statusCode: 409 });

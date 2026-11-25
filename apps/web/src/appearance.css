@@ -233,3 +233,19 @@ h1, h2, h3, h4, h5 { color: var(--text); }
 }
 
 .project-activity-panel > .worker-back { width: auto; margin-bottom: 20px; padding: 10px 14px; color: var(--text-secondary); border: 1px solid var(--line-strong); background: var(--surface-inset); border-radius: 10px; }
+
+/* Shared brushcutter fuel: touch-sized controls and a bounded reading width. */
+.brushcutter-panel { width: 100%; max-width: 860px; margin-inline: auto; }
+.brushcutter-form, .fuel-recorder-form { display: grid; grid-template-columns: minmax(0,1fr); width: 100%; gap: 20px; min-width: 0; }
+.brushcutter-context, .brushcutter-amounts { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 18px; }
+.brushcutter-form label, .fuel-recorder-form label { display: grid; gap: 8px; min-width: 0; margin: 0; }
+.brushcutter-form > p { margin: 0; }
+.brushcutter-form :is(input,select,textarea), .fuel-recorder-form :is(input,select) { box-sizing: border-box; width: 100%; min-width: 0; min-height: 48px; font-size: 16px; }
+.brushcutter-form textarea { resize: vertical; }
+.brushcutter-form > button, .fuel-recorder-form > button { min-height: 50px; white-space: normal; text-align: center; }
+.brushcutter-panel > .ghost, .fuel-recorder-settings > .ghost { margin-top: 16px; }
+@media(max-width:600px) {
+  .brushcutter-context, .brushcutter-amounts { grid-template-columns: minmax(0,1fr); }
+  .brushcutter-panel { padding: 18px; }
+  .brushcutter-form > button, .fuel-recorder-form > button { width: 100%; }
+}

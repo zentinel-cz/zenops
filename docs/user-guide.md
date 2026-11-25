@@ -65,7 +65,7 @@ Každý účet má svůj profil zaměstnance, který při založení účtu vytv
 ### Vedoucí
 
 Vedoucí nevytváří vlastní denní záznamy. Zakládá zakázky, spravuje denní údaje,
-techniku a provozní palivo a schvaluje jednotlivé pracovní úseky pracovníků na
+techniku, čte společné palivo a schvaluje jednotlivé pracovní úseky pracovníků na
 zakázkách, které aktuálně vede.
 
 Po přihlášení uvidí přehled s rychlými odkazy na své agendy. V postranní
@@ -231,7 +231,8 @@ znovuotevření Adminem. Obnovení provádí pouze pracovník, kterému den pat�
    tankováním a příslušenstvím. Neuvedené hodnoty jsou označené **Neuvedeno**,
    nulové hodnoty zůstávají viditelné. U úseku bez stroje se zobrazí **Bez
    vykázaného stroje**. Palivo v tomto detailu patří jednotlivým strojům;
-   společné palivo křovinořezů je v **Denním provozu**.
+   společné palivo křovinořezů zapisuje určený pracovník v **Palivo křovinořezů**;
+   Admin ho může opravit a Vedoucí číst v **Denním provozu**.
 4. Správný úsek potvrďte tlačítkem **Schválit**.
 5. U chybného úseku zvolte **Vrátit**, přímo na jeho kartě napište konkrétní
    důvod a zvolte **Potvrdit vrácení**. Volba **Zrušit** formulář zavře.
@@ -248,14 +249,16 @@ V části **Údaje zakázky** vyberte otevřenou zakázku a zapište počasí, t
 poznámku pro dnešní den. Údaje se vedou jen jednou za zakázku a datum. Vedoucí
 smí upravit pouze zakázku, kterou aktuálně vede; Admin může spravovat všechny.
 
-Ve stejném formuláři může Vedoucí nebo Admin zapsat společnou spotřebu a
-tankování paliva pro křovinořezy. Tento údaj patří zakázce a dni, nikoli
+Ve stejném formuláři může Admin zapsat společnou spotřebu a
+tankování paliva pro křovinořezy; Vedoucí palivo pouze čte. Běžné zadávání
+provádí pracovník určený Adminem (viz níže). Tento údaj patří zakázce a dni, nikoli
 jednotlivému pracovníkovi. Pro stejnou zakázku, datum a kategorii existuje jen
 jeden aktuální záznam; při opravě se původní a nový stav uchovají v auditu.
 Systém eviduje také zaměstnance, který údaj naposledy zapsal, ale ten není
 vlastníkem společného palivového záznamu.
 
-Tlačítko **Uložit údaje dne** uloží denní údaje a palivo společně. Při chybě
+Adminovo tlačítko **Uložit údaje dne** uloží denní údaje a palivo společně.
+Vedoucímu uloží pouze počasí, teplotu a poznámku, palivo zachová. Při chybě
 se neuloží ani jedna část. Prázdné palivové pole znamená neuvedenou hodnotu;
 **0** je výslovně uvedená nulová hodnota. Chcete-li vykázané palivo zrušit,
 vymažte spotřebu i tankování a uložte formulář. Záznam zůstane zachován
@@ -263,6 +266,30 @@ s původními hodnotami v auditu, ale nebude v palivových reportech.
 Novým vyplněním čísel jej znovu aktivujete. Samotnou poznámku bez čísel
 nelze založit jako nový palivový záznam. Uzavřená zakázka a uzavřený měsíc
 jsou pouze pro čtení.
+
+## Odpovědný pracovník pro palivo křovinořezů
+
+Admin v **Nastavení → Palivo křovinořezů** vybere jednoho aktivního uživatele
+s rolí Pracovník, uvede důvod a stiskne **Uložit odpovědného pracovníka**.
+Platí pro společné palivo všech otevřených zakázek. Volba **Nikdo – zapisuje
+pouze Admin** odpovědnost odebere. Při změně zanikne původnímu pracovníkovi
+přístup okamžitě; staré záznamy i jejich autor zůstávají zachované. Neaktivní
+účet ani účet s jinou rolí palivo zapisovat nemůže.
+
+Určený pracovník na úvodní obrazovce otevře **Palivo křovinořezů**. Pokud mu
+byla odpovědnost právě přidělena, obnoví stránku. Vybere otevřenou zakázku a
+datum (předvoleno na dnešek), vyplní **Spotřebované palivo (l)**,
+**Natankované palivo (l)** a případně **Poznámku k palivu**. Potvrdí
+**Uložit palivo křovinořezů**. Zapisuje součet skupiny jednou za zakázku a den,
+nikoli za každý křovinořez nebo pracovníka. Vlastní denní záznam není podmínkou.
+Formulář má na mobilu pole pod sebou, na PC dvojice vedle sebe.
+
+Při opravě se načte existující záznam. Prázdné číslo znamená neuvedeno,
+**0** skutečnou nulovou hodnotu. Vymazání obou čísel a uložení zruší vykázané
+palivo se zachováním historie; opětovné zadání záznam obnoví. Samotnou poznámku
+bez čísel nelze založit. Uzavřený měsíc nelze měnit. **Obnovit údaje** načte
+aktuální stav ze serveru, včetně ověření výsledku po výpadku spojení.
+Pracovník nevidí počasí, interní poznámky ani cizí denní záznamy.
 
 ## Zaměstnanci a účty — Admin
 
@@ -553,7 +580,9 @@ postupu **Oprava MTH — Pracovník**.
 
 V **Denním provozu** lze vybrat datum a zobrazit i uzavřenou zakázku pouze
 pro čtení. Admin vidí všechny zakázky, Vedoucí pouze aktuálně přiřazené.
-Pracovník nemá přístup ke společným poznámkám ani souhrnům paliva; vlastní
+Pracovník nemá přístup ke společným poznámkám ani reportovým souhrnům paliva;
+určený pracovník má samostatný přístup ke společnému palivu otevřených zakázek.
+Vlastní
 historii práce a nabídku otevřených zakázek má nadále dostupnou.
 
 ### Časy směn a práce přes půlnoc

@@ -1,3 +1,4 @@
+import { registerBrushcutterFuelRoutes } from "./brushcutter-fuel.js";
 import { registerProjectActivityRoutes } from "./project-activity.js";
 import { registerSettingsRoutes } from "./settings.js";
 import { registerLeaderRecordRoutes } from "./leader-records.js";
@@ -109,6 +110,7 @@ export function buildApp(config: AppConfig, db: Database): FastifyInstance {
 
   // Register routes after plugins so rate-limit hooks apply to real endpoints.
   app.after(() => {
+  registerBrushcutterFuelRoutes(app, db, requireTrustedOrigin);
   app.get("/health", async () => ({ status: "ok" }));
   app.get("/ready", async (_request, reply) => {
     try {

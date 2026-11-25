@@ -5,6 +5,7 @@ import type { ProjectSummary, SessionUser } from "@zenops/contracts";
 import { EmployeePanel } from "./EmployeePanel";
 import { ProjectActivityPanel } from "./ProjectActivityPanel";
 import { SettingsPanel } from "./SettingsPanel";
+import { BrushcutterFuelPanel } from './BrushcutterFuelPanel';
 import { WorkDayPanel } from "./WorkDayPanel";
 import { ProjectDayPanel } from "./ProjectDayPanel";
 import { AssetPanel } from "./AssetPanel";
@@ -124,6 +125,8 @@ function Dashboard({
   const [assetVersion, setAssetVersion] = useState(0);
   const [showDailyRecord, setShowDailyRecord] = useState(false);
   const [showWorkerProfile, setShowWorkerProfile] = useState(false);
+  const [showBrushcutterFuel,setShowBrushcutterFuel] = useState(false);
+  const [isFuelRecorder,setIsFuelRecorder] = useState(false);
   const [activeSection, setActiveSection] = useState("overview");
   const [selectedProjectId,setSelectedProjectId] = useState<string|null>(null);
   const [recordTarget,setRecordTarget] = useState<WorkDayRecordTarget | null>(null);
@@ -144,6 +147,14 @@ function Dashboard({
   const isAdmin = user.roles.includes("ADMIN");
   const isLeader = user.roles.includes("LEADER") && !isAdmin;
   const isAccountant = user.roles.includes("ACCOUNTANT");
+
+  useEffect(()=>{
+    if(!isWorkerOnly)return;
+    const check=()=>{void fetch('/api/settings/fuel-recorder',{credentials:'include'})
+      .then(async r=>r.ok?r.json():{assigned:false}).then(body=>setIsFuelRecorder(body.assigned===true)).catch(()=>setIsFuelRecorder(false));};
+    check();window.addEventListener('focus',check);
+    return ()=>window.removeEventListener('focus',check);
+  },[isWorkerOnly]);
 
   const loadProjects = () =>
     fetch(canManageProjects || isLeader ? "/api/projects" : "/api/projects/open", {
@@ -768,7 +779,7 @@ return runMutation(async () => {
           </button>
         </div>
       </header>
-      {(!isWorkerOnly || (!showDailyRecord && !showWorkerProfile)) && <section className="welcome">
+      {(!isWorkerOnly || (!showDailyRecord && !showWorkerProfile && !showBrushcutterFuel)) && <section className="welcome">
         <p className="eyebrow">PROVOZ DNEŠNÍHO DNE</p>
         <h2>Dobré ráno, {user.displayName.split(" ")[0]}</h2>
         <p>
@@ -778,13 +789,14 @@ return runMutation(async () => {
         </p>
       </section>}
       {isWorkerOnly ? (
-        !showDailyRecord && !showWorkerProfile && <section className="worker-home">
+        !showDailyRecord && !showWorkerProfile && !showBrushcutterFuel && <section className="worker-home">
           <button disabled={busy} className="daily-record-card" onClick={() => setShowDailyRecord(true)}>
             <span className="worker-home-icon" aria-hidden="true">→</span>
             <span className="worker-home-copy"><small>DNEŠNÍ ZÁZNAM</small><strong>Kde dnes pracuji?</strong><small>Zapsat směnu a práci</small></span>
             <span className="worker-home-cta">Začít</span>
           </button>
           <button disabled={busy} className="worker-profile-shortcut" onClick={() => setShowWorkerProfile(true)}>Můj profil a svěřené věci <span aria-hidden="true">→</span></button>
+          {isFuelRecorder&&<button className="worker-profile-shortcut" onClick={()=>setShowBrushcutterFuel(true)}>Palivo křovinořezů <span aria-hidden="true">→</span></button>}
         </section>
       ) : (
         projectOverview
@@ -794,6 +806,7 @@ return runMutation(async () => {
         <WorkDayPanel projects={projects} assetVersion={assetVersion} employeeId={user.employeeId} onClose={() => setShowDailyRecord(false)} />
       )}
       {isWorkerOnly && showWorkerProfile && <WorkerProfilePanel onClose={() => setShowWorkerProfile(false)} />}
+      {isWorkerOnly && showBrushcutterFuel && <BrushcutterFuelPanel projects={projects} onClose={()=>setShowBrushcutterFuel(false)} />}
       <ProjectDayPanel user={user} projects={projects} />
       {canApprove && <ApprovalPanel />}
       {canReport && <ReportPanel />}

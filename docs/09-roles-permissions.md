@@ -22,7 +22,7 @@ WorkDay.
 
 - create projects
 - manage machine/attachment/vehicle catalogues
-- manage operational fuel records
+- read shared project fuel; writes belong to Admin/designated Worker (ADR-022)
 - manage ProjectDay data
 - approve/return work for projects where they are the current Leader
 - view/download reports relevant to their operational scope
@@ -72,7 +72,7 @@ Project. Admin can use the administrative correction workflows instead.
 Permissions must be backend-enforced and extensible rather than
 hard-coded only in UI.
 
-Project-day metadata and shared fuel are readable only by Admin and the current Leader, including closed projects. Workers retain own work history and open-project selection; Accountant has no operational project access. Leader approved-entry corrections require an open month and a reason; breaks, trips and machine-meter corrections remain Admin-only.
+Project-day metadata and shared fuel are readable by Admin and the current Leader, including closed projects. ADR-022 grants the single Admin-designated active Worker fuel-only reads/writes on open projects, without project metadata, internal notes or other workers' records. Other Workers retain own work history and open-project selection; Accountant has no operational project access. Leader approved-entry corrections require an open month and a reason; breaks, trips and machine-meter corrections remain Admin-only.
 
 ADR-017 narrows the machine-meter restriction: a Worker may correct only
 start/end MTH on own draft/returned entries in editable days and open months,

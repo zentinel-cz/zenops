@@ -325,7 +325,7 @@ integration("authentication integration", () => {
     const fuel = await app.inject({
       method: "PUT",
       url: `/api/projects/${projectId}/day/fuel?date=2026-09-25`,
-      headers: { origin, cookie: cookie! },
+      headers: await headersFor('admin'),
       payload: {
         category: "BRUSHCUTTER",
         fuelConsumed: 12.5,
@@ -337,7 +337,7 @@ integration("authentication integration", () => {
     const correctedFuel = await app.inject({
       method: "PUT",
       url: `/api/projects/${projectId}/day/fuel?date=2026-09-25`,
-      headers: { origin, cookie: cookie! },
+      headers: await headersFor('admin'),
       payload: {
         category: "BRUSHCUTTER",
         fuelConsumed: 13,
@@ -355,7 +355,7 @@ integration("authentication integration", () => {
       expect.objectContaining({
         category: "BRUSHCUTTER",
         fuelConsumed: "13.00",
-        recordedByName: "Test Vedoucí",
+        recordedByName: "Test Administrátor",
       }),
     );
     const [fuelStorage] = await db<Array<{ records: number; audits: number }>>`
@@ -1894,7 +1894,7 @@ integration("authentication integration", () => {
 
   it("atomically saves, clears and reactivates shared fuel without losing history", async () => {
     const context = await intervalContext('fuel-clear');
-    const headers = await headersFor('leader');
+    const headers = await headersFor('admin');
     const url = `/api/projects/${context.projectId}/day?date=2045-01-02`;
     const save = (fuelConsumed: number | null, fuelRefuelled: number | null) =>
       app.inject({method:'PUT',url,headers,payload:{weather:'Jasno',temperatureC:10,
@@ -1959,7 +1959,7 @@ integration("authentication integration", () => {
 
   it("preserves legacy partial clients and serializes complete weather/fuel pairs", async () => {
     const context = await intervalContext('fuel-pairs');
-    const headers = await headersFor('leader');
+    const headers = await headersFor('admin');
     const url = `/api/projects/${context.projectId}/day?date=2045-03-02`;
     const legacyUrl = `/api/projects/${context.projectId}/day/fuel?date=2045-03-02`;
     await app.inject({method:'PUT',url,headers,payload:{weather:'Legacy'}});
@@ -1977,7 +1977,7 @@ integration("authentication integration", () => {
 
   it("enforces roles, assignment, origin and project/month locks for combined saves", async () => {
     const context = await intervalContext('fuel-access');
-    const headers = await headersFor('leader');
+    const headers = await headersFor('admin');
     const url = `/api/projects/${context.projectId}/day?date=2045-04-02`;
     const payload = {weather:'Denied',fuel:{category:'BRUSHCUTTER',fuelConsumed:2}};
     for (const username of ['worker','accountant.test','replacement']) {
@@ -1993,6 +1993,70 @@ integration("authentication integration", () => {
       select '2045-04-01','CLOSED',now(),id from users where username='admin'`;
     expect((await app.inject({method:'PUT',url,headers,payload})).statusCode).toBe(409);
     expect(await db`select id from project_days where project_id=${context.projectId}`).toHaveLength(0);
+  });
+
+  it("delegates shared brushcutter fuel to exactly one Worker without leaking project metadata", async () => {
+    const a=await intervalContext('fuel-delegate-a'), b=await intervalContext('fuel-delegate-b');
+    const admin=await headersFor('admin'), leader=await headersFor('leader');
+    const settingsUrl='/api/settings/fuel-recorder';
+    const load=()=>app.inject({url:settingsUrl,headers:admin});
+    const assign=async(employeeId:string|null)=>{
+      const settings=(await load()).json().settings;
+      return app.inject({method:'PUT',url:settingsUrl,headers:admin,payload:{employeeId,expectedVersion:settings.version,reason:'Test předání odpovědnosti'}});
+    };
+    const url=`/api/projects/${a.projectId}/brushcutter-fuel?date=2056-01-02`;
+    const payload={category:'BRUSHCUTTER',fuelConsumed:2.5,fuelRefuelled:0,note:'Skupina'};
+    for(const headers of [a.headers,b.headers,leader,await headersFor('accountant.test')]) {
+      expect((await app.inject({method:'PUT',url,headers,payload})).statusCode).toBe(403);
+      expect((await app.inject({method:'PUT',url:settingsUrl,headers,payload:{employeeId:a.employeeId,expectedVersion:0,reason:'Nepovoleno'}})).statusCode).toBe(403);
+    }
+    expect((await assign(leaderEmployeeId)).statusCode).toBe(422);
+    const initial=(await load()).json().settings;
+    expect((await assign(a.employeeId)).statusCode).toBe(200);
+    expect((await app.inject({method:'PUT',url:settingsUrl,headers:admin,payload:{employeeId:b.employeeId,expectedVersion:initial.version,reason:'Stará verze'}})).statusCode).toBe(409);
+    expect((await app.inject({url:settingsUrl,headers:a.headers})).json()).toEqual({assigned:true});
+    const saved=await app.inject({method:'PUT',url,headers:a.headers,payload});
+    expect(saved.statusCode,saved.body).toBe(200);
+    const id=saved.json().fuelRecord.id;
+    expect(saved.json().fuelRecord).toMatchObject({fuelConsumed:'2.50',fuelRefuelled:'0.00',recordedByEmployeeId:a.employeeId});
+    const read=await app.inject({url,headers:a.headers});
+    expect(read.json().fuelRecord.fuelConsumed).toBe('2.50');
+    expect(read.json()).not.toHaveProperty('projectDay');
+    expect((await app.inject({url:`/api/projects/${a.projectId}/day?date=2056-01-02`,headers:a.headers})).statusCode).toBe(403);
+    expect((await app.inject({method:'PUT',url,headers:a.headers,payload:{...payload,weather:'Forbidden'}})).statusCode).toBe(400);
+    expect((await app.inject({method:'PUT',url,headers:{cookie:a.headers.cookie},payload})).statusCode).toBe(403);
+    expect((await app.inject({url:url.replace('2056-01-02','bad'),headers:a.headers})).statusCode).toBe(400);
+    for(const path of [`/api/projects/${a.projectId}/day/fuel?date=2056-01-02`,`/api/projects/${a.projectId}/day?date=2056-01-02`]) {
+      expect((await app.inject({method:'PUT',url:path,headers:leader,payload:path.includes('/fuel?')?payload:{weather:'Changed',fuel:payload}})).statusCode).toBe(403);
+    }
+    expect((await app.inject({method:'PUT',url:`/api/projects/${a.projectId}/day?date=2056-01-02`,headers:leader,payload:{weather:'Jasno',note:'Internal'}})).statusCode).toBe(200);
+    expect((await app.inject({url,headers:a.headers})).body).not.toContain('Internal');
+    const clear=await app.inject({method:'PUT',url,headers:a.headers,payload:{category:'BRUSHCUTTER',fuelConsumed:null,fuelRefuelled:null}});
+    expect(clear.json().fuelRecord).toMatchObject({id,fuelConsumed:null,fuelRefuelled:null});
+    expect(clear.json().fuelRecord.clearedAt).toBeTruthy();
+    await assign(b.employeeId);
+    expect((await app.inject({method:'PUT',url,headers:a.headers,payload})).statusCode).toBe(403);
+    expect((await app.inject({url,headers:a.headers})).statusCode).toBe(403);
+    const restored=await app.inject({method:'PUT',url,headers:b.headers,payload});
+    expect(restored.json().fuelRecord).toMatchObject({id,recordedByEmployeeId:b.employeeId,clearedAt:null});
+    const report=(await app.inject({url:'/api/reports/daily?date=2056-01-02',headers:admin})).json().report;
+    expect(report.fuelRecords).toHaveLength(1);
+    expect(report.fuelRecords[0].fuelConsumed).toBe('2.50');
+    await db`update user_roles set role_id=(select id from roles where code='LEADER') where user_id=${b.userId}`;
+    expect((await app.inject({method:'PUT',url,headers:b.headers,payload})).statusCode).toBe(403);
+    await db`update user_roles set role_id=(select id from roles where code='WORKER') where user_id=${b.userId}`;
+    await db`update employees set is_active=false,deactivated_at=now(),deactivated_by_user_id=(select id from users where username='admin') where id=${b.employeeId}`;
+    expect((await app.inject({method:'PUT',url,headers:b.headers,payload})).statusCode).toBe(401);
+    expect((await assign(b.employeeId)).statusCode).toBe(422);
+    await assign(a.employeeId);
+    await db`update projects set status='CLOSED',closed_at=now(),closed_by_user_id=created_by_user_id where id=${a.projectId}`;
+    expect((await app.inject({method:'PUT',url,headers:a.headers,payload})).statusCode).toBe(409);
+    await db`update projects set status='OPEN',closed_at=null,closed_by_user_id=null where id=${a.projectId}`;
+    await db`update monthly_periods set state='CLOSED',closed_at=now(),closed_by_user_id=(select id from users where username='admin') where month_start='2056-01-01'`;
+    expect((await app.inject({method:'PUT',url,headers:a.headers,payload})).statusCode).toBe(409);
+    expect(await db`select id from audit_logs where action='FUEL_RECORDER_UPDATED'`).toHaveLength(3);
+    await assign(null);
+    expect((await app.inject({method:'PUT',url,headers:a.headers,payload})).statusCode).toBe(403);
   });
 
   it("returns complete approval details only to the current project Leader and keeps decisions unchanged", async () => {

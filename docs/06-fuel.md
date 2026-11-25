@@ -14,20 +14,21 @@ to equal refuelling.
 Brushcutter fuel is shared/global per ProjectDay rather than per
 physical brushcutter.
 
-One worker may claim responsibility for recording the group's fuel
-consumption. Once claimed, other workers are informed who is recording
-it.
+Admin assigns one active Worker company-wide to record the group's fuel
+consumption and refuelling per open project/day (ADR-022). No self-claiming.
 
 Data ownership: - ProjectDay owns the fuel record. - Employee is only
 `recorded_by`.
 
-Leader/Admin may reassign the recorder.
+Only Admin may reassign/remove the recorder, with reason and audit.
 
 Prevent duplicate active brushcutter fuel records for the same
 project/day/category.
 
-ADR-010 defines current Leader/Admin access; Worker does not manage this
-shared record. ADR-014 defines atomic daily metadata/fuel saves and audited
+ADR-022 supersedes ADR-010/014 fuel write access: current Leader reads but
+cannot edit shared fuel; designated Worker has fuel-only access; Admin retains
+corrections. Assignment does not change historical attribution. Other Workers
+and Accountant have no shared fuel access. ADR-014 defines atomic Admin daily metadata/fuel saves and audited
 clearing: both numeric values explicitly null clear an existing row, while
 zero remains a valid value. Cleared rows keep their identity and audit but
 are excluded from operational fuel reports. Reentry reactivates the same row.

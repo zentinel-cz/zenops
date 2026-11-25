@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import type { ShiftPreset } from "@zenops/contracts";
 import { shiftLabel } from "@zenops/contracts/labels";
+import { FuelRecorderSettings } from './FuelRecorderSettings';
 
 export function SettingsPanel() {
   const [settings, setSettings] = useState<{version:number;presets:ShiftPreset[]} | null>(null);
@@ -35,7 +36,7 @@ export function SettingsPanel() {
     } catch { setError("Nepodařilo se spojit se serverem. Před dalším uložením ověřte aktuální nastavení."); }
     finally { setSaving(false); }
   }
-  return <section className="management-panel"><h3>Nastavení směn</h3>
+  return <><FuelRecorderSettings /><section className="management-panel"><h3>Nastavení směn</h3>
     <p>Časy v pásmu Europe/Prague se předvyplní při zadávání nové práce. Pracovník je může upravit podle skutečnosti.</p>
     <p>Prázdná dvojice znamená aktuální hodinu ve zvoleném dni. Konec před začátkem znamená konec následující den.</p>
     {loading && <p role="status">Načítám nastavení…</p>}
@@ -49,5 +50,5 @@ export function SettingsPanel() {
       <button disabled={saving}>{saving ? "Ukládám…" : "Uložit předvolby směn"}</button>
     </form>}
     <button type="button" className="ghost" disabled={saving || loading} onClick={()=>void load()}>Obnovit nastavení</button>
-  </section>;
+  </section></>;
 }
