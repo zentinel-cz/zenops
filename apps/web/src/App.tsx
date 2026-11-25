@@ -525,7 +525,7 @@ return runMutation(async () => {
       records: "Opravit schválenou práci s uvedením důvodu.",
       approvals: "Zkontrolovat čekající práci a rozhodnout o schválení.",
       projects: "Vlastní zakázky, jejich historie a založení nové zakázky.",
-      "project-day": "Počasí, teplota, poznámka a společné palivo.",
+      "project-day": "Počasí, teplota a poznámka k zakázce.",
       reports: "Denní a měsíční přehled provozu.",
       assets: "Stroje, příslušenství a vozidla.",
     };

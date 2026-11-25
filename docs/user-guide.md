@@ -78,7 +78,8 @@ vždy jednu sekci:
   stroje nebo příslušenství.
 - **Zakázky**: přehled otevřených zakázek a jejich založení. Seznam lze
   vyhledat podle kódu, názvu nebo místa.
-- **Denní provoz**: počasí, teplota, poznámka a společné palivo zakázky.
+- **Denní provoz**: počasí, teplota a poznámka zakázky. Blok paliva křovinořezů
+  zde Vedoucí nemá; zadává ho odpovědný pracovník ve vlastní sekci.
 - **Reporty**: denní i měsíční provozní přehledy na jednom místě.
 - **Technika**: správa strojů, příslušenství a vozidel. Každý katalog lze
   samostatně vyhledat podle kódu, názvu, typu nebo SPZ.
@@ -232,7 +233,7 @@ znovuotevření Adminem. Obnovení provádí pouze pracovník, kterému den pat�
    nulové hodnoty zůstávají viditelné. U úseku bez stroje se zobrazí **Bez
    vykázaného stroje**. Palivo v tomto detailu patří jednotlivým strojům;
    společné palivo křovinořezů zapisuje určený pracovník v **Palivo křovinořezů**;
-   Admin ho může opravit a Vedoucí číst v **Denním provozu**.
+   Admin ho může opravit v **Denním provozu**, Vedoucí číst v reportech.
 4. Správný úsek potvrďte tlačítkem **Schválit**.
 5. U chybného úseku zvolte **Vrátit**, přímo na jeho kartě napište konkrétní
    důvod a zvolte **Potvrdit vrácení**. Volba **Zrušit** formulář zavře.
@@ -250,7 +251,8 @@ poznámku pro dnešní den. Údaje se vedou jen jednou za zakázku a datum. Vedo
 smí upravit pouze zakázku, kterou aktuálně vede; Admin může spravovat všechny.
 
 Ve stejném formuláři může Admin zapsat společnou spotřebu a
-tankování paliva pro křovinořezy; Vedoucí palivo pouze čte. Běžné zadávání
+tankování paliva pro křovinořezy. Vedoucímu se tento blok v Denním provozu
+nezobrazuje; palivo může číst v reportech svých zakázek. Běžné zadávání
 provádí pracovník určený Adminem (viz níže). Tento údaj patří zakázce a dni, nikoli
 jednotlivému pracovníkovi. Pro stejnou zakázku, datum a kategorii existuje jen
 jeden aktuální záznam; při opravě se původní a nový stav uchovají v auditu.
